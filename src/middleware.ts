@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
 const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
@@ -8,7 +9,7 @@ const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
 
-export function middleware(req: NextRequest) {
+export default auth((req) => {
   const response = NextResponse.next();
 
   for (const [key, value] of Object.entries(securityHeaders)) {
@@ -17,6 +18,7 @@ export function middleware(req: NextRequest) {
 
   const path = req.nextUrl.pathname;
 
+  // CORS for API routes
   if (path.startsWith('/api/')) {
     const origin = req.headers.get('origin');
     const host = req.headers.get('host');
@@ -30,8 +32,20 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // Protect dashboard routes
+  if (path.startsWith('/dashboard') && !req.auth) {
+    const loginUrl = new URL('/login', req.url);
+    loginUrl.searchParams.set('callbackUrl', path);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Public routes that don't require auth
+  if (path === '/' || path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth')) {
+    return response;
+  }
+
   return response;
-}
+});
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
