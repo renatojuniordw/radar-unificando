@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/lib/infrastructure/ui/theme-provider';
 import { AuthProvider } from '@/lib/infrastructure/ui/auth-provider';
 import { SnackbarProvider } from '@/hooks/useSnackbar';
+import { QueryProvider } from '@/lib/infrastructure/ui/query-provider';
 import { Header, Footer } from '@/components/layout';
 import './globals.css';
 
@@ -24,9 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ThemeProvider>
             <SnackbarProvider>
-              <Header />
-              <main style={{ flex: 1 }}>{children}</main>
-              <Footer />
+              <QueryProvider>
+                <Header />
+                <main style={{ flex: 1 }}>{children}</main>
+                <Footer />
+              </QueryProvider>
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>

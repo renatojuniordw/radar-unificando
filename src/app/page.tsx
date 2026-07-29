@@ -12,6 +12,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { AnonymousStorage } from '@/lib/infrastructure/storage/local-storage';
 
 interface Vaga {
   id?: number;
@@ -59,11 +60,20 @@ export default function HomePage() {
 
   // Scores + breakdown
   const [scores, setScores] = useState<Record<string, number>>({});
-  const [selectedJob, setSelectedJob] = useState<{ empresa: string; titulo: string; score: number; evidence: string[] } | null>(null);
+  const [selectedJob, setSelectedJob] = useState<{ id?: string; empresa: string; titulo: string; score: number; evidence: string[] } | null>(null);
+  const [adapting, setAdapting] = useState(false);
+  const [adaptedResume, setAdaptedResume] = useState<string | null>(null);
 
   // Snackbar
   const [snackbar, setSnackbar] = useState<{ message: string; severity: 'success' | 'error' | 'info' } | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!session && vagas.length === 0) {
+      const stored = AnonymousStorage.getVagas();
+      if (stored.length > 0) setVagas(stored as Vaga[]);
+    }
+  }, [session]);
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -79,6 +89,8 @@ export default function HomePage() {
     setLogs([]);
     setExpanded(true);
     addLog({ type: 'step_start', message: 'Iniciando pipeline...' });
+
+    if (!session) AnonymousStorage.clear();
 
     try {
       const companies = empresasText.split('\n').map(s => s.trim()).filter(Boolean);
@@ -140,6 +152,10 @@ export default function HomePage() {
     const data = await res.json();
     const jobs = Array.isArray(data) ? data : [];
     setVagas(jobs);
+
+    if (!session && jobs.length > 0) {
+      AnonymousStorage.setVagas(jobs);
+    }
 
     const uniqueCargos = [...new Set(jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean))] as string[];
     setCargos(uniqueCargos);
@@ -431,6 +447,7 @@ export default function HomePage() {
                             return (
                               <Box
                                 onClick={() => score && setSelectedJob({
+                                  id: String(vagaId),
                                   empresa: vaga.empresa,
                                   titulo: vaga.titulo_vaga,
                                   score,
@@ -491,7 +508,7 @@ export default function HomePage() {
         />
       )}
 
-      <Dialog open={!!selectedJob} onClose={() => setSelectedJob(null)}>
+      <Dialog open={!!selectedJob} onClose={() => setSelectedJob(null)} maxWidth="sm" fullWidth>
         <DialogTitle>Detalhes do Match</DialogTitle>
         <DialogContent>
           {selectedJob && (
@@ -507,11 +524,64 @@ export default function HomePage() {
                 />
                 <Typography variant="h4" sx={{ fontWeight: 900 }}>{selectedJob.score}%</Typography>
               </Box>
+
+              {session && selectedJob.id && (
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={async () => {
+                      setAdapting(true);
+                      try {
+                        const res = await fetch('/api/resume/adapt', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ jobId: selectedJob.id }),
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setAdaptedResume(data.adaptedResume);
+                        } else {
+                          setSnackbar({ message: 'Erro ao adaptar currículo', severity: 'error' });
+                        }
+                      } catch {
+                        setSnackbar({ message: 'Erro ao adaptar currículo', severity: 'error' });
+                      }
+                      setAdapting(false);
+                    }}
+                    disabled={adapting}
+                    sx={{ mt: 1 }}
+                  >
+                    {adapting ? 'ADAPTANDO...' : 'ADAPTAR CURRÍCULO'}
+                  </Button>
+
+                  {adaptedResume && (
+                    <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: 'grey.50' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 1 }}>
+                        CURRÍCULO ADAPTADO
+                      </Typography>
+                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                        {adaptedResume}
+                      </Typography>
+                      <Button
+                        size="small"
+                        sx={{ mt: 1 }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(adaptedResume);
+                          setSnackbar({ message: 'Copiado!', severity: 'success' });
+                        }}
+                      >
+                        COPIAR
+                      </Button>
+                    </Paper>
+                  )}
+                </Box>
+              )}
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSelectedJob(null)}>Fechar</Button>
+          <Button onClick={() => { setSelectedJob(null); setAdaptedResume(null); }}>Fechar</Button>
         </DialogActions>
       </Dialog>
     </Container>
