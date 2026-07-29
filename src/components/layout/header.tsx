@@ -21,6 +21,7 @@ export function Header() {
                 cursor: 'pointer',
                 textDecoration: 'none',
                 mr: 3,
+                whiteSpace: 'nowrap',
               }}
             >
               RADAR UNIFICANDO
@@ -30,13 +31,18 @@ export function Header() {
           {session && (
             <Box sx={{ display: 'flex', gap: 0.5 }}>
               <Link href="/perfil" passHref legacyBehavior>
-                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 12, fontWeight: 700 }}>
+                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
                   PERFIL
                 </Button>
               </Link>
               <Link href="/match" passHref legacyBehavior>
-                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 12, fontWeight: 700 }}>
+                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
                   MATCH
+                </Button>
+              </Link>
+              <Link href="/aplicacoes" passHref legacyBehavior>
+                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
+                  CANDIDATURAS
                 </Button>
               </Link>
             </Box>
