@@ -11,7 +11,7 @@ export function Header() {
     <AppBar position="sticky" color="primary" sx={{ borderBottom: '4px solid #ccff00' }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters sx={{ gap: 1 }}>
-          <Link href="/" passHref legacyBehavior>
+          <Link href="/" style={{ textDecoration: 'none' }}>
             <Typography
               variant="h6"
               sx={{
@@ -19,7 +19,6 @@ export function Header() {
                 letterSpacing: '-0.03em',
                 color: '#ccff00',
                 cursor: 'pointer',
-                textDecoration: 'none',
                 mr: 3,
                 whiteSpace: 'nowrap',
               }}
@@ -30,21 +29,15 @@ export function Header() {
 
           {session && (
             <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <Link href="/perfil" passHref legacyBehavior>
-                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
-                  PERFIL
-                </Button>
-              </Link>
-              <Link href="/match" passHref legacyBehavior>
-                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
-                  MATCH
-                </Button>
-              </Link>
-              <Link href="/aplicacoes" passHref legacyBehavior>
-                <Button color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
-                  CANDIDATURAS
-                </Button>
-              </Link>
+              <Button component={Link} href="/perfil" color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
+                PERFIL
+              </Button>
+              <Button component={Link} href="/match" color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
+                MATCH
+              </Button>
+              <Button component={Link} href="/aplicacoes" color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
+                CANDIDATURAS
+              </Button>
             </Box>
           )}
 
@@ -60,11 +53,9 @@ export function Header() {
               </Button>
             </Box>
           ) : (
-            <Link href="/login" passHref legacyBehavior>
-              <Button color="warning" variant="contained" size="small">
-                ENTRAR
-              </Button>
-            </Link>
+            <Button component={Link} href="/login" color="warning" variant="contained" size="small">
+              ENTRAR
+            </Button>
           )}
         </Toolbar>
       </Container>

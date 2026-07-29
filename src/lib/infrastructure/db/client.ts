@@ -25,5 +25,7 @@ export function closeDb() {
   }
 }
 
-process.on('SIGTERM', () => closeDb());
-process.on('SIGINT', () => closeDb());
+if (typeof process.on === 'function') {
+  process.on('SIGTERM', () => closeDb());
+  process.on('SIGINT', () => closeDb());
+}
