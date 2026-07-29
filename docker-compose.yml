@@ -1,13 +1,44 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: radar_unificando
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER:-radar}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-radar} -d radar_unificando"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+    networks:
+      - internal
+
   app:
     build: .
+    restart: unless-stopped
     ports:
       - "11010:11010"
-    volumes:
-      - data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      - DATABASE_URL=/app/data/radar.db
-    restart: unless-stopped
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-radar}:${DB_PASSWORD}@postgres:5432/radar_unificando
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: http://localhost:11010
+    env_file:
+      - .env
     deploy:
       resources:
         limits:
@@ -17,12 +48,19 @@ services:
           memory: 256M
     security_opt:
       - no-new-privileges:true
+    networks:
+      - internal
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:11010/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 20s
 
 volumes:
-  data:
+  pgdata:
+    driver: local
+
+networks:
+  internal:
+    driver: bridge

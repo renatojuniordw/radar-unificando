@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { getDb } from '@/lib/infrastructure/db/client';
 import { pipelineRuns } from '@/lib/infrastructure/db/schema';
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
+import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest) {
       status: 'running',
       discoveryEnabled: discoveryEnabled !== false,
     });
+
+    progressEmitter.emit(runId, { type: 'step_start', message: 'Iniciando pipeline...' });
 
     // Fire and forget
     runPipeline(runId, userId, companies || [], discoveryEnabled !== false);
@@ -39,24 +42,32 @@ async function runPipeline(runId: string, userId: string, companies: string[], d
 
   try {
     // Step 1: Gupy MCP search (for logged-in users) + REST fallback
+    progressEmitter.emit(runId, { type: 'step_start', step: 'Gupy', message: 'Buscando vagas na Gupy...' });
+
     const gupyJobs: any[] = [];
     if (userId !== 'anonymous') {
       try {
-        for (const query of gupyQueries) {
-          const result = await gupyMcpClient.searchJobs(query, 100);
+        for (let i = 0; i < gupyQueries.length; i++) {
+          progressEmitter.emit(runId, { type: 'step_progress', step: 'Gupy', current: i + 1, total: gupyQueries.length, message: `Gupy MCP (${i + 1}/${gupyQueries.length}): ${gupyQueries[i]}` });
+          const result = await gupyMcpClient.searchJobs(gupyQueries[i], 100);
           gupyJobs.push(...result);
         }
+        progressEmitter.emit(runId, { type: 'step_complete', step: 'Gupy', message: `Gupy MCP: ${gupyJobs.length} vagas encontradas` });
       } catch {
-        // Fallback: use REST API
+        progressEmitter.emit(runId, { type: 'step_warn', step: 'Gupy', message: 'MCP falhou, usando fallback REST...' });
         const restJobs = await scrapeGupyRest(companies);
         gupyJobs.push(...restJobs);
+        progressEmitter.emit(runId, { type: 'step_complete', step: 'Gupy', message: `Gupy REST: ${restJobs.length} vagas encontradas` });
       }
     } else {
       const restJobs = await scrapeGupyRest(companies);
       gupyJobs.push(...restJobs);
+      progressEmitter.emit(runId, { type: 'step_complete', step: 'Gupy', message: `Gupy REST: ${restJobs.length} vagas encontradas` });
     }
 
     // Insert jobs
+    progressEmitter.emit(runId, { type: 'step_start', step: 'Merge', message: `Salvando ${gupyJobs.length} vagas...` });
+    let inserted = 0;
     for (const job of gupyJobs.slice(0, 200)) {
       try {
         await db.insert(jobs).values({
@@ -74,17 +85,25 @@ async function runPipeline(runId: string, userId: string, companies: string[], d
           publicado: job.publicado,
           alerta: job.alerta,
         });
+        inserted++;
       } catch {
         // Duplicate, skip
       }
     }
+    progressEmitter.emit(runId, { type: 'step_complete', step: 'Merge', message: `${inserted} vagas salvas no banco` });
 
     // Update run status
     await db.update(pipelineRuns)
       .set({ status: 'completed', totalJobs: gupyJobs.length, gupyJobs: gupyJobs.length, finishedAt: new Date() })
       .where(eq(pipelineRuns.id, runId));
 
+    progressEmitter.emit(runId, { type: 'pipeline_complete', message: `Pipeline concluído! ${gupyJobs.length} vagas encontradas.` });
+
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro desconhecido';
+    progressEmitter.emit(runId, { type: 'step_error', step: 'Pipeline', error: message, message: `Falha: ${message}` });
+    progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
+
     await db.update(pipelineRuns)
       .set({ status: 'failed', finishedAt: new Date() })
       .where(eq(pipelineRuns.id, runId));
