@@ -7,6 +7,7 @@ import {
   AccordionDetails, LinearProgress, Alert, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, Chip, Select, MenuItem,
   InputAdornment, FormControlLabel, Switch, Snackbar, TablePagination, Skeleton,
+  Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
@@ -55,6 +56,10 @@ export default function HomePage() {
   // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+
+  // Scores + breakdown
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [selectedJob, setSelectedJob] = useState<{ empresa: string; titulo: string; score: number; evidence: string[] } | null>(null);
 
   // Snackbar
   const [snackbar, setSnackbar] = useState<{ message: string; severity: 'success' | 'error' | 'info' } | null>(null);
@@ -139,6 +144,16 @@ export default function HomePage() {
     const uniqueCargos = [...new Set(jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean))] as string[];
     setCargos(uniqueCargos);
     setLoading(false);
+
+    if (session && jobs.length > 0) {
+      fetch('/api/match').then(r => r.json()).then(data => {
+        if (Array.isArray(data)) {
+          const map: Record<string, number> = {};
+          for (const m of data) map[String(m.jobId)] = m.score;
+          setScores(map);
+        }
+      }).catch(() => {});
+    }
   }
 
   useEffect(() => {
@@ -410,9 +425,37 @@ export default function HomePage() {
                       </TableCell>
                       {session && (
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: 'warning.main' }}>
-                            —
-                          </Typography>
+                          {(() => {
+                            const vagaId = vaga.id;
+                            const score = vagaId ? scores[String(vagaId)] : undefined;
+                            return (
+                              <Box
+                                onClick={() => score && setSelectedJob({
+                                  empresa: vaga.empresa,
+                                  titulo: vaga.titulo_vaga,
+                                  score,
+                                  evidence: [],
+                                })}
+                                sx={{ cursor: score ? 'pointer' : 'default' }}
+                              >
+                                {score ? (
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <CircularProgress
+                                      variant="determinate"
+                                      value={score}
+                                      size={28}
+                                      sx={{ color: score >= 70 ? '#16a34a' : score >= 40 ? '#ffaa00' : '#dc2626' }}
+                                    />
+                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                                      {score}%
+                                    </Typography>
+                                  </Box>
+                                ) : (
+                                  <Typography variant="caption" color="text.secondary">—</Typography>
+                                )}
+                              </Box>
+                            );
+                          })()}
                         </TableCell>
                       )}
                     </TableRow>
@@ -447,6 +490,30 @@ export default function HomePage() {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         />
       )}
+
+      <Dialog open={!!selectedJob} onClose={() => setSelectedJob(null)}>
+        <DialogTitle>Detalhes do Match</DialogTitle>
+        <DialogContent>
+          {selectedJob && (
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{selectedJob.empresa}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{selectedJob.titulo}</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <CircularProgress
+                  variant="determinate"
+                  value={selectedJob.score}
+                  size={60}
+                  sx={{ color: selectedJob.score >= 70 ? '#16a34a' : selectedJob.score >= 40 ? '#ffaa00' : '#dc2626' }}
+                />
+                <Typography variant="h4" sx={{ fontWeight: 900 }}>{selectedJob.score}%</Typography>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedJob(null)}>Fechar</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

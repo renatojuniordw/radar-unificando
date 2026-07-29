@@ -12,6 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "prisma generate"
   },
   "prisma": {
@@ -19,6 +21,9 @@
   },
   "dependencies": {
     "@auth/core": "^0.38.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.0",
@@ -28,9 +33,11 @@
     "bcryptjs": "^3.0.3",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",
+    "pdfjs-dist": "^6.2.108",
     "pg": "^8.22.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
@@ -44,7 +51,8 @@
     "prisma": "^7.9.1",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.23.1",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.10"
   },
   "author": "Renato Bezerra <renatojuniordw@gmail.com> (https://renatobezerra.com.br/)",
   "repository": {
