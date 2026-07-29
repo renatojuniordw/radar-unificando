@@ -1,28 +1,29 @@
 # Database — Radar Unificando v2
 
-## PostgreSQL 16 via Drizzle ORM
+## PostgreSQL + Prisma ORM
 
-### Schema (8 tabelas)
+### Schema (9 models)
 
-| Tabela | Descrição |
-|--------|-----------|
-| users | id, email, passwordHash, name, createdAt |
-| sessions | id, userId, expiresAt (Auth.js) |
-| profiles | id, userId, skills[], experience, seniority, resumeText |
-| jobs | id, userId, source, empresa, titulo, link, descricao, skillsRequired |
-| match_scores | id, userId, jobId, score, breakdown JSON, createdAt |
-| applications | id, userId, jobId, stage, notes, createdAt |
-| new_companies | id, userId, nome, totalVagas, url (InHire discovery) |
-| pipeline_runs | id, userId, status, stats |
+| Model | Tabela | Descrição |
+|-------|--------|-----------|
+| User | `users` | id, email, passwordHash, name, createdAt |
+| Session | `sessions` | id, userId, expiresAt |
+| Profile | `profiles` | id, userId, skills[], experience, seniority, resumeText |
+| Job | `jobs` | id, userId, source, empresa, titulo, link, score |
+| Application | `applications` | id, userId, jobId, stage, score, breakdown |
+| NewCompany | `new_companies` | id, userId, nome, totalVagas |
+| PipelineRun | `pipeline_runs` | id, userId, status, stats |
+| CompanyPresence | `company_presence` | id, userId, empresa, presenca gupy/inhire |
 
-### Migrations
+### Comandos
 
 ```bash
-npm run db:generate   # Gera migration
-npm run db:push       # Aplica ao banco
-npm run db:studio     # Drizzle Studio (GUI)
+npm run db:migrate   # Rodar migrations
+npm run db:seed      # Popular dados iniciais
+npm run db:studio    # Prisma Studio (GUI)
+npm run db:generate  # Gerar Prisma Client
 ```
 
-### Seed
+### Schema
 
-`src/lib/infrastructure/db/seed.ts` contém dados iniciais para desenvolvimento.
+Definido em `prisma/schema.prisma`.

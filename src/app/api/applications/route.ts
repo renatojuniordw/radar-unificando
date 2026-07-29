@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and } from 'drizzle-orm';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { applications, jobs } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
-import { canTransition, getStageLabel, type Stage } from '@/lib/core/application/state-machine';
+import type { Stage } from '@/lib/core/application/state-machine';
 
 export async function GET() {
   const session = await auth();
@@ -11,12 +9,10 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const db = getDb();
-  const result = await db
-    .select()
-    .from(applications)
-    .where(eq(applications.userId, session.user.id))
-    .orderBy(applications.createdAt);
+  const result = await prisma.application.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'asc' },
+  });
 
   return NextResponse.json(result);
 }
@@ -33,26 +29,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'jobId é obrigatório' }, { status: 400 });
     }
 
-    const db = getDb();
+    const existing = await prisma.application.findFirst({
+      where: {
+        userId: session.user.id,
+        jobId,
+      },
+    });
 
-    const existing = await db
-      .select()
-      .from(applications)
-      .where(and(
-        eq(applications.userId, session.user.id),
-        eq(applications.jobId, jobId),
-      ))
-      .limit(1);
-
-    if (existing.length > 0) {
-      return NextResponse.json(existing[0]);
+    if (existing) {
+      return NextResponse.json(existing);
     }
 
-    const [app] = await db.insert(applications).values({
-      userId: session.user.id,
-      jobId,
-      stage,
-    }).returning();
+    const app = await prisma.application.create({
+      data: {
+        userId: session.user.id,
+        jobId,
+        stage,
+      },
+    });
 
     return NextResponse.json(app, { status: 201 });
   } catch (error) {

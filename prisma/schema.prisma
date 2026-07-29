@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String        @id @default(uuid()) @db.Uuid
+  email        String        @unique @db.VarChar(255)
+  passwordHash String        @map("password_hash") @db.VarChar(255)
+  name         String?       @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  sessions         Session[]
+  profiles         Profile[]
+  jobs             Job[]
+  applications     Application[]
+  newCompanies     NewCompany[]
+  pipelineRuns     PipelineRun[]
+  companyPresence  CompanyPresence[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Profile {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @map("user_id") @db.Uuid
+  skills         Json     @default("[]")
+  experienceYears Int?    @map("experience_years")
+  seniority      String?  @db.VarChar(50)
+  resumeText     String?  @map("resume_text") @db.Text
+  parsedData     Json?    @map("parsed_data")
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Job {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  source          String   @default("gupy_api") @db.VarChar(20)
+  empresa         String   @db.VarChar
+  plataforma      String   @db.VarChar
+  naLista         String?  @default("Não") @map("na_lista") @db.VarChar(3)
+  cargoCategoria  String?  @map("cargo_categoria") @db.VarChar
+  tituloVaga      String?  @map("titulo_vaga") @db.VarChar
+  tipo            String?  @db.VarChar
+  local           String?  @db.VarChar
+  link            String   @db.VarChar
+  nomeNaPlataforma String? @map("nome_na_plataforma") @db.VarChar
+  publicado       String?  @db.VarChar
+  descricao       String?  @db.Text
+  skillsRequired  Json?    @map("skills_required")
+  score           Float?   @db.Real
+  alerta          String?  @default("") @db.VarChar
+  detectadoEm     String?  @map("detectado_em") @db.VarChar
+  createdAt       DateTime @default(now()) @map("created_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications    Application[]
+
+  @@unique([userId, link])
+  @@map("jobs")
+}
+
+model Application {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  jobId     String   @map("job_id") @db.Uuid
+  stage     String   @default("discovered") @db.VarChar
+  score     Float?   @db.Real
+  breakdown Json?
+  notes     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("applications")
+}
+
+model NewCompany {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  nome        String   @db.VarChar
+  totalVagas  Int?     @default(0) @map("total_vagas")
+  urlCarreiras String? @map("url_carreiras") @db.VarChar
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("new_companies")
+}
+
+model PipelineRun {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  status            String    @default("pending") @db.VarChar(20)
+  totalJobs         Int?      @default(0) @map("total_jobs")
+  gupyJobs          Int?      @default(0) @map("gupy_jobs")
+  inhireJobs        Int?      @default(0) @map("inhire_jobs")
+  newCompaniesFound Int?      @default(0) @map("new_companies_found")
+  discoveryEnabled  Boolean?  @default(true) @map("discovery_enabled")
+  startedAt         DateTime? @default(now()) @map("started_at")
+  finishedAt        DateTime? @map("finished_at")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pipeline_runs")
+}
+
+model CompanyPresence {
+  id              String @id @default(uuid()) @db.Uuid
+  userId          String @map("user_id") @db.Uuid
+  empresa         String @db.VarChar
+  temGupy         String? @default("") @map("tem_gupy") @db.VarChar(3)
+  paginaGupy      String? @map("pagina_gupy") @db.VarChar
+  temInhire       String? @default("") @map("tem_inhire") @db.VarChar(3)
+  paginaInhire    String? @map("pagina_inhire") @db.VarChar
+  totalVagasInhire Int?   @default(0) @map("total_vagas_inhire")
+  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("company_presence")
+}

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { users } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,25 +14,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Senha deve ter no mínimo 8 caracteres' }, { status: 400 });
     }
 
-    const db = getDb();
     const normalizedEmail = email.toLowerCase();
 
-    const existing = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, normalizedEmail))
-      .limit(1);
+    const existing = await prisma.user.findFirst({
+      where: { email: normalizedEmail },
+    });
 
-    if (existing.length > 0) {
+    if (existing) {
       return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    await db.insert(users).values({
-      email: normalizedEmail,
-      passwordHash,
-      name: name || null,
+    await prisma.user.create({
+      data: {
+        email: normalizedEmail,
+        passwordHash,
+        name: name || null,
+      },
     });
 
     return NextResponse.json({ success: true }, { status: 201 });

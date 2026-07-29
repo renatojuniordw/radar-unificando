@@ -2,29 +2,37 @@
 
 > Busca automática de vagas 100% remotas em **Gupy** e **InHire** para cargos de Dados, BI, Business e Growth.
 
-Projeto original: [busca-vagas-gupy-inhire](https://github.com/anomalyco/busca-vagas-gupy-inhire)  
-Reescrito para web por: [Renato Bezerra](https://renatobezerra.com.br/)  
+Projeto original: [busca-vagas-gupy-inhire](https://github.com/anomalyco/busca-vagas-gupy-inhire)
+Reescrito para web por: [Renato Bezerra](https://renatobezerra.com.br/)
 Licença: MIT
 
 ---
 
-## 🚀 Como Rodar
+## Stack
 
-**Pré-requisito:** [Docker](https://docs.docker.com/get-docker/) instalado.
+| Categoria | Tecnologia |
+|-----------|-----------|
+| Framework | Next.js 15 (App Router) |
+| UI | MUI 7 + Tailwind v4 |
+| Banco | PostgreSQL via Prisma ORM |
+| Auth | Auth.js v5 (JWT + bcrypt) |
+| Scraper Gupy | MCP oficial + REST fallback |
+| AI | Transformers.js (browser) |
+
+## Como Rodar
+
+**Pré-requisito:** Docker instalado.
 
 ```bash
+# Setup inicial
+cp .env.example .env
+# Preencha DATABASE_URL e AUTH_SECRET
+
+# Subir banco + app
 docker compose up
 ```
 
 Abra [http://localhost:11010](http://localhost:11010)
-
-> ✅ Pronto. Sem instalar Node, sem banco, sem configurar nada.
-
-## Como Usar
-
-1. **Adicione empresas** (opcional) — cole nomes na página Empresas
-2. **Execute o pipeline** — clique em "EXECUTAR"
-3. **Veja as vagas** — explore, filtre, exporte CSV
 
 ## Desenvolvimento
 
@@ -33,14 +41,33 @@ npm install
 npm run dev
 ```
 
-## Design System
+## Scripts
 
-Este projeto segue o estilo **Neo-Brutalista**:
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Dev server |
+| `npm run build` | Build produção |
+| `npm run db:migrate` | Migrations Prisma |
+| `npm run db:seed` | Seed dados iniciais |
+| `npm run db:studio` | Prisma Studio |
 
-- Contraste extremo: preto `#020617` + neon `#ccff00`
-- Zero arredondamentos (`border-radius: 0`)
-- Sombras sem blur (`box-shadow: 8px 8px 0px #000`)
-- Tipografia pesada (`font-black`, `uppercase`, `tracking-tighter`)
+## Estrutura
+
+```
+src/
+  app/            → Páginas + API routes
+  components/     → Componentes UI
+  hooks/          → Custom hooks
+  lib/
+    core/         → Domínio (matching, pipeline, scrapers)
+    infrastructure/ → Infra (db, ui, security)
+    di/           → DI container
+  auth.ts         → NextAuth config
+```
+
+## Documentação
+
+Veja `docs/` para documentação detalhada.
 
 ## Créditos
 

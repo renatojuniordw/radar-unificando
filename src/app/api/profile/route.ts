@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { profiles } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
 
 export async function GET() {
@@ -10,14 +8,11 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const db = getDb();
-  const result = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, session.user.id))
-    .limit(1);
+  const result = await prisma.profile.findFirst({
+    where: { userId: session.user.id },
+  });
 
-  return NextResponse.json(result[0] || null);
+  return NextResponse.json(result || null);
 }
 
 export async function PUT(req: NextRequest) {
@@ -28,17 +23,17 @@ export async function PUT(req: NextRequest) {
 
   try {
     const data = await req.json();
-    const db = getDb();
 
-    await db.insert(profiles).values({
-      userId: session.user.id,
-      skills: data.skills || [],
-      experienceYears: data.experienceYears || null,
-      seniority: data.seniority || null,
-      resumeText: data.resumeText || null,
-    }).onConflictDoUpdate({
-      target: profiles.userId,
-      set: {
+    await prisma.profile.upsert({
+      where: { userId: session.user.id },
+      update: {
+        skills: data.skills || [],
+        experienceYears: data.experienceYears || null,
+        seniority: data.seniority || null,
+        resumeText: data.resumeText || null,
+      },
+      create: {
+        userId: session.user.id,
         skills: data.skills || [],
         experienceYears: data.experienceYears || null,
         seniority: data.seniority || null,

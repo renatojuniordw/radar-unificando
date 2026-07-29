@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/lib/infrastructure/ui/theme-provider';
 import { AuthProvider } from '@/lib/infrastructure/ui/auth-provider';
+import { SnackbarProvider } from '@/hooks/useSnackbar';
 import { Header, Footer } from '@/components/layout';
 import './globals.css';
 
@@ -22,9 +23,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <AuthProvider>
           <ThemeProvider>
-            <Header />
-            <main style={{ flex: 1 }}>{children}</main>
-            <Footer />
+            <SnackbarProvider>
+              <Header />
+              <main style={{ flex: 1 }}>{children}</main>
+              <Footer />
+            </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

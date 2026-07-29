@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and } from 'drizzle-orm';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { applications } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
 import { canTransition, InvalidStatusTransition } from '@/lib/core/application/state-machine';
 import type { Stage } from '@/lib/core/application/state-machine';
@@ -22,13 +20,9 @@ export async function PATCH(
     return NextResponse.json({ error: 'stage é obrigatório' }, { status: 400 });
   }
 
-  const db = getDb();
-
-  const [app] = await db
-    .select()
-    .from(applications)
-    .where(and(eq(applications.id, id), eq(applications.userId, session.user.id)))
-    .limit(1);
+  const app = await prisma.application.findFirst({
+    where: { id, userId: session.user.id },
+  });
 
   if (!app) {
     return NextResponse.json({ error: 'Candidatura não encontrada' }, { status: 404 });
@@ -38,11 +32,10 @@ export async function PATCH(
     throw new InvalidStatusTransition(app.stage, stage);
   }
 
-  const [updated] = await db
-    .update(applications)
-    .set({ stage })
-    .where(eq(applications.id, id))
-    .returning();
+  const updated = await prisma.application.update({
+    where: { id },
+    data: { stage },
+  });
 
   return NextResponse.json(updated);
 }
@@ -57,11 +50,10 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  const db = getDb();
 
-  await db
-    .delete(applications)
-    .where(and(eq(applications.id, id), eq(applications.userId, session.user.id)));
+  await prisma.application.deleteMany({
+    where: { id, userId: session.user.id },
+  });
 
   return NextResponse.json({ success: true });
 }

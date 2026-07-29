@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, like, and, or } from 'drizzle-orm';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { jobs } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
-import type { Job } from '@/lib/infrastructure/db/schema';
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,33 +8,29 @@ export async function GET(req: NextRequest) {
     const session = await auth();
     const userId = session?.user?.id || 'anonymous';
 
-    const db = getDb();
-
-    const filters: any[] = [eq(jobs.userId, userId)];
-
     const plataforma = searchParams.get('plataforma');
-    if (plataforma) filters.push(eq(jobs.plataforma, plataforma));
-
     const cargo = searchParams.get('cargo');
-    if (cargo) filters.push(eq(jobs.cargoCategoria, cargo));
-
     const search = searchParams.get('search');
+
+    const where: Record<string, unknown> = { userId };
+
+    if (plataforma) where.plataforma = plataforma;
+    if (cargo) where.cargoCategoria = cargo;
     if (search) {
-      filters.push(or(
-        like(jobs.empresa, `%${search}%`),
-        like(jobs.tituloVaga, `%${search}%`),
-        like(jobs.nomeNaPlataforma, `%${search}%`),
-      ));
+      where.OR = [
+        { empresa: { contains: search, mode: 'insensitive' } },
+        { tituloVaga: { contains: search, mode: 'insensitive' } },
+        { nomeNaPlataforma: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    const result = await db
-      .select()
-      .from(jobs)
-      .where(and(...filters))
-      .orderBy(jobs.createdAt)
-      .limit(200);
+    const result = await prisma.job.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      take: 200,
+    });
 
-    const mapped = result.map((j: Job) => ({
+    const mapped = result.map(j => ({
       id: j.id,
       empresa: j.empresa,
       plataforma: j.plataforma,

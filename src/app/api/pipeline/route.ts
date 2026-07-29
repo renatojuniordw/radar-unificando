@@ -1,29 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { pipelineRuns } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
+import { pipelineLimiter } from '@/lib/infrastructure/security/rate-limiter';
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    const { companies, discoveryEnabled } = await req.json();
-
-    const db = getDb();
-    const runId = crypto.randomUUID();
     const userId = session?.user?.id || 'anonymous';
 
-    await db.insert(pipelineRuns).values({
-      id: runId,
-      userId,
-      status: 'running',
-      discoveryEnabled: discoveryEnabled !== false,
+    const { allowed, remaining } = pipelineLimiter.check(userId);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Muitas requisições. Aguarde 5 minutos entre execuções.' },
+        { status: 429, headers: { 'Retry-After': '300' } }
+      );
+    }
+
+    const { companies, discoveryEnabled } = await req.json();
+
+    const runId = crypto.randomUUID();
+
+    await prisma.pipelineRun.create({
+      data: {
+        id: runId,
+        userId,
+        status: 'running',
+        discoveryEnabled: discoveryEnabled !== false,
+      },
     });
 
     progressEmitter.emit(runId, { type: 'step_start', message: 'Iniciando pipeline...' });
 
-    // Fire and forget
     runPipeline(runId, userId, companies || [], discoveryEnabled !== false);
 
     return NextResponse.json({ runId });
@@ -36,12 +45,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function runPipeline(runId: string, userId: string, companies: string[], discoveryEnabled: boolean) {
-  const db = getDb();
-  const { jobs } = await import('@/lib/infrastructure/db/schema');
-  const { eq } = await import('drizzle-orm');
-
   try {
-    // Step 1: Gupy MCP search (for logged-in users) + REST fallback
     progressEmitter.emit(runId, { type: 'step_start', step: 'Gupy', message: 'Buscando vagas na Gupy...' });
 
     const gupyJobs: any[] = [];
@@ -65,25 +69,26 @@ async function runPipeline(runId: string, userId: string, companies: string[], d
       progressEmitter.emit(runId, { type: 'step_complete', step: 'Gupy', message: `Gupy REST: ${restJobs.length} vagas encontradas` });
     }
 
-    // Insert jobs
     progressEmitter.emit(runId, { type: 'step_start', step: 'Merge', message: `Salvando ${gupyJobs.length} vagas...` });
     let inserted = 0;
     for (const job of gupyJobs.slice(0, 200)) {
       try {
-        await db.insert(jobs).values({
-          userId,
-          source: userId !== 'anonymous' ? 'gupy_mcp' : 'gupy_api',
-          empresa: job.empresa || 'Desconhecida',
-          plataforma: 'Gupy',
-          naLista: companies.includes(job.empresa) ? 'Sim' : 'Não',
-          cargoCategoria: job.cargo_categoria,
-          tituloVaga: job.titulo_vaga,
-          tipo: job.tipo,
-          local: job.local,
-          link: job.link,
-          nomeNaPlataforma: job.nome_na_plataforma,
-          publicado: job.publicado,
-          alerta: job.alerta,
+        await prisma.job.create({
+          data: {
+            userId,
+            source: userId !== 'anonymous' ? 'gupy_mcp' : 'gupy_api',
+            empresa: job.empresa || 'Desconhecida',
+            plataforma: 'Gupy',
+            naLista: companies.includes(job.empresa) ? 'Sim' : 'Não',
+            cargoCategoria: job.cargo_categoria,
+            tituloVaga: job.titulo_vaga,
+            tipo: job.tipo,
+            local: job.local,
+            link: job.link,
+            nomeNaPlataforma: job.nome_na_plataforma,
+            publicado: job.publicado,
+            alerta: job.alerta,
+          },
         });
         inserted++;
       } catch {
@@ -92,10 +97,10 @@ async function runPipeline(runId: string, userId: string, companies: string[], d
     }
     progressEmitter.emit(runId, { type: 'step_complete', step: 'Merge', message: `${inserted} vagas salvas no banco` });
 
-    // Update run status
-    await db.update(pipelineRuns)
-      .set({ status: 'completed', totalJobs: gupyJobs.length, gupyJobs: gupyJobs.length, finishedAt: new Date() })
-      .where(eq(pipelineRuns.id, runId));
+    await prisma.pipelineRun.update({
+      where: { id: runId },
+      data: { status: 'completed', totalJobs: gupyJobs.length, gupyJobs: gupyJobs.length, finishedAt: new Date() },
+    });
 
     progressEmitter.emit(runId, { type: 'pipeline_complete', message: `Pipeline concluído! ${gupyJobs.length} vagas encontradas.` });
 
@@ -104,9 +109,10 @@ async function runPipeline(runId: string, userId: string, companies: string[], d
     progressEmitter.emit(runId, { type: 'step_error', step: 'Pipeline', error: message, message: `Falha: ${message}` });
     progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
 
-    await db.update(pipelineRuns)
-      .set({ status: 'failed', finishedAt: new Date() })
-      .where(eq(pipelineRuns.id, runId));
+    await prisma.pipelineRun.update({
+      where: { id: runId },
+      data: { status: 'failed', finishedAt: new Date() },
+    });
   }
 }
 

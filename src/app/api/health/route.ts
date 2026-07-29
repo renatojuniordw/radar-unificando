@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/infrastructure/db/client';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 
 export async function GET() {
   try {
-    getDb();
+    await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json({
       status: 'ok',
       db: 'connected',

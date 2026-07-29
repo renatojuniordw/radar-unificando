@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { getDb } from '@/lib/infrastructure/db/client';
-import { jobs, profiles } from '@/lib/infrastructure/db/schema';
+import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
 import { scoringEngine } from '@/lib/core/matching/scoring-engine';
 import { findMatchingSkills } from '@/lib/core/matching/skill-taxonomy';
@@ -12,24 +10,20 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const db = getDb();
   const userId = session.user.id;
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, userId))
-    .limit(1);
+  const profile = await prisma.profile.findFirst({
+    where: { userId },
+  });
 
   if (!profile) {
     return NextResponse.json({ error: 'Perfil não encontrado. Crie seu perfil primeiro.' }, { status: 404 });
   }
 
-  const userJobs = await db
-    .select()
-    .from(jobs)
-    .where(eq(jobs.userId, userId))
-    .limit(100);
+  const userJobs = await prisma.job.findMany({
+    where: { userId },
+    take: 100,
+  });
 
   const profileData = {
     skills: (profile.skills as string[]) || [],
