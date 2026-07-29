@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { companyPresenceRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET() {
   const session = await auth();
@@ -8,11 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const presences = await prisma.companyPresence.findMany({
-    where: { userId: session.user.id },
-    orderBy: { empresa: 'asc' },
-  });
-
+  const presences = await companyPresenceRepository.findByUserId(session.user.id);
   return NextResponse.json(presences);
 }
 
@@ -23,33 +19,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const data = await req.json();
-    const { empresa, temGupy, paginaGupy, temInhire, paginaInhire, totalVagasInhire } = data;
+    const { empresa, temGupy, paginaGupy, temInhire, paginaInhire, totalVagasInhire } = await req.json();
 
     if (!empresa) {
       return NextResponse.json({ error: 'Empresa é obrigatória' }, { status: 400 });
     }
 
-    const result = await prisma.companyPresence.upsert({
-      where: {
-        id: `${session.user.id}_${empresa}`,
-      },
-      create: {
-        userId: session.user.id,
-        empresa,
-        temGupy: temGupy || '',
-        paginaGupy: paginaGupy || '',
-        temInhire: temInhire || '',
-        paginaInhire: paginaInhire || '',
-        totalVagasInhire: totalVagasInhire || 0,
-      },
-      update: {
-        temGupy: temGupy || '',
-        paginaGupy: paginaGupy || '',
-        temInhire: temInhire || '',
-        paginaInhire: paginaInhire || '',
-        totalVagasInhire: totalVagasInhire || 0,
-      },
+    const result = await companyPresenceRepository.upsert(session.user.id, {
+      empresa,
+      temGupy: temGupy || '',
+      paginaGupy: paginaGupy || '',
+      temInhire: temInhire || '',
+      paginaInhire: paginaInhire || '',
+      totalVagasInhire: totalVagasInhire || 0,
     });
 
     return NextResponse.json(result);

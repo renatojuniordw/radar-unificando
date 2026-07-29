@@ -10,7 +10,7 @@
 | Env Validation | `src/lib/infrastructure/security/env.ts` |
 | Auth | Auth.js v5 com JWT + bcrypt (cost=12) |
 | Docker | `no-new-privileges`, resource limits, non-root user |
-| SQL Injection | Prevenido pelo Drizzle ORM (queries parametrizadas) |
+| SQL Injection | Prevenido pelo Prisma ORM (queries parametrizadas) |
 
 ## Rate Limits por Operação
 

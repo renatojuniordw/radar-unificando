@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET(
   _req: NextRequest,
@@ -7,10 +7,7 @@ export async function GET(
 ) {
   const { runId } = await params;
 
-  const result = await prisma.pipelineRun.findFirst({
-    where: { id: runId },
-  });
-
+  const result = await pipelineRunRepository.findById(runId);
   if (!result) {
     return NextResponse.json({ error: 'Execução não encontrada' }, { status: 404 });
   }

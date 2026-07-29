@@ -58,11 +58,10 @@ src/
   app/            → Páginas + API routes
   components/     → Componentes UI
   hooks/          → Custom hooks
-  lib/
-    core/         → Domínio (matching, pipeline, scrapers)
-    infrastructure/ → Infra (db, ui, security)
-    di/           → DI container
-  auth.ts         → NextAuth config
+    lib/
+      core/         → Domínio (matching, pipeline, scrapers)
+      infrastructure/ → Infra (db, ui, security, repositories)
+    auth.ts         → NextAuth config
 ```
 
 ## Documentação

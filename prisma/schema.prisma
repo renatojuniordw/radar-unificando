@@ -82,9 +82,10 @@ model Application {
   score     Float?   @db.Real
   breakdown Json?
   notes     String?  @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now()) @map("created_at")
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job        Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  logs       ApplicationLog[]
 
   @@map("applications")
 }
@@ -115,6 +116,18 @@ model PipelineRun {
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("pipeline_runs")
+}
+
+model ApplicationLog {
+  id             String     @id @default(uuid()) @db.Uuid
+  applicationId  String     @map("application_id") @db.Uuid
+  userId         String     @map("user_id") @db.Uuid
+  fromStage      String?    @map("from_stage") @db.VarChar
+  toStage        String     @map("to_stage") @db.VarChar
+  createdAt      DateTime   @default(now()) @map("created_at")
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_logs")
 }
 
 model CompanyPresence {

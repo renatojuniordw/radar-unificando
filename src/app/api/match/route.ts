@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { profileRepository, jobRepository } from '@/lib/infrastructure/repositories';
 import { scoringEngine } from '@/lib/core/matching/scoring-engine';
 import { findMatchingSkills } from '@/lib/core/matching/skill-taxonomy';
 
@@ -12,18 +12,12 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  const profile = await prisma.profile.findFirst({
-    where: { userId },
-  });
-
+  const profile = await profileRepository.findByUserId(userId);
   if (!profile) {
     return NextResponse.json({ error: 'Perfil não encontrado. Crie seu perfil primeiro.' }, { status: 404 });
   }
 
-  const userJobs = await prisma.job.findMany({
-    where: { userId },
-    take: 100,
-  });
+  const userJobs = await jobRepository.findByUserId(userId, { take: 100 });
 
   const profileData = {
     skills: (profile.skills as string[]) || [],

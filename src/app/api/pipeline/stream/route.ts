@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import type { ProgressEvent } from '@/types';
 
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
       const unsubscribe = progressEmitter.on(runId, send);
 
-      prisma.pipelineRun.findFirst({ where: { id: runId } }).then((run) => {
+      pipelineRunRepository.findById(runId).then((run) => {
         if (run && ['completed', 'failed', 'cancelled'].includes(run.status)) {
           send({ type: 'pipeline_complete', message: `Pipeline ${run.status}` });
           unsubscribe();

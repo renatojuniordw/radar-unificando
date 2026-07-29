@@ -28,7 +28,7 @@ Domain Layer
   └── gupy-mcp/client.ts            → JSON-RPC client
         |
 Infrastructure Layer
-  ├── db/ (Drizzle ORM + PostgreSQL)
+  ├── db/ (Prisma ORM + PostgreSQL)
   ├── repositories/ (CRUD por entidade)
   ├── di/container.ts
   └── auth/auth.config.ts
@@ -40,7 +40,7 @@ Infrastructure Layer
 |--------|-------|-----------|
 | Domain | SRP + ISP (interfaces mínimas) | Dados sanitizados na entrada |
 | Application | DIP (depende de abstrações) | Server Actions autenticadas |
-| Infrastructure | OCP (trocável via interface) | SQL injection: Drizzle ORM |
+| Infrastructure | OCP (trocável via interface) | SQL injection: Prisma ORM |
 | Presentation | SRP (página = 1 propósito) | XSS: MUI escapa HTML |
 
 ## Fluxo de Dados
@@ -48,6 +48,6 @@ Infrastructure Layer
 1. Usuário submete empresas → POST /api/pipeline
 2. Pipeline roda em background, emite eventos SSE
 3. Cliente recebe eventos e atualiza UI em tempo real
-4. Resultados salvos em PostgreSQL via Drizzle ORM
+4. Resultados salvos em PostgreSQL via Prisma ORM
 5. (Logado) Matching engine calcula score por vaga
 6. (Logado) Kanban gerencia candidaturas com state machine

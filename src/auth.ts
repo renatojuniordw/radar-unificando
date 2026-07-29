@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { userRepository } from '@/lib/infrastructure/repositories';
 import { authConfig } from './auth.config';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -20,10 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = String(credentials.password);
 
         try {
-          const user = await prisma.user.findFirst({
-            where: { email: email.toLowerCase() },
-          });
-
+          const user = await userRepository.findByEmail(email);
           if (!user) return null;
 
           const isValid = await bcrypt.compare(password, user.passwordHash);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { profileRepository } from '@/lib/infrastructure/repositories';
 import { uploadLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
 
@@ -55,23 +55,12 @@ export async function POST(req: NextRequest) {
 
     const extracted = await extractSkillsFromResume(text);
 
-    await prisma.profile.upsert({
-      where: { userId: session.user.id },
-      update: {
-        resumeText: text,
-        skills: extracted.skills,
-        seniority: extracted.seniority || undefined,
-        experienceYears: extracted.experience,
-        parsedData: { education: extracted.education, extractedAt: new Date().toISOString() },
-      },
-      create: {
-        userId: session.user.id,
-        resumeText: text,
-        skills: extracted.skills,
-        seniority: extracted.seniority || null,
-        experienceYears: extracted.experience,
-        parsedData: { education: extracted.education, extractedAt: new Date().toISOString() },
-      },
+    await profileRepository.upsert(session.user.id, {
+      resumeText: text,
+      skills: extracted.skills,
+      seniority: extracted.seniority || undefined,
+      experienceYears: extracted.experience,
+      parsedData: { education: extracted.education, extractedAt: new Date().toISOString() },
     });
 
     return NextResponse.json({

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
-import type { Stage } from '@/lib/core/application/state-machine';
+import { applicationRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET() {
   const session = await auth();
@@ -9,11 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const result = await prisma.application.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'asc' },
-  });
-
+  const result = await applicationRepository.findByUserId(session.user.id);
   return NextResponse.json(result);
 }
 
@@ -29,23 +24,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'jobId é obrigatório' }, { status: 400 });
     }
 
-    const existing = await prisma.application.findFirst({
-      where: {
-        userId: session.user.id,
-        jobId,
-      },
-    });
-
+    const existing = await applicationRepository.findByUserAndJob(session.user.id, jobId);
     if (existing) {
       return NextResponse.json(existing);
     }
 
-    const app = await prisma.application.create({
-      data: {
-        userId: session.user.id,
-        jobId,
-        stage,
-      },
+    const app = await applicationRepository.create({
+      userId: session.user.id,
+      jobId,
+      stage,
     });
 
     return NextResponse.json(app, { status: 201 });

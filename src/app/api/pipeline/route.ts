@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { pipelineLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { runGupyStep } from '@/lib/core/pipeline/steps/gupy-step';
@@ -26,13 +26,11 @@ export async function POST(req: NextRequest) {
 
     const runId = crypto.randomUUID();
 
-    await prisma.pipelineRun.create({
-      data: {
-        id: runId,
-        userId,
-        status: 'running',
-        discoveryEnabled: discoveryEnabled !== false,
-      },
+    await pipelineRunRepository.create({
+      id: runId,
+      userId,
+      status: 'running',
+      discoveryEnabled: discoveryEnabled !== false,
     });
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });
@@ -76,16 +74,13 @@ async function runPipeline(
       });
     }
 
-    await prisma.pipelineRun.update({
-      where: { id: runId },
-      data: {
-        status: 'completed',
-        totalJobs: allJobs.length,
-        gupyJobs: gupyJobs.length,
-        inhireJobs: inhireJobs.length,
-        newCompaniesFound: discoveryCount,
-        finishedAt: new Date(),
-      },
+    await pipelineRunRepository.update(runId, {
+      status: 'completed',
+      totalJobs: allJobs.length,
+      gupyJobs: gupyJobs.length,
+      inhireJobs: inhireJobs.length,
+      newCompaniesFound: discoveryCount,
+      finishedAt: new Date(),
     });
 
     progressEmitter.emit(runId, {
@@ -100,9 +95,9 @@ async function runPipeline(
     });
     progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
 
-    await prisma.pipelineRun.update({
-      where: { id: runId },
-      data: { status: 'failed', finishedAt: new Date() },
+    await pipelineRunRepository.update(runId, {
+      status: 'failed',
+      finishedAt: new Date(),
     });
   }
 }

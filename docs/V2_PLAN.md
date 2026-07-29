@@ -84,7 +84,7 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 │  └── gupy-mcp/client.ts            → JSON-RPC client    │
 ├─────────────────────────────────────────────────────────┤
 │                  Infrastructure Layer                    │
-│  ├── db/ (Drizzle ORM + PostgreSQL)                     │
+│  ├── db/ (Prisma ORM + PostgreSQL)                      │
 │  ├── repositories/ (IJobRepository, IUserRepository...) │
 │  ├── di/container.ts                                     │
 │  └── auth/auth.config.ts                                 │
@@ -97,14 +97,14 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 |--------|-------|-----------|
 | Domain | SRP + ISP (interfaces mínimas) | Dados sanitizados na entrada |
 | Application | DIP (depende de abstrações) | Server Actions autenticadas |
-| Infrastructure | OCP (trocável via interface) | SQL injection: Drizzle ORM |
+| Infrastructure | OCP (trocável via interface) | SQL injection: Prisma ORM |
 | Presentation | SRP (página = 1 propósito) | XSS: MUI escapa HTML |
 
 ### Decisões de Arquitetura (ADRs)
 
 | Decisão | Opção Escolhida | Trade-off |
 |---------|----------------|-----------|
-| ORM | Drizzle (vs Prisma) | Mais leve, SQL-like, sem gerador binário |
+| ORM | Prisma (vs Drizzle) | Schema-first, migrations robustas, ecossistema maduro |
 | Auth | Auth.js v5 (vs NextAuth v4) | Multi-provedor, JWT, middleware nativo |
 | DB | PostgreSQL (vs SQLite) | Concorrência multi-usuário |
 | AI | Transformers.js browser (vs API) | Offline, privado, sem custo (~80MB cache) |
@@ -122,7 +122,7 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 | Componentes | MUI (Material UI) | 7 |
 | Estilos | Tailwind CSS + MUI sx | 4 |
 | Banco | PostgreSQL | 16 |
-| ORM | Drizzle ORM | 0.40 |
+| ORM | Prisma ORM | 7.9 |
 | Auth | Auth.js | 5 |
 | AI (browser) | Transformers.js | 2.17 |
 | PDF | pdfjs-dist | 4 |
@@ -133,7 +133,7 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 
 ## 5. Banco de Dados
 
-### PostgreSQL via Drizzle ORM
+### PostgreSQL via Prisma ORM
 
 ```typescript
 // Schema principal — 8 tabelas
@@ -716,7 +716,7 @@ Tempo estimado: 3-4 dias
 
 Tarefas:
 ├── [ ] Docker Compose com PostgreSQL + app
-├── [ ] Drizzle schema + migrations + seed
+├── [ ] Prisma schema + migrations + seed
 ├── [ ] Auth.js (credentials + JWT + bcrypt)
 ├── [ ] MUI theme provider + dark mode
 ├── [ ] Layout base (AppBar, Footer, Container)
@@ -731,7 +731,7 @@ Tarefas:
 Dependências:
 ├── @mui/material @mui/icons-material @emotion/react @emotion/styled
 ├── next-auth @auth/core
-├── drizzle-orm postgres drizzle-kit
+├── @prisma/client @prisma/adapter-pg prisma
 ├── bcrypt @types/bcrypt
 ```
 
@@ -827,7 +827,7 @@ Tarefas:
 | `V2_PLAN.md` | Este documento — plano mestre | ✅ Já criado |
 | `ARCHITECTURE.md` | Camadas, fluxo de dados, decisões, diagramas | Fase 1 |
 | `DESIGN_SYSTEM.md` | MUI theme, componentes, dark mode, acessibilidade | Fase 1 |
-| `DATABASE.md` | Schema Drizzle, migrações, índices, seed | Fase 1 |
+| `DATABASE.md` | Schema Prisma, migrações, índices, seed | Fase 1 |
 | `API.md` | Rotas REST, exemplos curl, auth headers | Fase 2 |
 | `SECURITY.md` | JWT, bcrypt, sanitização, CORS, CSRF | Fase 1 |
 | `PIPELINE.md` | Steps, ordem, opt-in, MCP vs REST | Fase 2 |
@@ -850,7 +850,7 @@ Tarefas:
     "@emotion/styled": "^11.13",
     "@auth/core": "^0.38",
     "next-auth": "^5.0",
-    "drizzle-orm": "^0.40",
+    "@prisma/client": "^7.9",
     "postgres": "^3.4",
     "bcrypt": "^5.1",
     "@xenova/transformers": "^2.17",
@@ -859,7 +859,7 @@ Tarefas:
     "@dnd-kit/sortable": "^10.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.30",
+    "prisma": "^7.9",
     "@types/bcrypt": "^5.0",
     "@testing-library/react": "^16.0",
     "vitest": "^3.0",

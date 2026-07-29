@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { newCompanyRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET() {
   const session = await auth();
@@ -8,11 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const companies = await prisma.newCompany.findMany({
-    where: { userId: session.user.id },
-    orderBy: { nome: 'asc' },
-  });
-
+  const companies = await newCompanyRepository.findByUserId(session.user.id);
   return NextResponse.json(companies);
 }
 
@@ -23,27 +19,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const data = await req.json();
-    const { nome, totalVagas, urlCarreiras } = data;
+    const { nome, totalVagas, urlCarreiras } = await req.json();
 
     if (!nome) {
       return NextResponse.json({ error: 'Nome da empresa é obrigatório' }, { status: 400 });
     }
 
-    const result = await prisma.newCompany.upsert({
-      where: {
-        id: `${session.user.id}_${nome}`,
-      },
-      create: {
-        userId: session.user.id,
-        nome,
-        totalVagas: totalVagas || 0,
-        urlCarreiras: urlCarreiras || null,
-      },
-      update: {
-        totalVagas: totalVagas || 0,
-        urlCarreiras: urlCarreiras || null,
-      },
+    const result = await newCompanyRepository.upsert(session.user.id, {
+      nome,
+      totalVagas: totalVagas || 0,
+      urlCarreiras: urlCarreiras || null,
     });
 
     return NextResponse.json(result);
@@ -69,10 +54,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 });
     }
 
-    await prisma.newCompany.delete({
-      where: { id },
-    });
-
+    await newCompanyRepository.deleteById(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(

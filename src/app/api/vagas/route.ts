@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { jobRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,26 +8,10 @@ export async function GET(req: NextRequest) {
     const session = await auth();
     const userId = session?.user?.id || 'anonymous';
 
-    const plataforma = searchParams.get('plataforma');
-    const cargo = searchParams.get('cargo');
-    const search = searchParams.get('search');
-
-    const where: Record<string, unknown> = { userId };
-
-    if (plataforma) where.plataforma = plataforma;
-    if (cargo) where.cargoCategoria = cargo;
-    if (search) {
-      where.OR = [
-        { empresa: { contains: search, mode: 'insensitive' } },
-        { tituloVaga: { contains: search, mode: 'insensitive' } },
-        { nomeNaPlataforma: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    const result = await prisma.job.findMany({
-      where,
-      orderBy: { createdAt: 'asc' },
-      take: 200,
+    const result = await jobRepository.findByUserId(userId, {
+      plataforma: searchParams.get('plataforma') || undefined,
+      cargo: searchParams.get('cargo') || undefined,
+      search: searchParams.get('search') || undefined,
     });
 
     const mapped = result.map(j => ({

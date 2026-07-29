@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { jobRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
   const userId = session?.user?.id || 'anonymous';
 
-  const result = await prisma.job.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'asc' },
-    take: 500,
-  });
+  const result = await jobRepository.findByUserId(userId, { take: 500 });
 
   const format = req.nextUrl.searchParams.get('format') || 'csv';
 

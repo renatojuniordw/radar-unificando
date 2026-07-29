@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { profileRepository, jobRepository } from '@/lib/infrastructure/repositories';
 import { scoringEngine } from '@/lib/core/matching/scoring-engine';
 import { resumeAdapter } from '@/lib/core/matching/resume-adapter';
 import { findMatchingSkills } from '@/lib/core/matching/skill-taxonomy';
@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
     }
 
     const [profile, job] = await Promise.all([
-      prisma.profile.findFirst({ where: { userId: session.user.id } }),
-      prisma.job.findFirst({ where: { id: jobId, userId: session.user.id } }),
+      profileRepository.findByUserId(session.user.id),
+      jobRepository.findById(jobId),
     ]);
 
     if (!profile) {

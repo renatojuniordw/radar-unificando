@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
 import { canTransition, InvalidStatusTransition } from '@/lib/core/application/state-machine';
+import { applicationRepository } from '@/lib/infrastructure/repositories';
 import type { Stage } from '@/lib/core/application/state-machine';
 
 export async function PATCH(
@@ -20,10 +20,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'stage é obrigatório' }, { status: 400 });
   }
 
-  const app = await prisma.application.findFirst({
-    where: { id, userId: session.user.id },
-  });
-
+  const app = await applicationRepository.findByIdAndUser(id, session.user.id);
   if (!app) {
     return NextResponse.json({ error: 'Candidatura não encontrada' }, { status: 404 });
   }
@@ -32,11 +29,7 @@ export async function PATCH(
     throw new InvalidStatusTransition(app.stage, stage);
   }
 
-  const updated = await prisma.application.update({
-    where: { id },
-    data: { stage },
-  });
-
+  const updated = await applicationRepository.updateStage(id, stage, session.user.id);
   return NextResponse.json(updated);
 }
 
@@ -50,10 +43,6 @@ export async function DELETE(
   }
 
   const { id } = await params;
-
-  await prisma.application.deleteMany({
-    where: { id, userId: session.user.id },
-  });
-
+  await applicationRepository.deleteByIdAndUser(id, session.user.id);
   return NextResponse.json({ success: true });
 }

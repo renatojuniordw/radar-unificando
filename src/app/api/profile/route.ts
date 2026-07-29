@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
 import { auth } from '@/auth';
+import { profileRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET() {
   const session = await auth();
@@ -8,10 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
   }
 
-  const result = await prisma.profile.findFirst({
-    where: { userId: session.user.id },
-  });
-
+  const result = await profileRepository.findByUserId(session.user.id);
   return NextResponse.json(result || null);
 }
 
@@ -23,22 +20,11 @@ export async function PUT(req: NextRequest) {
 
   try {
     const data = await req.json();
-
-    await prisma.profile.upsert({
-      where: { userId: session.user.id },
-      update: {
-        skills: data.skills || [],
-        experienceYears: data.experienceYears || null,
-        seniority: data.seniority || null,
-        resumeText: data.resumeText || null,
-      },
-      create: {
-        userId: session.user.id,
-        skills: data.skills || [],
-        experienceYears: data.experienceYears || null,
-        seniority: data.seniority || null,
-        resumeText: data.resumeText || null,
-      },
+    await profileRepository.upsert(session.user.id, {
+      skills: data.skills || [],
+      experienceYears: data.experienceYears || null,
+      seniority: data.seniority || null,
+      resumeText: data.resumeText || null,
     });
 
     return NextResponse.json({ success: true });

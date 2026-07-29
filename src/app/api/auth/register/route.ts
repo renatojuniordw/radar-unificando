@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { userRepository } from '@/lib/infrastructure/repositories';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,24 +14,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Senha deve ter no mínimo 8 caracteres' }, { status: 400 });
     }
 
-    const normalizedEmail = email.toLowerCase();
-
-    const existing = await prisma.user.findFirst({
-      where: { email: normalizedEmail },
-    });
-
+    const existing = await userRepository.findByEmail(email);
     if (existing) {
       return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    await prisma.user.create({
-      data: {
-        email: normalizedEmail,
-        passwordHash,
-        name: name || null,
-      },
+    await userRepository.create({
+      email,
+      passwordHash,
+      name: name || null,
     });
 
     return NextResponse.json({ success: true }, { status: 201 });
