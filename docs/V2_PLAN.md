@@ -500,7 +500,212 @@ Gemini API é **opcional** — usuário cola a própria API key se quiser.
 
 ---
 
-## 12. Plano de Implementação (Fases)
+## 12. Feedback + Paginação
+
+### 12.1 Paginação (Tabela de Resultados)
+
+| Cenário | Componente | Comportamento |
+|---------|-----------|---------------|
+| **Poucos resultados** (< 20 linhas) | Sem paginação | Mostra tudo direto |
+| **Muitos resultados** (20+) | `MuiPagination` | 20 por página, seletor "20/50/100" |
+| **Navegação** | Botões "Anterior/Próximo" + números | Mantém filtros entre páginas |
+| **URL state** | `?page=2&plataforma=Gupy` | Link compartilhável, voltar não perde página |
+
+```tsx
+// Pagination no servidor (API)
+GET /api/vagas?page=2&limit=20&plataforma=Gupy
+→ { data: JobData[], total: 47, page: 2, totalPages: 3 }
+
+// MUI TablePagination no frontend
+<TablePagination
+  component="div"
+  count={total}
+  page={page - 1}
+  onPageChange={handlePageChange}
+  rowsPerPage={rowsPerPage}
+  onRowsPerPageChange={handleChangeRowsPerPage}
+/>
+```
+
+### 12.2 Estados de Feedback (Cada Operação)
+
+| Operação | Loading | Success | Empty | Error |
+|----------|---------|---------|-------|-------|
+| **Buscar vagas** | Barra `LinearProgress` no accordion + "Buscando Gupy (3/13)..." | Accordion colapsa + tabela aparece com contagem | "Nenhuma vaga encontrada. Tente ampliar as empresas ou desativar filtros." | `Alert severity="error"` "Falha ao buscar vagas. Verifique sua conexão e tente novamente." + botão "TENTAR NOVAMENTE" |
+| **Salvar empresas** | Botão desabilitado "SALVANDO..." | `Snackbar` "12 empresas salvas!" | — | `Snackbar` "Erro ao salvar: [mensagem]" |
+| **Login** | Botão "ENTRANDO..." spinner | Redirect para dashboard | — | `Alert` inline no form "Email ou senha inválidos" |
+| **Register** | Botão "CRIANDO CONTA..." | `Snackbar` "Conta criada!" + redirect | — | `Alert` inline "Email já cadastrado" / "Senha muito fraca" |
+| **Upload currículo** | `LinearProgress` + "Extraindo skills..." | `Snackbar` "Currículo processado! 15 skills encontradas" | — | `Alert` "Não foi possível ler o PDF. Formatos aceitos: PDF do LinkedIn." |
+| **Exportar CSV** | Botão "GERANDO CSV..." | Download dispara automaticamente | — | `Snackbar` "Erro ao gerar arquivo" |
+| **Mover Kanban** | Card com opacidade reduzida | Card aparece na nova coluna instantaneamente (otimista) | — | Card volta pra coluna anterior + `Snackbar` "Erro ao mover" |
+| **Pipeline discovery** | Cada step com micro-progresso | Step marca ✓ + contagem | "Nenhuma nova empresa descoberta" | Step marca ⚠ + "Falha no discovery (opcional, continuando)" |
+| **Deletar conta** | Dialog de confirmação | `Snackbar` "Conta deletada" + logout | — | `Snackbar` "Erro ao deletar conta" |
+
+### 12.3 Toast/Snackbar System
+
+Eventos que disparam `Snackbar` (MUI):
+
+```
+┌─────────────────────────────────────────────┐
+│  ✅ 12 empresas salvas!                     │  ← success (4s)
+├─────────────────────────────────────────────┤
+│  ⚠️ Erro ao salvar: conexão perdida         │  ← error (8s, fica até fechar)
+├─────────────────────────────────────────────┤
+│  ℹ️ 47 vagas encontradas                     │  ← info (4s)
+├─────────────────────────────────────────────┤
+│  🎯 Pipeline concluído! 52 vagas novas       │  ← success (6s)
+└─────────────────────────────────────────────┘
+```
+
+```tsx
+// Hook customizado
+const { showSnackbar, SnackbarComponent } = useSnackbar();
+
+// Uso em qualquer lugar
+showSnackbar('12 empresas salvas!', 'success');
+showSnackbar('Falha na conexão', 'error', { duration: 8000 });
+```
+
+### 12.4 Form Validation (Login / Register / Empresas)
+
+| Campo | Validação | Feedback |
+|-------|-----------|----------|
+| **Email** | Formato email + required | `TextField error` + helperText "Email inválido" |
+| **Senha** | Min 8 chars + required | `TextField error` + "Mínimo 8 caracteres" |
+| **Confirmar senha** | Igual à senha | "Senhas não conferem" |
+| **Empresas** | Opcional, mas valida duplicatas | Remove duplicatas automaticamente + aviso |
+
+```tsx
+<TextField
+  label="Email"
+  type="email"
+  error={!!errors.email}
+  helperText={errors.email}
+  required
+/>
+```
+
+### 12.5 Pipeline Progress (Rich Feedback)
+
+Cada step do pipeline emite eventos SSE que o frontend renderiza:
+
+```typescript
+type PipelineEvent =
+  | { type: 'step_start';    step: string; message: string }
+  | { type: 'step_progress'; step: string; current: number; total: number; message: string }
+  | { type: 'step_complete'; step: string; result: { count: number } }
+  | { type: 'step_warn';     step: string; error: string }
+  | { type: 'step_error';    step: string; error: string; recoverable: boolean }
+  | { type: 'pipeline_complete'; stats: { total: number } }
+  | { type: 'pipeline_cancelled' };
+```
+
+Renderização no accordion durante a execução:
+
+```
+▸ PIPELINE (45%)
+├── ✅ Gupy — 12 vagas encontradas
+├── 🔄 InHire (lista) — 34/100 empresas verificadas...
+├── ⏳ Discovery — Aguardando...
+├── ⏳ Merge — Aguardando...
+└── ⏳ Presença — Aguardando...
+```
+
+| Ícone | Significado |
+|-------|-------------|
+| ⏳ | Não iniciado |
+| 🔄 | Em progresso |
+| ✅ | Completo com sucesso |
+| ⚠️ | Completo com aviso (fallback usado) |
+| ❌ | Falhou (step não crítico, pipeline continua) |
+
+### 12.6 Error Boundaries (React)
+
+```
+Componentes que envolvem áreas críticas:
+├── Tabela de resultados  → fallback "Erro ao carregar tabela"
+├── Kanban                → fallback "Erro ao carregar candidaturas"
+└── Perfil                → fallback "Erro ao carregar perfil"
+
+Sem perder o header/nav — erro fica isolado no bloco.
+```
+
+### 12.7 Skeleton Loading (MUI Skeleton)
+
+| Área | Skeleton |
+|------|----------|
+| **Tabela** | 5 linhas de `Skeleton variant="text"` |
+| **Cards** | `Skeleton variant="rectangular" width="100%" height={200}` |
+| **Perfil** | `Skeleton variant="circular"` (avatar) + 3 linhas de texto |
+| **Kanban** | 3 colunas com 2 cards skeleton cada |
+
+### 12.8 Empty States Ilustrados
+
+| Estado | Ícone | Texto |
+|--------|-------|-------|
+| **Nunca buscou** | Radar desligado | "Pronto para começar? Cole as empresas e clique em EXECUTAR BUSCA" |
+| **Busca sem resultados** | Lupa vazia | "Nenhuma vaga encontrada — tente remover filtros ou ampliar a lista de empresas" |
+| **Sem candidaturas** | Kanban vazio | "Você ainda não se candidatou a nenhuma vaga. Encontre vagas na página inicial" |
+| **Sem empresas na lista** | Lista vazia | "Adicione empresas para marcar vagas como 'Na sua lista'. Opcional — a busca funciona sem." |
+
+### 12.9 Confirm Dialog (Ações Destrutivas)
+
+| Ação | Dialog |
+|------|--------|
+| **Sair da conta** | "Tem certeza que deseja sair?" |
+| **Limpar resultados** | "Isso vai apagar todos os resultados da busca atual" |
+| **Excluir conta** | "Esta ação é irreversível. Todos os seus dados serão perdidos." |
+
+```tsx
+<Dialog open={open} onClose={handleClose}>
+  <DialogTitle>Sair da conta?</DialogTitle>
+  <DialogContent>
+    <Typography>Você precisará fazer login novamente para acessar seus dados.</Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleClose}>Cancelar</Button>
+    <Button onClick={handleConfirm} color="error" variant="contained">
+      Sair
+    </Button>
+  </DialogActions>
+</Dialog>
+```
+
+### 12.10 Matriz de Feedback — Visão Consolidada
+
+```
+┌─────────────────┬──────────┬──────────┬──────────┬──────────┐
+│ Operação        │ Loading  │ Success  │ Empty    │ Error    │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Buscar vagas    │ Barra +  │ Tabela   │ Alert    │ Alert +  │
+│                 │ log      │ + cont.  │ ilustr.  │ retry    │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Salvar empresas │ Btn des. │ Snackbar │ —        │ Snackbar │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Login           │ Btn des. │ Redirect │ —        │ Inline   │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Register        │ Btn des. │ Snack +  │ —        │ Inline   │
+│                 │          │ redirect │          │          │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Upload currículo│ Barra +  │ Snackbar │ —        │ Alert    │
+│                 │ msg      │          │          │          │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Export CSV      │ Btn des. │ Download │ —        │ Snackbar │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Mover Kanban    │ Opacity  │ Otimista │ —        │ Reverte  │
+│                 │          │          │          │+Snackbar │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Pipeline step   │Step ícone│ Step ✓  │ Step "-" │Step ⚠/❌ │
+│                 │   🔄     │+ cont.   │          │          │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ Deletar conta   │ Dialog   │ Snackbar │ —        │ Snackbar │
+│                 │ confirm  │ + logout │          │          │
+└─────────────────┴──────────┴──────────┴──────────┴──────────┘
+```
+
+---
+
+## 13. Plano de Implementação (Fases)
 
 ### Fase 1 — Fundação (Auth + PostgreSQL + MUI)
 
@@ -613,7 +818,7 @@ Tarefas:
 
 ---
 
-## 13. Documentação
+## 14. Documentação
 
 ### `docs/` — Estrutura Completa
 
@@ -634,7 +839,7 @@ Tarefas:
 
 ---
 
-## 14. Dependências Novas
+## 15. Dependências Novas
 
 ```json
 {
@@ -665,7 +870,7 @@ Tarefas:
 
 ---
 
-## 15. Perguntas Pendentes
+## 16. Perguntas Pendentes
 
 - [ ] **Gemini API**: colocar como feature opcional (usuário cola a própria key) ou pular por enquanto?
 - [ ] **LinkedIn export**: o parse de PDF do LinkedIn funciona bem com `pdf.js`? Testar com amostras reais
