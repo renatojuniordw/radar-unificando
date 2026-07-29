@@ -1,0 +1,46 @@
+export const config = {
+  port: 11010,
+  db: {
+    path: process.env.DATABASE_URL || 'data/radar.db',
+  },
+  gupy: {
+    apiUrl: 'https://employability-portal.gupy.io/api/v1/jobs',
+    queries: [
+      'Analista de Dados',
+      'Data Analyst',
+      'Analista de BI',
+      'Business Intelligence',
+      'Business Analyst',
+      'Analista de Negócios',
+      'Inteligência de Negócios',
+      'Growth',
+      'Revenue Operations',
+      'RevOps',
+      'Analista de Insights',
+      'Inteligência de Mercado',
+      'Market Intelligence',
+    ],
+    maxOffset: 3000,
+    pageSize: 100,
+    delayBetweenPages: 120,
+    retriesPerPage: 3,
+    retryDelay: 800,
+  },
+  inhire: {
+    apiUrl: 'https://api.inhire.app/job-posts/public/pages',
+    concurrency: 16,
+    delayBetweenRequests: 100,
+    retriesPerSlug: 2,
+    retryDelay: 400,
+  },
+  discovery: {
+    enabledByDefault: true,
+    wayback: { url: 'http://web.archive.org/cdx/search/cdx', limit: 200000 },
+    urlscan: { url: 'https://urlscan.io/api/v1/search/', pages: 6, delay: 1500 },
+    commonCrawl: { indexesMax: 12, delay: 300 },
+  },
+  pipeline: {
+    maxRunTime: 10 * 60 * 1000,
+    progressInterval: 500,
+  },
+} as const;

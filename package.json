@@ -1,0 +1,33 @@
+{
+  "name": "radar-unificando",
+  "version": "1.0.0",
+  "description": "Busca automática de vagas 100% remotas em Gupy e InHire para cargos de Dados, BI, Business e Growth.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.1",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.0"
+  },
+  "author": "Renato Bezerra <renatojuniordw@gmail.com> (https://renatobezerra.com.br/)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/renatojuniordw/radar-unificando.git"
+  },
+  "license": "MIT"
+}

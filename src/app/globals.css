@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon-yellow: #ccff00;
+  --color-brutalist-black: #020617;
+  --color-brutalist-white: #ffffff;
+  --color-slate-950: #020617;
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-400: #94a3b8;
+  --color-slate-300: #cbd5e1;
+  --color-slate-200: #e2e8f0;
+  --color-slate-100: #f1f5f9;
+  --color-danger: #ff4d4d;
+  --color-success: #00ff66;
+
+  --shadow-hard-lg: 8px 8px 0px #000;
+  --shadow-hard-md: 4px 4px 0px #000;
+  --shadow-hard-sm: 2px 2px 0px #000;
+  --shadow-hard-neon: 8px 8px 0px #ccff00;
+  --shadow-hard-white: 4px 4px 0px #fff;
+
+  --font-family-inter: 'Inter', sans-serif;
+}
+
+::selection {
+  background-color: var(--color-neon-yellow);
+  color: var(--color-brutalist-black);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-inter);
+  background-color: var(--color-white);
+  color: var(--color-brutalist-black);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  border: 2px solid var(--color-brutalist-black);
+  background: white;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-brutalist-black);
+  background: var(--color-neon-yellow);
+  cursor: pointer;
+}
