@@ -340,7 +340,7 @@ const theme = createTheme({
 | Perfil/Skills | ❌ | ✅ (upload currículo + parse automático) |
 | Score de match | ❌ | ✅ (0-100 por vaga) |
 | Breakdown | ❌ | ✅ (skills obrigatórias, desejáveis, etc.) |
-| Kanban | ❌ | ✅ (18 estágios) |
+| Kanban | ❌ | ✅ (19 estágios) |
 | Adaptar currículo | ❌ | ✅ (template + AI opcional) |
 | Persistência | Efêmero (1 sessão) | Eterno |
 | Login necessário | ❌ | ✅ (email + senha + JWT) |
@@ -785,7 +785,7 @@ Dependências:
 Objetivo: Acompanhamento visual das candidaturas
 
 Tarefas:
-├── [ ] State machine (18 estágios, transições validadas)
+├── [ ] State machine (19 estágios, transições validadas)
 ├── [ ] KanbanBoard (dnd-kit + MUI Paper)
 ├── [ ] Ações: aplicar, mover estágio, adicionar nota
 ├── [ ] Botão "ADAPTAR CURRÍCULO" (template-based)
@@ -803,15 +803,15 @@ Dependências:
 Objetivo: Fechar o projeto com documentação e testes
 
 Tarefas:
-├── [ ] README.md atualizado
-├── [ ] docs/ completo (10 arquivos)
-├── [ ] Testes (vitest nos services)
+├── [x] README.md atualizado
+├── [x] docs/ completo (12 arquivos)
+├── [x] Testes (vitest nos services — scoring-engine + state-machine)
 ├── [ ] Playwright E2E nos fluxos principais
 ├── [ ] Audit UX/UI (via skill web-design-guidelines)
-├── [ ] Segurança: helmet, rate limiting, sanitização
+├── [x] Segurança: helmet, rate limiting, sanitização
 ├── [ ] Performance: bundle analysis, lazy loading
-├── [ ] SEO: metadata, sitemap
-├── [ ] Docker final: healthcheck, non-root user
+├── [x] SEO: metadata, sitemap
+├── [x] Docker final: healthcheck, non-root user
 ├── [ ] Merge v2/redesign → main
 └── [ ] Tag de release v2.0.0
 ```
@@ -1156,14 +1156,14 @@ AUTH_URL=http://localhost:11010
 
 ---
 
-## 17. Perguntas Pendentes
+## 17. Perguntas Pendentes (Resolvidas)
 
-- [ ] **Gemini API**: colocar como feature opcional (usuário cola a própria key) ou pular por enquanto?
-- [ ] **LinkedIn export**: o parse de PDF do LinkedIn funciona bem com `pdf.js`? Testar com amostras reais
-- [ ] **Taxonomia de skills**: extrair da career-platform ou criar do zero baseada nas vagas do Gupy/InHire?
-- [ ] **MCP Rate limit**: o MCP da Gupy tem rate limit? Testar antes de fazer dele a fonte principal
-- [ ] **Kanban drag-and-drop**: dnd-kit resolve ou precisamos de algo mais simples (botões de mover)?
-- [ ] **Dark mode**: implementar com MUI ThemeProvider + `localStorage` ou usar `next-themes`?
+- [x] **Gemini API**: Feature opcional — usuário cola a própria key no `.env`. Implementado com `GEMINI_API_KEY` comentada no `.env.example` e adaptação de currículo via template-based (sem depender de API externa).
+- [x] **LinkedIn export**: `pdfjs-dist` funciona bem para extrair texto de PDFs do LinkedIn. Implementado com fallback para texto colado manualmente.
+- [x] **Taxonomia de skills**: Criada do zero em `skill-taxonomy.ts` baseada nas categorias mais comuns em vagas Gupy/InHire (10 categorias: linguagens, databases, cloud, BI, etc.).
+- [x] **MCP Rate limit**: MCP da Gupy não tem rate limit documentado. Estratégia implementada: MCP优先 para logados, REST como fallback se MCP falhar.
+- [x] **Kanban drag-and-drop**: `dnd-kit` implementado com `DndContext` + `useDraggable`/`useDroppable`. Menu `Select` também disponível como alternativa em cada card.
+- [x] **Dark mode**: Implementado com MUI `ThemeProvider` + `localStorage` + `prefers-color-scheme`. Sem dependência externa (`next-themes`).
 
 ---
 

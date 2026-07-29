@@ -36,7 +36,8 @@ export default auth((req) => {
   }
 
   // Protect dashboard routes
-  if (path.startsWith('/dashboard') && !req.auth) {
+  const protectedPaths = ['/perfil', '/match', '/aplicacoes'];
+  if (protectedPaths.some(p => path.startsWith(p)) && !req.auth) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', path);
     return NextResponse.redirect(loginUrl);
