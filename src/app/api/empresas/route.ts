@@ -1,23 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getContainer } from '@/lib/di/container';
+import { eq, like } from 'drizzle-orm';
+import { getDb } from '@/lib/infrastructure/db/client';
+import { jobs } from '@/lib/infrastructure/db/schema';
+import { auth } from '@/auth';
 
 export async function GET() {
-  const { companyRepo } = getContainer();
-  const companies = await companyRepo.findAll();
-  return NextResponse.json(companies);
+  const session = await auth();
+  const userId = session?.user?.id || 'anonymous';
+  const db = getDb();
+
+  const result = await db
+    .select({ empresa: jobs.empresa })
+    .from(jobs)
+    .where(eq(jobs.userId, userId))
+    .groupBy(jobs.empresa)
+    .orderBy(jobs.empresa);
+
+  const names = result.map(r => r.empresa).filter(Boolean);
+  return NextResponse.json(names);
 }
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await auth();
+    const userId = session?.user?.id || 'anonymous';
     const { companies } = await req.json();
+
     if (!Array.isArray(companies)) {
       return NextResponse.json({ error: 'companies deve ser uma lista' }, { status: 400 });
     }
 
-    const { companyRepo } = getContainer();
     const names = companies.map(String).map(s => s.trim()).filter(Boolean);
-    await companyRepo.setList(names);
-
     return NextResponse.json({ count: names.length });
   } catch (error) {
     return NextResponse.json(

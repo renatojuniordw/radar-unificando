@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server';
-import { getContainer } from '@/lib/di/container';
+import { getDb } from '@/lib/infrastructure/db/client';
+import { pipelineRuns } from '@/lib/infrastructure/db/schema';
+import { eq } from 'drizzle-orm';
+import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import type { ProgressEvent } from '@/types';
 
 export async function GET(req: NextRequest) {
@@ -10,25 +13,30 @@ export async function GET(req: NextRequest) {
     return new Response('runId é obrigatório', { status: 400 });
   }
 
-  const { progressEmitter, runRepo } = getContainer();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
       const send = (event: ProgressEvent) => {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
-        } catch { /* stream closed */ }
+        } catch { /* closed */ }
       };
 
       const unsubscribe = progressEmitter.on(runId, send);
 
-      runRepo.findById(runId).then((run) => {
-        if (run && (run.status === 'completed' || run.status === 'failed' || run.status === 'cancelled')) {
-          send({ type: 'pipeline_complete', message: `Pipeline ${run.status}` });
-          unsubscribe();
-          try { controller.close(); } catch { }
-        }
-      });
+      // Check if run already completed
+      const db = getDb();
+      db.select()
+        .from(pipelineRuns)
+        .where(eq(pipelineRuns.id, runId))
+        .limit(1)
+        .then((runs) => {
+          if (runs.length > 0 && ['completed', 'failed', 'cancelled'].includes(runs[0].status)) {
+            send({ type: 'pipeline_complete', message: `Pipeline ${runs[0].status}` });
+            unsubscribe();
+            try { controller.close(); } catch { }
+          }
+        });
 
       const keepAlive = setInterval(() => {
         try { controller.enqueue(encoder.encode(': keepalive\n\n')); } catch { clearInterval(keepAlive); }

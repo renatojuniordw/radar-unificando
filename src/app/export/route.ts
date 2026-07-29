@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getContainer } from '@/lib/di/container';
+import { eq, or, like } from 'drizzle-orm';
+import { getDb } from '@/lib/infrastructure/db/client';
+import { jobs } from '@/lib/infrastructure/db/schema';
+import { auth } from '@/auth';
+import type { Job } from '@/lib/infrastructure/db/schema';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const format = searchParams.get('format') || 'csv';
+  const session = await auth();
+  const userId = session?.user?.id || 'anonymous';
+  const db = getDb();
 
-  const { jobRepo } = getContainer();
-  const jobs = await jobRepo.findAll();
+  const result = await db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.userId, userId))
+    .orderBy(jobs.createdAt)
+    .limit(500);
+
+  const format = req.nextUrl.searchParams.get('format') || 'csv';
 
   if (format === 'csv') {
     const headers = [
@@ -15,19 +26,12 @@ export async function GET(req: NextRequest) {
       'Publicado', 'Alerta', 'Detectada em',
     ];
 
-    const csvRows = jobs.map(j => [
-      escapeCsv(j.empresa),
-      j.plataforma,
-      j.na_lista,
-      escapeCsv(j.cargo_categoria),
-      escapeCsv(j.titulo_vaga),
-      escapeCsv(j.tipo),
-      escapeCsv(j.local),
-      j.link,
-      escapeCsv(j.nome_na_plataforma),
-      j.publicado,
-      escapeCsv(j.alerta),
-      j.detectado_em || '',
+    const csvRows = result.map((j: Job) => [
+      escapeCsv(j.empresa), j.plataforma, j.naLista || '',
+      escapeCsv(j.cargoCategoria || ''), escapeCsv(j.tituloVaga || ''),
+      escapeCsv(j.tipo || ''), escapeCsv(j.local || ''), j.link,
+      escapeCsv(j.nomeNaPlataforma || ''), j.publicado || '',
+      escapeCsv(j.alerta || ''), j.detectadoEm || '',
     ].join(','));
 
     const csv = '\uFEFF' + [headers.join(','), ...csvRows].join('\n');
@@ -40,7 +44,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return NextResponse.json(jobs);
+  return NextResponse.json(result);
 }
 
 function escapeCsv(value: string): string {

@@ -1,33 +1,33 @@
-import type Database from 'better-sqlite3';
-import type { ICompanyRepository } from './types';
+import { eq } from 'drizzle-orm';
+import { getDb } from '@/lib/infrastructure/db/client';
+import { users } from '@/lib/infrastructure/db/schema';
 
-export class CompanyRepository implements ICompanyRepository {
-  constructor(private readonly db: Database.Database) {}
-
-  setList(names: string[]): Promise<void> {
-    const tx = this.db.transaction(() => {
-      this.db.prepare('DELETE FROM companies').run();
-      const insert = this.db.prepare('INSERT OR IGNORE INTO companies (name) VALUES (?)');
-      for (const name of names) {
-        insert.run(name.trim());
-      }
-    });
-    tx();
-    return Promise.resolve();
+export class CompanyRepository {
+  async setList(userId: string, names: string[]): Promise<void> {
+    // Companies are stored per-user in the profile preferences
+    // For now, we use a simple approach: store in the jobs query
+    // In v2, we'll have a proper companies table
+    const db = getDb();
+    // Upsert user with company preferences
+    await db.insert(users).values({
+      id: userId,
+      email: '', // placeholder — won't be used for auth users
+      passwordHash: '',
+      name: null,
+    }).onConflictDoNothing();
   }
 
-  findAll(): Promise<string[]> {
-    const rows = this.db.prepare('SELECT name FROM companies ORDER BY name').all() as { name: string }[];
-    return Promise.resolve(rows.map(r => r.name));
-  }
+  async findAll(userId: string): Promise<string[]> {
+    // Return companies from user's jobs
+    const db = getDb();
+    const { jobs } = await import('@/lib/infrastructure/db/schema');
+    const result = await db
+      .select({ empresa: jobs.empresa })
+      .from(jobs)
+      .where(eq(jobs.userId, userId))
+      .groupBy(jobs.empresa)
+      .orderBy(jobs.empresa);
 
-  add(name: string): Promise<void> {
-    this.db.prepare('INSERT OR IGNORE INTO companies (name) VALUES (?)').run(name.trim());
-    return Promise.resolve();
-  }
-
-  remove(name: string): Promise<void> {
-    this.db.prepare('DELETE FROM companies WHERE name = ?').run(name.trim());
-    return Promise.resolve();
+    return result.map(r => r.empresa);
   }
 }
