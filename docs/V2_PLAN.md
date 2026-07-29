@@ -870,7 +870,293 @@ Tarefas:
 
 ---
 
-## 16. Perguntas Pendentes
+## 16. Segurança + Docker
+
+### 16.1 Diagnóstico Atual (v1)
+
+| Item | Status | Risco |
+|------|--------|-------|
+| Docker: sem resource limits | ❌ Sem `deploy.resources` | Médio — container pode consumir todo o host |
+| Docker: sem `.dockerignore` | ❌ Não existe | Médio — build envia cache/node_modules |
+| Env: só `DATABASE_URL` | ❌ Sem `AUTH_SECRET`, sem validação | Alto — v2 precisa de segredos |
+| Headers de segurança | ❌ Nenhum | Alto — sem CSP, XSS protection |
+| CORS | ❌ Não configurado | Médio — APIs abertas |
+| Rate limiting | ❌ Não existe | Alto — pipeline pode abusar APIs externas |
+| Input sanitization | ❌ Mínima | Médio |
+
+### 16.2 Correções — Docker
+
+#### Dockerfile (otimizado)
+
+```dockerfile
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --frozen-lockfile --no-audit --no-fund
+
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=11010
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+RUN apk del --no-cache python3 build-base git 2>/dev/null || true
+
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 11010
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
+  CMD wget -qO- http://localhost:11010/api/health || exit 1
+
+CMD ["node", "server.js"]
+```
+
+#### `.dockerignore`
+
+```
+node_modules
+.next
+.git
+.gitignore
+README.md
+docs/
+data/
+.env
+.env.local
+*.md
+*.log
+.DS_Store
+```
+
+#### Docker Compose (v2 — PostgreSQL + limites)
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: radar_unificando
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER:-radar}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-radar} -d radar_unificando"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+    networks:
+      - internal
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "11010:11010"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-radar}:${DB_PASSWORD}@postgres:5432/radar_unificando
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: http://localhost:11010
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:11010/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  internal:
+    driver: bridge
+```
+
+### 16.3 Correções — Application
+
+#### Security Headers (Next.js `next.config.ts`)
+
+```typescript
+import type { NextConfig } from 'next';
+
+const securityHeaders = [
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-XSS-Protection', value: '1; mode=block' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+];
+
+const nextConfig: NextConfig = {
+  output: 'standalone',
+  serverExternalPackages: ['better-sqlite3'],
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: '/(.*)', headers: securityHeaders }];
+  },
+};
+
+export default nextConfig;
+```
+
+#### Rate Limiting
+
+```typescript
+// lib/infrastructure/security/rate-limiter.ts
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+export class RateLimiter {
+  private store = new Map<string, RateLimitEntry>();
+
+  constructor(
+    private windowMs: number = 60_000,
+    private maxRequests: number = 60
+  ) {}
+
+  check(key: string): { allowed: boolean; remaining: number; resetAt: number } {
+    const now = Date.now();
+    const entry = this.store.get(key);
+
+    if (!entry || now > entry.resetAt) {
+      this.store.set(key, { count: 1, resetAt: now + this.windowMs });
+      return { allowed: true, remaining: this.maxRequests - 1, resetAt: now + this.windowMs };
+    }
+
+    entry.count++;
+    return {
+      allowed: entry.count <= this.maxRequests,
+      remaining: Math.max(0, this.maxRequests - entry.count),
+      resetAt: entry.resetAt,
+    };
+  }
+}
+```
+
+#### Taxas por Operação
+
+| Operação | Janela | Limite | Chave |
+|----------|--------|--------|-------|
+| Pipeline | 5 min | 1 req | `user_id` |
+| Login | 1 min | 5 tentativas | IP |
+| API geral | 1 min | 60 req | IP |
+| Upload currículo | 1 hora | 10 req | `user_id` |
+| Export CSV | 1 min | 10 req | `user_id` |
+
+#### Validação de Environment
+
+```typescript
+// lib/infrastructure/security/env.ts
+export function validateEnv(): void {
+  const required = ['DATABASE_URL', 'AUTH_SECRET'];
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Variáveis de ambiente obrigatórias: ${missing.join(', ')}. ` +
+      `Copie .env.example para .env e preencha os valores.`
+    );
+  }
+
+  if (process.env.AUTH_SECRET === 'generate-with-openssl-rand-base64-64') {
+    console.warn('[SECURITY] AUTH_SECRET está com valor padrão. Gere um valor seguro.');
+  }
+}
+```
+
+#### `.env.example` (v2)
+
+```bash
+DB_USER=radar
+DB_PASSWORD= # openssl rand -base64 32
+DB_NAME=radar_unificando
+AUTH_SECRET= # openssl rand -base64 64
+AUTH_URL=http://localhost:11010
+# GEMINI_API_KEY= # opcional
+```
+
+### 16.4 Resource Limits — Justificativa
+
+| Serviço | Memória | CPU | Razão |
+|---------|---------|-----|-------|
+| postgres | 256M máx / 128M res | 1.0 | Banco pequeno (~1000 vagas por usuário) |
+| app | 512M máx / 256M res | 1.0 | Next.js + scrapers (AI é client-side) |
+
+### 16.5 Matriz Antes vs Depois
+
+| Risco | v1 | v2 |
+|-------|----|-----|
+| Container consome todo o host | ❌ | ✅ 512M máx + CPU limit |
+| Build lento/envia lixo | ❌ | ✅ .dockerignore + no-audit |
+| Segredos em texto plano | ❌ | ✅ .env ignorado + validação |
+| XSS via input usuário | ❌ | ✅ Security headers |
+| Força bruta login | ❌ (sem auth) | ✅ Rate limit |
+| Leak de info servidor | ❌ | ✅ poweredByHeader: false |
+| Pipeline abusa APIs | ❌ | ✅ Rate limit por operação |
+| Vazamento memória pipeline | ❌ | ✅ Memory limit + timeout |
+
+### 16.6 Arquivos a Criar/Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `Dockerfile` | Modificar (apagar build deps) |
+| `.dockerignore` | Criar |
+| `docker-compose.yml` | Reescrever (PostgreSQL + limits) |
+| `.env.example` | Atualizar (novas vars) |
+| `.gitignore` | Adicionar `.env`, `pgdata/` |
+| `next.config.ts` | Adicionar `headers()` + `poweredByHeader` |
+| `middleware.ts` | Criar (rate limiting + headers) |
+| `src/lib/infrastructure/security/rate-limiter.ts` | Criar |
+| `src/lib/infrastructure/security/env.ts` | Criar |
+| `docs/SECURITY.md` | Criar |
+
+---
+
+## 17. Perguntas Pendentes
 
 - [ ] **Gemini API**: colocar como feature opcional (usuário cola a própria key) ou pular por enquanto?
 - [ ] **LinkedIn export**: o parse de PDF do LinkedIn funciona bem com `pdf.js`? Testar com amostras reais

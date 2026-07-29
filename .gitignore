@@ -3,5 +3,6 @@ node_modules/
 data/
 .env
 .env.local
+pgdata/
 *.tsbuildinfo
 next-env.d.ts
