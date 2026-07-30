@@ -7,7 +7,7 @@ export class RateLimiter {
   private store = new Map<string, RateLimitEntry>();
 
   constructor(
-    private windowMs: number = 60_000,
+    readonly windowMs: number = 60_000,
     private maxRequests: number = 60
   ) {}
 

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     runPipeline(runId, userId, companies || [], queries || [], isLoggedIn);
 
-    return NextResponse.json({ runId });
+    return NextResponse.json({ runId, cooldownSeconds: Math.ceil(pipelineLimiter.windowMs / 1000) });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Erro ao iniciar pipeline' },

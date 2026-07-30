@@ -140,7 +140,12 @@ export default function HomePage() {
         return;
       }
 
-      const { runId: id } = await res.json();
+      const { runId: id, cooldownSeconds: cd } = await res.json();
+      if (cd) {
+        const endsAt = Date.now() + cd * 1000;
+        AnonymousStorage.setCooldownEnd(endsAt);
+        setCooldown(cd);
+      }
       const evtSource = new EventSource(`/api/pipeline/stream?runId=${id}`);
 
       evtSource.onmessage = (event) => {
