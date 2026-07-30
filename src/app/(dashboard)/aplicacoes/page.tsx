@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Container, Typography, Box, Paper, Button, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, Chip, Skeleton, Select, MenuItem,
+  Container, Typography, Dialog, DialogTitle,
+  DialogContent, DialogActions, Select, MenuItem,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { getStageLabel, getStageGroups, getAllowedTransitions, type Stage } from '@/lib/core/application/state-machine';
@@ -30,26 +29,31 @@ function DraggableCard({ app, stage }: { app: Application; stage: Stage }) {
   } : {};
 
   return (
-    <Paper
+    <div
       ref={setNodeRef}
-      variant="outlined"
       {...listeners}
       {...attributes}
-      sx={{ p: 1, mb: 1, bgcolor: '#020617', color: 'white', cursor: 'grab', ...style }}
+      style={{
+        padding: 8, marginBottom: 8,
+        backgroundColor: '#020617', color: 'white',
+        cursor: 'grab', border: '2px solid #020617',
+        boxShadow: '4px 4px 0px #000',
+        ...style,
+      }}
     >
-      <Typography variant="caption" sx={{ fontWeight: 700, display: 'block' }}>
+      <div style={{ fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
         {app.job?.empresa || 'Empresa'}
-      </Typography>
-      <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: 10 }}>
+      </div>
+      <div style={{ color: '#94a3b8', fontSize: '0.55rem', marginTop: 2 }}>
         {app.job?.tituloVaga || 'Vaga'}
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
+      </div>
+      <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
         <Select
           size="small"
           value={stage}
           onClick={e => e.stopPropagation()}
           onChange={() => {}}
-          sx={{ color: '#ccff00', fontSize: 10, height: 24, '& .MuiSelect-select': { py: 0 } }}
+          sx={{ color: '#ccff00', fontSize: 10, height: 24, '& .MuiSelect-select': { py: 0 }, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#334155' } }}
         >
           {getAllowedTransitions(stage).map(s => (
             <MenuItem key={s} value={s} sx={{ fontSize: 12 }}>
@@ -57,8 +61,8 @@ function DraggableCard({ app, stage }: { app: Application; stage: Stage }) {
             </MenuItem>
           ))}
         </Select>
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 }
 
@@ -66,23 +70,24 @@ function DroppableColumn({ stage, apps, label }: { stage: Stage; apps: Applicati
   const { isOver, setNodeRef } = useDroppable({ id: stage });
 
   return (
-    <Paper
+    <div
       ref={setNodeRef}
-      variant="outlined"
-      sx={{
-        p: 1.5, mb: 1, minHeight: 80,
-        bgcolor: isOver ? 'action.hover' : apps.length > 0 ? 'background.paper' : 'grey.50',
+      style={{
+        padding: 12, marginBottom: 8, minHeight: 80,
+        border: '4px solid #020617',
+        backgroundColor: isOver ? '#f1f5f9' : '#ffffff',
         transition: 'background-color 0.2s',
+        boxShadow: '4px 4px 0px #000',
       }}
     >
-      <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 1, color: 'text.secondary' }}>
+      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
         {label}
-        <Chip label={apps.length} size="small" sx={{ ml: 1, height: 18, fontSize: 10 }} />
-      </Typography>
+        <span style={{ border: '2px solid #020617', padding: '0 6px', fontSize: '0.5rem' }}>{apps.length}</span>
+      </div>
       {apps.map(app => (
         <DraggableCard key={app.id} app={app} stage={stage} />
       ))}
-    </Paper>
+    </div>
   );
 }
 
@@ -163,60 +168,102 @@ export default function AplicacoesPage() {
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 1 }} />
+        <div style={{ height: 400, border: '4px solid #e2e8f0', background: '#f1f5f9' }} />
       </Container>
     );
   }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 900 }}>CANDIDATURAS</Typography>
-          <Typography variant="body2" color="text.secondary">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <Typography variant="h4" sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+            CANDIDATURAS
+          </Typography>
+          <Typography sx={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
             {apps.length} candidaturas em andamento
           </Typography>
-        </Box>
-        <Button variant="contained" color="warning" startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
-          NOVA
-        </Button>
-      </Box>
+        </div>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="btn-neon"
+          style={{ padding: '10px 20px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          + NOVA
+        </button>
+      </div>
 
       {apps.length === 0 ? (
-        <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="body1" color="text.secondary">
+        <div className="card-brutalist" style={{ padding: 32, textAlign: 'center' }}>
+          <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
             Você ainda não se candidatou a nenhuma vaga. Encontre vagas na página inicial.
-          </Typography>
-        </Paper>
+          </p>
+        </div>
       ) : (
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <Box sx={{ display: 'flex', gap: 2, overflow: 'auto', pb: 2, minHeight: 400 }}>
+          <div style={{ display: 'flex', gap: 16, overflow: 'auto', paddingBottom: 16, minHeight: 400 }}>
             {Object.entries(stageGroups).map(([group, stages]) => (
-              <Box key={group} sx={{ minWidth: 260, maxWidth: 260 }}>
-                <Typography variant="caption" sx={{
+              <div key={group} style={{ minWidth: 260, maxWidth: 260 }}>
+                <div style={{
                   fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: 'text.secondary', display: 'block', mb: 1,
+                  color: '#64748b', marginBottom: 8, fontFamily: 'ui-monospace, monospace', fontSize: '0.6rem',
                 }}>
                   {group}
-                </Typography>
+                </div>
                 {stages.map(stage => (
                   <DroppableColumn key={stage} stage={stage} apps={getAppsByStage(stage)} label={getStageLabel(stage)} />
                 ))}
-              </Box>
+              </div>
             ))}
-          </Box>
+          </div>
         </DndContext>
       )}
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>Nova Candidatura</DialogTitle>
-        <DialogContent>
-          <TextField fullWidth size="small" value={selectedJobId} onChange={e => setSelectedJobId(e.target.value)} placeholder="ID da vaga" sx={{ mt: 1 }} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button onClick={handleCreate} variant="contained">Adicionar</Button>
-        </DialogActions>
+        <div className="card-brutalist" style={{ padding: 0 }}>
+          <div style={{ padding: '16px 20px', borderBottom: '2px solid #020617' }}>
+            <h3 style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.85rem', margin: 0 }}>Nova Candidatura</h3>
+          </div>
+          <div style={{ padding: 16 }}>
+            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
+              ID da vaga
+            </label>
+            <input
+              type="text"
+              value={selectedJobId}
+              onChange={e => setSelectedJobId(e.target.value)}
+              placeholder="ID da vaga"
+              style={{
+                width: '100%',
+                border: '4px solid #020617',
+                padding: '10px 12px',
+                fontSize: '0.85rem',
+                fontFamily: 'inherit',
+                boxShadow: '4px 4px 0px #000',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: 16, borderTop: '2px solid #f1f5f9' }}>
+            <button
+              onClick={() => setDialogOpen(false)}
+              style={{
+                border: '2px solid #020617', background: 'none', fontWeight: 900,
+                padding: '8px 16px', cursor: 'pointer', fontSize: '0.65rem',
+                textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleCreate}
+              className="btn-neon"
+              style={{ padding: '8px 16px', fontSize: '0.65rem' }}
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
       </Dialog>
     </Container>
   );

@@ -6,9 +6,12 @@ import { Box, Chip, Typography } from '@mui/material';
 interface Props {
   value: string[];
   onChange: (cargos: string[]) => void;
+  autoFocus?: boolean;
+  dark?: boolean;
+  compact?: boolean;
 }
 
-export function CargoInput({ value, onChange }: Props) {
+export function CargoInput({ value, onChange, autoFocus, dark, compact }: Props) {
   const [input, setInput] = useState('');
 
   function add(v: string) {
@@ -35,24 +38,30 @@ export function CargoInput({ value, onChange }: Props) {
 
   return (
     <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-        Cargos que você quer buscar (opcional). Deixe vazio para usar os termos padrão.
-      </Typography>
-      <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 2 }}>
-        Digite o cargo e pressione <b>Enter</b> ou <b>vírgula</b> para adicionar.{' '}
-        Ex: <b>Analista de Dados, Data Analyst, Growth</b>
-      </Typography>
+      {!compact && (
+        <>
+          <Typography variant="body2" sx={{ mb: 0.5, color: dark ? '#94a3b8' : 'text.secondary', fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            Cargos (opcional)
+          </Typography>
+          <Typography variant="caption" sx={{ display: 'block', mb: 2, color: dark ? '#64748b' : 'text.disabled', fontFamily: 'ui-monospace, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Enter ou vírgula para adicionar. Ex: Analista de Dados, Data Analyst, Growth
+          </Typography>
+        </>
+      )}
       <Box
         sx={{
           display: 'flex', flexWrap: 'wrap', gap: 0.5, p: 1.5,
-          border: 1, borderColor: 'divider', borderRadius: 1,
-          minHeight: 56, alignItems: 'center', mb: 2, bgcolor: 'background.paper',
+          border: '4px solid', borderColor: dark ? '#334155' : '#020617',
+          borderRadius: 0,
+          boxShadow: dark ? 'none' : '4px 4px 0px #000',
+          minHeight: 56, alignItems: 'center', mb: compact ? 0 : 2,
+          bgcolor: dark ? '#0f172a' : 'background.paper',
         }}
       >
         {value.map(cargo => (
           <Chip
             key={cargo} label={cargo} onDelete={() => remove(cargo)}
-            size="small" variant="outlined" color="primary"
+            size="small" variant="outlined" color="warning"
             sx={{ fontWeight: 700, fontSize: 11 }}
           />
         ))}
@@ -65,7 +74,7 @@ export function CargoInput({ value, onChange }: Props) {
           style={{
             border: 'none', outline: 'none', flex: 1, minWidth: 120,
             fontFamily: 'inherit', fontSize: '0.875rem', padding: '4px 0',
-            background: 'transparent',
+            background: 'transparent', color: dark ? '#e2e8f0' : 'inherit',
           }}
         />
       </Box>

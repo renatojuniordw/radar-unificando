@@ -15,7 +15,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Radar Unificando — Vagas Gupy + InHire',
-  description: 'Busca automática de vagas 100% remotas em Gupy e InHire para cargos de Dados, BI, Business e Growth.',
+  description: 'Busca automática de vagas em Gupy e InHire para cargos de Dados, BI, Business e Growth.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

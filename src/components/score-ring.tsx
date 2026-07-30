@@ -1,12 +1,14 @@
 'use client';
 
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, Tooltip } from '@mui/material';
 
 interface Props {
   score: number;
   size?: number;
   thickness?: number;
   showLabel?: boolean;
+  clickable?: boolean;
+  onClick?: () => void;
 }
 
 function getScoreColor(score: number): string {
@@ -15,11 +17,30 @@ function getScoreColor(score: number): string {
   return '#dc2626';
 }
 
-export function ScoreRing({ score, size = 60, thickness = 4, showLabel = true }: Props) {
+function getScoreLabel(score: number): string {
+  if (score >= 80) return 'Match excelente';
+  if (score >= 60) return 'Bom match';
+  if (score >= 40) return 'Match médio';
+  return 'Match baixo';
+}
+
+export function ScoreRing({ score, size = 60, thickness = 4, showLabel = true, clickable, onClick }: Props) {
   const color = getScoreColor(score);
 
-  return (
-    <Box sx={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+  const content = (
+    <Box
+      sx={{
+        position: 'relative', display: 'inline-flex',
+        alignItems: 'center', justifyContent: 'center',
+        cursor: clickable ? 'pointer' : 'default',
+        transition: 'opacity 0.15s',
+        '&:hover': clickable ? { opacity: 0.8 } : {},
+      }}
+      onClick={clickable ? onClick : undefined}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); } : undefined}
+    >
       <CircularProgress
         variant="determinate"
         value={100}
@@ -43,4 +64,14 @@ export function ScoreRing({ score, size = 60, thickness = 4, showLabel = true }:
       )}
     </Box>
   );
+
+  if (clickable) {
+    return (
+      <Tooltip title={getScoreLabel(score)} arrow placement="top">
+        {content}
+      </Tooltip>
+    );
+  }
+
+  return content;
 }

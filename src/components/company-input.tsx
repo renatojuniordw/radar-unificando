@@ -6,9 +6,12 @@ import { Box, Chip, Typography } from '@mui/material';
 interface Props {
   value: string[];
   onChange: (companies: string[]) => void;
+  autoFocus?: boolean;
+  dark?: boolean;
+  compact?: boolean;
 }
 
-export function CompanyInput({ value, onChange }: Props) {
+export function CompanyInput({ value, onChange, autoFocus, dark, compact }: Props) {
   const [input, setInput] = useState('');
 
   function add(v: string) {
@@ -35,18 +38,24 @@ export function CompanyInput({ value, onChange }: Props) {
 
   return (
     <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-        Empresas que você quer monitorar (opcional). Deixe vazio para buscar todas.
-      </Typography>
-      <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 2 }}>
-        Digite o nome e pressione <b>Enter</b> ou <b>vírgula</b> para adicionar.{' '}
-        Clique no <b>×</b> para remover. <b>Backspace</b> no campo vazio apaga o último.
-      </Typography>
+      {!compact && (
+        <>
+          <Typography variant="body2" sx={{ mb: 0.5, color: dark ? '#94a3b8' : 'text.secondary', fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            Empresas (opcional)
+          </Typography>
+          <Typography variant="caption" sx={{ display: 'block', mb: 2, color: dark ? '#64748b' : 'text.disabled', fontFamily: 'ui-monospace, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Enter ou vírgula para adicionar. Deixe vazio para buscar todas.
+          </Typography>
+        </>
+      )}
       <Box
         sx={{
           display: 'flex', flexWrap: 'wrap', gap: 0.5, p: 1.5,
-          border: 1, borderColor: 'divider', borderRadius: 1,
-          minHeight: 56, alignItems: 'center', mb: 2, bgcolor: 'background.paper',
+          border: '4px solid', borderColor: dark ? '#334155' : '#020617',
+          borderRadius: 0,
+          boxShadow: dark ? 'none' : '4px 4px 0px #000',
+          minHeight: 56, alignItems: 'center', mb: compact ? 0 : 2,
+          bgcolor: dark ? '#0f172a' : 'background.paper',
         }}
       >
         {value.map(emp => (
@@ -62,10 +71,11 @@ export function CompanyInput({ value, onChange }: Props) {
           onKeyDown={handleKeyDown}
           onBlur={() => { if (input.trim()) { add(input); setInput(''); } }}
           placeholder={value.length === 0 ? 'Ambev, Nubank, BRQ...' : ''}
+          autoFocus={autoFocus}
           style={{
             border: 'none', outline: 'none', flex: 1, minWidth: 120,
             fontFamily: 'inherit', fontSize: '0.875rem', padding: '4px 0',
-            background: 'transparent',
+            background: 'transparent', color: dark ? '#e2e8f0' : 'inherit',
           }}
         />
       </Box>

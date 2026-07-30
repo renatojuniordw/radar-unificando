@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import type { Session } from 'next-auth';
 import {
-  Box, Typography, TextField, Button, Alert, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Chip, Select, MenuItem,
-  InputAdornment, TablePagination, Skeleton, Autocomplete,
+  Box, Typography, TextField, Button,
+  Select, MenuItem, InputAdornment, Autocomplete,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
 import { ScoreRing } from './score-ring';
 
 interface Vaga {
@@ -93,17 +92,17 @@ export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick,
   const paginatedVagas = vagasFiltradas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Paper variant="outlined" sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 900 }}>
+    <div className="card-brutalist" style={{ padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 16 }}>
+        <Typography sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '1.1rem' }}>
           {vagasFiltradas.length} VAGAS ENCONTRADAS
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Select
             value={filtroPlataforma}
             onChange={e => { setFiltroPlataforma(e.target.value); handleFilterChange({ plataforma: e.target.value }); }}
-            displayEmpty size="small" sx={{ minWidth: 120 }}
+            displayEmpty size="small" sx={{ minWidth: 120, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 2 } }}
           >
             <MenuItem value="">TODAS</MenuItem>
             <MenuItem value="Gupy">GUPY</MenuItem>
@@ -146,126 +145,241 @@ export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick,
             disableClearable={false}
           />
 
-          <Box component="form" onSubmit={handleSearch} sx={{ display: 'flex', gap: 0 }}>
+          <div style={{ display: 'flex', gap: 0 }}>
             <TextField
               size="small" value={filtroBusca}
               onChange={e => setFiltroBusca(e.target.value)}
               placeholder="Buscar..."
-              InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-              sx={{ width: 180 }}
+              slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
+              sx={{ width: 160 }}
             />
-            <Button type="submit" variant="contained" size="small" sx={{ borderRadius: '0 4px 4px 0' }}>
+            <Button type="submit" variant="contained" size="small" sx={{ borderRadius: 0, border: '4px solid #020617', boxShadow: '2px 2px 0px #000', fontWeight: 900 }}>
               IR
             </Button>
-          </Box>
+          </div>
+        </div>
+      </div>
 
-          <Button
-            variant="outlined" size="small"
-            onClick={onExportCsv} disabled={vagas.length === 0}
-            startIcon={<FileDownloadIcon />}
+      {vagas.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <button
+            onClick={onExportCsv}
+            style={{
+              border: '2px solid #020617',
+              background: 'none',
+              fontWeight: 900,
+              fontSize: 10,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              padding: '4px 12px',
+              cursor: 'pointer',
+              fontFamily: 'ui-monospace, monospace',
+            }}
           >
-            CSV
-          </Button>
-        </Box>
-      </Box>
+            ↓ EXPORTAR CSV
+          </button>
+        </div>
+      )}
 
       {loading ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {[1, 2, 3, 4, 5].map(i => (<Skeleton key={i} variant="rectangular" height={40} sx={{ borderRadius: 0.5 }} />))}
-        </Box>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} style={{ height: 40, background: '#f1f5f9', border: '2px solid #e2e8f0', animation: 'pulse-glow 1.5s infinite' }} />
+          ))}
+        </div>
       ) : vagasFiltradas.length === 0 ? (
-        <Alert severity="info" sx={{ borderRadius: 1 }}>
-          Nenhuma vaga encontrada{filtroEmpresa || filtroModalidade ? ' com esse filtro' : ''}. Execute o pipeline para buscar vagas.
-        </Alert>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748b' }}>
+          <SearchOffIcon style={{ fontSize: 48, marginBottom: 16, opacity: 0.4 }} />
+          <Typography sx={{ fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
+            Nenhuma vaga encontrada
+          </Typography>
+          <Typography sx={{ marginBottom: 16, maxWidth: 400, margin: '0 auto 16px', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            {vagas.length === 0
+              ? 'Preencha os campos acima e clique em EXECUTAR BUSCA para começar.'
+              : 'Tente remover alguns filtros ou buscar por termos diferentes.'}
+          </Typography>
+          {vagas.length === 0 && (
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {['Analista de Dados', 'Data Engineer', 'Growth', 'BI Analyst'].map(s => (
+                <span key={s} style={{
+                  border: '2px solid #020617',
+                  padding: '2px 8px',
+                  fontWeight: 700,
+                  fontSize: '0.6rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em',
+                  fontFamily: 'ui-monospace, monospace',
+                }}>
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <>
-          <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: '#020617' }}>
-                  <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>EMPRESA</TableCell>
-                  <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>PLAT</TableCell>
-                  <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>CARGO</TableCell>
-                  <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>TÍTULO</TableCell>
-                  <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>LOCAL</TableCell>
-                  <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>LINK</TableCell>
-                  {session && <TableCell sx={{ color: '#ccff00', fontWeight: 700 }}>SCORE</TableCell>}
-                </TableRow>
-              </TableHead>
-              <TableBody>
+          <div style={{ overflowX: 'auto', border: '4px solid #020617' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#020617' }}>
+                  {['EMPRESA', 'PLAT', 'CARGO', 'TÍTULO', 'LOCAL', 'LINK', ...(session ? ['SCORE'] : [])].map(h => (
+                    <th key={h} style={{ color: '#ccff00', fontWeight: 700, textAlign: 'left', padding: '8px 12px', textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
                 {paginatedVagas.map((vaga, i) => {
                   const vagaId = vaga.id;
                   const score = vagaId ? scores[String(vagaId)] : undefined;
                   return (
-                    <TableRow
+                    <tr
                       key={`${vaga.link}-${i}`}
-                      hover
-                      sx={{
-                        bgcolor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.05)' : 'inherit',
-                        '&:hover': { bgcolor: 'action.hover' },
+                      style={{
+                        backgroundColor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.05)' : 'transparent',
+                        borderBottom: '2px solid #f1f5f9',
                       }}
                     >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <td style={{ padding: '8px 12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           {vaga.na_lista === 'Sim' && (
-                            <Chip label="LISTA" size="small" sx={{
-                              bgcolor: '#020617', color: '#ccff00', fontWeight: 900, fontSize: 10,
-                              height: 20, borderRadius: 0.5, '& .MuiChip-label': { px: 0.5 },
-                            }} />
+                            <span style={{
+                              backgroundColor: '#020617',
+                              color: '#ccff00',
+                              fontWeight: 900,
+                              fontSize: '0.45rem',
+                              padding: '1px 4px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}>
+                              LISTA
+                            </span>
                           )}
-                          {vaga.empresa}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={vaga.plataforma} size="small" variant="outlined"
-                          color={vaga.plataforma === 'Gupy' ? 'warning' : 'default'}
-                          sx={{ fontWeight: 700, fontSize: 11 }}
-                        />
-                        <Typography variant="caption" display="block" color="text.secondary" sx={{ fontSize: 9 }}>
+                          <span style={{ fontWeight: 700 }}>{vaga.empresa}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{
+                          border: '2px solid',
+                          borderColor: vaga.plataforma === 'Gupy' ? '#ccff00' : '#94a3b8',
+                          color: vaga.plataforma === 'Gupy' ? '#020617' : '#64748b',
+                          fontWeight: 700,
+                          fontSize: '0.55rem',
+                          padding: '1px 6px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.02em',
+                        }}>
+                          {vaga.plataforma}
+                        </span>
+                        <div style={{ fontSize: '0.45rem', color: '#94a3b8', marginTop: 2 }}>
                           {vaga.nome_na_plataforma}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem' }}>{vaga.cargo_categoria}</TableCell>
-                      <TableCell sx={{ fontSize: '0.8rem' }}>{vaga.titulo_vaga}</TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem' }}>{vaga.local}</TableCell>
-                      <TableCell>
-                        <Button href={vaga.link} target="_blank" size="small" variant="contained"
-                          sx={{ fontSize: 10, fontWeight: 700, py: 0.25, px: 1 }}>
+                        </div>
+                      </td>
+                      <td style={{ padding: '8px 12px', fontSize: '0.65rem' }}>{vaga.cargo_categoria}</td>
+                      <td style={{ padding: '8px 12px', fontSize: '0.7rem' }}>{vaga.titulo_vaga}</td>
+                      <td style={{ padding: '8px 12px', fontSize: '0.65rem' }}>{vaga.local}</td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <a
+                          href={vaga.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            backgroundColor: '#020617',
+                            color: '#ccff00',
+                            fontWeight: 900,
+                            fontSize: '0.55rem',
+                            padding: '4px 8px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            textDecoration: 'none',
+                            border: '2px solid #020617',
+                            fontFamily: 'ui-monospace, monospace',
+                          }}
+                        >
                           VER
-                        </Button>
-                      </TableCell>
+                        </a>
+                      </td>
                       {session && (
-                        <TableCell>
+                        <td style={{ padding: '8px 12px' }}>
                           {score ? (
-                            <Box
+                            <ScoreRing
+                              score={score}
+                              size={28}
+                              thickness={3}
+                              clickable
                               onClick={() => onJobClick({ id: String(vagaId), empresa: vaga.empresa, titulo: vaga.titulo_vaga, score })}
-                              sx={{ cursor: 'pointer', display: 'inline-flex' }}
-                            >
-                              <ScoreRing score={score} size={28} thickness={3} />
-                            </Box>
+                            />
                           ) : (
-                            <Typography variant="caption" color="text.secondary">—</Typography>
+                            <span style={{ color: '#94a3b8' }}>—</span>
                           )}
-                        </TableCell>
+                        </td>
                       )}
-                    </TableRow>
+                    </tr>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              </tbody>
+            </table>
+          </div>
 
-          <TablePagination
-            component="div" count={vagasFiltradas.length} page={page}
-            onPageChange={(_, p) => setPage(p)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-            rowsPerPageOptions={[10, 20, 50, 100]}
-            labelRowsPerPage="Por página:"
-          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <span style={{ color: '#64748b' }}>Por página:</span>
+              <select
+                value={rowsPerPage}
+                onChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                style={{
+                  border: '2px solid #020617',
+                  fontWeight: 700,
+                  padding: '4px 8px',
+                  fontFamily: 'inherit',
+                  fontSize: '0.65rem',
+                  background: '#fff',
+                }}
+              >
+                {[10, 20, 50, 100].map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <span style={{ color: '#64748b' }}>{page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, vagasFiltradas.length)} de {vagasFiltradas.length}</span>
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                style={{
+                  border: '2px solid #020617',
+                  background: page === 0 ? '#f1f5f9' : '#fff',
+                  fontWeight: 900,
+                  padding: '4px 10px',
+                  cursor: page === 0 ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '0.65rem',
+                  opacity: page === 0 ? 0.5 : 1,
+                }}
+              >
+                ANTERIOR
+              </button>
+              <button
+                onClick={() => setPage(p => p + 1)}
+                disabled={(page + 1) * rowsPerPage >= vagasFiltradas.length}
+                style={{
+                  border: '2px solid #020617',
+                  background: (page + 1) * rowsPerPage >= vagasFiltradas.length ? '#f1f5f9' : '#fff',
+                  fontWeight: 900,
+                  padding: '4px 10px',
+                  cursor: (page + 1) * rowsPerPage >= vagasFiltradas.length ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '0.65rem',
+                  opacity: (page + 1) * rowsPerPage >= vagasFiltradas.length ? 0.5 : 1,
+                }}
+              >
+                PRÓXIMA
+              </button>
+            </div>
+          </div>
         </>
       )}
-    </Paper>
+    </div>
   );
 }

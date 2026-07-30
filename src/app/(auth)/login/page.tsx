@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography, TextField, Button, Alert } from '@mui/material';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -51,46 +50,88 @@ export default function LoginPage() {
   }
 
   return (
-    <Box>
-      <Typography variant="h2" sx={{ mb: 1, fontSize: '2rem' }}>ENTRAR</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-        Acesse sua conta para usar todos os recursos da plataforma.
-      </Typography>
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontWeight: 900, fontSize: '2rem', textTransform: 'uppercase', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+          ENTRAR
+        </h1>
+        <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', margin: 0 }}>
+          Acesse sua conta para usar todos os recursos da plataforma.
+        </p>
+      </div>
 
-      {apiError && <Alert severity="error" sx={{ mb: 2 }}>{apiError}</Alert>}
+      <div className="card-brutalist" style={{ padding: 32 }}>
+        {apiError && (
+          <div style={{ border: '2px solid #dc2626', padding: 12, marginBottom: 16, backgroundColor: '#fef2f2' }}>
+            <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'ui-monospace, monospace', margin: 0 }}>{apiError}</p>
+          </div>
+        )}
 
-      <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          label="Email"
-          type="email"
-          fullWidth
-          required
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          error={!!errors.email}
-          helperText={errors.email}
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Senha"
-          type="password"
-          fullWidth
-          required
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          error={!!errors.password}
-          helperText={errors.password}
-          sx={{ mb: 3 }}
-        />
-        <Button type="submit" variant="contained" color="primary" fullWidth size="large" disabled={loading}>
-          {loading ? 'ENTRANDO...' : 'ENTRAR'}
-        </Button>
-      </Box>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                border: '4px solid #020617',
+                padding: '10px 12px',
+                fontSize: '0.85rem',
+                fontFamily: 'inherit',
+                boxShadow: '4px 4px 0px #000',
+                boxSizing: 'border-box',
+              }}
+            />
+            {errors.email && (
+              <p style={{ color: '#dc2626', fontSize: '0.65rem', fontFamily: 'ui-monospace, monospace', margin: '4px 0 0', fontWeight: 700 }}>{errors.email}</p>
+            )}
+          </div>
 
-      <Typography variant="body2" align="center" sx={{ mt: 3 }}>
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
+              Senha
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              minLength={8}
+              style={{
+                width: '100%',
+                border: '4px solid #020617',
+                padding: '10px 12px',
+                fontSize: '0.85rem',
+                fontFamily: 'inherit',
+                boxShadow: '4px 4px 0px #000',
+                boxSizing: 'border-box',
+              }}
+            />
+            {errors.password && (
+              <p style={{ color: '#dc2626', fontSize: '0.65rem', fontFamily: 'ui-monospace, monospace', margin: '4px 0 0', fontWeight: 700 }}>{errors.password}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-neon"
+            style={{ width: '100%', padding: '14px 24px', fontSize: '0.8rem' }}
+          >
+            {loading ? 'ENTRANDO...' : 'ENTRAR'}
+          </button>
+        </form>
+      </div>
+
+      <p style={{ textAlign: 'center', marginTop: 24, fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
         Não tem conta?{' '}
-        <Link href="/register" style={{ color: '#020617', fontWeight: 700 }}>Cadastre-se</Link>
-      </Typography>
-    </Box>
+        <Link href="/register" style={{ color: '#020617', fontWeight: 900, textDecoration: 'none' }}>Cadastre-se</Link>
+      </p>
+    </div>
   );
 }

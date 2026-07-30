@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import {
-  Container, Typography, Box, TextField, Button, Chip, Alert,
-  Slider, Select, MenuItem, FormControl, InputLabel, Paper, LinearProgress,
+  Container, Typography, Box, Chip, Alert,
+  Slider, Select, MenuItem, FormControl, InputLabel, LinearProgress,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 
@@ -130,25 +128,26 @@ export default function PerfilPage() {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
         MEU PERFIL
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+      <Typography sx={{ mb: 4, color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
         {session?.user?.email}
       </Typography>
 
-      <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+      <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
+        <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 16px' }}>
           CURRÍCULO
-        </Typography>
+        </h3>
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={<CloudUploadIcon />}
-            disabled={extracting}
-          >
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <label style={{
+            backgroundColor: '#020617', color: '#ccff00', fontWeight: 900,
+            padding: '10px 20px', cursor: 'pointer', fontSize: '0.7rem',
+            textTransform: 'uppercase', letterSpacing: '0.05em',
+            border: '2px solid #020617', fontFamily: 'ui-monospace, monospace',
+            opacity: extracting ? 0.5 : 1,
+          }}>
             {extracting ? 'EXTRAINDO...' : 'UPLOAD PDF'}
             <input
               ref={fileInputRef}
@@ -156,91 +155,126 @@ export default function PerfilPage() {
               hidden
               accept=".pdf,.txt,.doc,.docx"
               onChange={e => handleFileUpload(e.target.files)}
+              disabled={extracting}
             />
-          </Button>
+          </label>
 
-          <Button
-            variant="outlined"
+          <button
             onClick={handlePasteExtract}
             disabled={extracting || !resumeText}
-            startIcon={<AutoAwesomeIcon />}
+            style={{
+              border: '2px solid #020617', background: 'none', fontWeight: 900,
+              padding: '10px 20px', cursor: extracting || !resumeText ? 'not-allowed' : 'pointer',
+              fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+              fontFamily: 'ui-monospace, monospace', opacity: extracting || !resumeText ? 0.5 : 1,
+            }}
           >
             EXTRAIR SKILLS DO TEXTO
-          </Button>
-        </Box>
+          </button>
+        </div>
 
         {extracting && (
-          <Box sx={{ mb: 2 }}>
-            <LinearProgress />
-            <Typography variant="caption" color="text.secondary">
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ height: 4, background: '#334155' }}>
+              <div style={{ height: '100%', width: '60%', background: '#ccff00', animation: 'pulse-glow 1s infinite' }} />
+            </div>
+            <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', margin: '4px 0 0' }}>
               Extraindo skills com AI...
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
-        <TextField
-          multiline
+        <textarea
           rows={8}
-          fullWidth
           value={resumeText}
           onChange={e => setResumeText(e.target.value)}
           placeholder="Cole o texto do seu currículo aqui (LinkedIn export) ou faça upload do PDF acima."
-          sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+          style={{
+            width: '100%',
+            border: '4px solid #020617',
+            padding: 12,
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.75rem',
+            boxShadow: '4px 4px 0px #000',
+            boxSizing: 'border-box',
+            resize: 'vertical',
+          }}
         />
-      </Paper>
+      </div>
 
-      <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            SKILLS {skills.length > 0 && <Chip label={skills.length} size="small" sx={{ ml: 1 }} />}
-          </Typography>
-        </Box>
+      <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: 0 }}>
+            SKILLS {skills.length > 0 && <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.6rem', marginLeft: 8 }}>{skills.length}</span>}
+          </h3>
+        </div>
 
-        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-          <TextField
-            size="small"
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <input
+            type="text"
             value={skillInput}
             onChange={e => setSkillInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addSkill()}
             placeholder="Ex: Python, SQL, Power BI"
-            sx={{ flex: 1 }}
+            style={{
+              flex: 1,
+              border: '4px solid #020617',
+              padding: '8px 12px',
+              fontSize: '0.8rem',
+              fontFamily: 'inherit',
+              boxShadow: '2px 2px 0px #000',
+            }}
           />
-          <Button variant="contained" size="small" onClick={addSkill}>
+          <button
+            onClick={addSkill}
+            className="btn-neon"
+            style={{ padding: '8px 16px', fontSize: '0.6rem', whiteSpace: 'nowrap' }}
+          >
             ADICIONAR
-          </Button>
-        </Box>
+          </button>
+        </div>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {skills.length === 0 ? (
-            <Typography variant="caption" color="text.secondary">
+            <p style={{ color: '#94a3b8', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', margin: 0 }}>
               Nenhuma skill ainda. Faça upload do currículo ou adicione manualmente.
-            </Typography>
+            </p>
           ) : (
             skills.map(skill => (
-              <Chip
+              <span
                 key={skill}
-                label={skill}
-                onDelete={() => removeSkill(skill)}
-                variant="outlined"
-                color="primary"
-                size="small"
-              />
+                style={{
+                  border: '2px solid #020617', padding: '2px 8px', fontWeight: 700,
+                  fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em',
+                  fontFamily: 'ui-monospace, monospace', display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {skill}
+                <button
+                  onClick={() => removeSkill(skill)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 900, padding: 0, fontSize: '0.7rem' }}
+                  aria-label={`Remover ${skill}`}
+                >
+                  ×
+                </button>
+              </span>
             ))
           )}
-        </Box>
-      </Paper>
+        </div>
+      </div>
 
-      <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+      <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
+        <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 16px' }}>
           EXPERIÊNCIA
-        </Typography>
+        </h3>
 
         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-          <InputLabel>Senioridade</InputLabel>
+          <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, textTransform: 'uppercase' }}>Senioridade</InputLabel>
           <Select
             value={seniority}
             label="Senioridade"
             onChange={e => setSeniority(e.target.value)}
+            sx={{ '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 2 } }}
           >
             {SENIORITY_LEVELS.map(level => (
               <MenuItem key={level} value={level}>
@@ -250,7 +284,9 @@ export default function PerfilPage() {
           </Select>
         </FormControl>
 
-        <Typography gutterBottom>Anos de experiência: {experienceYears}</Typography>
+        <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>
+          Anos de experiência: {experienceYears}
+        </p>
         <Slider
           value={experienceYears}
           onChange={(_, v) => setExperienceYears(v as number)}
@@ -260,17 +296,16 @@ export default function PerfilPage() {
           marks
           valueLabelDisplay="auto"
         />
-      </Paper>
+      </div>
 
-      <Button
-        variant="contained"
-        size="large"
+      <button
         onClick={handleSave}
         disabled={saving}
-        sx={{ px: 6 }}
+        className="btn-neon"
+        style={{ padding: '14px 48px', fontSize: '0.8rem' }}
       >
         {saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
-      </Button>
+      </button>
     </Container>
   );
 }

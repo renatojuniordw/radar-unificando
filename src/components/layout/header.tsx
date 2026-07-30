@@ -1,72 +1,125 @@
 'use client';
 
-import { AppBar, Toolbar, Typography, Button, Box, Container, IconButton } from '@mui/material';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { useThemeMode } from '@/lib/infrastructure/ui/theme-provider';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
 
 export function Header() {
   const { data: session } = useSession();
-  const { mode, toggle } = useThemeMode();
 
   return (
-    <AppBar position="sticky" color="primary" sx={{ borderBottom: '4px solid #ccff00' }}>
-      <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ gap: 1 }}>
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <Typography
-              variant="h6"
-              sx={{
+    <header
+      style={{
+        backgroundColor: '#020617',
+        borderBottom: '4px solid #ccff00',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+      }}
+    >
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 56 }}>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span
+              style={{
+                backgroundColor: '#ccff00',
+                color: '#020617',
                 fontWeight: 900,
-                letterSpacing: '-0.03em',
-                color: '#ccff00',
-                cursor: 'pointer',
-                mr: 3,
+                fontSize: '0.8rem',
+                letterSpacing: '-0.02em',
+                border: '2px solid #020617',
+                boxShadow: '3px 3px 0px #fff',
+                padding: '4px 8px',
                 whiteSpace: 'nowrap',
               }}
             >
-              RADAR UNIFICANDO
-            </Typography>
+              RADAR
+            </span>
+            <span
+              style={{
+                fontWeight: 900,
+                letterSpacing: '-0.02em',
+                color: '#ffffff',
+                fontSize: '1rem',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              UNIFICANDO
+            </span>
           </Link>
 
           {session && (
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <Button component={Link} href="/perfil" color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
-                PERFIL
-              </Button>
-              <Button component={Link} href="/match" color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
-                MATCH
-              </Button>
-              <Button component={Link} href="/aplicacoes" color="inherit" size="small" sx={{ color: 'white', fontSize: 11, fontWeight: 700 }}>
-                CANDIDATURAS
-              </Button>
-            </Box>
+            <nav style={{ display: 'flex', gap: 4, marginLeft: 16 }}>
+              {[
+                { href: '/perfil', label: 'PERFIL' },
+                { href: '/match', label: 'MATCH' },
+                { href: '/aplicacoes', label: 'CANDIDATURAS' },
+              ].map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  style={{
+                    color: '#94a3b8',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    padding: '4px 8px',
+                    fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           )}
 
-          <Box sx={{ flexGrow: 1 }} />
-
-          <IconButton onClick={toggle} size="small" sx={{ color: '#94a3b8', mr: 1 }}>
-            {mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-          </IconButton>
+          <div style={{ flexGrow: 1 }} />
 
           {session ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="caption" color="grey.300" sx={{ display: { xs: 'none', md: 'block' } }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ color: '#64748b', fontSize: 11, fontWeight: 700, fontFamily: 'ui-monospace, monospace', display: 'none' }} className="md:inline">
                 {session.user?.email}
-              </Typography>
-              <Button color="warning" variant="contained" size="small" onClick={() => signOut()}>
+              </span>
+              <button
+                onClick={() => signOut()}
+                style={{
+                  backgroundColor: '#ccff00',
+                  color: '#020617',
+                  border: '2px solid #020617',
+                  fontWeight: 900,
+                  fontSize: 11,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  fontFamily: 'ui-monospace, monospace',
+                }}
+              >
                 SAIR
-              </Button>
-            </Box>
+              </button>
+            </div>
           ) : (
-            <Button component={Link} href="/login" color="warning" variant="contained" size="small">
+            <Link
+              href="/login"
+              style={{
+                backgroundColor: '#ccff00',
+                color: '#020617',
+                border: '2px solid #020617',
+                fontWeight: 900,
+                fontSize: 11,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                padding: '6px 12px',
+                textDecoration: 'none',
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
               ENTRAR
-            </Button>
+            </Link>
           )}
-        </Toolbar>
-      </Container>
-    </AppBar>
+        </div>
+      </div>
+    </header>
   );
 }

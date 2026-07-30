@@ -1,43 +1,160 @@
-import { Box, Container, Typography, Link } from '@mui/material';
+'use client';
 
 export function Footer() {
   return (
-    <Box
-      component="footer"
-      sx={{
-        bgcolor: '#020617',
-        borderTop: '4px solid #ccff00',
-        py: 4,
-        mt: 'auto',
+    <footer
+      style={{
+        backgroundColor: '#020617',
+        borderTop: '8px solid #ccff00',
+        padding: '48px 24px',
+        marginTop: 'auto',
       }}
     >
-      <Container maxWidth="xl">
-        <Typography
-          variant="caption"
-          align="center"
-          display="block"
-          color="grey.500"
-          sx={{ fontWeight: 700, letterSpacing: '0.1em', fontSize: 9 }}
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 48,
+            paddingBottom: 48,
+            borderBottom: '2px solid #1e293b',
+            marginBottom: 48,
+          }}
         >
-          RADAR UNIFICANDO — BUSCA AUTOMÁTICA DE VAGAS GUPY + INHIRE
-        </Typography>
-        <Typography
-          variant="caption"
-          align="center"
-          display="block"
-          color="grey.500"
-          sx={{ mt: 1, fontWeight: 700, letterSpacing: '0.05em', fontSize: 9 }}
-        >
-          PROJETO ORIGINAL{' '}
-          <Link href="https://github.com/anomalyco/busca-vagas-gupy-inhire" color="warning.main" target="_blank">
-            BUSCA-VAGAS-GUPY-INHIRE
-          </Link>
-          {' · '}REESCRITO PARA WEB POR{' '}
-          <Link href="https://renatobezerra.com.br/" color="warning.main" target="_blank">
-            RENATO BEZERRA
-          </Link>
-        </Typography>
-      </Container>
-    </Box>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+              <div
+                style={{
+                  backgroundColor: '#ccff00',
+                  padding: '8px 12px',
+                  border: '2px solid #020617',
+                  boxShadow: '4px 4px 0px #fff',
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 900,
+                    color: '#020617',
+                    fontSize: '0.65rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  UNIFICANDO
+                </span>
+              </div>
+              <span
+                style={{
+                  fontWeight: 900,
+                  color: '#ffffff',
+                  fontSize: '0.65rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontFamily: 'ui-monospace, monospace',
+                }}
+              >
+                ECOSSISTEMA
+              </span>
+            </div>
+            <p
+              style={{
+                color: '#94a3b8',
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: '0.6rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                lineHeight: 1.8,
+                maxWidth: 320,
+              }}
+            >
+              Desenvolvido com foco total em performance e privacidade pela Unificando.
+              Ferramentas rápidas, seguras e fáceis de usar.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
+            <p
+              style={{
+                color: '#64748b',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                fontSize: '0.5rem',
+                letterSpacing: '0.3em',
+                marginBottom: 16,
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              Pronto para o próximo nível?
+            </p>
+            <a
+              href="https://unificando.com.br/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#ccff00',
+                border: '2px solid #ccff00',
+                padding: '12px 32px',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                fontSize: '0.65rem',
+                letterSpacing: '0.1em',
+                textDecoration: 'none',
+                fontFamily: 'ui-monospace, monospace',
+                transition: 'all 0.2s',
+                boxShadow: '6px 6px 0px rgba(204,255,0,0.3)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#ccff00'; e.currentTarget.style.color = '#020617'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccff00'; e.currentTarget.style.boxShadow = '6px 6px 0px rgba(204,255,0,0.3)'; }}
+            >
+              CONSULTORIA EM IA E DESENVOLVIMENTO
+            </a>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <p style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'ui-monospace, monospace', margin: 0 }}>
+            © 2026 Radar Unificando — Busca automática de vagas Gupy + InHire
+          </p>
+          <nav aria-label="Rodapé">
+            <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0 }}>
+              <li>
+                <a
+                  href="https://unificando.com.br/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; }}
+                >
+                  SITE OFICIAL
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/anomalyco/busca-vagas-gupy-inhire"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#ccff00', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                >
+                  PROJETO ORIGINAL
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://renatobezerra.com.br/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; }}
+                >
+                  RENATO BEZERRA
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </footer>
   );
 }

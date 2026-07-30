@@ -1,10 +1,6 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import {
-  Accordion, AccordionSummary, AccordionDetails, Typography, Box, LinearProgress,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface LogEntry {
   type: string;
@@ -20,61 +16,130 @@ interface Props {
   onToggle: () => void;
 }
 
-function getLogColor(type: string) {
+const STEP_LABELS: Record<string, string> = {
+  step_start: '▶ Iniciando',
+  step_progress: '⏳ Processando',
+  step_complete: '✓ Concluído',
+  step_warn: '⚠ Atenção',
+  step_error: '✕ Erro',
+  pipeline_complete: '✓ FINALIZADO',
+  pipeline_error: '✕ ERRO',
+  pipeline_cancelled: '⚠ CANCELADO',
+};
+
+function getStepColor(type: string) {
   switch (type) {
-    case 'step_start': return { color: '#ccff00' };
-    case 'step_progress': return { color: '#94a3b8' };
-    case 'step_complete': return { color: '#16a34a' };
-    case 'step_warn': return { color: '#ffaa00' };
-    case 'step_error': return { color: '#dc2626' };
-    case 'pipeline_complete': return { color: '#16a34a', fontWeight: '700' };
-    case 'pipeline_error': return { color: '#dc2626', fontWeight: '700' };
-    case 'pipeline_cancelled': return { color: '#ffaa00', fontWeight: '700' };
-    default: return {};
+    case 'step_start': return { bg: '#ccff00', text: '#020617' };
+    case 'step_progress': return { bg: '#94a3b8', text: '#020617' };
+    case 'step_complete': return { bg: '#16a34a', text: '#ffffff' };
+    case 'step_warn': return { bg: '#ffaa00', text: '#020617' };
+    case 'step_error': return { bg: '#dc2626', text: '#ffffff' };
+    case 'pipeline_complete': return { bg: '#16a34a', text: '#ffffff' };
+    case 'pipeline_error': return { bg: '#dc2626', text: '#ffffff' };
+    case 'pipeline_cancelled': return { bg: '#ffaa00', text: '#020617' };
+    default: return { bg: '#475569', text: '#ffffff' };
   }
 }
 
 export function PipelineProgress({ logs, running, expanded, onToggle }: Props) {
   const logEndRef = useRef<HTMLDivElement>(null);
 
+  const completedSteps = logs.filter(l => l.type === 'step_complete').length;
+  const totalSteps = logs.filter(l => l.type === 'step_start').length;
+
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
   return (
-    <Accordion expanded={expanded} onChange={onToggle} sx={{ mb: 3 }}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-          PROGRESSO {running && <LinearProgress sx={{ mt: 1, width: 200, display: 'inline-block', ml: 2 }} />}
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Box
-          sx={{
-            fontFamily: 'monospace', fontSize: '0.8rem', maxHeight: 300,
-            overflow: 'auto', bgcolor: '#020617', color: '#e2e8f0',
-            p: 2, borderRadius: 1,
+    <details
+      open={expanded}
+      onToggle={(e) => onToggle()}
+      className="faq-item"
+      style={{ marginBottom: 24 }}
+    >
+      <summary style={{ fontSize: '0.7rem', fontFamily: 'ui-monospace, monospace', letterSpacing: '0.05em' }}>
+        <span>
+          {running ? 'BUSCANDO VAGAS...' : logs.length > 0 ? 'RESULTADO DA BUSCA' : 'PROGRESSO'}
+          {running && (
+            <>
+              <span style={{ display: 'inline-block', width: 120, height: 4, background: '#334155', margin: '0 8px', verticalAlign: 'middle', position: 'relative', overflow: 'hidden' }}>
+                <span style={{ display: 'block', height: '100%', background: '#ccff00', animation: 'pulse-glow 1s infinite', width: '60%' }} />
+              </span>
+              {totalSteps > 0 && (
+                <span style={{ color: '#64748b', marginLeft: 4 }}>{completedSteps}/{totalSteps}</span>
+              )}
+            </>
+          )}
+          {!running && logs.length > 0 && (
+            <span style={{
+              display: 'inline-block',
+              background: '#16a34a',
+              color: '#fff',
+              fontSize: '0.5rem',
+              fontWeight: 900,
+              padding: '1px 6px',
+              marginLeft: 8,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontFamily: 'ui-monospace, monospace',
+              verticalAlign: 'middle',
+            }}>
+              {logs.filter(l => l.type === 'pipeline_complete').length > 0 ? 'Concluído' : 'Finalizado'}
+            </span>
+          )}
+        </span>
+        <span className="faq-arrow">↓</span>
+      </summary>
+      <div className="faq-content" style={{ padding: '0 20px 16px' }}>
+        <div
+          style={{
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.7rem',
+            maxHeight: 300,
+            overflow: 'auto',
+            backgroundColor: '#020617',
+            color: '#e2e8f0',
+            padding: 16,
+            border: '2px solid #334155',
           }}
         >
           {logs.length === 0 && !running && (
-            <Typography variant="caption" color="grey.600">Aguardando execução...</Typography>
+            <span style={{ color: '#64748b', fontSize: '0.65rem' }}>
+              Nenhuma busca em andamento. Preencha os campos acima e clique em EXECUTAR BUSCA.
+            </span>
           )}
-          {logs.map((log, i) => (
-            <Box key={i} sx={getLogColor(log.type)}>
-              <Typography variant="caption" component="span" sx={{ color: '#475569' }}>
-                [{log.step || '-'}]
-              </Typography>{' '}
-              <Typography variant="caption" component="span">{log.message}</Typography>
-            </Box>
-          ))}
+          {logs.map((log, i) => {
+            const colors = getStepColor(log.type);
+            return (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, alignItems: 'flex-start' }}>
+                <span
+                  style={{
+                    padding: '1px 6px',
+                    backgroundColor: colors.bg,
+                    color: colors.text,
+                    fontWeight: 700,
+                    fontSize: '0.55rem',
+                    whiteSpace: 'nowrap',
+                    lineHeight: '1.2rem',
+                    textTransform: 'uppercase',
+                    flexShrink: 0,
+                  }}
+                >
+                  {STEP_LABELS[log.type] || log.type}
+                </span>
+                <span style={{ fontSize: '0.65rem' }}>{log.message}</span>
+              </div>
+            );
+          })}
           {running && (
-            <Typography variant="caption" sx={{ color: '#475569', animation: 'pulse 1s infinite' }}>
+            <span style={{ color: '#475569', display: 'block', marginTop: 8, fontSize: '0.65rem' }}>
               Processando...
-            </Typography>
+            </span>
           )}
           <div ref={logEndRef} />
-        </Box>
-      </AccordionDetails>
-    </Accordion>
+        </div>
+      </div>
+    </details>
   );
 }
