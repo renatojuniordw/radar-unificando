@@ -39,7 +39,8 @@ interface LogEntry {
 
 export default function HomePage() {
   const { data: session } = useSession();
-  const [empresasText, setEmpresasText] = useState('');
+  const [empresas, setEmpresas] = useState<string[]>([]);
+  const [empresaInput, setEmpresaInput] = useState('');
   const [discoveryEnabled, setDiscoveryEnabled] = useState(true);
   const [running, setRunning] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -83,6 +84,29 @@ export default function HomePage() {
     setLogs(prev => [...prev, entry]);
   }
 
+  function addEmpresa(value: string) {
+    const trimmed = value.trim();
+    if (trimmed && !empresas.includes(trimmed)) {
+      setEmpresas(prev => [...prev, trimmed]);
+    }
+  }
+
+  function removeEmpresa(value: string) {
+    setEmpresas(prev => prev.filter(e => e !== value));
+  }
+
+  function handleEmpresaKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const parts = empresaInput.split(',').map(s => s.trim()).filter(Boolean);
+      parts.forEach(addEmpresa);
+      setEmpresaInput('');
+    }
+    if (e.key === 'Backspace' && empresaInput === '' && empresas.length > 0) {
+      setEmpresas(prev => prev.slice(0, -1));
+    }
+  }
+
   async function handleStart() {
     setRunning(true);
     setVagas([]);
@@ -93,7 +117,7 @@ export default function HomePage() {
     if (!session) AnonymousStorage.clear();
 
     try {
-      const companies = empresasText.split('\n').map(s => s.trim()).filter(Boolean);
+      const companies = empresas;
 
       const res = await fetch('/api/pipeline', {
         method: 'POST',
@@ -211,20 +235,63 @@ export default function HomePage() {
         <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.02em', mb: 2 }}>
           RADAR DE VAGAS
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Cole as empresas que você quer monitorar (uma por linha) ou deixe vazio para buscar todas.
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+          Empresas que você quer monitorar (opcional). Deixe vazio para buscar todas.
+        </Typography>
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 2 }}>
+          Digite o nome e pressione <b>Enter</b> ou <b>vírgula</b> para adicionar.{' '}
+          Clique no <b>×</b> para remover. <b>Backspace</b> no campo vazio apaga o último.
         </Typography>
 
-        <TextField
-          label="Empresas (opcional)"
-          multiline
-          rows={4}
-          fullWidth
-          value={empresasText}
-          onChange={e => setEmpresasText(e.target.value)}
-          placeholder="Ambev&#10;Nubank&#10;BRQ"
-          sx={{ mb: 2, fontFamily: 'monospace' }}
-        />
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 0.5,
+            p: 1.5,
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 1,
+            minHeight: 56,
+            alignItems: 'center',
+            mb: 2,
+            bgcolor: 'background.paper',
+          }}
+        >
+          {empresas.map(emp => (
+            <Chip
+              key={emp}
+              label={emp}
+              onDelete={() => removeEmpresa(emp)}
+              size="small"
+              variant="outlined"
+              color="warning"
+              sx={{ fontWeight: 700, fontSize: 11 }}
+            />
+          ))}
+          <input
+            value={empresaInput}
+            onChange={e => setEmpresaInput(e.target.value)}
+            onKeyDown={handleEmpresaKeyDown}
+            onBlur={() => {
+              if (empresaInput.trim()) {
+                addEmpresa(empresaInput);
+                setEmpresaInput('');
+              }
+            }}
+            placeholder={empresas.length === 0 ? "Ambev, Nubank, BRQ..." : ""}
+            style={{
+              border: 'none',
+              outline: 'none',
+              flex: 1,
+              minWidth: 120,
+              fontFamily: 'inherit',
+              fontSize: '0.875rem',
+              padding: '4px 0',
+              background: 'transparent',
+            }}
+          />
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
           <FormControlLabel
