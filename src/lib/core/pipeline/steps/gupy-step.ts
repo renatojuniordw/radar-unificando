@@ -12,10 +12,6 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
   const { companies, isLoggedIn, queries = [] } = options;
   const jobs: JobData[] = [];
 
-  if (queries.length === 0 && companies.length === 0) {
-    return jobs;
-  }
-
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'Gupy',
     message: `Buscando vagas na Gupy...`,
@@ -58,10 +54,6 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
   const results: JobData[] = [];
   const API = 'https://employability-portal.gupy.io/api/v1/jobs';
 
-  if (queries.length === 0 && companies.length === 0) {
-    return results;
-  }
-
   type SearchItem = { jobName?: string; careerPageName?: string };
   const searches: SearchItem[] = [];
 
@@ -75,10 +67,12 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
         searches.push({ jobName: q });
       }
     }
-  } else {
+  } else if (companies.length > 0) {
     for (const c of companies) {
       searches.push({ careerPageName: c });
     }
+  } else {
+    searches.push({});
   }
 
   for (let i = 0; i < searches.length; i++) {
