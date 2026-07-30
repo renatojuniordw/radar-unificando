@@ -45,9 +45,10 @@ Infrastructure Layer
 
 ## Fluxo de Dados
 
-1. Usuário submete empresas → POST /api/pipeline
-2. Pipeline roda em background, emite eventos SSE
-3. Cliente recebe eventos e atualiza UI em tempo real
-4. Resultados salvos em PostgreSQL via Prisma ORM
-5. (Logado) Matching engine calcula score por vaga
-6. (Logado) Kanban gerencia candidaturas com state machine
+1. Usuário submete `companies` e/ou `queries` → `POST /api/pipeline`
+2. Pipeline monta buscas: combina `jobName` (queries) + `careerPageName` (companies) por empresa
+3. Pipeline roda em background, emite eventos SSE
+4. Cliente recebe eventos e atualiza UI em tempo real
+5. Resultados salvos em PostgreSQL via Prisma ORM
+6. (Logado) Matching engine calcula score por vaga
+7. (Logado) Kanban gerencia candidaturas com state machine

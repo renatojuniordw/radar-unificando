@@ -23,7 +23,7 @@ Cookie: next-auth.session-token=<token>
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/pipeline` | ❌ | Iniciar pipeline (companies[], discoveryEnabled) |
+| POST | `/api/pipeline` | ❌ | Iniciar pipeline (companies[], queries[]) |
 | GET | `/api/pipeline/stream?runId=` | ❌ | SSE — eventos de progresso em tempo real |
 | GET | `/api/pipeline/:runId` | ❌ | Status de uma execução |
 
@@ -70,18 +70,33 @@ Cookie: next-auth.session-token=<token>
 ## Exemplos
 
 ```bash
-# Pipeline
-curl -X POST http://localhost:11010/api/pipeline \
+# Pipeline — todas as vagas
+curl -X POST http://localhost:3000/api/pipeline \
   -H 'Content-Type: application/json' \
-  -d '{"companies":["Ambev","Nubank"],"discoveryEnabled":true}'
+  -d '{"companies":[],"queries":[]}'
+
+# Pipeline — vagas de uma empresa específica
+curl -X POST http://localhost:3000/api/pipeline \
+  -H 'Content-Type: application/json' \
+  -d '{"companies":["Globo"],"queries":[]}'
+
+# Pipeline — busca por cargo em todas empresas
+curl -X POST http://localhost:3000/api/pipeline \
+  -H 'Content-Type: application/json' \
+  -d '{"companies":[],"queries":["Agile Coach"]}'
+
+# Pipeline — cargo + empresa específica
+curl -X POST http://localhost:3000/api/pipeline \
+  -H 'Content-Type: application/json' \
+  -d '{"companies":["Globo"],"queries":["Agile Coach"]}'
 
 # SSE
-curl http://localhost:11010/api/pipeline/stream?runId=<id>
+curl http://localhost:3000/api/pipeline/stream?runId=<id>
 
 # Vagas com filtro
-curl http://localhost:11010/api/vagas?plataforma=Gupy&search=Analista
+curl http://localhost:3000/api/vagas?plataforma=Gupy&search=Analista
 
 # Perfil (autenticado)
-curl http://localhost:11010/api/profile \
+curl http://localhost:3000/api/profile \
   -H 'Cookie: next-auth.session-token=<token>'
 ```
