@@ -4,10 +4,11 @@ import type { JobData } from '@/types';
 
 export interface InHireStepOptions {
   companies: string[];
+  queries?: string[];
 }
 
 export async function runInHireStep(runId: string, options: InHireStepOptions): Promise<JobData[]> {
-  const { companies } = options;
+  const { companies, queries } = options;
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'InHire',
@@ -15,11 +16,20 @@ export async function runInHireStep(runId: string, options: InHireStepOptions): 
   });
 
   try {
-    const jobs = await inhireScraper.searchJobs(companies.length > 0 ? companies : undefined);
+    let jobs = await inhireScraper.searchJobs(companies.length > 0 ? companies : undefined);
 
+    if (queries?.length) {
+      const queryTerms = queries.map(q => q.toLowerCase().trim());
+      jobs = jobs.filter(j => {
+        const titulo = j.titulo_vaga.toLowerCase();
+        return queryTerms.some(q => titulo.includes(q));
+      });
+    }
+
+    const normalized = companies.map(c => c.toLowerCase().trim());
     const labeled = jobs.map(j => ({
       ...j,
-      na_lista: companies.includes(j.empresa) ? 'Sim' as const : 'Não' as const,
+      na_lista: normalized.some(c => j.empresa.toLowerCase().includes(c)) ? 'Sim' as const : 'Não' as const,
     }));
 
     progressEmitter.emit(runId, {

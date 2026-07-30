@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Container, Box, Paper, Typography, Button, FormControlLabel, Switch, Snackbar } from '@mui/material';
+import { Container, Box, Paper, Typography, Button, Snackbar } from '@mui/material';
 import { AnonymousStorage } from '@/lib/infrastructure/storage/local-storage';
 import { CompanyInput } from '@/components/company-input';
+import { CargoInput } from '@/components/cargo-input';
 import { PipelineProgress } from '@/components/pipeline-progress';
 import { VagaTable } from '@/components/vaga-table';
 import { MatchDialog } from '@/components/match-dialog';
@@ -37,7 +38,7 @@ interface LogEntry {
 export default function HomePage() {
   const { data: session } = useSession();
   const [empresas, setEmpresas] = useState<string[]>([]);
-  const [discoveryEnabled, setDiscoveryEnabled] = useState(true);
+  const [cargosBusca, setCargosBusca] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [vagas, setVagas] = useState<Vaga[]>([]);
@@ -47,6 +48,7 @@ export default function HomePage() {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [selectedJob, setSelectedJob] = useState<{ id: string; empresa: string; titulo: string; score: number } | null>(null);
   const [snackbar, setSnackbar] = useState<{ message: string; severity: 'success' | 'error' | 'info' } | null>(null);
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     if (!session && vagas.length === 0) {
@@ -54,6 +56,30 @@ export default function HomePage() {
       if (stored.length > 0) setVagas(stored as Vaga[]);
     }
   }, [session]);
+
+  useEffect(() => {
+    const endsAt = AnonymousStorage.getCooldownEnd();
+    if (endsAt) {
+      const remaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+      if (remaining > 0) setCooldown(remaining);
+      else AnonymousStorage.clearCooldown();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => {
+      setCooldown(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          AnonymousStorage.clearCooldown();
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldown > 0]);
 
   async function carregarVagas(filters?: { plataforma?: string; cargo?: string; search?: string }) {
     setLoading(true);
@@ -96,11 +122,20 @@ export default function HomePage() {
       const res = await fetch('/api/pipeline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companies: empresas, discoveryEnabled }),
+        body: JSON.stringify({ companies: empresas, queries: cargosBusca }),
       });
 
       if (!res.ok) {
-        setLogs(prev => [...prev, { type: 'pipeline_error', message: 'Erro ao iniciar pipeline' }]);
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 429 && body.retryAfter) {
+          const endsAt = Date.now() + body.retryAfter * 1000;
+          AnonymousStorage.setCooldownEnd(endsAt);
+          setCooldown(body.retryAfter);
+          setSnackbar({ message: body.error || 'Muitas requisições. Aguarde.', severity: 'info' });
+        } else {
+          setLogs(prev => [...prev, { type: 'pipeline_error', message: body.error || 'Erro ao iniciar pipeline' }]);
+          setSnackbar({ message: body.error || 'Erro ao iniciar pipeline', severity: 'error' });
+        }
         setRunning(false);
         return;
       }
@@ -153,27 +188,18 @@ export default function HomePage() {
           RADAR DE VAGAS
         </Typography>
 
-        <CompanyInput value={empresas} onChange={setEmpresas} />
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <FormControlLabel
-            control={<Switch checked={discoveryEnabled} onChange={e => setDiscoveryEnabled(e.target.checked)} color="warning" />}
-            label={
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>Descobrir novas empresas</Typography>
-                <Typography variant="caption" color="text.secondary">Wayback + urlscan + CommonCrawl</Typography>
-              </Box>
-            }
-          />
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ flex: 1, minWidth: 300 }}><CompanyInput value={empresas} onChange={setEmpresas} /></Box>
+          <Box sx={{ flex: 1, minWidth: 300 }}><CargoInput value={cargosBusca} onChange={setCargosBusca} /></Box>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
           <Button
             variant="contained" color="warning" size="large"
-            onClick={handleStart} disabled={running}
+            onClick={handleStart} disabled={running || cooldown > 0}
             sx={{ px: 4, py: 1.5, fontWeight: 900, letterSpacing: '0.05em' }}
           >
-            {running ? 'BUSCANDO...' : 'EXECUTAR BUSCA'}
+            {running ? 'BUSCANDO...' : cooldown > 0 ? `AGUARDAR ${Math.floor(cooldown / 60)}min ${cooldown % 60}s` : 'EXECUTAR BUSCA'}
           </Button>
         </Box>
       </Paper>

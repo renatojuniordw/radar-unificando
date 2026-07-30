@@ -12,10 +12,12 @@ const GUPY_QUERIES = [
 export interface GupyStepOptions {
   companies: string[];
   isLoggedIn: boolean;
+  queries?: string[];
 }
 
 export async function runGupyStep(runId: string, options: GupyStepOptions): Promise<JobData[]> {
-  const { companies, isLoggedIn } = options;
+  const { companies, isLoggedIn, queries } = options;
+  const searchQueries = queries?.length ? queries : GUPY_QUERIES;
   const jobs: JobData[] = [];
 
   progressEmitter.emit(runId, {
@@ -25,14 +27,14 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
 
   if (isLoggedIn) {
     try {
-      for (let i = 0; i < GUPY_QUERIES.length; i++) {
+      for (let i = 0; i < searchQueries.length; i++) {
         progressEmitter.emit(runId, {
           type: 'step_progress', step: 'Gupy',
-          current: i + 1, total: GUPY_QUERIES.length,
-          message: `Gupy MCP (${i + 1}/${GUPY_QUERIES.length}): ${GUPY_QUERIES[i]}`,
+          current: i + 1, total: searchQueries.length,
+          message: `Gupy MCP (${i + 1}/${searchQueries.length}): ${searchQueries[i]}`,
         });
-        const result = await gupyMcpClient.searchJobs(GUPY_QUERIES[i], 100);
-        jobs.push(...result);
+        const result = await gupyMcpClient.searchJobs(searchQueries[i], 100);
+        jobs.push(...filterByCompany(result, companies));
       }
       progressEmitter.emit(runId, {
         type: 'step_complete', step: 'Gupy',
@@ -43,44 +45,40 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
         type: 'step_warn', step: 'Gupy',
         message: 'MCP falhou, usando fallback REST...',
       });
-      const restJobs = await scrapeGupyRest(runId, companies);
+      const restJobs = await scrapeGupyRest(runId, companies, searchQueries);
       jobs.push(...restJobs);
     }
   } else {
-    const restJobs = await scrapeGupyRest(runId, companies);
+    const restJobs = await scrapeGupyRest(runId, companies, searchQueries);
     jobs.push(...restJobs);
   }
 
   return jobs;
 }
 
-async function scrapeGupyRest(runId: string, companies: string[]): Promise<JobData[]> {
+async function scrapeGupyRest(runId: string, companies: string[], queries: string[]): Promise<JobData[]> {
   const results: JobData[] = [];
   const API = 'https://employability-portal.gupy.io/api/v1/jobs';
 
-  for (let i = 0; i < GUPY_QUERIES.length; i++) {
+  for (let i = 0; i < queries.length; i++) {
     progressEmitter.emit(runId, {
       type: 'step_progress', step: 'Gupy',
-      current: i + 1, total: GUPY_QUERIES.length,
-      message: `Gupy REST (${i + 1}/${GUPY_QUERIES.length}): ${GUPY_QUERIES[i]}`,
+      current: i + 1, total: queries.length,
+      message: `Gupy REST (${i + 1}/${queries.length}): ${queries[i]}`,
     });
 
     try {
-      const url = `${API}?jobName=${encodeURIComponent(GUPY_QUERIES[i])}&offset=0&limit=100`;
+      const url = `${API}?jobName=${encodeURIComponent(queries[i])}&offset=0&limit=100`;
       const res = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!res.ok) continue;
       const json = await res.json();
       const data = json.data || [];
 
       for (const j of data) {
-        const wp = String(j.workplaceType || '').toLowerCase();
-        const isRemote = j.isRemoteWork === true || wp.includes('remote') || wp.includes('remoto');
-        if (!isRemote) continue;
-
         results.push({
           empresa: j.careerPageName || j.companyName || '',
           plataforma: 'Gupy',
-          na_lista: companies.includes(j.careerPageName) ? 'Sim' : 'Não',
+          na_lista: companies.some(c => c.toLowerCase() === (j.careerPageName || '').toLowerCase()) ? 'Sim' : 'Não',
           cargo_categoria: inferRole(j.name),
           titulo_vaga: j.name,
           tipo: j.workplaceType,
@@ -96,12 +94,20 @@ async function scrapeGupyRest(runId: string, companies: string[]): Promise<JobDa
     }
   }
 
+  const filtered = filterByCompany(results, companies);
+
   progressEmitter.emit(runId, {
     type: 'step_complete', step: 'Gupy',
-    message: `Gupy REST: ${results.length} vagas encontradas`,
+    message: `Gupy REST: ${filtered.length} vagas encontradas`,
   });
 
-  return results;
+  return filtered;
+}
+
+function filterByCompany(jobs: JobData[], companies: string[]): JobData[] {
+  if (companies.length === 0) return jobs;
+  const normalized = companies.map(c => c.toLowerCase());
+  return jobs.filter(j => normalized.includes(j.empresa.toLowerCase()));
 }
 
 function inferRole(title: string): string {

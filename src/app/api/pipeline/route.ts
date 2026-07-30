@@ -5,7 +5,6 @@ import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { pipelineLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { runGupyStep } from '@/lib/core/pipeline/steps/gupy-step';
 import { runInHireStep } from '@/lib/core/pipeline/steps/inhire-step';
-import { runDiscoveryStep } from '@/lib/core/pipeline/steps/discovery-step';
 import { runSaveStep } from '@/lib/core/pipeline/steps/save-step';
 import { dedupEngine } from '@/lib/core/dedup';
 
@@ -19,15 +18,15 @@ export async function POST(req: NextRequest) {
       || 'unknown';
     const rateLimitKey = session?.user?.id ? userId : `anon:${ip}`;
 
-    const { allowed, remaining } = pipelineLimiter.check(rateLimitKey);
+    const { allowed, remaining, retryAfter } = pipelineLimiter.check(rateLimitKey);
     if (!allowed) {
       return NextResponse.json(
-        { error: 'Muitas requisições. Aguarde 5 minutos entre execuções.' },
-        { status: 429, headers: { 'Retry-After': '300' } }
+        { error: 'Muitas requisições. Aguarde entre execuções.', retryAfter },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
 
-    const { companies, discoveryEnabled } = await req.json();
+    const { companies, queries } = await req.json();
 
     const runId = crypto.randomUUID();
     const isLoggedIn = !!session?.user?.id;
@@ -37,13 +36,13 @@ export async function POST(req: NextRequest) {
         id: runId,
         userId,
         status: 'running',
-        discoveryEnabled: discoveryEnabled !== false,
+        discoveryEnabled: false,
       });
     }
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });
 
-    runPipeline(runId, userId, companies || [], discoveryEnabled !== false, isLoggedIn);
+    runPipeline(runId, userId, companies || [], queries || [], isLoggedIn);
 
     return NextResponse.json({ runId });
   } catch (error) {
@@ -58,19 +57,14 @@ async function runPipeline(
   runId: string,
   userId: string,
   companies: string[],
-  discoveryEnabled: boolean,
+  queries: string[],
   isLoggedIn: boolean
 ) {
   try {
     const [gupyJobs, inhireJobs] = await Promise.all([
-      runGupyStep(runId, { companies, isLoggedIn }),
-      runInHireStep(runId, { companies }),
+      runGupyStep(runId, { companies, isLoggedIn, queries }),
+      runInHireStep(runId, { companies, queries }),
     ]);
-
-    let discoveryCount = 0;
-    if (discoveryEnabled && isLoggedIn && companies.length > 0) {
-      discoveryCount = await runDiscoveryStep(runId, { companies });
-    }
 
     const allJobs = dedupEngine.mergeSources(gupyJobs, inhireJobs);
 
@@ -88,7 +82,7 @@ async function runPipeline(
         totalJobs: allJobs.length,
         gupyJobs: gupyJobs.length,
         inhireJobs: inhireJobs.length,
-        newCompaniesFound: discoveryCount,
+        newCompaniesFound: 0,
         finishedAt: new Date(),
       });
     }

@@ -5,6 +5,7 @@ const STORAGE_KEYS = {
   COMPANIES: 'ru_anon_companies',
   RUN: 'ru_anon_run',
   STATS: 'ru_anon_stats',
+  COOLDOWN_END: 'ru_cooldown_end',
 } as const;
 
 export const AnonymousStorage = {
@@ -81,6 +82,28 @@ export const AnonymousStorage = {
     try {
       localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
     } catch { /* quota exceeded */ }
+  },
+
+  getCooldownEnd(): number | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.COOLDOWN_END);
+      return raw ? Number(raw) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  setCooldownEnd(endsAt: number): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.COOLDOWN_END, String(endsAt));
+    } catch { /* quota exceeded */ }
+  },
+
+  clearCooldown(): void {
+    if (typeof window === 'undefined') return;
+    try { localStorage.removeItem(STORAGE_KEYS.COOLDOWN_END); } catch { /* ignore */ }
   },
 
   clear(): void {
