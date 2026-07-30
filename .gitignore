@@ -6,3 +6,7 @@ data/
 pgdata/
 *.tsbuildinfo
 next-env.d.ts
+
+
+coverage/
+coverage

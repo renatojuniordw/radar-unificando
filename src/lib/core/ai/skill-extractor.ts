@@ -131,7 +131,7 @@ export class SkillExtractor {
   private extractExperience(text: string): number | null {
     const patterns = [
       /(\d+)[+]?\s*(anos?\s*de\s*)?experiência/i,
-      /(\d+)[+]?\s*(anos?\s*of\s*)?experience/i,
+      /(\d+)[+]?\s*(years?\s*of\s*)?experience/i,
       /experience[:\s]+(\d+)[+]?\s*(anos?|years?)/i,
       /experiência[:\s]+(\d+)[+]?\s*(anos?)/i,
     ];
