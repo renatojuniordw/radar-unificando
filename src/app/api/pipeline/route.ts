@@ -12,9 +12,14 @@ import { dedupEngine } from '@/lib/core/dedup';
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    const userId = session?.user?.id || 'anonymous';
+    const userId = session?.user?.id || '00000000-0000-0000-0000-000000000000';
 
-    const { allowed, remaining } = pipelineLimiter.check(userId);
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    const rateLimitKey = session?.user?.id ? userId : `anon:${ip}`;
+
+    const { allowed, remaining } = pipelineLimiter.check(rateLimitKey);
     if (!allowed) {
       return NextResponse.json(
         { error: 'Muitas requisições. Aguarde 5 minutos entre execuções.' },
@@ -25,17 +30,20 @@ export async function POST(req: NextRequest) {
     const { companies, discoveryEnabled } = await req.json();
 
     const runId = crypto.randomUUID();
+    const isLoggedIn = !!session?.user?.id;
 
-    await pipelineRunRepository.create({
-      id: runId,
-      userId,
-      status: 'running',
-      discoveryEnabled: discoveryEnabled !== false,
-    });
+    if (isLoggedIn) {
+      await pipelineRunRepository.create({
+        id: runId,
+        userId,
+        status: 'running',
+        discoveryEnabled: discoveryEnabled !== false,
+      });
+    }
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });
 
-    runPipeline(runId, userId, companies || [], discoveryEnabled !== false, !!session?.user?.id);
+    runPipeline(runId, userId, companies || [], discoveryEnabled !== false, isLoggedIn);
 
     return NextResponse.json({ runId });
   } catch (error) {
@@ -67,25 +75,28 @@ async function runPipeline(
     const allJobs = dedupEngine.mergeSources(gupyJobs, inhireJobs);
 
     let inserted = 0;
-    if (isLoggedIn && userId !== 'anonymous') {
+    if (isLoggedIn && userId !== '00000000-0000-0000-0000-000000000000') {
       inserted = await runSaveStep(runId, allJobs, {
         userId,
         source: isLoggedIn ? 'gupy_mcp' : 'gupy_api',
       });
     }
 
-    await pipelineRunRepository.update(runId, {
-      status: 'completed',
-      totalJobs: allJobs.length,
-      gupyJobs: gupyJobs.length,
-      inhireJobs: inhireJobs.length,
-      newCompaniesFound: discoveryCount,
-      finishedAt: new Date(),
-    });
+    if (isLoggedIn) {
+      await pipelineRunRepository.update(runId, {
+        status: 'completed',
+        totalJobs: allJobs.length,
+        gupyJobs: gupyJobs.length,
+        inhireJobs: inhireJobs.length,
+        newCompaniesFound: discoveryCount,
+        finishedAt: new Date(),
+      });
+    }
 
     progressEmitter.emit(runId, {
       type: 'pipeline_complete',
       message: `Pipeline concluído! ${allJobs.length} vagas encontradas (Gupy: ${gupyJobs.length}, InHire: ${inhireJobs.length})`,
+      ...(isLoggedIn ? {} : { jobs: allJobs }),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -95,9 +106,11 @@ async function runPipeline(
     });
     progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
 
-    await pipelineRunRepository.update(runId, {
-      status: 'failed',
-      finishedAt: new Date(),
-    });
+    if (isLoggedIn) {
+      await pipelineRunRepository.update(runId, {
+        status: 'failed',
+        finishedAt: new Date(),
+      });
+    }
   }
 }

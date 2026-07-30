@@ -50,7 +50,7 @@ describe('GET /api/vagas', () => {
     vi.mocked(auth).mockResolvedValue(null);
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([]);
     await GET(makeRequest());
-    expect(jobRepository.findByUserId).toHaveBeenCalledWith('anonymous', expect.any(Object));
+    expect(jobRepository.findByUserId).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000', expect.any(Object));
   });
 
   it('should_return_500_on_error', async () => {

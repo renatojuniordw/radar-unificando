@@ -50,7 +50,7 @@ describe('Pipeline API', () => {
     it('should_use_anonymous_user_when_not_logged_in', async () => {
       vi.mocked(auth).mockResolvedValue(null);
       vi.mocked(pipelineLimiter.check).mockReturnValue({ allowed: true, remaining: 0, resetAt: Date.now() + 300_000 });
-      vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-456', userId: 'anonymous' } as any);
+      vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-456', userId: '00000000-0000-0000-0000-000000000000' } as any);
       const res = await PipelinePOST(makeRequest({}));
       expect(res.status).toBe(200);
     });

@@ -21,17 +21,33 @@ export default auth((req) => {
 
   const path = req.nextUrl.pathname;
 
-  // CORS for API routes
+  // CORS for API routes — only our own origin is ever allowed, never reflected back
   if (path.startsWith('/api/')) {
     const origin = req.headers.get('origin');
-    const host = req.headers.get('host');
-    response.headers.set('Access-Control-Allow-Origin', origin || `http://${host}`);
+    const referer = req.headers.get('referer');
+    const selfOrigin = req.nextUrl.origin;
+    let requestOrigin = origin;
+    if (!requestOrigin && referer) {
+      try { requestOrigin = new URL(referer).origin; } catch { /* malformed referer */ }
+    }
+    const sameOrigin = requestOrigin === selfOrigin;
+
+    if (origin === selfOrigin) {
+      response.headers.set('Access-Control-Allow-Origin', origin);
+      response.headers.set('Access-Control-Allow-Credentials', 'true');
+    }
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
 
     if (req.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: response.headers });
+      return new Response(null, { status: sameOrigin ? 204 : 403, headers: response.headers });
+    }
+
+    // Reject state-changing requests that don't carry a matching Origin/Referer —
+    // blocks other sites, scripts, and direct HTTP clients from driving this API.
+    const isMutating = !['GET', 'HEAD'].includes(req.method);
+    if (isMutating && !sameOrigin && !path.startsWith('/api/auth')) {
+      return NextResponse.json({ error: 'Origem não permitida' }, { status: 403 });
     }
   }
 

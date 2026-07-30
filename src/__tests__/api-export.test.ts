@@ -52,6 +52,6 @@ describe('GET /export', () => {
     vi.mocked(auth).mockResolvedValue(null);
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([]);
     await GET(makeRequest('csv'));
-    expect(jobRepository.findByUserId).toHaveBeenCalledWith('anonymous', expect.any(Object));
+    expect(jobRepository.findByUserId).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000', expect.any(Object));
   });
 });

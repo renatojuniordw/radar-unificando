@@ -2,6 +2,8 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -25,6 +27,7 @@ services:
       - internal
 
   app:
+    profiles: ["production"]
     build: .
     restart: unless-stopped
     ports:
