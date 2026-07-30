@@ -2,13 +2,6 @@ import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import type { JobData } from '@/types';
 
-const GUPY_QUERIES = [
-  'Analista de Dados', 'Data Analyst', 'Analista de BI', 'Business Intelligence',
-  'Business Analyst', 'Analista de Negócios', 'Inteligência de Negócios',
-  'Growth', 'Revenue Operations', 'RevOps', 'Analista de Insights',
-  'Inteligência de Mercado', 'Market Intelligence',
-];
-
 export interface GupyStepOptions {
   companies: string[];
   isLoggedIn: boolean;
@@ -16,24 +9,29 @@ export interface GupyStepOptions {
 }
 
 export async function runGupyStep(runId: string, options: GupyStepOptions): Promise<JobData[]> {
-  const { companies, isLoggedIn, queries } = options;
-  const searchQueries = queries?.length ? queries : GUPY_QUERIES;
+  const { companies, isLoggedIn, queries = [] } = options;
   const jobs: JobData[] = [];
+
+  if (queries.length === 0 && companies.length === 0) {
+    return jobs;
+  }
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'Gupy',
-    message: `Buscando vagas na Gupy (${isLoggedIn ? 'MCP' : 'REST'})...`,
+    message: `Buscando vagas na Gupy...`,
   });
 
-  if (isLoggedIn) {
+  const hasQueries = queries.length > 0;
+
+  if (isLoggedIn && hasQueries) {
     try {
-      for (let i = 0; i < searchQueries.length; i++) {
+      for (let i = 0; i < queries.length; i++) {
         progressEmitter.emit(runId, {
           type: 'step_progress', step: 'Gupy',
-          current: i + 1, total: searchQueries.length,
-          message: `Gupy MCP (${i + 1}/${searchQueries.length}): ${searchQueries[i]}`,
+          current: i + 1, total: queries.length,
+          message: `Gupy MCP (${i + 1}/${queries.length}): ${queries[i]}`,
         });
-        const result = await gupyMcpClient.searchJobs(searchQueries[i], 100);
+        const result = await gupyMcpClient.searchJobs(queries[i], 100);
         jobs.push(...filterByCompany(result, companies));
       }
       progressEmitter.emit(runId, {
@@ -45,11 +43,11 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
         type: 'step_warn', step: 'Gupy',
         message: 'MCP falhou, usando fallback REST...',
       });
-      const restJobs = await scrapeGupyRest(runId, companies, searchQueries);
+      const restJobs = await scrapeGupyRest(runId, companies, queries);
       jobs.push(...restJobs);
     }
   } else {
-    const restJobs = await scrapeGupyRest(runId, companies, searchQueries);
+    const restJobs = await scrapeGupyRest(runId, companies, queries);
     jobs.push(...restJobs);
   }
 
@@ -60,15 +58,44 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
   const results: JobData[] = [];
   const API = 'https://employability-portal.gupy.io/api/v1/jobs';
 
-  for (let i = 0; i < queries.length; i++) {
+  if (queries.length === 0 && companies.length === 0) {
+    return results;
+  }
+
+  type SearchItem = { jobName?: string; careerPageName?: string };
+  const searches: SearchItem[] = [];
+
+  if (queries.length > 0) {
+    for (const q of queries) {
+      if (companies.length > 0) {
+        for (const c of companies) {
+          searches.push({ jobName: q, careerPageName: c });
+        }
+      } else {
+        searches.push({ jobName: q });
+      }
+    }
+  } else {
+    for (const c of companies) {
+      searches.push({ careerPageName: c });
+    }
+  }
+
+  for (let i = 0; i < searches.length; i++) {
+    const s = searches[i];
+    const params = new URLSearchParams({ offset: '0', limit: '100' });
+    if (s.jobName) params.set('jobName', s.jobName);
+    if (s.careerPageName) params.set('careerPageName', s.careerPageName);
+
+    const desc = s.jobName || s.careerPageName || 'todas';
     progressEmitter.emit(runId, {
       type: 'step_progress', step: 'Gupy',
-      current: i + 1, total: queries.length,
-      message: `Gupy REST (${i + 1}/${queries.length}): ${queries[i]}`,
+      current: i + 1, total: searches.length,
+      message: `Gupy REST (${i + 1}/${searches.length}): ${desc}`,
     });
 
     try {
-      const url = `${API}?jobName=${encodeURIComponent(queries[i])}&offset=0&limit=100`;
+      const url = `${API}?${params}`;
       const res = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!res.ok) continue;
       const json = await res.json();
