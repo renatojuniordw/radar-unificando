@@ -91,6 +91,7 @@ export class GupyMcpClient {
       nome_na_plataforma: j.careerPageName || j.company || '',
       publicado: j.publishedDate || j.created_at || '',
       alerta: '',
+      descricao: j.description ? String(j.description).slice(0, 3000) : undefined,
     }));
   }
 

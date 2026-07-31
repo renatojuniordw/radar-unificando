@@ -12,7 +12,6 @@ import { useChatAssistant } from '@/contexts/chat-assistant-context';
 const TOOL_LABELS: Record<string, string> = {
   search_jobs: 'Buscando vagas...',
   get_my_profile: 'Consultando seu perfil...',
-  get_job_details: 'Buscando detalhes da vaga...',
   analyze_job_fit: 'Analisando compatibilidade...',
 };
 

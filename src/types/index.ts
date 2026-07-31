@@ -11,6 +11,7 @@ export interface JobData {
   publicado: string;
   alerta: string;
   detectado_em?: string;
+  descricao?: string;
 }
 
 export type Platform = 'Gupy' | 'InHire';

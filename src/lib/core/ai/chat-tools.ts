@@ -1,13 +1,13 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
-import { profileRepository, jobRepository } from '@/lib/infrastructure/repositories';
+import { profileRepository } from '@/lib/infrastructure/repositories';
 import { analyzeJobFit } from '@/lib/core/ai/job-analyzer';
 
 export function createChatTools(userId: string) {
   return {
     search_jobs: tool({
-      description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia.',
+      description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição de cada vaga — use-a diretamente em analyze_job_fit, sem precisar de outra busca.',
       inputSchema: z.object({
         query: z.string().describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
         limit: z.number().optional().default(20).describe('Máximo de resultados'),
@@ -21,6 +21,7 @@ export function createChatTools(userId: string) {
           tipo: j.tipo,
           local: j.local,
           link: j.link,
+          descricao: j.descricao?.slice(0, 1200),
         }));
       },
     }),
@@ -44,47 +45,22 @@ export function createChatTools(userId: string) {
       },
     }),
 
-    get_job_details: tool({
-      description: 'Obter detalhes de uma vaga específica pelo ID.',
-      inputSchema: z.object({
-        jobId: z.string().describe('ID da vaga'),
-      }),
-      execute: async ({ jobId }: { jobId: string }) => {
-        console.log(`[chat-tools] get_job_details chamado com jobId="${jobId}"`);
-        const job = await jobRepository.findById(jobId);
-        if (!job) return { error: 'Vaga não encontrada.' };
-        return {
-          empresa: job.empresa,
-          titulo: job.tituloVaga,
-          descricao: job.descricao?.slice(0, 2000),
-          tipo: job.tipo,
-          local: job.local,
-          link: job.link,
-          plataforma: job.plataforma,
-          publicado: job.publicado,
-        };
-      },
-    }),
-
     analyze_job_fit: tool({
-      description: 'Analisar a compatibilidade do perfil do usuário com uma vaga específica.',
+      description: 'Analisar a compatibilidade do perfil do usuário com uma vaga específica. Use o título e a descrição já retornados por search_jobs — não invente ou peça um ID.',
       inputSchema: z.object({
-        jobId: z.string().describe('ID da vaga para analisar'),
+        jobTitle: z.string().describe('Título da vaga (campo "titulo" retornado por search_jobs)'),
+        jobDescription: z.string().describe('Descrição da vaga (campo "descricao" retornado por search_jobs)'),
       }),
-      execute: async ({ jobId }: { jobId: string }) => {
-        console.log(`[chat-tools] analyze_job_fit chamado com jobId="${jobId}"`);
-        const [profile, job] = await Promise.all([
-          profileRepository.findByUserId(userId),
-          jobRepository.findById(jobId),
-        ]);
+      execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
+        console.log(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
+        const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
-        if (!job) return { error: 'Vaga não encontrada.' };
 
         const traceId = crypto.randomUUID();
         return analyzeJobFit(
           profile.resumeMarkdown || profile.resumeText || '',
-          job.tituloVaga || '',
-          job.descricao || '',
+          jobTitle,
+          jobDescription,
           (profile.skills as string[]) || [],
           profile.experienceYears || 0,
           profile.seniority || 'pleno',
