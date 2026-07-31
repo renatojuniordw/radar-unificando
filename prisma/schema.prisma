@@ -45,6 +45,7 @@ model Profile {
   resumeText      String?  @map("resume_text") @db.Text
   resumeMarkdown  String?  @map("resume_markdown") @db.Text
   parsedData      Json?    @map("parsed_data")
+  profileSource   String?  @default("manual") @map("profile_source") @db.VarChar(20)
   createdAt       DateTime @default(now()) @map("created_at")
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

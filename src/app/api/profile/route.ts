@@ -29,6 +29,7 @@ export async function PUT(req: NextRequest) {
       education: data.education || [],
       resumeText: data.resumeText || null,
       resumeMarkdown: data.resumeMarkdown || null,
+      profileSource: data.profileSource || undefined,
     });
 
     return NextResponse.json({ success: true });

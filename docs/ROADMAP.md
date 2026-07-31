@@ -14,7 +14,7 @@
 - ✅ Kanban (18 estágios)
 - ✅ Páginas: perfil, match, aplicacoes
 - 🔄 Documentação
-- ⏳ Upload PDF + Transformers.js
+- ✅ Upload PDF + extração IA (skills, cargo, área, senioridade, formação)
 - ⏳ Testes (Vitest + Playwright)
 
 ## v3 (Futuro)

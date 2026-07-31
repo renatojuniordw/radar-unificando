@@ -6,6 +6,8 @@ function normalizeSkill(s: string): string {
   return s.trim().toLowerCase().replace(/[\s-]+/g, ' ');
 }
 
+type ProfileField = 'skills' | 'seniority' | 'experienceYears' | 'currentRole' | 'area' | 'education';
+
 interface ProfileData {
   skills: string[];
   seniority: string;
@@ -15,12 +17,16 @@ interface ProfileData {
   education: string[];
   resumeText: string;
   resumeMarkdown: string | null;
+  profileSource: 'linkedin' | 'manual' | null;
+  fieldOverrides: Set<string>;
 }
 
 interface UploadResponse {
   skills: string[];
   experience: number | null;
   seniority: string | null;
+  currentRole: string | null;
+  area: string | null;
   education: string[];
   markdown: string;
   resumeText: string;
@@ -36,6 +42,8 @@ const INITIAL_STATE: ProfileData = {
   education: [],
   resumeText: '',
   resumeMarkdown: null,
+  profileSource: null,
+  fieldOverrides: new Set(),
 };
 
 export function useProfile() {
@@ -63,6 +71,7 @@ export function useProfile() {
       }
       const data = await res.json();
       if (data) {
+        const hasResume = !!(data.resumeText || data.resumeMarkdown);
         setState({
           skills: data.skills || [],
           seniority: data.seniority || '',
@@ -72,6 +81,8 @@ export function useProfile() {
           education: data.education || [],
           resumeText: data.resumeText || '',
           resumeMarkdown: data.resumeMarkdown || null,
+          profileSource: data.profileSource || (hasResume ? 'linkedin' : 'manual'),
+          fieldOverrides: new Set(),
         });
       }
     } catch {
@@ -79,26 +90,63 @@ export function useProfile() {
     }
   }
 
-  const setField = useCallback(<K extends keyof ProfileData>(key: K, value: ProfileData[K]) => {
-    setState(prev => ({ ...prev, [key]: value }));
+  const setField = useCallback((key: ProfileField, value: ProfileData[ProfileField]) => {
+    setState(prev => ({
+      ...prev,
+      [key]: value,
+      fieldOverrides: new Set(prev.fieldOverrides).add(key),
+    }));
   }, []);
 
   function addSkill(skill: string) {
     const normalized = normalizeSkill(skill);
     if (normalized && !state.skills.includes(normalized)) {
-      setState(prev => ({ ...prev, skills: [...prev.skills, normalized] }));
+      setState(prev => ({
+        ...prev,
+        skills: [...prev.skills, normalized],
+        fieldOverrides: new Set(prev.fieldOverrides).add('skills'),
+      }));
     }
   }
 
   function addSkills(skills: string[]) {
     const normalized = skills.map(normalizeSkill).filter(s => s && !state.skills.includes(s));
     if (normalized.length > 0) {
-      setState(prev => ({ ...prev, skills: [...prev.skills, ...normalized] }));
+      setState(prev => ({
+        ...prev,
+        skills: [...prev.skills, ...normalized],
+        fieldOverrides: new Set(prev.fieldOverrides).add('skills'),
+      }));
     }
   }
 
   function removeSkill(skill: string) {
-    setState(prev => ({ ...prev, skills: prev.skills.filter(s => s !== skill) }));
+    setState(prev => ({
+      ...prev,
+      skills: prev.skills.filter(s => s !== skill),
+      fieldOverrides: new Set(prev.fieldOverrides).add('skills'),
+    }));
+  }
+
+  function revertField(field: ProfileField) {
+    setState(prev => {
+      const next = { ...prev };
+      next.fieldOverrides = new Set(prev.fieldOverrides);
+      next.fieldOverrides.delete(field);
+      return next;
+    });
+  }
+
+  function revertAll() {
+    setState(prev => ({ ...prev, fieldOverrides: new Set() }));
+  }
+
+  function setManualMode() {
+    setState(prev => ({
+      ...prev,
+      profileSource: 'manual',
+      fieldOverrides: new Set(),
+    }));
   }
 
   async function handleSave() {
@@ -113,6 +161,7 @@ export function useProfile() {
         education: state.education,
         resumeText: state.resumeText,
         resumeMarkdown: state.resumeMarkdown,
+        profileSource: state.profileSource,
       };
       const res = await fetch('/api/profile', {
         method: 'PUT',
@@ -147,15 +196,21 @@ export function useProfile() {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       if (res.ok) {
         const data: UploadResponse = await res.json();
-        setState(prev => ({
-          ...prev,
-          skills: data.skills || [],
-          seniority: data.seniority || prev.seniority,
-          experienceYears: data.experience || prev.experienceYears,
-          education: data.education || [],
-          resumeMarkdown: data.markdown || prev.resumeMarkdown,
-          resumeText: data.resumeText || prev.resumeText,
-        }));
+        setState(prev => {
+          const overrides = prev.fieldOverrides;
+          return {
+            ...prev,
+            skills: overrides.has('skills') ? prev.skills : data.skills || prev.skills,
+            seniority: overrides.has('seniority') ? prev.seniority : (data.seniority || prev.seniority),
+            experienceYears: overrides.has('experienceYears') ? prev.experienceYears : (data.experience || prev.experienceYears),
+            currentRole: overrides.has('currentRole') ? prev.currentRole : (data.currentRole || prev.currentRole),
+            area: overrides.has('area') ? prev.area : (data.area || prev.area),
+            education: overrides.has('education') ? prev.education : (data.education || prev.education),
+            resumeMarkdown: data.markdown || prev.resumeMarkdown,
+            resumeText: data.resumeText || prev.resumeText,
+            profileSource: 'linkedin',
+          };
+        });
         const label = input instanceof File ? 'Currículo processado' : 'Skills extraídas do texto';
         return { success: true, message: `${label}! ${data.count} skills encontradas` };
       } else {
@@ -186,6 +241,9 @@ export function useProfile() {
     addSkill,
     addSkills,
     removeSkill,
+    revertField,
+    revertAll,
+    setManualMode,
     saving,
     extracting,
     loadError,

@@ -71,7 +71,10 @@ export async function POST(req: NextRequest) {
       skills: extracted.skills,
       seniority: extracted.seniority || undefined,
       experienceYears: extracted.experienceYears,
+      currentRole: extracted.currentRole || undefined,
+      area: extracted.area || undefined,
       education: extracted.education,
+      profileSource: 'linkedin',
       parsedData: { extractedAt: new Date().toISOString() },
     });
 
@@ -79,6 +82,8 @@ export async function POST(req: NextRequest) {
       skills: extracted.skills,
       experience: extracted.experienceYears,
       seniority: extracted.seniority,
+      currentRole: extracted.currentRole,
+      area: extracted.area,
       education: extracted.education,
       markdown,
       resumeText: rawText,

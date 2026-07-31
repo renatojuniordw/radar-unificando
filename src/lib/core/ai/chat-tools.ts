@@ -44,6 +44,7 @@ export function createChatTools(userId: string) {
           currentRole: profile.currentRole,
           area: profile.area,
           education: profile.education || [],
+          profileSource: profile.profileSource || 'manual',
           resumeMarkdown: profile.resumeMarkdown?.slice(0, 3000) || null,
         };
       },

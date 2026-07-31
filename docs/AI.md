@@ -13,11 +13,22 @@
 ## Pipeline de Extração
 
 ```
-Upload PDF
-  → pdfjs-dist extrai texto raw
-  → LLM converte para markdown + extrai skills/exp/seniority/education
-  → Salva no Profile: resumeText, resumeMarkdown, skills, parsedData
+Upload PDF (LinkedIn export) ou texto colado
+  → pdfjs-dist extrai texto raw (ou texto direto)
+  → LLM extrai: skills, experienceYears, seniority, education, currentRole, area
+  → Salva no Profile: resumeText, resumeMarkdown, skills, seniority, experienceYears, currentRole, area, education, profileSource=linkedin
 ```
+
+### Campos Extraídos do Currículo
+
+| Campo | Extraído | Descrição |
+|-------|----------|-----------|
+| skills | Sim | Skills técnicas e ferramentas mencionadas |
+| experienceYears | Sim | Anos totais de experiência profissional |
+| seniority | Sim | junior/pleno/senior/lead/manager/head |
+| education | Sim | Áreas de formação acadêmica |
+| currentRole | Sim | Cargo mais recente/atual |
+| area | Sim | Área de atuação (Dados/BI/Business/Growth/Engenharia/Produto/Outro) |
 
 ## Pipeline de Análise de Vaga
 

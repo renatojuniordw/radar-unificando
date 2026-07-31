@@ -1,20 +1,25 @@
 'use client';
 
+import { useState } from 'react';
 import { Container, Typography } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useProfile } from '@/hooks/useProfile';
 import { useChatAssistant } from '@/contexts/chat-assistant-context';
 import { ProfileCompletionCard } from '@/components/profile/profile-completion-card';
-import { SkillsSection } from '@/components/profile/skills-section';
-import { ExperienceSection } from '@/components/profile/experience-section';
-import { ResumeUploadSection } from '@/components/profile/resume-upload-section';
+import { ProfileImportSection } from '@/components/profile/profile-import-section';
+import { ProfileReviewSection } from '@/components/profile/profile-review-section';
+import { ProfileEmptyState } from '@/components/profile/profile-empty-state';
 
 export default function PerfilPage() {
   const { data: session } = useSession();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
   const { openWithPrompt } = useChatAssistant();
+  const [showManualForm, setShowManualForm] = useState(false);
+
+  const hasResume = !!(profile.resumeText || profile.resumeMarkdown);
+  const isEmpty = !hasResume && !showManualForm && profile.skills.length === 0;
 
   async function handleSave() {
     const result = await profile.handleSave();
@@ -52,7 +57,7 @@ export default function PerfilPage() {
 
       <Typography sx={{ mb: 3, fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, maxWidth: 560 }}>
         Perfil completo ajuda o assistente e as recomendações a te conhecerem melhor.
-        Adicione suas skills, experiência e currículo.
+        Importe seu currículo do LinkedIn para preencher automaticamente.
       </Typography>
 
       {profile.loadError && (
@@ -73,54 +78,97 @@ export default function PerfilPage() {
         </div>
       )}
 
-      <ProfileCompletionCard
-        percent={profile.completionPercent}
-        completedCount={profile.completionScore}
-        totalCount={6}
-        skills={profile.skills}
-      />
+      {/* Estado vazio: sem perfil nenhum */}
+      {isEmpty && (
+        <ProfileEmptyState
+          onImportClick={() => {
+            const el = document.getElementById('profile-import-section');
+            el?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          onManualClick={() => setShowManualForm(true)}
+        />
+      )}
 
-      <button
-        onClick={() => openWithPrompt('Analise meu perfil e me diga como estão minhas chances nas vagas disponíveis.')}
-        style={{
-          display: 'block', width: '100%', marginBottom: 24,
-          border: '2px solid #020617', background: 'transparent',
-          padding: '10px 16px', cursor: 'pointer', textAlign: 'left',
-          fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase',
-          letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace',
-        }}
-      >
-        Peça pro assistente analisar seu perfil →
-      </button>
+      {/* Sem currículo mas com dados manuais ou modo manual */}
+      {!hasResume && showManualForm && (
+        <ProfileImportSection
+          extracting={profile.extracting}
+          dragOver={profile.dragOver}
+          onDragOver={profile.setDragOver}
+          onExtract={handleExtract}
+        />
+      )}
 
-      <SkillsSection
-        skills={profile.skills}
-        onAdd={profile.addSkill}
-        onRemove={profile.removeSkill}
-        onAddMany={profile.addSkills}
-      />
+      {/* Com currículo: barra de progresso + CTA assistente */}
+      {(hasResume || profile.skills.length > 0) && (
+        <>
+          <ProfileCompletionCard
+            percent={profile.completionPercent}
+            completedCount={profile.completionScore}
+            totalCount={6}
+            skills={profile.skills}
+          />
 
-      <ExperienceSection
-        currentRole={profile.currentRole}
-        seniority={profile.seniority}
-        area={profile.area}
-        experienceYears={profile.experienceYears}
-        onCurrentRoleChange={v => profile.setField('currentRole', v)}
-        onSeniorityChange={v => profile.setField('seniority', v)}
-        onAreaChange={v => profile.setField('area', v)}
-        onExperienceYearsChange={v => profile.setField('experienceYears', v)}
-      />
+          <button
+            onClick={() => openWithPrompt('Analise meu perfil e me diga como estão minhas chances nas vagas disponíveis.')}
+            style={{
+              display: 'block', width: '100%', marginBottom: 24,
+              border: '2px solid #020617', background: 'transparent',
+              padding: '10px 16px', cursor: 'pointer', textAlign: 'left',
+              fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase',
+              letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace',
+            }}
+          >
+            Peça pro assistente analisar seu perfil →
+          </button>
 
-      <ResumeUploadSection
-        resumeText={profile.resumeText}
-        onResumeTextChange={v => profile.setField('resumeText', v)}
-        education={profile.education}
-        resumeMarkdown={profile.resumeMarkdown}
-        extracting={profile.extracting}
-        dragOver={profile.dragOver}
-        onDragOver={profile.setDragOver}
-        onExtract={handleExtract}
-      />
+          <ProfileReviewSection
+            skills={profile.skills}
+            currentRole={profile.currentRole}
+            seniority={profile.seniority}
+            area={profile.area}
+            experienceYears={profile.experienceYears}
+            education={profile.education}
+            profileSource={profile.profileSource}
+            fieldOverrides={profile.fieldOverrides}
+            onFieldChange={(field, value) => profile.setField(field as any, value)}
+            onAddSkill={profile.addSkill}
+            onAddSkills={profile.addSkills}
+            onRemoveSkill={profile.removeSkill}
+            onRevertField={(field) => profile.revertField(field as any)}
+          />
+
+          {hasResume && (
+            <div style={{ marginBottom: 24 }}>
+              <ProfileImportSection
+                extracting={profile.extracting}
+                dragOver={profile.dragOver}
+                onDragOver={profile.setDragOver}
+                onExtract={handleExtract}
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modo manual sem currículo: formulário simplificado */}
+      {!hasResume && showManualForm && (
+        <ProfileReviewSection
+          skills={profile.skills}
+          currentRole={profile.currentRole}
+          seniority={profile.seniority}
+          area={profile.area}
+          experienceYears={profile.experienceYears}
+          education={profile.education}
+          profileSource="manual"
+          fieldOverrides={profile.fieldOverrides}
+          onFieldChange={(field, value) => profile.setField(field as any, value)}
+          onAddSkill={profile.addSkill}
+          onAddSkills={profile.addSkills}
+          onRemoveSkill={profile.removeSkill}
+          onRevertField={() => {}}
+        />
+      )}
 
       <button
         onClick={handleSave}
