@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { UserMenu } from './user-menu';
 
 export function Header() {
-  const { data: session } = useSession();
-
   return (
     <header
       style={{
@@ -47,75 +45,9 @@ export function Header() {
             </span>
           </Link>
 
-          {session && (
-            <nav style={{ display: 'flex', gap: 4, marginLeft: 16 }}>
-              {[
-                { href: '/perfil', label: 'PERFIL' },
-              ].map(link => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  style={{
-                    color: '#94a3b8',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    textDecoration: 'none',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    padding: '4px 8px',
-                    fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace',
-                  }}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          )}
-
           <div style={{ flexGrow: 1 }} />
 
-          {session ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ color: '#64748b', fontSize: 11, fontWeight: 700, fontFamily: 'ui-monospace, monospace', display: 'none' }} className="md:inline">
-                {session.user?.email}
-              </span>
-              <button
-                onClick={() => signOut()}
-                style={{
-                  backgroundColor: '#ccff00',
-                  color: '#020617',
-                  border: '2px solid #020617',
-                  fontWeight: 900,
-                  fontSize: 11,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  padding: '6px 12px',
-                  cursor: 'pointer',
-                  fontFamily: 'ui-monospace, monospace',
-                }}
-              >
-                SAIR
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              style={{
-                backgroundColor: '#ccff00',
-                color: '#020617',
-                border: '2px solid #020617',
-                fontWeight: 900,
-                fontSize: 11,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                padding: '6px 12px',
-                textDecoration: 'none',
-                fontFamily: 'ui-monospace, monospace',
-              }}
-            >
-              ENTRAR
-            </Link>
-          )}
+          <UserMenu />
         </div>
       </div>
     </header>
