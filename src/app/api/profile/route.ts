@@ -24,11 +24,11 @@ export async function PUT(req: NextRequest) {
       skills: data.skills || [],
       experienceYears: data.experienceYears || null,
       seniority: data.seniority || null,
+      currentRole: data.currentRole || null,
+      area: data.area || null,
+      education: data.education || [],
       resumeText: data.resumeText || null,
-      parsedData: {
-        currentRole: data.currentRole || null,
-        area: data.area || null,
-      },
+      resumeMarkdown: data.resumeMarkdown || null,
     });
 
     return NextResponse.json({ success: true });

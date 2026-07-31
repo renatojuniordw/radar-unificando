@@ -10,6 +10,10 @@ vi.mock('@/lib/infrastructure/security/rate-limiter', () => ({
 vi.mock('@/lib/core/ai/skill-extractor', () => ({
   extractSkillsFromResume: vi.fn(),
 }));
+vi.mock('@/lib/core/parsing/pdf-to-markdown', () => ({
+  pdfToMarkdown: vi.fn().mockResolvedValue('## Skills\npython, sql'),
+  textToMarkdown: vi.fn().mockImplementation((t: string) => t),
+}));
 
 import { auth } from '@/auth';
 import { profileRepository } from '@/lib/infrastructure/repositories';
@@ -54,7 +58,6 @@ describe('Upload API', () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
     vi.mocked(uploadLimiter.check).mockReturnValue({ allowed: true, remaining: 9, resetAt: Date.now() + 3600000 });
     vi.mocked(extractSkillsFromResume).mockResolvedValue({
-      markdown: '## Skills\npython, sql',
       skills: ['python', 'sql'], experienceYears: 5, seniority: 'senior', education: ['Computer Science'],
     });
     vi.mocked(profileRepository.upsert).mockResolvedValue();

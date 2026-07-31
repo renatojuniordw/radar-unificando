@@ -30,16 +30,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Vaga não encontrada.' }, { status: 404 });
     }
 
-    const parsedData = profile.parsedData as { education?: string[] } | null;
+    const resumeContext = profile.resumeMarkdown || profile.resumeText || '';
 
     const analysis = await analyzeJobFit(
-      profile.resumeText || profile.resumeMarkdown || '',
+      resumeContext,
       job.tituloVaga || '',
       job.descricao || '',
       (profile.skills as string[]) || [],
       profile.experienceYears || 0,
       profile.seniority || 'pleno',
-      parsedData?.education || [],
+      (profile.education as string[]) || [],
       traceId,
     );
 

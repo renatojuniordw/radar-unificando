@@ -42,11 +42,47 @@ describe('Profile API', () => {
       expect((await PUT({ json: async () => ({}) } as any)).status).toBe(401);
     });
 
-    it('should_upsert_profile', async () => {
+    it('should_upsert_profile_with_new_columns', async () => {
       mockSession();
       vi.mocked(profileRepository.upsert).mockResolvedValue();
-      const res = await PUT({ json: async () => ({ skills: ['python', 'sql'], experienceYears: 5, seniority: 'senior' }) } as any);
+      const res = await PUT({ json: async () => ({
+        skills: ['python', 'sql'],
+        experienceYears: 5,
+        seniority: 'senior',
+        currentRole: 'Data Engineer',
+        area: 'Dados',
+        education: ['Computer Science'],
+      }) } as any);
       expect(res.status).toBe(200);
+
+      const upsertCall = vi.mocked(profileRepository.upsert).mock.calls[0];
+      expect(upsertCall[1]).toMatchObject({
+        skills: ['python', 'sql'],
+        experienceYears: 5,
+        seniority: 'senior',
+        currentRole: 'Data Engineer',
+        area: 'Dados',
+        education: ['Computer Science'],
+      });
+      expect(upsertCall[1]).not.toHaveProperty('parsedData');
+    });
+
+    it('should_not_clobber_other_fields_on_update', async () => {
+      mockSession();
+      vi.mocked(profileRepository.upsert).mockResolvedValue();
+
+      await PUT({ json: async () => ({
+        skills: ['python'],
+        currentRole: 'Data Engineer',
+        area: 'Dados',
+      }) } as any);
+
+      const upsertCall = vi.mocked(profileRepository.upsert).mock.calls[0];
+      expect(upsertCall[1]).toMatchObject({
+        skills: ['python'],
+        currentRole: 'Data Engineer',
+        area: 'Dados',
+      });
     });
   });
 });

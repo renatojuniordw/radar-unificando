@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { uploadLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
+import { pdfToMarkdown, textToMarkdown } from '@/lib/core/parsing/pdf-to-markdown';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -22,7 +23,8 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File | null;
     const textDirect = formData.get('text') as string | null;
 
-    let text = textDirect || '';
+    let rawText = '';
+    let markdown = '';
 
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -42,29 +44,35 @@ export async function POST(req: NextRequest) {
             const content = await page.getTextContent();
             pages.push(content.items.map((item: any) => item.str).join(' '));
           }
-          text = pages.join('\n');
+          rawText = pages.join('\n');
+          markdown = await pdfToMarkdown(buffer);
         } catch (pdfError) {
           console.error('[upload] PDF parse failed:', pdfError);
           return NextResponse.json({ error: 'Não foi possível ler o PDF. Formatos aceitos: PDF do LinkedIn.' }, { status: 400 });
         }
       } else {
-        text = buffer.toString('utf-8');
+        rawText = buffer.toString('utf-8');
+        markdown = textToMarkdown(rawText);
       }
+    } else {
+      rawText = textDirect || '';
+      markdown = textToMarkdown(rawText);
     }
 
-    if (!text || text.trim().length < 20) {
+    if (!rawText || rawText.trim().length < 20) {
       return NextResponse.json({ error: 'Texto muito curto. Cole o conteúdo do currículo.' }, { status: 400 });
     }
 
-    const extracted = await extractSkillsFromResume(text, traceId);
+    const extracted = await extractSkillsFromResume(markdown, traceId);
 
     await profileRepository.upsert(session.user.id, {
-      resumeText: text,
-      resumeMarkdown: extracted.markdown,
+      resumeText: rawText,
+      resumeMarkdown: markdown,
       skills: extracted.skills,
       seniority: extracted.seniority || undefined,
       experienceYears: extracted.experienceYears,
-      parsedData: { education: extracted.education, extractedAt: new Date().toISOString() },
+      education: extracted.education,
+      parsedData: { extractedAt: new Date().toISOString() },
     });
 
     return NextResponse.json({
@@ -72,7 +80,8 @@ export async function POST(req: NextRequest) {
       experience: extracted.experienceYears,
       seniority: extracted.seniority,
       education: extracted.education,
-      markdown: extracted.markdown,
+      markdown,
+      resumeText: rawText,
       count: extracted.skills.length,
     });
   } catch (error) {

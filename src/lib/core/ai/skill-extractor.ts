@@ -3,22 +3,21 @@ import { generate } from './llm-provider';
 import { resumeExtractionSchema, type ResumeExtraction } from './extraction-schema';
 import { logAiEvent } from './ai-logger';
 
-const EXTRACT_PROMPT = `Extraia do currículo abaixo:
-- skills: skills técnicas e ferramentas
-- experienceYears: anos de experiência (null se não mencionado)
+const EXTRACT_PROMPT = `Extraia do currículo em markdown abaixo:
+- skills: skills técnicas e ferramentas mencionadas
+- experienceYears: anos totais de experiência profissional (null se não mencionado)
 - seniority: junior, pleno, senior, lead, manager ou head (null se indeterminado)
-- education: áreas de formação
-- markdown: o currículo convertido para markdown limpo (seções com ##, listas com bullets, sem artefatos de PDF)
+- education: áreas de formação acadêmica
 
 Responda APENAS com JSON válido, sem explicação:
-{"markdown":"...","skills":["x"],"experienceYears":7,"seniority":"senior","education":["y"]}
+{"skills":["Python","SQL"],"experienceYears":7,"seniority":"senior","education":["Computer Science"]}
 
 Currículo:`;
 
-const MAX_RESUME_CHARS = 10000;
+const MAX_RESUME_CHARS = 12000;
 
 export async function extractSkillsFromResume(
-  text: string,
+  markdownText: string,
   traceId?: string,
 ): Promise<ResumeExtraction> {
   const start = performance.now();
@@ -26,8 +25,8 @@ export async function extractSkillsFromResume(
   try {
     const object = await generate(
       resumeExtractionSchema,
-      EXTRACT_PROMPT + '\n\n' + text.slice(0, MAX_RESUME_CHARS),
-      { maxOutputTokens: 2000 },
+      EXTRACT_PROMPT + '\n\n' + markdownText.slice(0, MAX_RESUME_CHARS),
+      { maxOutputTokens: 1000 },
     );
 
     const latency = (performance.now() - start).toFixed(0);
@@ -38,7 +37,6 @@ export async function extractSkillsFromResume(
       experienceYears: object.experienceYears,
       seniority: object.seniority,
       education: object.education,
-      markdownLength: object.markdown.length,
       success: true,
     });
 

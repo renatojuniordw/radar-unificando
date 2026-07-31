@@ -11,24 +11,21 @@ const { generate } = await import('@/lib/core/ai/llm-provider');
 describe('extractSkillsFromResume', () => {
   it('should return skills, experience, seniority and education', async () => {
     vi.mocked(generate).mockResolvedValueOnce({
-      markdown: '## Skills\nPython, SQL, Power BI, AWS',
       skills: ['Python', 'SQL', 'Power BI', 'AWS'],
       experienceYears: 5,
       seniority: 'pleno',
       education: ['Computer Science', 'Statistics'],
     });
 
-    const result = await extractSkillsFromResume('resume text here');
+    const result = await extractSkillsFromResume('## Skills\nPython, SQL');
     expect(result.skills).toEqual(['Python', 'SQL', 'Power BI', 'AWS']);
     expect(result.experienceYears).toBe(5);
     expect(result.seniority).toBe('pleno');
     expect(result.education).toEqual(['Computer Science', 'Statistics']);
-    expect(result.markdown).toContain('## Skills');
   });
 
   it('should return null for missing experience and seniority', async () => {
     vi.mocked(generate).mockResolvedValueOnce({
-      markdown: '## Skills\nPython',
       skills: ['Python'],
       experienceYears: null,
       seniority: null,

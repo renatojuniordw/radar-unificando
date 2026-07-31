@@ -2,82 +2,70 @@
 
 import { useState, useRef, useEffect } from 'react';
 import {
-  Box, Fab, Drawer, TextField, IconButton, Typography, Paper, Avatar, CircularProgress,
+  Box, Fab, Drawer, TextField, IconButton, Typography, Paper, Avatar, CircularProgress, Chip,
 } from '@mui/material';
-import { Chat as ChatIcon, Send as SendIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Chat as ChatIcon, Send as SendIcon, Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
+import { useChat } from '@ai-sdk/react';
+import ReactMarkdown from 'react-markdown';
+import { useChatAssistant } from '@/contexts/chat-assistant-context';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
+const TOOL_LABELS: Record<string, string> = {
+  search_jobs: 'Buscando vagas...',
+  get_my_profile: 'Consultando seu perfil...',
+  get_job_details: 'Buscando detalhes da vaga...',
+  analyze_job_fit: 'Analisando compatibilidade...',
+};
+
+function MarkdownBubble({ text }: { text: string }) {
+  return (
+    <Box
+      sx={{
+        fontSize: '0.875rem',
+        lineHeight: 1.43,
+        '& > :first-of-type': { mt: 0 },
+        '& > :last-child': { mb: 0 },
+        '& p': { m: 0, mb: 1 },
+        '& ul, & ol': { m: 0, mb: 1, pl: 2.5 },
+        '& li': { mb: 0.25 },
+        '& strong': { fontWeight: 700 },
+        '& code': {
+          bgcolor: 'action.hover',
+          borderRadius: 0.5,
+          px: 0.5,
+          fontSize: '0.8em',
+        },
+        '& a': { color: 'primary.main' },
+      }}
+    >
+      <ReactMarkdown>{text}</ReactMarkdown>
+    </Box>
+  );
 }
 
 export function ChatAssistant() {
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { open, pendingPrompt, close, clearPendingPrompt } = useChatAssistant();
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
+  const { messages, sendMessage, status, error } = useChat({ throttle: 100 });
+  const loading = status === 'submitted' || status === 'streaming';
+
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'auto' });
   }, [messages, loading]);
 
-  async function handleSend() {
-    if (!input.trim() || loading) return;
-
-    const userMsg: Message = { role: 'user', content: input };
-    const updated = [...messages, userMsg];
-    setMessages(updated);
-    setInput('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: updated.map(m => ({ role: m.role, content: m.content })),
-        }),
-      });
-
-      if (!res.ok) {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Erro ao processar mensagem.' }]);
-        setLoading(false);
-        return;
-      }
-
-      const reader = res.body?.getReader();
-      if (!reader) return;
-
-      const decoder = new TextDecoder();
-      let assistantMsg = '';
-
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('0:"')) {
-            const text = line.slice(3, -2);
-            assistantMsg += text;
-            setMessages(prev => {
-              const copy = [...prev];
-              copy[copy.length - 1] = { role: 'assistant', content: assistantMsg };
-              return copy;
-            });
-          }
-        }
-      }
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Erro de conexão. Tente novamente.' }]);
+  useEffect(() => {
+    if (open && pendingPrompt) {
+      setInput(pendingPrompt);
+      clearPendingPrompt();
     }
+  }, [open, pendingPrompt, clearPendingPrompt]);
 
-    setLoading(false);
+  function handleSend(text?: string) {
+    const msg = text ?? input;
+    if (!msg.trim() || loading) return;
+    sendMessage({ text: msg });
+    setInput('');
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -92,7 +80,6 @@ export function ChatAssistant() {
       <Fab
         color="primary"
         sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1300 }}
-        onClick={() => setOpen(true)}
       >
         <ChatIcon />
       </Fab>
@@ -100,14 +87,14 @@ export function ChatAssistant() {
       <Drawer
         anchor="right"
         open={open}
-        onClose={() => setOpen(false)}
-        PaperProps={{
-          sx: { width: 380, maxWidth: '100vw', display: 'flex', flexDirection: 'column' },
+        onClose={close}
+        slotProps={{
+          paper: { sx: { width: 380, maxWidth: '100vw', display: 'flex', flexDirection: 'column' } },
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Assistente de Vagas</Typography>
-          <IconButton size="small" onClick={() => setOpen(false)}>
+          <IconButton size="small" onClick={close}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -121,31 +108,74 @@ export function ChatAssistant() {
             </Typography>
           )}
 
-          {messages.map((msg, i) => (
-            <Box key={i} sx={{ display: 'flex', gap: 1, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
-              <Avatar sx={{ width: 28, height: 28, fontSize: 12, bgcolor: msg.role === 'user' ? 'primary.main' : 'grey.500' }}>
-                {msg.role === 'user' ? 'U' : 'A'}
-              </Avatar>
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 1.5,
-                  maxWidth: '80%',
-                  bgcolor: msg.role === 'user' ? 'primary.main' : 'background.paper',
-                  color: msg.role === 'user' ? 'primary.contrastText' : 'text.primary',
-                }}
-              >
-                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                  {msg.content || (i === messages.length - 1 && loading ? '' : msg.content)}
-                </Typography>
-              </Paper>
-            </Box>
-          ))}
+          {messages.map(msg => {
+            // Agrupa as partes em "blocos": cada step-start ou chamada de ferramenta
+            // inicia um novo bloco, para renderizar como bolhas separadas.
+            const blocks: Array<
+              | { kind: 'text'; key: string; text: string }
+              | { kind: 'tool'; key: string; toolName: string }
+            > = [];
 
-          {loading && messages[messages.length - 1]?.content === '' && (
+            msg.parts.forEach((part, pi) => {
+              if (part.type === 'text') {
+                if (!part.text.trim()) return;
+                blocks.push({ kind: 'text', key: `${msg.id}-text-${pi}`, text: part.text });
+              } else if (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) {
+                const toolName = part.type === 'dynamic-tool' ? (part as any).toolName : part.type.slice('tool-'.length);
+                const toolCallId = (part as any).toolCallId || pi;
+                blocks.push({ kind: 'tool', key: `${msg.id}-tool-${toolCallId}`, toolName });
+              }
+            });
+
+            return blocks.map(block => (
+              <Box
+                key={block.key}
+                sx={{ display: 'flex', gap: 1, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}
+              >
+                <Avatar sx={{ width: 28, height: 28, fontSize: 12, bgcolor: msg.role === 'user' ? 'primary.main' : 'grey.500' }}>
+                  {msg.role === 'user' ? 'U' : 'A'}
+                </Avatar>
+
+                {block.kind === 'tool' ? (
+                  <Chip
+                    size="small"
+                    icon={<SearchIcon fontSize="small" />}
+                    label={TOOL_LABELS[block.toolName] || `Usando ${block.toolName}...`}
+                    sx={{ alignSelf: 'center' }}
+                  />
+                ) : (
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 1.5,
+                      maxWidth: '80%',
+                      bgcolor: msg.role === 'user' ? 'primary.main' : 'background.paper',
+                      color: msg.role === 'user' ? 'primary.contrastText' : 'text.primary',
+                    }}
+                  >
+                    {msg.role === 'assistant' ? (
+                      <MarkdownBubble text={block.text} />
+                    ) : (
+                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                        {block.text}
+                      </Typography>
+                    )}
+                  </Paper>
+                )}
+              </Box>
+            ));
+          })}
+
+          {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'flex-start', pl: 4 }}>
               <CircularProgress size={16} />
             </Box>
+          )}
+
+          {error && (
+            <Typography variant="body2" color="error" sx={{ pl: 4 }}>
+              {error.message || 'Erro ao processar a mensagem. Tente novamente.'}
+            </Typography>
           )}
 
           <div ref={endRef} />
@@ -163,7 +193,7 @@ export function ChatAssistant() {
             slotProps={{
               input: {
                 endAdornment: (
-                  <IconButton size="small" onClick={handleSend} disabled={!input.trim() || loading}>
+                  <IconButton size="small" onClick={() => handleSend()} disabled={!input.trim() || loading}>
                     <SendIcon fontSize="small" />
                   </IconButton>
                 ),

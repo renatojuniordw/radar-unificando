@@ -34,16 +34,19 @@ model Session {
 }
 
 model Profile {
-  id             String   @id @default(uuid()) @db.Uuid
-  userId         String   @unique @map("user_id") @db.Uuid
-  skills         Json     @default("[]")
-  experienceYears Int?    @map("experience_years")
-  seniority      String?  @db.VarChar(50)
-  resumeText     String?  @map("resume_text") @db.Text
-  resumeMarkdown String?  @map("resume_markdown") @db.Text
-  parsedData     Json?    @map("parsed_data")
-  createdAt      DateTime @default(now()) @map("created_at")
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  skills          Json     @default("[]")
+  experienceYears Int?     @map("experience_years")
+  seniority       String?  @db.VarChar(50)
+  currentRole     String?  @map("current_role") @db.VarChar(255)
+  area            String?  @db.VarChar(100)
+  education       Json?    @default("[]")
+  resumeText      String?  @map("resume_text") @db.Text
+  resumeMarkdown  String?  @map("resume_markdown") @db.Text
+  parsedData      Json?    @map("parsed_data")
+  createdAt       DateTime @default(now()) @map("created_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
