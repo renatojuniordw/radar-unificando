@@ -23,16 +23,6 @@ test.describe('Radar Unificando — Fluxos Principais', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('página de match redireciona para login quando não autenticado', async ({ page }) => {
-    await page.goto('/match');
-    await expect(page).toHaveURL(/\/login/);
-  });
-
-  test('página de aplicacoes redireciona para login quando não autenticado', async ({ page }) => {
-    await page.goto('/aplicacoes');
-    await expect(page).toHaveURL(/\/login/);
-  });
-
   test('health check endpoint responde', async ({ request }) => {
     const response = await request.get('/api/health');
     expect(response.ok()).toBeTruthy();

@@ -10,9 +10,7 @@
 - ✅ Auth.js v5 (credentials + JWT)
 - ✅ MUI 7 + Dark mode
 - ✅ Gupy MCP + REST fallback
-- ✅ Scoring engine (9 componentes)
-- ✅ Kanban (18 estágios)
-- ✅ Páginas: perfil, match, aplicacoes
+- ✅ Páginas: perfil
 - 🔄 Documentação
 - ✅ Upload PDF + extração IA (skills, cargo, área, senioridade, formação)
 - ⏳ Testes (Vitest + Playwright)

@@ -52,7 +52,7 @@ export default auth((req) => {
   }
 
   // Protect dashboard routes
-  const protectedPaths = ['/perfil', '/match', '/aplicacoes'];
+  const protectedPaths = ['/perfil'];
   if (protectedPaths.some(p => path.startsWith(p)) && !req.auth) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', path);

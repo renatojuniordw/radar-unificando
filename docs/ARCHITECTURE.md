@@ -6,7 +6,7 @@
 Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── (public)/    → páginas anônimas (busca rápida)
   ├── (auth)/      → login/register
-  └── (dashboard)/ → logado (perfil, match, kanban)
+  └── (dashboard)/ → logado (perfil)
         |
 API Layer
   ├── Route Handlers (REST)
@@ -15,15 +15,10 @@ API Layer
         |
 Application Layer
   ├── PipelineOrchestrator (scrapers)
-  ├── MatchingService (score engine)
   ├── ResumeService (parse + skills)
-  └── ApplicationService (kanban state machine)
+  └── ChatService (assistente IA)
         |
 Domain Layer
-  ├── matching/scoring-engine.ts    → 9 componentes
-  ├── matching/skill-taxonomy.ts    → taxonomia
-  ├── matching/resume-adapter.ts    → template adapt
-  ├── application/state-machine.ts  → 18 estágios
   ├── scrapers/*                    → IScraper
   └── gupy-mcp/client.ts            → JSON-RPC client
         |
@@ -39,7 +34,7 @@ Infrastructure Layer
 | Camada | SOLID | Segurança |
 |--------|-------|-----------|
 | Domain | SRP + ISP (interfaces mínimas) | Dados sanitizados na entrada |
-| Application | DIP (depende de abstrações) | Server Actions autenticadas |
+| Application | DIP (depende de abstrações) | Autenticação via Auth.js |
 | Infrastructure | OCP (trocável via interface) | SQL injection: Prisma ORM |
 | Presentation | SRP (página = 1 propósito) | XSS: MUI escapa HTML |
 
@@ -50,5 +45,5 @@ Infrastructure Layer
 3. Pipeline roda em background, emite eventos SSE
 4. Cliente recebe eventos e atualiza UI em tempo real
 5. Resultados salvos em PostgreSQL via Prisma ORM
-6. (Logado) Matching engine calcula score por vaga
-7. (Logado) Kanban gerencia candidaturas com state machine
+6. Usuário visualiza vagas na tabela com filtros e export CSV
+7. Chat assistente analisa perfil vs vagas via IA

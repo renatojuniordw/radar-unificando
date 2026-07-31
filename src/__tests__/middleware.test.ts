@@ -50,7 +50,7 @@ describe('Middleware', () => {
   });
 
   it('should_redirect_unauthenticated_users_from_protected_routes', async () => {
-    const protectedPaths = ['/perfil', '/match', '/aplicacoes'];
+    const protectedPaths = ['/perfil'];
     for (const path of protectedPaths) {
       const request = new NextRequest(`http://localhost${path}`);
       const url = request.nextUrl;

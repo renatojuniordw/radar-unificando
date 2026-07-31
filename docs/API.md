@@ -40,21 +40,6 @@ Cookie: next-auth.session-token=<token>
 | GET | `/api/profile` | ✅ | Obter perfil do usuário |
 | PUT | `/api/profile` | ✅ | Atualizar perfil (skills, seniority, resumeText) |
 
-### Match
-
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| GET | `/api/match` | ✅ | Score de match entre perfil e vagas |
-
-### Candidaturas
-
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| GET | `/api/applications` | ✅ | Listar candidaturas |
-| POST | `/api/applications` | ✅ | Criar candidatura (jobId, stage) |
-| PATCH | `/api/applications/:id` | ✅ | Mover estágio (stage) |
-| DELETE | `/api/applications/:id` | ✅ | Remover candidatura |
-
 ### Chat
 
 | Método | Rota | Auth | Descrição |

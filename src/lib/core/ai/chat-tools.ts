@@ -1,8 +1,55 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import type { Profile } from '@prisma/client';
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeJobFit } from '@/lib/core/ai/job-analyzer';
+import { analyzeJobFit, JOB_ANALYZER_PROMPT_VERSION, type JobAnalysis } from '@/lib/core/ai/job-analyzer';
+import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
+
+const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
+
+async function analyzeWithCache(
+  userId: string,
+  profile: Profile,
+  jobTitle: string,
+  jobDescription: string,
+): Promise<JobAnalysis> {
+  const resumeContext = profile.resumeMarkdown || profile.resumeText || '';
+  const skills = (profile.skills as string[]) || [];
+  const education = (profile.education as string[]) || [];
+  const experienceYears = profile.experienceYears || 0;
+  const seniority = profile.seniority || 'pleno';
+
+  // Sem jobId (vaga vem do MCP ao vivo, não persistida) — usa hash do
+  // próprio título+descrição no lugar do jobId na chave de cache.
+  const cacheKey = computeCacheKey(JOB_ANALYZER_PROMPT_VERSION, [
+    jobTitle,
+    jobDescription,
+    skills,
+    experienceYears,
+    seniority,
+    education,
+    resumeContext,
+  ]);
+
+  const cached = await getCached<JobAnalysis>(userId, 'fit_analysis', cacheKey);
+  if (cached) return cached;
+
+  const traceId = crypto.randomUUID();
+  const analysis = await analyzeJobFit(
+    resumeContext,
+    jobTitle,
+    jobDescription,
+    skills,
+    experienceYears,
+    seniority,
+    education,
+    traceId,
+  );
+
+  await saveToCache(userId, 'fit_analysis', cacheKey, analysis);
+  return analysis;
+}
 
 export function createChatTools(userId: string) {
   return {
@@ -69,17 +116,34 @@ export function createChatTools(userId: string) {
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
-        const traceId = crypto.randomUUID();
-        return analyzeJobFit(
-          profile.resumeMarkdown || profile.resumeText || '',
-          jobTitle,
-          jobDescription,
-          (profile.skills as string[]) || [],
-          profile.experienceYears || 0,
-          profile.seniority || 'pleno',
-          (profile.education as string[]) || [],
-          traceId,
+        return analyzeWithCache(userId, profile, jobTitle, jobDescription);
+      },
+    }),
+
+    compare_jobs: tool({
+      description: 'Comparar de 2 a 5 vagas entre si quanto à compatibilidade com o perfil do usuário. Use título e descrição já retornados por search_jobs para cada vaga — não invente dados. Retorna os resultados já ordenados do melhor para o pior fit; apresente a comparação ao usuário com base nisso.',
+      inputSchema: z.object({
+        jobs: z.array(
+          z.object({
+            jobTitle: z.string().min(1).max(200).trim().describe('Título da vaga (campo "titulo" de search_jobs)'),
+            jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
+          }),
+        ).min(2, 'Informe pelo menos 2 vagas para comparar').max(5, 'Compare no máximo 5 vagas por vez'),
+      }),
+      execute: async ({ jobs }: { jobs: { jobTitle: string; jobDescription: string }[] }) => {
+        console.log(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
+        const profile = await profileRepository.findByUserId(userId);
+        if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
+
+        const results = await Promise.all(
+          jobs.map(async ({ jobTitle, jobDescription }) => ({
+            jobTitle,
+            ...(await analyzeWithCache(userId, profile, jobTitle, jobDescription)),
+          })),
         );
+
+        results.sort((a, b) => FIT_RANK[b.overallFit] - FIT_RANK[a.overallFit]);
+        return { ranking: results };
       },
     }),
   };

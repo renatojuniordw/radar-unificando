@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import type { Session } from 'next-auth';
 import {
   Box, Typography, TextField, Button,
   Select, MenuItem, InputAdornment, Autocomplete,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
-import { ScoreRing } from './score-ring';
+
 
 interface Vaga {
   id?: number;
@@ -26,25 +25,15 @@ interface Vaga {
   detectado_em: string;
 }
 
-interface JobInfo {
-  id: string;
-  empresa: string;
-  titulo: string;
-  score: number;
-}
-
 interface Props {
   vagas: Vaga[];
   loading: boolean;
   cargos: string[];
-  scores: Record<string, number>;
-  session: Session | null;
-  onJobClick: (job: JobInfo) => void;
   onExportCsv: () => void;
   onFilterChange: (filters: { plataforma?: string; cargo?: string; search?: string }) => void;
 }
 
-export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick, onExportCsv, onFilterChange }: Props) {
+export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange }: Props) {
   const [filtroPlataforma, setFiltroPlataforma] = useState('');
   const [filtroCargo, setFiltroCargo] = useState('');
   const [filtroBusca, setFiltroBusca] = useState('');
@@ -222,7 +211,7 @@ export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick,
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
               <thead>
                 <tr style={{ backgroundColor: '#020617' }}>
-                  {['EMPRESA', 'PLAT', 'CARGO', 'TÍTULO', 'LOCAL', 'LINK', ...(session ? ['SCORE'] : [])].map(h => (
+                  {['EMPRESA', 'PLAT', 'CARGO', 'TÍTULO', 'LOCAL', 'LINK'].map(h => (
                     <th key={h} style={{ color: '#ccff00', fontWeight: 700, textAlign: 'left', padding: '8px 12px', textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
                       {h}
                     </th>
@@ -230,10 +219,7 @@ export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick,
                 </tr>
               </thead>
               <tbody>
-                {paginatedVagas.map((vaga, i) => {
-                  const vagaId = vaga.id;
-                  const score = vagaId ? scores[String(vagaId)] : undefined;
-                  return (
+                {paginatedVagas.map((vaga, i) => (
                     <tr
                       key={`${vaga.link}-${i}`}
                       style={{
@@ -300,24 +286,8 @@ export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick,
                           VER
                         </a>
                       </td>
-                      {session && (
-                        <td style={{ padding: '8px 12px' }}>
-                          {score ? (
-                            <ScoreRing
-                              score={score}
-                              size={28}
-                              thickness={3}
-                              clickable
-                              onClick={() => onJobClick({ id: String(vagaId), empresa: vaga.empresa, titulo: vaga.titulo_vaga, score })}
-                            />
-                          ) : (
-                            <span style={{ color: '#94a3b8' }}>—</span>
-                          )}
-                        </td>
-                      )}
                     </tr>
-                  );
-                })}
+                  ))}
               </tbody>
             </table>
           </div>

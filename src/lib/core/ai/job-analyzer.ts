@@ -42,6 +42,9 @@ const analysisSchema = z.object({
 
 export type JobAnalysis = z.infer<typeof analysisSchema>;
 
+// Bump ao mudar o PROMPT abaixo — invalida caches existentes automaticamente.
+export const JOB_ANALYZER_PROMPT_VERSION = 'v1';
+
 // ---------------------------------------------------------------------------
 // Sanitização de conteúdo não confiável (currículo e descrição de vaga vêm
 // de terceiros — usuário e postagens externas via Gupy). Colapsa espaços

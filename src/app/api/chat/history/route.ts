@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
-
-const CHATS_DIR = path.join(process.cwd(), '.chats');
-
-async function ensureChatsDir() {
-  if (!existsSync(CHATS_DIR)) {
-    await mkdir(CHATS_DIR, { recursive: true });
-  }
-}
-
-function getChatFile(userId: string, chatId: string): string {
-  const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
-  const safeChatId = chatId.replace(/[^a-zA-Z0-9_-]/g, '');
-  return path.join(CHATS_DIR, `${safeUserId}-${safeChatId}.json`);
-}
+import { chatRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -28,19 +12,11 @@ export async function GET(req: NextRequest) {
   const chatId = searchParams.get('chatId') || 'default';
 
   try {
-    await ensureChatsDir();
-    const filePath = getChatFile(session.user.id, chatId);
-    
-    if (!existsSync(filePath)) {
-      return NextResponse.json({ messages: [] });
-    }
-
-    const content = await readFile(filePath, 'utf-8');
-    const messages = JSON.parse(content);
+    const messages = await chatRepository.getMessages(session.user.id, chatId);
     return NextResponse.json({ messages });
   } catch (error) {
     console.error('[chat-history] Error loading:', error);
-    return NextResponse.json({ messages: [] });
+    return NextResponse.json({ messages: [] }, { status: 500 });
   }
 }
 
@@ -52,12 +28,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { chatId = 'default', messages } = await req.json();
-    
-    await ensureChatsDir();
-    const filePath = getChatFile(session.user.id, chatId);
-    
-    await writeFile(filePath, JSON.stringify(messages, null, 2), 'utf-8');
-    
+    await chatRepository.replaceMessages(session.user.id, chatId, messages);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[chat-history] Error saving:', error);
@@ -75,14 +46,7 @@ export async function DELETE(req: NextRequest) {
   const chatId = searchParams.get('chatId') || 'default';
 
   try {
-    await ensureChatsDir();
-    const filePath = getChatFile(session.user.id, chatId);
-    
-    if (existsSync(filePath)) {
-      const { unlink } = await import('fs/promises');
-      await unlink(filePath);
-    }
-    
+    await chatRepository.deleteChat(session.user.id, chatId);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[chat-history] Error deleting:', error);

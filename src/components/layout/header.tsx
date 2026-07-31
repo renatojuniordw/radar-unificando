@@ -51,8 +51,6 @@ export function Header() {
             <nav style={{ display: 'flex', gap: 4, marginLeft: 16 }}>
               {[
                 { href: '/perfil', label: 'PERFIL' },
-                { href: '/match', label: 'MATCH' },
-                { href: '/aplicacoes', label: 'CANDIDATURAS' },
               ].map(link => (
                 <Link
                   key={link.href}

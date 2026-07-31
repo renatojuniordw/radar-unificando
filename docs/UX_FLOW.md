@@ -28,5 +28,5 @@
 | Salvar perfil | Btn desabilitado | Snackbar | — | Snackbar |
 | Login | Btn spinner | Redirect | — | Alert inline |
 | Register | Btn spinner | Snackbar + redirect | — | Alert inline |
-| Mover Kanban | Opacity | Otimista | — | Reverte + Snackbar |
+| Chat assistente | Indicador "Digitando..." | Mensagem em streaming | — | Snackbar |
 | Export CSV | Btn desabilitado | Download | — | Snackbar |

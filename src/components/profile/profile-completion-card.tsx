@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 interface Props {
   percent: number;
   completedCount: number;
@@ -35,17 +33,6 @@ export function ProfileCompletionCard({ percent, completedCount, totalCount, ski
         <div style={{ height: 4, background: '#e2e8f0' }}>
           <div style={{ height: '100%', width: `${percent}%`, backgroundColor: percent >= 80 ? '#16a34a' : '#ccff00', transition: 'width 0.3s' }} />
         </div>
-        {skills.length > 0 && (
-          <Link href="/match" style={{
-            display: 'inline-block', marginTop: 10,
-            fontWeight: 900, fontSize: '0.6rem', textTransform: 'uppercase',
-            letterSpacing: '0.02em', color: '#020617',
-            fontFamily: 'ui-monospace, monospace',
-            textDecoration: 'underline',
-          }}>
-            Ver match com vagas →
-          </Link>
-        )}
       </div>
       {skills.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>

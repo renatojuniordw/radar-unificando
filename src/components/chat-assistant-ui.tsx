@@ -49,25 +49,30 @@ function getOrCreateChatId(): string {
   return chatId;
 }
 
-async function loadMessagesFromServer(chatId: string = 'default') {
+async function loadMessagesFromServer(chatId: string = 'default'): Promise<{ messages: any[]; error: boolean }> {
   try {
     const res = await fetch(`/api/chat/history?chatId=${chatId}`);
     if (res.ok) {
       const data = await res.json();
-      return data.messages || [];
+      return { messages: data.messages || [], error: false };
     }
-  } catch {}
-  return [];
+    return { messages: [], error: true };
+  } catch {
+    return { messages: [], error: true };
+  }
 }
 
-async function saveMessagesToServer(chatId: string, messages: any[]) {
+async function saveMessagesToServer(chatId: string, messages: any[]): Promise<boolean> {
   try {
-    await fetch('/api/chat/history', {
+    const res = await fetch('/api/chat/history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chatId, messages }),
     });
-  } catch {}
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 function loadMessagesLocal() {
@@ -261,6 +266,7 @@ export function ChatAssistantUI() {
   const endRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [syncError, setSyncError] = useState(false);
 
   const { messages, sendMessage, status, setMessages } = useChat({
     throttle: 100,
@@ -270,10 +276,12 @@ export function ChatAssistantUI() {
 
   useEffect(() => {
     async function load() {
-      let stored = await loadMessagesFromServer(chatId);
-      if (stored.length === 0) {
-        stored = loadMessagesLocal();
-      }
+      const { messages: fromServer, error } = await loadMessagesFromServer(chatId);
+      // localStorage também serve como caminho de migração: usuários que só
+      // tinham histórico salvo localmente (server-side ainda vazio) o adotam
+      // aqui e ele é regravado no Postgres no próximo save.
+      let stored = fromServer.length > 0 ? fromServer : loadMessagesLocal();
+      if (error) setSyncError(true);
       if (stored.length > 0 && setMessages) {
         setMessages(stored);
       } else if (setMessages) {
@@ -292,7 +300,7 @@ export function ChatAssistantUI() {
     if (messages.length > 0 && isLoaded && !loading) {
       saveMessagesLocal(messages);
       const timeoutId = setTimeout(() => {
-        saveMessagesToServer(chatId, messages);
+        saveMessagesToServer(chatId, messages).then((ok) => setSyncError(!ok));
       }, 500);
       return () => clearTimeout(timeoutId);
     }
@@ -318,6 +326,7 @@ export function ChatAssistantUI() {
   async function handleClearHistory() {
     setConfirmOpen(false);
     setMessages([]);
+    setSyncError(false);
     localStorage.removeItem(STORAGE_KEY);
     try {
       await fetch(`/api/chat/history?chatId=${chatId}`, { method: 'DELETE' });
@@ -439,6 +448,21 @@ export function ChatAssistantUI() {
             </IconButton>
           </Box>
         </Box>
+
+        {syncError && (
+          <Box
+            sx={{
+              px: 2,
+              py: 0.75,
+              bgcolor: 'warning.light',
+              color: 'warning.contrastText',
+              fontSize: '0.75rem',
+              textAlign: 'center',
+            }}
+          >
+            Não foi possível sincronizar o histórico com o servidor. Suas mensagens estão sendo salvas apenas neste dispositivo.
+          </Box>
+        )}
 
         {/* Messages */}
         <Box

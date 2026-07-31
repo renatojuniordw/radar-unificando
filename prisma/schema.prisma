@@ -7,18 +7,20 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid()) @db.Uuid
-  email        String        @unique @db.VarChar(255)
-  passwordHash String        @map("password_hash") @db.VarChar(255)
-  name         String?       @db.VarChar(255)
-  createdAt    DateTime      @default(now()) @map("created_at")
-  sessions         Session[]
-  profiles         Profile[]
-  jobs             Job[]
-  applications     Application[]
-  newCompanies     NewCompany[]
-  pipelineRuns     PipelineRun[]
-  companyPresence  CompanyPresence[]
+  id                    String                  @id @default(uuid()) @db.Uuid
+  email                 String                  @unique @db.VarChar(255)
+  passwordHash          String                  @map("password_hash") @db.VarChar(255)
+  name                  String?                 @db.VarChar(255)
+  createdAt             DateTime                @default(now()) @map("created_at")
+  sessions              Session[]
+  profiles              Profile[]
+  jobs                  Job[]
+  applications          Application[]
+  newCompanies          NewCompany[]
+  pipelineRuns          PipelineRun[]
+  companyPresence       CompanyPresence[]
+  generatedContentCache GeneratedContentCache[]
+  chats                 Chat[]
 
   @@map("users")
 }
@@ -53,56 +55,114 @@ model Profile {
 }
 
 model Job {
-  id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @map("user_id") @db.Uuid
-  source          String   @default("gupy_api") @db.VarChar(20)
-  empresa         String   @db.VarChar
-  plataforma      String   @db.VarChar
-  naLista         String?  @default("Não") @map("na_lista") @db.VarChar(3)
-  cargoCategoria  String?  @map("cargo_categoria") @db.VarChar
-  tituloVaga      String?  @map("titulo_vaga") @db.VarChar
-  tipo            String?  @db.VarChar
-  local           String?  @db.VarChar
-  link            String   @db.VarChar
-  nomeNaPlataforma String? @map("nome_na_plataforma") @db.VarChar
-  publicado       String?  @db.VarChar
-  descricao       String?  @db.Text
-  skillsRequired  Json?    @map("skills_required")
-  score           Float?   @db.Real
-  alerta          String?  @default("") @db.VarChar
-  detectadoEm     String?  @map("detectado_em") @db.VarChar
-  createdAt       DateTime @default(now()) @map("created_at")
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  applications    Application[]
+  id                    String                  @id @default(uuid()) @db.Uuid
+  userId                String                  @map("user_id") @db.Uuid
+  source                String                  @default("gupy_api") @db.VarChar(20)
+  empresa               String                  @db.VarChar
+  plataforma            String                  @db.VarChar
+  naLista               String?                 @default("Não") @map("na_lista") @db.VarChar(3)
+  cargoCategoria        String?                 @map("cargo_categoria") @db.VarChar
+  tituloVaga            String?                 @map("titulo_vaga") @db.VarChar
+  tipo                  String?                 @db.VarChar
+  local                 String?                 @db.VarChar
+  link                  String                  @db.VarChar
+  nomeNaPlataforma      String?                 @map("nome_na_plataforma") @db.VarChar
+  publicado             String?                 @db.VarChar
+  descricao             String?                 @db.Text
+  skillsRequired        Json?                   @map("skills_required")
+  score                 Float?                  @db.Real
+  alerta                String?                 @default("") @db.VarChar
+  detectadoEm           String?                 @map("detectado_em") @db.VarChar
+  createdAt             DateTime                @default(now()) @map("created_at")
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications          Application[]
+  generatedContentCache GeneratedContentCache[]
 
   @@unique([userId, link])
   @@map("jobs")
 }
 
-model Application {
+model Chat {
+  id         String        @id @default(uuid()) @db.Uuid
+  userId     String        @map("user_id") @db.Uuid
+  externalId String        @map("external_id") @db.VarChar(100)
+  title      String?       @db.VarChar(255)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages   ChatMessage[]
+
+  @@unique([userId, externalId])
+  @@index([userId, updatedAt])
+  @@map("chats")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  chatId    String   @map("chat_id") @db.Uuid
+  position  Int
+  role      String   @db.VarChar(20)
+  content   Json
+  createdAt DateTime @default(now()) @map("created_at")
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, position])
+  @@map("chat_messages")
+}
+
+model GeneratedContentCache {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  jobId     String   @map("job_id") @db.Uuid
-  stage     String   @default("discovered") @db.VarChar
-  score     Float?   @db.Real
+  jobId     String?  @map("job_id") @db.Uuid
+  kind      String   @db.VarChar(30)
+  cacheKey  String   @map("cache_key") @db.VarChar(64)
+  content   Json
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, cacheKey])
+  @@index([expiresAt])
+  @@map("generated_content_cache")
+}
+
+model Application {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  jobId     String           @map("job_id") @db.Uuid
+  stage     String           @default("discovered") @db.VarChar
+  score     Float?           @db.Real
   breakdown Json?
-  notes     String?  @db.Text
-  createdAt  DateTime         @default(now()) @map("created_at")
-  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job        Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  logs       ApplicationLog[]
+  notes     String?          @db.Text
+  createdAt DateTime         @default(now()) @map("created_at")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  logs      ApplicationLog[]
 
   @@map("applications")
 }
 
+model ApplicationLog {
+  id            String      @id @default(uuid()) @db.Uuid
+  applicationId String      @map("application_id") @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  fromStage     String?     @map("from_stage") @db.VarChar
+  toStage       String      @map("to_stage") @db.VarChar
+  createdAt     DateTime    @default(now()) @map("created_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_logs")
+}
+
 model NewCompany {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  nome        String   @db.VarChar
-  totalVagas  Int?     @default(0) @map("total_vagas")
-  urlCarreiras String? @map("url_carreiras") @db.VarChar
-  createdAt   DateTime @default(now()) @map("created_at")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  nome         String   @db.VarChar
+  totalVagas   Int?     @default(0) @map("total_vagas")
+  urlCarreiras String?  @map("url_carreiras") @db.VarChar
+  createdAt    DateTime @default(now()) @map("created_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("new_companies")
 }
@@ -123,28 +183,16 @@ model PipelineRun {
   @@map("pipeline_runs")
 }
 
-model ApplicationLog {
-  id             String     @id @default(uuid()) @db.Uuid
-  applicationId  String     @map("application_id") @db.Uuid
-  userId         String     @map("user_id") @db.Uuid
-  fromStage      String?    @map("from_stage") @db.VarChar
-  toStage        String     @map("to_stage") @db.VarChar
-  createdAt      DateTime   @default(now()) @map("created_at")
-  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-
-  @@map("application_logs")
-}
-
 model CompanyPresence {
-  id              String @id @default(uuid()) @db.Uuid
-  userId          String @map("user_id") @db.Uuid
-  empresa         String @db.VarChar
-  temGupy         String? @default("") @map("tem_gupy") @db.VarChar(3)
-  paginaGupy      String? @map("pagina_gupy") @db.VarChar
-  temInhire       String? @default("") @map("tem_inhire") @db.VarChar(3)
-  paginaInhire    String? @map("pagina_inhire") @db.VarChar
-  totalVagasInhire Int?   @default(0) @map("total_vagas_inhire")
-  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String  @id @default(uuid()) @db.Uuid
+  userId           String  @map("user_id") @db.Uuid
+  empresa          String  @db.VarChar
+  temGupy          String? @default("") @map("tem_gupy") @db.VarChar(3)
+  paginaGupy       String? @map("pagina_gupy") @db.VarChar
+  temInhire        String? @default("") @map("tem_inhire") @db.VarChar(3)
+  paginaInhire     String? @map("pagina_inhire") @db.VarChar
+  totalVagasInhire Int?    @default(0) @map("total_vagas_inhire")
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("company_presence")
 }
