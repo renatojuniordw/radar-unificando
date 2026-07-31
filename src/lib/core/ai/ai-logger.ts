@@ -3,7 +3,9 @@ export type AiEvent =
   | 'job_analysis'
   | 'resume_adaptation'
   | 'chat_interaction'
-  | 'suspicious_activity';
+  | 'suspicious_activity'
+  | 'cover_letter_generation'
+  | 'interview_questions_generation';
 
 export function logAiEvent(
   event: AiEvent,

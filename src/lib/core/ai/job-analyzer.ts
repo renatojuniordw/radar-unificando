@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
+import { sanitizeUntrusted } from './shared/sanitize';
 
 // ---------------------------------------------------------------------------
 // Limites de input — protegem contra custo/DoS (currículo gigante, vaga
@@ -44,21 +45,6 @@ export type JobAnalysis = z.infer<typeof analysisSchema>;
 
 // Bump ao mudar o PROMPT abaixo — invalida caches existentes automaticamente.
 export const JOB_ANALYZER_PROMPT_VERSION = 'v1';
-
-// ---------------------------------------------------------------------------
-// Sanitização de conteúdo não confiável (currículo e descrição de vaga vêm
-// de terceiros — usuário e postagens externas via Gupy). Colapsa espaços
-// excessivos e neutraliza tentativas de "fechar" a tag delimitadora mais
-// cedo (ex.: o texto contém literalmente "</resume>" tentando escapar do
-// bloco de dados).
-// ---------------------------------------------------------------------------
-function sanitizeUntrusted(text: string, tag: string): string {
-  return text
-    .replace(/\r\n/g, '\n')
-    .replace(/\n{4,}/g, '\n\n\n')
-    .replace(new RegExp(`</?${tag}>`, 'gi'), '')
-    .trim();
-}
 
 const PROMPT = `Você é um analista de RH. Analise o fit entre o candidato e a vaga abaixo. Seja específico e honesto — inclusive quando o fit for baixo.
 
