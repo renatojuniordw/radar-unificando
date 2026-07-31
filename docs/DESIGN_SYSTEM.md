@@ -38,3 +38,27 @@ Preferência salva em `localStorage`, respeita `prefers-color-scheme` na primeir
 | Kanban | Paper, Box + dnd-kit |
 | Alertas | Alert, AlertTitle |
 | Loading | Skeleton, LinearProgress |
+
+## Chat Assistente (`chat-assistant-ui.tsx`)
+
+Drawer lateral direito com FAB. Regras aplicadas:
+
+| Regra | Valor |
+|-------|-------|
+| Largura drawer | `{ xs: '100%', sm: 400 }` (full em mobile) |
+| Touch targets | IconButtons ≥ 44×44px |
+| Sombras | Derivadas de `rgba(2, 6, 23, …)` (primary), nunca azul `#2563eb` |
+| Espaçamento mensagens | `mb: 2` entre bolhas |
+| Input | `TextareaAutosize` (auto-grow, máx. 6 linhas, Shift+Enter = quebra) |
+| Ações header | "+ Nova Conversa" (confirma via `ConfirmDialog`), "Fechar" |
+| Limpar chat | Limpa estado + localStorage + servidor, **sem reload de página** |
+| Empty state | Chips de sugestão clicáveis que preenchem o input |
+
+### Emojis
+
+| Tipo | Emojis | Exemplos |
+|------|--------|----------|
+| Funcionais (manter) | 🏢 📍 🔗 📊 📋 | Empresa, local, link, dados, lista |
+| Decorativos (remover) | 🟢 🟡 🔴 ✅ ❌ 💡 ⚡ 🔥 🏠 ⚠️ | Status, ideias, alertas |
+
+Regra no prompt do LLM: usar apenas emojis funcionais; cada vaga enviada como mensagem separada com linha em branco entre elas.

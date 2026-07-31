@@ -55,6 +55,28 @@ Cookie: next-auth.session-token=<token>
 | PATCH | `/api/applications/:id` | ✅ | Mover estágio (stage) |
 | DELETE | `/api/applications/:id` | ✅ | Remover candidatura |
 
+### Chat
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE) |
+| GET | `/api/chat/history?chatId=` | ✅ | Carregar histórico de uma conversa |
+| POST | `/api/chat/history` | ✅ | Salvar histórico (body: `{ chatId, messages }`) |
+| DELETE | `/api/chat/history?chatId=` | ✅ | Apagar histórico de uma conversa |
+
+**Segurança do chat:**
+- Rate limit: 20 mensagens/min por usuário (retorna `429` ao exceder)
+- Input sanitizado (truncado em 2000 chars, tags HTML removidas)
+- Tentativas de prompt injection geram log `[AI_LOG] suspicious_activity`
+
+**Exemplo (chat streaming):**
+```bash
+curl -X POST http://localhost:3000/api/chat \
+  -H 'Content-Type: application/json' \
+  -H 'Cookie: next-auth.session-token=<token>' \
+  -d '{"messages":[{"role":"user","content":"Busque vagas de Data Analyst"}]}'
+```
+
 ### Export
 
 | Método | Rota | Auth | Descrição |

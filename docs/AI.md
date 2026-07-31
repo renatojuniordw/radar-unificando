@@ -41,9 +41,35 @@ Usuário clica "ADAPTAR CURRÍCULO" no MatchDialog
 
 ```
 Chat UI → POST /api/chat (streaming)
-  → LLM com ferramentas: search_jobs, get_my_profile, get_job_details
+  → LLM com ferramentas: search_jobs, get_my_profile, analyze_job_fit
   → Stream de resposta + logs no onFinish
 ```
+
+### Formatação das Vagas
+
+O prompt do sistema instrui o LLM a:
+- Enviar **cada vaga como mensagem separada** para facilitar leitura
+- Usar apenas **emojis funcionais**: 🏢 (empresa), 📍 (local), 🔗 (link), 📊 (dados), 📋 (lista)
+- Evitar **emojis decorativos**: 🟢🟡🔴✅❌💡⚡🔥🏠⚠️
+- Nunca enviar tabelas — usar listas ou cards com `label: valor`
+- Links sozinhos em sua linha para facilitar clique
+
+### Proteção contra Prompt Injection
+
+O `POST /api/chat` aplica três camadas de proteção:
+
+1. **Validação de input**: mensagens truncadas em 2000 chars, tags HTML (`<>`) removidas
+2. **Detecção de padrões suspeitos**: regex para jailbreak (`ignore instructions`, `system prompt`, etc.) — gera log `suspicious_activity`
+3. **Hardening do system prompt**: seção `SEGURANÇA E LIMITES` que proíbe revelar instruções internas, executar bypass ou desviar do foco
+
+### Validação de Inputs das Tools
+
+| Tool | Campo | Validação |
+|------|-------|-----------|
+| `search_jobs` | query | 2-200 chars, regex `[a-zA-Z0-9\s\-_.]` |
+| `search_jobs` | limit | 1-100 (default 20) |
+| `analyze_job_fit` | jobTitle | 1-200 chars, trim |
+| `analyze_job_fit` | jobDescription | 10-5000 chars, trim |
 
 ## Env Vars
 
@@ -91,3 +117,4 @@ npm run dev 2>&1 | grep "\[AI_LOG\]" | jq 'select(.traceId == "uuid-aqui")'
 | `job_analysis` | traceId, latencyMs, jobTitle, matchedCount, missingCount, overallFit, success |
 | `resume_adaptation` | traceId, latencyMs, jobTitle, highlightsCount, missingSkillsCount, success |
 | `chat_interaction` | traceId, latencyMs, messageCount, toolsCalled, finishReason, usage, success |
+| `suspicious_activity` | traceId, userId, pattern (`potential_prompt_injection`), success |
