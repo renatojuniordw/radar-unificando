@@ -25,6 +25,10 @@ export async function PUT(req: NextRequest) {
       experienceYears: data.experienceYears || null,
       seniority: data.seniority || null,
       resumeText: data.resumeText || null,
+      parsedData: {
+        currentRole: data.currentRole || null,
+        area: data.area || null,
+      },
     });
 
     return NextResponse.json({ success: true });

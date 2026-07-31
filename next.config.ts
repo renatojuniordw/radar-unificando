@@ -12,7 +12,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  serverExternalPackages: ['@prisma/client'],
+  serverExternalPackages: ['@prisma/client', 'pdfjs-dist'],
   poweredByHeader: false,
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
       if (file.name.endsWith('.pdf')) {
         try {
-          const pdfjs = await import('pdfjs-dist');
+          const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
           const data = new Uint8Array(buffer);
           const doc = await pdfjs.getDocument({ data }).promise;
           const pages = [];
@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
             pages.push(content.items.map((item: any) => item.str).join(' '));
           }
           text = pages.join('\n');
-        } catch {
+        } catch (pdfError) {
+          console.error('[upload] PDF parse failed:', pdfError);
           return NextResponse.json({ error: 'Não foi possível ler o PDF. Formatos aceitos: PDF do LinkedIn.' }, { status: 400 });
         }
       } else {
