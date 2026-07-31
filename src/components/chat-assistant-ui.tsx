@@ -4,10 +4,19 @@ import { useState, useRef, useEffect } from 'react';
 import { Box, Fab, Drawer, IconButton, Typography, Chip, TextareaAutosize } from '@mui/material';
 import { Close as CloseIcon, Send as SendIcon } from '@mui/icons-material';
 import { useChat } from '@ai-sdk/react';
+import { useSession } from 'next-auth/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { ChatSidebar } from '@/components/chat-sidebar';
+
+interface Conversation {
+  id: string;
+  title: string;
+  lastMessage: string;
+  createdAt: Date;
+}
 
 const STORAGE_KEY = 'chat-assistant-ui-history';
 const CHAT_ID_KEY = 'chat-assistant-ui-id';
@@ -127,6 +136,16 @@ function ChatIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v5h5" />
+      <path d="M3.05 13a9 9 0 1 0 .5-4.5L3 8" />
+      <path d="M12 7v5l4 2" />
     </svg>
   );
 }
@@ -260,19 +279,22 @@ function MarkdownContent({ text }: { text: string }) {
 }
 
 export function ChatAssistantUI() {
+  const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [chatId] = useState(() => getOrCreateChatId());
+  const [chatId, setChatId] = useState(() => getOrCreateChatId());
   const endRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [syncError, setSyncError] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const { messages, sendMessage, status: chatStatus, setMessages } = useChat({
     throttle: 100,
   });
 
-  const loading = status === 'submitted' || status === 'streaming';
+  const loading = chatStatus === 'submitted' || chatStatus === 'streaming';
 
   useEffect(() => {
     async function load() {
@@ -300,11 +322,53 @@ export function ChatAssistantUI() {
     if (messages.length > 0 && isLoaded && !loading) {
       saveMessagesLocal(messages);
       const timeoutId = setTimeout(() => {
-        saveMessagesToServer(chatId, messages).then((ok) => setSyncError(!ok));
+        saveMessagesToServer(chatId, messages).then((ok) => {
+          setSyncError(!ok);
+          if (ok) loadConversations();
+        });
       }, 500);
       return () => clearTimeout(timeoutId);
     }
   }, [messages, chatId, isLoaded, loading]);
+
+  async function loadConversations() {
+    try {
+      const res = await fetch('/api/chat/conversations');
+      if (res.ok) {
+        setConversations(await res.json());
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    if (open) loadConversations();
+  }, [open]);
+
+  function handleSelectConversation(id: string) {
+    if (id === chatId) {
+      setSidebarOpen(false);
+      return;
+    }
+    setIsLoaded(false);
+    setChatId(id);
+    localStorage.setItem(CHAT_ID_KEY, id);
+    setSidebarOpen(false);
+  }
+
+  function handleNewConversation() {
+    const newId = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    localStorage.setItem(CHAT_ID_KEY, newId);
+    setChatId(newId);
+    setMessages([createWelcomeMessage()]);
+    setIsLoaded(true);
+    setSidebarOpen(false);
+  }
+
+  // Enquanto carrega, não renderiza nada
+  if (status === 'loading') return null;
+
+  // Sem sessão → não renderiza FAB nem drawer
+  if (!session) return null;
 
   function handleSend() {
     if (!input.trim() || loading) return;
@@ -370,7 +434,7 @@ export function ChatAssistantUI() {
         slotProps={{
           paper: {
             sx: {
-              width: { xs: '100%', sm: 400 },
+              width: { xs: '100%', sm: sidebarOpen ? 650 : 400 },
               maxWidth: '100vw',
               display: 'flex',
               flexDirection: 'column',
@@ -420,6 +484,18 @@ export function ChatAssistantUI() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <IconButton
+              onClick={() => setSidebarOpen((v) => !v)}
+              aria-label="Histórico de conversas"
+              sx={{
+                width: 44,
+                height: 44,
+                color: sidebarOpen ? 'primary.main' : 'text.secondary',
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
+            >
+              <HistoryIcon />
+            </IconButton>
+            <IconButton
               onClick={handleNewChat}
               aria-label="Nova conversa"
               sx={{
@@ -449,6 +525,17 @@ export function ChatAssistantUI() {
           </Box>
         </Box>
 
+        <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
+          {sidebarOpen && (
+            <ChatSidebar
+              conversations={conversations}
+              activeId={chatId}
+              onSelect={handleSelectConversation}
+              onNew={handleNewConversation}
+            />
+          )}
+
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {syncError && (
           <Box
             sx={{
@@ -562,7 +649,10 @@ export function ChatAssistantUI() {
           ))}
 
           {loading && (
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }} role="status" aria-live="polite">
+              <Typography sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+                Assistente está digitando...
+              </Typography>
               <Box
                 sx={{
                   width: 32,
@@ -611,6 +701,30 @@ export function ChatAssistantUI() {
 
           <div ref={endRef} />
         </Box>
+
+        {/* Quick Actions */}
+        {!messages.some((m) => m.role === 'user') && (
+          <Box sx={{ px: 2, pb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip 
+              label="Buscar vagas" 
+              size="small"
+              onClick={() => sendMessage({ text: "Busque vagas de dados" })}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
+            />
+            <Chip 
+              label="Analisar perfil" 
+              size="small"
+              onClick={() => sendMessage({ text: "Analise meu perfil e me diga como estão minhas chances" })}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
+            />
+            <Chip 
+              label="Gerar carta" 
+              size="small"
+              onClick={() => sendMessage({ text: "Gere uma carta de apresentação para uma vaga" })}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
+            />
+          </Box>
+        )}
 
         {/* Input */}
         <Box
@@ -681,6 +795,8 @@ export function ChatAssistantUI() {
             >
               <SendIcon fontSize="small" />
             </IconButton>
+          </Box>
+        </Box>
           </Box>
         </Box>
       </Drawer>

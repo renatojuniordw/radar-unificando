@@ -1,12 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-  Box, Typography, TextField, Button,
-  Select, MenuItem, InputAdornment, Autocomplete,
+  Box, Typography, TextField, Button, IconButton,
+  Select, MenuItem, InputAdornment, Autocomplete, Skeleton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
+import TableRowsIcon from '@mui/icons-material/TableRows';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import { useDebounce } from 'use-debounce';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+const GRID_COLUMNS = '200px 140px 140px 1fr 160px 90px';
 
 
 interface Vaga {
@@ -37,10 +43,11 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
   const [filtroPlataforma, setFiltroPlataforma] = useState('');
   const [filtroCargo, setFiltroCargo] = useState('');
   const [filtroBusca, setFiltroBusca] = useState('');
+  const [debouncedSearch] = useDebounce(filtroBusca, 300);
   const [filtroEmpresa, setFiltroEmpresa] = useState('');
   const [filtroModalidade, setFiltroModalidade] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const empresas = [...new Set(vagas.map(v => v.empresa).filter(Boolean))].sort();
   const modalidades = [...new Set(vagas.map(v => normalizarModalidade(v.tipo)).filter(Boolean))].sort();
@@ -78,7 +85,23 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
     });
   }
 
-  const paginatedVagas = vagasFiltradas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  // Trigger search on debounced value
+  useEffect(() => {
+    if (debouncedSearch !== undefined) {
+      onFilterChange({
+        plataforma: filtroPlataforma || undefined,
+        cargo: filtroCargo || undefined,
+        search: debouncedSearch || undefined,
+      });
+    }
+  }, [debouncedSearch]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: vagasFiltradas.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => (viewMode === 'cards' ? 96 : 52),
+    overscan: 10,
+  });
 
   return (
     <div className="card-brutalist" style={{ padding: 24 }}>
@@ -101,7 +124,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
           <Autocomplete
             options={empresas}
             value={filtroEmpresa || null}
-            onChange={(_, v) => { setFiltroEmpresa(v || ''); setPage(0); }}
+            onChange={(_, v) => { setFiltroEmpresa(v || ''); }}
             renderInput={(params) => (
               <TextField {...params} placeholder="TODAS EMPRESAS" size="small" />
             )}
@@ -113,7 +136,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
           <Autocomplete
             options={modalidades}
             value={filtroModalidade || null}
-            onChange={(_, v) => { setFiltroModalidade(v || ''); setPage(0); }}
+            onChange={(_, v) => { setFiltroModalidade(v || ''); }}
             renderInput={(params) => (
               <TextField {...params} placeholder="TODAS MODALIDADES" size="small" />
             )}
@@ -150,7 +173,25 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
       </div>
 
       {vagas.length > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Box sx={{ display: 'flex', border: '2px solid #020617' }}>
+            <IconButton
+              onClick={() => setViewMode('table')}
+              aria-label="Visualizar em tabela"
+              size="small"
+              sx={{ borderRadius: 0, bgcolor: viewMode === 'table' ? '#020617' : 'transparent', color: viewMode === 'table' ? '#ccff00' : '#020617' }}
+            >
+              <TableRowsIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              onClick={() => setViewMode('cards')}
+              aria-label="Visualizar em cards"
+              size="small"
+              sx={{ borderRadius: 0, bgcolor: viewMode === 'cards' ? '#020617' : 'transparent', color: viewMode === 'cards' ? '#ccff00' : '#020617' }}
+            >
+              <ViewModuleIcon fontSize="small" />
+            </IconButton>
+          </Box>
           <button
             onClick={onExportCsv}
             style={{
@@ -173,7 +214,13 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} style={{ height: 40, background: '#f1f5f9', border: '2px solid #e2e8f0', animation: 'pulse-glow 1.5s infinite' }} />
+            <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'center', padding: '8px 12px' }}>
+              <Skeleton variant="rectangular" width={120} height={16} />
+              <Skeleton variant="rectangular" width={60} height={16} />
+              <Skeleton variant="rectangular" width={100} height={16} />
+              <Skeleton variant="rectangular" width={200} height={16} />
+              <Skeleton variant="rectangular" width={80} height={16} />
+            </div>
           ))}
         </div>
       ) : vagasFiltradas.length === 0 ? (
@@ -205,150 +252,205 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
             </div>
           )}
         </div>
+      ) : viewMode === 'table' ? (
+        <div style={{ border: '4px solid #020617' }}>
+          <div
+            role="row"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: GRID_COLUMNS,
+              backgroundColor: '#020617',
+            }}
+          >
+            {['EMPRESA', 'PLAT', 'CARGO', 'TÍTULO', 'LOCAL', 'LINK'].map(h => (
+              <div key={h} role="columnheader" style={{ color: '#ccff00', fontWeight: 700, padding: '8px 12px', textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
+                {h}
+              </div>
+            ))}
+          </div>
+
+          <div ref={parentRef} style={{ height: '60vh', overflow: 'auto' }}>
+            <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const vaga = vagasFiltradas[virtualRow.index];
+                return (
+                  <div
+                    key={virtualRow.key}
+                    role="row"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      display: 'grid',
+                      gridTemplateColumns: GRID_COLUMNS,
+                      alignItems: 'center',
+                      backgroundColor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.05)' : 'transparent',
+                      borderBottom: '2px solid #f1f5f9',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                      {vaga.na_lista === 'Sim' && (
+                        <span style={{
+                          backgroundColor: '#020617',
+                          color: '#ccff00',
+                          fontWeight: 900,
+                          fontSize: '0.45rem',
+                          padding: '1px 4px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}>
+                          LISTA
+                        </span>
+                      )}
+                      <span style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vaga.empresa}</span>
+                    </div>
+                    <div style={{ padding: '8px 12px', minWidth: 0 }}>
+                      <span style={{
+                        border: '2px solid',
+                        borderColor: vaga.plataforma === 'Gupy' ? '#ccff00' : '#94a3b8',
+                        color: vaga.plataforma === 'Gupy' ? '#020617' : '#64748b',
+                        fontWeight: 700,
+                        fontSize: '0.55rem',
+                        padding: '1px 6px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.02em',
+                      }}>
+                        {vaga.plataforma}
+                      </span>
+                      <div style={{ fontSize: '0.45rem', color: '#94a3b8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {vaga.nome_na_plataforma}
+                      </div>
+                    </div>
+                    <div style={{ padding: '8px 12px', fontSize: '0.65rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vaga.cargo_categoria}</div>
+                    <div style={{ padding: '8px 12px', fontSize: '0.7rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vaga.titulo_vaga}</div>
+                    <div style={{ padding: '8px 12px', fontSize: '0.65rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vaga.local}</div>
+                    <div style={{ padding: '8px 12px' }}>
+                      <a
+                        href={vaga.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Ver vaga ${vaga.titulo_vaga} na ${vaga.empresa}`}
+                        style={{
+                          backgroundColor: '#020617',
+                          color: '#ccff00',
+                          fontWeight: 900,
+                          fontSize: '0.55rem',
+                          padding: '4px 8px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          textDecoration: 'none',
+                          border: '2px solid #020617',
+                          fontFamily: 'ui-monospace, monospace',
+                        }}
+                      >
+                        VER
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       ) : (
-        <>
-          <div style={{ overflowX: 'auto', border: '4px solid #020617' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#020617' }}>
-                  {['EMPRESA', 'PLAT', 'CARGO', 'TÍTULO', 'LOCAL', 'LINK'].map(h => (
-                    <th key={h} style={{ color: '#ccff00', fontWeight: 700, textAlign: 'left', padding: '8px 12px', textTransform: 'uppercase', fontSize: '0.6rem', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedVagas.map((vaga, i) => (
-                    <tr
-                      key={`${vaga.link}-${i}`}
-                      style={{
-                        backgroundColor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.05)' : 'transparent',
-                        borderBottom: '2px solid #f1f5f9',
-                      }}
-                    >
-                      <td style={{ padding: '8px 12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          {vaga.na_lista === 'Sim' && (
-                            <span style={{
-                              backgroundColor: '#020617',
-                              color: '#ccff00',
-                              fontWeight: 900,
-                              fontSize: '0.45rem',
-                              padding: '1px 4px',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}>
-                              LISTA
-                            </span>
-                          )}
-                          <span style={{ fontWeight: 700 }}>{vaga.empresa}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '8px 12px' }}>
+        <div ref={parentRef} style={{ height: '60vh', overflow: 'auto' }}>
+          <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const vaga = vagasFiltradas[virtualRow.index];
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    padding: '6px 0',
+                  }}
+                >
+                  <div
+                    className="card-brutalist"
+                    style={{
+                      padding: 12,
+                      height: '100%',
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      backgroundColor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.05)' : undefined,
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        {vaga.na_lista === 'Sim' && (
+                          <span style={{
+                            backgroundColor: '#020617',
+                            color: '#ccff00',
+                            fontWeight: 900,
+                            fontSize: '0.45rem',
+                            padding: '1px 4px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                          }}>
+                            LISTA
+                          </span>
+                        )}
+                        <span style={{ fontWeight: 900, fontSize: '0.75rem' }}>{vaga.empresa}</span>
                         <span style={{
                           border: '2px solid',
                           borderColor: vaga.plataforma === 'Gupy' ? '#ccff00' : '#94a3b8',
                           color: vaga.plataforma === 'Gupy' ? '#020617' : '#64748b',
                           fontWeight: 700,
-                          fontSize: '0.55rem',
+                          fontSize: '0.5rem',
                           padding: '1px 6px',
                           textTransform: 'uppercase',
-                          letterSpacing: '0.02em',
                         }}>
                           {vaga.plataforma}
                         </span>
-                        <div style={{ fontSize: '0.45rem', color: '#94a3b8', marginTop: 2 }}>
-                          {vaga.nome_na_plataforma}
-                        </div>
-                      </td>
-                      <td style={{ padding: '8px 12px', fontSize: '0.65rem' }}>{vaga.cargo_categoria}</td>
-                      <td style={{ padding: '8px 12px', fontSize: '0.7rem' }}>{vaga.titulo_vaga}</td>
-                      <td style={{ padding: '8px 12px', fontSize: '0.65rem' }}>{vaga.local}</td>
-                      <td style={{ padding: '8px 12px' }}>
-                        <a
-                          href={vaga.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            backgroundColor: '#020617',
-                            color: '#ccff00',
-                            fontWeight: 900,
-                            fontSize: '0.55rem',
-                            padding: '4px 8px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            textDecoration: 'none',
-                            border: '2px solid #020617',
-                            fontFamily: 'ui-monospace, monospace',
-                          }}
-                        >
-                          VER
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vaga.titulo_vaga}</div>
+                      <div style={{ fontSize: '0.65rem', color: '#64748b' }}>{vaga.cargo_categoria} · {vaga.local}</div>
+                    </div>
+                    <a
+                      href={vaga.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Ver vaga ${vaga.titulo_vaga} na ${vaga.empresa}`}
+                      style={{
+                        flexShrink: 0,
+                        backgroundColor: '#020617',
+                        color: '#ccff00',
+                        fontWeight: 900,
+                        fontSize: '0.6rem',
+                        padding: '6px 12px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        textDecoration: 'none',
+                        border: '2px solid #020617',
+                        fontFamily: 'ui-monospace, monospace',
+                      }}
+                    >
+                      VER
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        </div>
+      )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ color: '#64748b' }}>Por página:</span>
-              <select
-                value={rowsPerPage}
-                onChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                style={{
-                  border: '2px solid #020617',
-                  fontWeight: 700,
-                  padding: '4px 8px',
-                  fontFamily: 'inherit',
-                  fontSize: '0.65rem',
-                  background: '#fff',
-                }}
-              >
-                {[10, 20, 50, 100].map(n => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ color: '#64748b' }}>{page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, vagasFiltradas.length)} de {vagasFiltradas.length}</span>
-              <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-                disabled={page === 0}
-                style={{
-                  border: '2px solid #020617',
-                  background: page === 0 ? '#f1f5f9' : '#fff',
-                  fontWeight: 900,
-                  padding: '4px 10px',
-                  cursor: page === 0 ? 'not-allowed' : 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: '0.65rem',
-                  opacity: page === 0 ? 0.5 : 1,
-                }}
-              >
-                ANTERIOR
-              </button>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={(page + 1) * rowsPerPage >= vagasFiltradas.length}
-                style={{
-                  border: '2px solid #020617',
-                  background: (page + 1) * rowsPerPage >= vagasFiltradas.length ? '#f1f5f9' : '#fff',
-                  fontWeight: 900,
-                  padding: '4px 10px',
-                  cursor: (page + 1) * rowsPerPage >= vagasFiltradas.length ? 'not-allowed' : 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: '0.65rem',
-                  opacity: (page + 1) * rowsPerPage >= vagasFiltradas.length ? 0.5 : 1,
-                }}
-              >
-                PRÓXIMA
-              </button>
-            </div>
-          </div>
-        </>
+      {!loading && vagasFiltradas.length > 0 && (
+        <Typography sx={{ mt: 1.5, color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+          {vagasFiltradas.length} vaga{vagasFiltradas.length === 1 ? '' : 's'}
+        </Typography>
       )}
     </div>
   );

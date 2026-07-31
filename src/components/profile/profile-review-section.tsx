@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Autocomplete, TextField, Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/material';
+import { ProfileAIPreview } from './profile-ai-preview';
 
 const SENIORITY_LEVELS = ['junior', 'pleno', 'senior', 'lead', 'manager', 'head'];
 const AREA_OPTIONS = ['Dados', 'BI', 'Business', 'Growth', 'Engenharia', 'Produto', 'Outro'];
@@ -65,6 +67,16 @@ export function ProfileReviewSection({
     isOverridden: fieldOverrides.has(field),
   });
 
+  const [bulkSkillsInput, setBulkSkillsInput] = useState('');
+
+  function handleBulkSkillsSubmit() {
+    const newSkills = bulkSkillsInput.split(',').map(s => s.trim()).filter(Boolean);
+    if (newSkills.length > 0) {
+      onAddSkills(newSkills);
+      setBulkSkillsInput('');
+    }
+  }
+
   return (
     <>
       {/* SKILLS */}
@@ -94,6 +106,24 @@ export function ProfileReviewSection({
           sx={{ mb: 2 }}
           noOptionsText="Nenhuma"
           freeSolo
+        />
+
+        <TextField
+          label="Ou adicionar múltiplas skills"
+          placeholder="Python, SQL, Spark, Airflow"
+          value={bulkSkillsInput}
+          onChange={(e) => setBulkSkillsInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleBulkSkillsSubmit();
+            }
+          }}
+          size="small"
+          fullWidth
+          sx={{ mb: 2 }}
+          helperText="Separadas por vírgula, pressione Enter para adicionar"
+          slotProps={{ input: { sx: { fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem' } } }}
         />
 
         <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
@@ -250,6 +280,15 @@ export function ProfileReviewSection({
           </div>
         )}
       </div>
+
+      {/* Preview da IA */}
+      <ProfileAIPreview
+        seniority={seniority}
+        area={area}
+        skills={skills}
+        experienceYears={experienceYears}
+        currentRole={currentRole}
+      />
     </>
   );
 }

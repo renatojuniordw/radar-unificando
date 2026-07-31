@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Box } from '@mui/material';
 import { ThemeProvider } from '@/lib/infrastructure/ui/theme-provider';
 import { AuthProvider } from '@/lib/infrastructure/ui/auth-provider';
 import { SnackbarProvider } from '@/hooks/useSnackbar';
 import { QueryProvider } from '@/lib/infrastructure/ui/query-provider';
+import { ChatAssistantProvider } from '@/contexts/chat-assistant-context';
+import { ChatAssistantUI } from '@/components/chat-assistant-ui';
 import { Header, Footer } from '@/components/layout';
 import './globals.css';
 
@@ -26,9 +29,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             <SnackbarProvider>
               <QueryProvider>
-                <Header />
-                <main style={{ flex: 1 }}>{children}</main>
-                <Footer />
+                <ChatAssistantProvider>
+                  {/* Skip link for keyboard navigation */}
+                  <Box
+                    component="a"
+                    href="#main-content"
+                    sx={{
+                      position: 'absolute',
+                      top: -40,
+                      left: 0,
+                      zIndex: 9999,
+                      p: 2,
+                      bgcolor: 'primary.main',
+                      color: 'common.white',
+                      textDecoration: 'none',
+                      fontWeight: 700,
+                      '&:focus': {
+                        top: 0,
+                      },
+                    }}
+                  >
+                    Pular para conteúdo principal
+                  </Box>
+                  
+                  <Header />
+                  <main id="main-content" style={{ flex: 1 }}>{children}</main>
+                  <Footer />
+                  <ChatAssistantUI />
+                </ChatAssistantProvider>
               </QueryProvider>
             </SnackbarProvider>
           </ThemeProvider>

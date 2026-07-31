@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Container, Typography } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
@@ -11,6 +11,8 @@ import { ProfileImportSection } from '@/components/profile/profile-import-sectio
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
 import { ProfileEmptyState } from '@/components/profile/profile-empty-state';
 
+type ProfileStatus = 'empty' | 'importing' | 'reviewing' | 'complete';
+
 export default function PerfilPage() {
   const { data: session } = useSession();
   const { show: showSnackbar } = useSnackbar();
@@ -19,7 +21,16 @@ export default function PerfilPage() {
   const [showManualForm, setShowManualForm] = useState(false);
 
   const hasResume = !!(profile.resumeText || profile.resumeMarkdown);
-  const isEmpty = !hasResume && !showManualForm && profile.skills.length === 0;
+
+  const profileStatus: ProfileStatus = useMemo(() => {
+    if (!hasResume && profile.skills.length === 0 && !showManualForm) return 'empty';
+    if (!hasResume && showManualForm && profile.skills.length === 0) return 'importing';
+    if (profile.completionPercent >= 100) return 'complete';
+    return 'reviewing';
+  }, [hasResume, showManualForm, profile.skills.length, profile.completionPercent]);
+
+  const hasChanges = profile.fieldOverrides.size > 0 ||
+    ((profileStatus === 'reviewing' || profileStatus === 'complete') && !profile.saving);
 
   async function handleSave() {
     const result = await profile.handleSave();
@@ -79,7 +90,7 @@ export default function PerfilPage() {
       )}
 
       {/* Estado vazio: sem perfil nenhum */}
-      {isEmpty && (
+      {profileStatus === 'empty' && (
         <ProfileEmptyState
           onImportClick={() => {
             const el = document.getElementById('profile-import-section');
@@ -89,19 +100,44 @@ export default function PerfilPage() {
         />
       )}
 
-      {/* Sem currículo mas com dados manuais ou modo manual */}
-      {!hasResume && showManualForm && (
-        <ProfileImportSection
-          extracting={profile.extracting}
-          dragOver={profile.dragOver}
-          onDragOver={profile.setDragOver}
-          onExtract={handleExtract}
-        />
+      {/* Importando: sem currículo, modo manual ativado, ainda sem skills */}
+      {profileStatus === 'importing' && (
+        <>
+          <ProfileImportSection
+            extracting={profile.extracting}
+            dragOver={profile.dragOver}
+            onDragOver={profile.setDragOver}
+            onExtract={handleExtract}
+          />
+          <ProfileReviewSection
+            skills={profile.skills}
+            currentRole={profile.currentRole}
+            seniority={profile.seniority}
+            area={profile.area}
+            experienceYears={profile.experienceYears}
+            education={profile.education}
+            profileSource="manual"
+            fieldOverrides={profile.fieldOverrides}
+            onFieldChange={(field, value) => profile.setField(field as any, value)}
+            onAddSkill={profile.addSkill}
+            onAddSkills={profile.addSkills}
+            onRemoveSkill={profile.removeSkill}
+            onRevertField={() => {}}
+          />
+        </>
       )}
 
-      {/* Com currículo: barra de progresso + CTA assistente */}
-      {(hasResume || profile.skills.length > 0) && (
+      {/* Revisando ou completo: currículo importado ou skills preenchidas manualmente */}
+      {(profileStatus === 'reviewing' || profileStatus === 'complete') && (
         <>
+          {profileStatus === 'complete' && (
+            <div className="card-brutalist" style={{ padding: 16, marginBottom: 24, borderLeft: '4px solid #16a34a', background: '#f0fdf4' }}>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: '0.8rem', color: '#16a34a' }}>
+                ✓ Perfil completo! Você está pronto para receber as melhores recomendações.
+              </p>
+            </div>
+          )}
+
           <ProfileCompletionCard
             percent={profile.completionPercent}
             completedCount={profile.completionScore}
@@ -151,33 +187,16 @@ export default function PerfilPage() {
         </>
       )}
 
-      {/* Modo manual sem currículo: formulário simplificado */}
-      {!hasResume && showManualForm && (
-        <ProfileReviewSection
-          skills={profile.skills}
-          currentRole={profile.currentRole}
-          seniority={profile.seniority}
-          area={profile.area}
-          experienceYears={profile.experienceYears}
-          education={profile.education}
-          profileSource="manual"
-          fieldOverrides={profile.fieldOverrides}
-          onFieldChange={(field, value) => profile.setField(field as any, value)}
-          onAddSkill={profile.addSkill}
-          onAddSkills={profile.addSkills}
-          onRemoveSkill={profile.removeSkill}
-          onRevertField={() => {}}
-        />
+      {hasChanges && (
+        <button
+          onClick={handleSave}
+          disabled={profile.saving}
+          className="btn-neon"
+          style={{ padding: '14px 48px', fontSize: '0.8rem', width: '100%' }}
+        >
+          {profile.saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
+        </button>
       )}
-
-      <button
-        onClick={handleSave}
-        disabled={profile.saving}
-        className="btn-neon"
-        style={{ padding: '14px 48px', fontSize: '0.8rem', width: '100%' }}
-      >
-        {profile.saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
-      </button>
     </Container>
   );
 }

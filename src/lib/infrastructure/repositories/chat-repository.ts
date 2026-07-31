@@ -6,10 +6,26 @@ export interface ChatMessageData {
   [key: string]: unknown;
 }
 
+export interface ChatSummary {
+  id: string;
+  title: string;
+  lastMessage: string;
+  createdAt: Date;
+}
+
 export interface IChatRepository {
   getMessages(userId: string, externalId: string): Promise<ChatMessageData[]>;
   replaceMessages(userId: string, externalId: string, messages: ChatMessageData[]): Promise<void>;
   deleteChat(userId: string, externalId: string): Promise<void>;
+  listChats(userId: string): Promise<ChatSummary[]>;
+}
+
+function extractText(content: unknown): string {
+  const message = content as { parts?: Array<{ type: string; text?: string }> };
+  return (message.parts || [])
+    .filter((p) => p.type === 'text' && p.text)
+    .map((p) => p.text)
+    .join(' ');
 }
 
 export const chatRepository: IChatRepository = {
@@ -44,5 +60,25 @@ export const chatRepository: IChatRepository = {
 
   async deleteChat(userId, externalId) {
     await prisma.chat.deleteMany({ where: { userId, externalId } });
+  },
+
+  async listChats(userId) {
+    const chats = await prisma.chat.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      include: { messages: { orderBy: { position: 'desc' }, take: 1 } },
+    });
+
+    return chats
+      .filter((chat) => chat.messages.length > 0)
+      .map((chat) => {
+        const lastMessage = extractText(chat.messages[0].content);
+        return {
+          id: chat.externalId,
+          title: chat.title || lastMessage.slice(0, 40) || 'Conversa',
+          lastMessage: lastMessage.slice(0, 80),
+          createdAt: chat.createdAt,
+        };
+      });
   },
 };

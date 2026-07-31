@@ -92,7 +92,7 @@ export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtra
       )}
 
       <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 }}>
-        OU Cole o Texto do_currículo
+        OU Cole o Texto do Currículo
       </p>
       <textarea
         ref={textareaRef}
