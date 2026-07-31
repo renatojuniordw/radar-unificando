@@ -22,9 +22,9 @@ export function WhyUseSection() {
             lineHeight: 0.9,
           }}
         >
-          RADAR DE VAGAS
+          TUDO QUE VOCÊ PRECISA
           <br />
-          NA SUA MÃO
+          PARA SE RECLOCAR
         </Typography>
 
         <Box

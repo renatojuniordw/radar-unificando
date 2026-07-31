@@ -227,6 +227,23 @@ body {
   50% { opacity: 0.8; }
 }
 
+@keyframes scan-sweep {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes float-card {
+  0%, 100% { transform: translateY(0px) rotate(1deg); }
+  50% { transform: translateY(-8px) rotate(-1deg); }
+}
+
+@keyframes float-card-reverse {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
+}
+
 .hero-radar {
   animation: radar-sweep 4s linear infinite;
   transform-origin: center;
@@ -238,6 +255,26 @@ body {
 
 .hero-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.radar-scan-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, transparent, #ccff00, transparent);
+  box-shadow: 0 0 10px #ccff00;
+  animation: scan-sweep 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.animate-float-1 {
+  animation: float-card 6s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-card-reverse 5s ease-in-out infinite;
 }
 
 /* ===== Range Slider ===== */
