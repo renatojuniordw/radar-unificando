@@ -42,7 +42,7 @@ function MarkdownBubble({ text }: { text: string }) {
 }
 
 export function ChatAssistant() {
-  const { open, pendingPrompt, close, clearPendingPrompt } = useChatAssistant();
+  const { open, pendingPrompt, close, clearPendingPrompt, openDrawer } = useChatAssistant();
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +78,7 @@ export function ChatAssistant() {
     <>
       <Fab
         color="primary"
+        onClick={openDrawer}
         sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1300 }}
       >
         <ChatIcon />

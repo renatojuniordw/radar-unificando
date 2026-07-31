@@ -8,6 +8,7 @@ interface ChatAssistantState {
 }
 
 interface ChatAssistantContextType extends ChatAssistantState {
+  openDrawer: () => void;
   openWithPrompt: (prompt: string) => void;
   close: () => void;
   clearPendingPrompt: () => void;
@@ -20,6 +21,10 @@ export function ChatAssistantProvider({ children }: { children: ReactNode }) {
     open: false,
     pendingPrompt: null,
   });
+
+  const openDrawer = useCallback(() => {
+    setState(prev => ({ ...prev, open: true }));
+  }, []);
 
   const openWithPrompt = useCallback((prompt: string) => {
     setState({ open: true, pendingPrompt: prompt });
@@ -34,7 +39,7 @@ export function ChatAssistantProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ChatAssistantContext.Provider value={{ ...state, openWithPrompt, close, clearPendingPrompt }}>
+    <ChatAssistantContext.Provider value={{ ...state, openDrawer, openWithPrompt, close, clearPendingPrompt }}>
       {children}
     </ChatAssistantContext.Provider>
   );
