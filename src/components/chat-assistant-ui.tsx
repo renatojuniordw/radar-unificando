@@ -126,6 +126,16 @@ function ChatIcon() {
   );
 }
 
+function ExternalLinkIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
+
 function MarkdownContent({ text }: { text: string }) {
   let processedText = text.replace(
     /\|(.+)\|\n\|[-| ]+\|\n((?:\|.+\|\n?)+)/g,
@@ -147,12 +157,12 @@ function MarkdownContent({ text }: { text: string }) {
     }
   );
 
-  processedText = processedText.replace(/\*\*\s+/g, '**');
-  processedText = processedText.replace(/\s+\*\*/g, '**');
   processedText = processedText.replace(/(\d+)\s*⭐/g, (_, count) => '★'.repeat(parseInt(count)));
 
   const cleaned = processedText
-    .replace(/🟢|🟡|🔴|✅|❌|💡|⚡|🔥|🏠|⚠️/g, '')
+    // Remove decorative emoji (keep only text/markdown) — icons are rendered via SVG instead
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}️]/gu, '')
+    .replace(/[ \t]{2,}/g, ' ')
     .trim();
 
   const components: Components = {
@@ -168,36 +178,38 @@ function MarkdownContent({ text }: { text: string }) {
       }
 
       return (
-        <a href={href} target="_blank" rel="noopener noreferrer">
-          <Box
-            component="span"
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 2,
-              py: 1,
-              mt: 1,
-              mb: 0.5,
-              borderRadius: 1,
-              bgcolor: isJobLink ? 'primary.main' : 'transparent',
-              color: isJobLink ? 'common.white' : 'primary.main',
-              fontSize: '0.8125rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-              border: isJobLink ? 'none' : '1px solid',
-              borderColor: 'primary.main',
-              cursor: 'pointer',
-              transition: 'all 150ms ease-out',
-              '&:hover': {
-                bgcolor: isJobLink ? 'primary.dark' : 'action.hover',
-                transform: 'translateY(-1px)',
-              },
-            }}
-          >
-            {isJobLink ? buttonText : linkText}
-          </Box>
-        </a>
+        <Box
+          component="a"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.75,
+            px: 2,
+            py: 1,
+            my: 1,
+            minHeight: 36,
+            borderRadius: 1.5,
+            bgcolor: isJobLink ? 'primary.main' : 'transparent',
+            color: isJobLink ? 'common.white' : 'primary.main',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            border: isJobLink ? 'none' : '1px solid',
+            borderColor: 'primary.main',
+            cursor: 'pointer',
+            transition: 'all 150ms ease-out',
+            '&:hover': {
+              bgcolor: isJobLink ? 'primary.dark' : 'action.hover',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          {isJobLink ? buttonText : linkText}
+          <ExternalLinkIcon />
+        </Box>
       );
     },
     h2: ({ children }) => (
@@ -211,7 +223,7 @@ function MarkdownContent({ text }: { text: string }) {
       </Typography>
     ),
     p: ({ children }) => (
-      <Typography variant="body2" sx={{ mb: 1.5, lineHeight: 1.7, color: 'text.secondary' }}>
+      <Typography variant="body2" component="div" sx={{ mb: 1.5, lineHeight: 1.7, color: 'text.secondary', '&:last-child': { mb: 0 } }}>
         {children}
       </Typography>
     ),
@@ -226,12 +238,12 @@ function MarkdownContent({ text }: { text: string }) {
       </Box>
     ),
     strong: ({ children }) => (
-      <Box component="strong" sx={{ color: 'text.primary', fontWeight: 600 }}>
+      <Box component="strong" sx={{ color: 'text.primary', fontWeight: 700 }}>
         {children}
       </Box>
     ),
     hr: () => (
-      <Box component="hr" sx={{ border: 'none', borderTop: '1px solid', borderColor: 'divider', my: 2 }} />
+      <Box component="hr" sx={{ border: 'none', borderTop: '1px solid', borderColor: 'divider', my: 2.5 }} />
     ),
   };
 
@@ -434,10 +446,10 @@ export function ChatAssistantUI() {
             flex: 1,
             overflow: 'auto',
             px: 2,
-            py: 2,
+            py: 2.5,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: 2.5,
             bgcolor: 'grey.50',
           }}
         >
@@ -477,7 +489,6 @@ export function ChatAssistantUI() {
                 flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
                 gap: 1,
                 alignItems: 'flex-start',
-                mb: 2,
               }}
             >
               {/* Avatar */}
@@ -500,12 +511,14 @@ export function ChatAssistantUI() {
               {/* Message Bubble */}
               <Box
                 sx={{
-                  maxWidth: '85%',
+                  maxWidth: '88%',
                   px: 2,
                   py: 1.5,
-                  borderRadius: 1,
+                  borderRadius: 1.5,
                   bgcolor: msg.role === 'user' ? 'primary.main' : 'common.white',
                   color: msg.role === 'user' ? 'common.white' : 'text.primary',
+                  border: msg.role === 'user' ? 'none' : '1px solid',
+                  borderColor: 'divider',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                   fontSize: '0.875rem',
                   lineHeight: 1.5,
