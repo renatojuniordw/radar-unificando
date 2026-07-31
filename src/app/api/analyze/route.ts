@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { profileRepository, jobRepository } from '@/lib/infrastructure/repositories';
-import { adaptResumeForJob } from '@/lib/core/ai/resume-adapt';
+import { analyzeJobFit } from '@/lib/core/ai/job-analyzer';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     const parsedData = profile.parsedData as { education?: string[] } | null;
 
-    const result = await adaptResumeForJob(
+    const analysis = await analyzeJobFit(
       profile.resumeText || profile.resumeMarkdown || '',
       job.tituloVaga || '',
       job.descricao || '',
@@ -43,16 +43,10 @@ export async function POST(req: NextRequest) {
       traceId,
     );
 
-    return NextResponse.json({
-      adaptedResume: result.resume,
-      highlights: result.highlights,
-      missingSkills: result.missingSkills,
-      empresa: job.empresa,
-      tituloVaga: job.tituloVaga,
-    });
+    return NextResponse.json(analysis);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro ao adaptar currículo';
-    console.error('[adapt] Error:', message);
+    const message = error instanceof Error ? error.message : 'Erro ao analisar vaga';
+    console.error('[analyze] Error:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

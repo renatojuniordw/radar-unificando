@@ -15,6 +15,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Muitos uploads. Tente novamente em 1 hora.' }, { status: 429 });
   }
 
+  const traceId = crypto.randomUUID();
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -54,27 +56,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Texto muito curto. Cole o conteúdo do currículo.' }, { status: 400 });
     }
 
-    const extracted = await extractSkillsFromResume(text);
+    const extracted = await extractSkillsFromResume(text, traceId);
 
     await profileRepository.upsert(session.user.id, {
       resumeText: text,
+      resumeMarkdown: extracted.markdown,
       skills: extracted.skills,
       seniority: extracted.seniority || undefined,
-      experienceYears: extracted.experience,
+      experienceYears: extracted.experienceYears,
       parsedData: { education: extracted.education, extractedAt: new Date().toISOString() },
     });
 
     return NextResponse.json({
       skills: extracted.skills,
-      experience: extracted.experience,
+      experience: extracted.experienceYears,
       seniority: extracted.seniority,
       education: extracted.education,
+      markdown: extracted.markdown,
       count: extracted.skills.length,
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao processar upload' },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : 'Erro ao processar upload';
+    console.error('[upload] Error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

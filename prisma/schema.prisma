@@ -40,6 +40,7 @@ model Profile {
   experienceYears Int?    @map("experience_years")
   seniority      String?  @db.VarChar(50)
   resumeText     String?  @map("resume_text") @db.Text
+  resumeMarkdown String?  @map("resume_markdown") @db.Text
   parsedData     Json?    @map("parsed_data")
   createdAt      DateTime @default(now()) @map("created_at")
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)

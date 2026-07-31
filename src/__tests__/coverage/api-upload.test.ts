@@ -54,7 +54,8 @@ describe('Upload API', () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
     vi.mocked(uploadLimiter.check).mockReturnValue({ allowed: true, remaining: 9, resetAt: Date.now() + 3600000 });
     vi.mocked(extractSkillsFromResume).mockResolvedValue({
-      skills: ['python', 'sql'], experience: 5, seniority: 'senior', education: ['Computer Science'],
+      markdown: '## Skills\npython, sql',
+      skills: ['python', 'sql'], experienceYears: 5, seniority: 'senior', education: ['Computer Science'],
     });
     vi.mocked(profileRepository.upsert).mockResolvedValue();
     const res = await POST(makeFormRequest({ text: 'Senior data analyst with python and sql skills' }));

@@ -1,30 +1,93 @@
-# AI no Browser — Radar Unificando v2
+# AI Pipeline — Radar Unificando
 
-## Transformers.js
+## Stack
 
-Processamento local no browser usando modelos de NLP. Sem custo, sem envio de dados.
-
-| Tarefa | Modelo | Tamanho |
-|--------|--------|---------|
-| NER (extrair skills) | `Xenova/bert-base-NER` | ~400MB |
-| Embeddings (match semântico) | `Xenova/all-MiniLM-L6-v2` | ~80MB |
+| Camada | Tecnologia |
+|--------|-----------|
+| Provider | Verboo (OpenAI-compatible) ou OpenAI |
+| SDK | Vercel AI SDK (`ai` + `@ai-sdk/openai`) |
+| Validação | Zod schemas |
+| Logging | JSONL estruturado (`[AI_LOG]`) |
+| Modelo | `deepseek-v4-flash` (Verboo) / `gpt-4o-mini` (OpenAI) |
 
 ## Pipeline de Extração
 
 ```
-Upload PDF (LinkedIn export)
-  → pdfjs-dist extrai texto
-  → Transformers.js NER identifica skills, cargos, empresas
-  → Usuário revisa e ajusta
-  → Salva no perfil (PostgreSQL)
+Upload PDF
+  → pdfjs-dist extrai texto raw
+  → LLM converte para markdown + extrai skills/exp/seniority/education
+  → Salva no Profile: resumeText, resumeMarkdown, skills, parsedData
 ```
 
-## Fallback
+## Pipeline de Análise de Vaga
 
-Se Transformers.js falhar:
-1. Extração por regex + taxonomia (determinístico)
-2. Match por palavras-chave (sem embeddings)
+```
+Usuário clica "ANALISAR PERFIL" no MatchDialog
+  → POST /api/analyze { jobId }
+  → LLM compara perfil vs descrição da vaga
+  → Retorna matched/missing skills, fit, recomendações
+```
 
-## Gemini API (Opcional)
+## Pipeline de Adaptação
 
-Usuário pode colar a própria API key para adaptação de currículo por IA.
+```
+Usuário clica "ADAPTAR CURRÍCULO" no MatchDialog
+  → POST /api/resume/adapt { jobId }
+  → LLM adapta currículo para a vaga
+  → Retorna currículo markdown + highlights + missing skills
+```
+
+## Chat Assistente
+
+```
+Chat UI → POST /api/chat (streaming)
+  → LLM com ferramentas: search_jobs, get_my_profile, get_job_details
+  → Stream de resposta + logs no onFinish
+```
+
+## Env Vars
+
+```env
+# O SDK adiciona /v1 automaticamente — NÃO coloque /v1 na URL
+AI_BASE_URL=https://code.verboo.ai/router   # Verboo
+# AI_BASE_URL=https://api.openai.com/v1     # OpenAI
+AI_API_KEY=sk-xxx
+AI_MODEL=deepseek-v4-flash
+```
+
+## Migração Verboo → OpenAI
+
+| Variável | Verboo | OpenAI |
+|---|---|---|
+| `AI_BASE_URL` | `https://code.verboo.ai/router` | `https://api.openai.com/v1` |
+| `AI_MODEL` | `deepseek-v4-flash` | `gpt-4o-mini` |
+| `AI_API_KEY` | Chave Verboo | Chave OpenAI |
+
+Apenas alterar `.env`. Zero mudanças de código.
+
+## Logging
+
+Todos os eventos AI geram logs JSONL no stdout com prefixo `[AI_LOG]`:
+
+```bash
+# Acompanhar em tempo real
+npm run dev 2>&1 | grep "\[AI_LOG\]" | jq .
+
+# Filtrar extrações com erro
+npm run dev 2>&1 | grep "\[AI_LOG\]" | jq 'select(.success == false)'
+
+# Ver latências médias de extração
+npm run dev 2>&1 | grep "\[AI_LOG\]" | jq 'select(.event == "resume_extraction") | .latencyMs'
+
+# Correlacionar eventos por traceId
+npm run dev 2>&1 | grep "\[AI_LOG\]" | jq 'select(.traceId == "uuid-aqui")'
+```
+
+### Eventos
+
+| Evento | Campos principais |
+|---|---|
+| `resume_extraction` | traceId, latencyMs, skillsCount, experienceYears, seniority, success |
+| `job_analysis` | traceId, latencyMs, jobTitle, matchedCount, missingCount, overallFit, success |
+| `resume_adaptation` | traceId, latencyMs, jobTitle, highlightsCount, missingSkillsCount, success |
+| `chat_interaction` | traceId, latencyMs, messageCount, toolsCalled, finishReason, usage, success |
