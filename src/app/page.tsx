@@ -24,9 +24,14 @@ interface Vaga {
   detectado_em: string;
 }
 
-const SUGGESTED_CARGOS = ['Analista de Dados', 'Data Engineer', 'Growth', 'BI Analyst', 'Data Scientist'];
+const SUGGESTED_CARGOS = [
+  'Analista de Dados', 'Analista de Marketing', 'Assistente Administrativo',
+  'Consultor de Vendas', 'Analista de RH', 'Analista Financeiro',
+  'Analista de Logística', 'Customer Success', 'Designer Gráfico',
+  'Business Intelligence', 'Coordenador de Projetos', 'Analista de Qualidade',
+];
 
-const ROTATING_WORDS = ['Dados', 'BI', 'Business', 'Growth', 'Engenharia'];
+const ROTATING_WORDS = ['Dados', 'Marketing', 'Vendas', 'RH', 'Financeiro', 'Logística', 'Design', 'Produto'];
 
 function RotatingText() {
   const [index, setIndex] = useState(0);
