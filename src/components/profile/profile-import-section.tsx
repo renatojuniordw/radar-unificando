@@ -37,92 +37,72 @@ export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtra
 
   return (
     <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
-      <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 8px' }}>
+      <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 12px' }}>
         IMPORTAR CURRÍCULO
       </h3>
-      <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-        Faça upload do PDF do LinkedIn ou cole o texto do currículo.
+
+      {extracting && <LinearProgress sx={{ mb: 2, height: 4, bgcolor: '#e2e8f0', '& .MuiLinearProgress-bar': { bgcolor: '#020617' } }} />}
+
+      <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 16, lineHeight: 1.6 }}>
+        Upload do PDF do LinkedIn ou cole o texto do currículo. A IA extrai skills, experiência e formação automaticamente.
       </p>
 
+      {/* Upload PDF */}
       <div
         onDragOver={e => { e.preventDefault(); onDragOver(true); }}
         onDragLeave={() => onDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         style={{
-          border: `4px dashed ${dragOver ? '#ccff00' : '#020617'}`,
+          border: `3px dashed ${dragOver ? '#ccff00' : '#020617'}`,
           backgroundColor: dragOver ? 'rgba(204, 255, 0, 0.05)' : '#f8fafc',
-          padding: 32,
+          padding: 24,
           textAlign: 'center',
           cursor: 'pointer',
           marginBottom: 16,
-          transition: 'all 0.2s',
         }}
-        role="button"
-        tabIndex={0}
-        aria-label="Arraste seu currículo ou clique para selecionar"
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
       >
         <input
           ref={fileInputRef}
           type="file"
-          hidden
-          accept=".pdf,.txt,.doc,.docx"
+          accept=".pdf"
           onChange={handleFileChange}
-          disabled={extracting}
+          style={{ display: 'none' }}
         />
-        <p style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', color: dragOver ? '#ccff00' : '#020617', margin: 0 }}>
-          {dragOver ? 'SOLTE O ARQUIVO AQUI' : 'Arraste PDF ou clique para enviar'}
+        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.75rem', color: dragOver ? '#ccff00' : '#020617' }}>
+          {dragOver ? 'Solte o arquivo aqui' : 'Arraste ou clique para selecionar PDF'}
         </p>
-        <p style={{ color: '#94a3b8', fontSize: '0.6rem', fontFamily: 'ui-monospace, monospace', margin: '4px 0 0' }}>
-          PDF · TXT · DOC · DOCX
+        <p style={{ margin: '4px 0 0', fontFamily: 'ui-monospace, monospace', fontSize: '0.6rem', color: '#64748b' }}>
+          Formato aceito: PDF do LinkedIn
         </p>
       </div>
 
-      {extracting && (
-        <div style={{ marginBottom: 16 }} role="status" aria-live="polite">
-          <LinearProgress
-            variant="indeterminate"
-            sx={{ height: 4, mb: 0.5, '& .MuiLinearProgress-bar': { backgroundColor: '#ccff00' }, backgroundColor: '#334155' }}
-          />
-          <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', margin: 0 }}>
-            Extraindo dados do currículo com IA...
-          </p>
-        </div>
-      )}
-
-      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 }}>
-        OU Cole o Texto do Currículo
-      </p>
-      <textarea
-        ref={textareaRef}
-        rows={6}
-        placeholder="Cole aqui o conteúdo do LinkedIn ou currículo (mínimo 20 caracteres)"
-        style={{
-          width: '100%', boxSizing: 'border-box',
-          border: '4px solid #020617',
-          padding: 12,
-          fontFamily: 'ui-monospace, monospace',
-          fontSize: '0.75rem',
-          boxShadow: '4px 4px 0px #000',
-          resize: 'vertical',
-        }}
-      />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-        <p style={{ color: '#94a3b8', fontSize: '0.6rem', fontFamily: 'ui-monospace, monospace', margin: 0 }}>
-          Mínimo de 20 caracteres
+      {/* Textarea */}
+      <div>
+        <p style={{ fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', marginBottom: 6, color: '#64748b' }}>
+          Ou cole o texto do currículo
         </p>
+        <textarea
+          ref={textareaRef}
+          rows={4}
+          placeholder="Cole aqui o conteúdo do seu currículo..."
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            border: '3px solid #020617', padding: 12,
+            fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem',
+            resize: 'vertical',
+          }}
+        />
         <button
           onClick={handleTextExtract}
           disabled={extracting}
           style={{
-            border: '2px solid #020617', background: 'none', fontWeight: 900,
-            padding: '8px 16px', cursor: extracting ? 'not-allowed' : 'pointer',
-            fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em',
-            fontFamily: 'ui-monospace, monospace', opacity: extracting ? 0.5 : 1,
+            marginTop: 8, border: '2px solid #020617', background: 'transparent',
+            fontWeight: 700, padding: '6px 16px', cursor: 'pointer',
+            fontSize: '0.65rem', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace',
           }}
         >
-          EXTRAIR DO TEXTO
+          {extracting ? 'Extraindo...' : 'Extrair do texto'}
         </button>
       </div>
     </div>

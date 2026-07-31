@@ -5,32 +5,21 @@ import { Container, Typography } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useProfile } from '@/hooks/useProfile';
-import { useChatAssistant } from '@/contexts/chat-assistant-context';
 import { ProfileCompletionCard } from '@/components/profile/profile-completion-card';
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
-import { ProfileEmptyState } from '@/components/profile/profile-empty-state';
-
-type ProfileStatus = 'empty' | 'importing' | 'reviewing' | 'complete';
 
 export default function PerfilPage() {
   const { data: session } = useSession();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
-  const { openWithPrompt } = useChatAssistant();
   const [showManualForm, setShowManualForm] = useState(false);
 
   const hasResume = !!(profile.resumeText || profile.resumeMarkdown);
+  const hasData = hasResume || profile.skills.length > 0;
+  const isSetup = !hasData && !showManualForm;
 
-  const profileStatus: ProfileStatus = useMemo(() => {
-    if (!hasResume && profile.skills.length === 0 && !showManualForm) return 'empty';
-    if (!hasResume && showManualForm && profile.skills.length === 0) return 'importing';
-    if (profile.completionPercent >= 100) return 'complete';
-    return 'reviewing';
-  }, [hasResume, showManualForm, profile.skills.length, profile.completionPercent]);
-
-  const hasChanges = profile.fieldOverrides.size > 0 ||
-    ((profileStatus === 'reviewing' || profileStatus === 'complete') && !profile.saving);
+  const hasChanges = profile.fieldOverrides.size > 0 || (!profile.saving && hasData);
 
   async function handleSave() {
     const result = await profile.handleSave();
@@ -66,11 +55,6 @@ export default function PerfilPage() {
         {session?.user?.email}
       </Typography>
 
-      <Typography sx={{ mb: 3, fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, maxWidth: 560 }}>
-        Perfil completo ajuda o assistente e as recomendações a te conhecerem melhor.
-        Importe seu currículo do LinkedIn para preencher automaticamente.
-      </Typography>
-
       {profile.loadError && (
         <div className="card-brutalist" style={{ padding: 16, marginBottom: 24, borderColor: '#dc2626', background: '#fef2f2' }}>
           <p style={{ color: '#dc2626', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', margin: 0 }}>
@@ -89,55 +73,56 @@ export default function PerfilPage() {
         </div>
       )}
 
-      {/* Estado vazio: sem perfil nenhum */}
-      {profileStatus === 'empty' && (
-        <ProfileEmptyState
-          onImportClick={() => {
-            const el = document.getElementById('profile-import-section');
-            el?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          onManualClick={() => setShowManualForm(true)}
-        />
+      {/* Estado setup: sem perfil */}
+      {isSetup && (
+        <div className="card-brutalist" style={{ padding: 32, textAlign: 'center', marginBottom: 24 }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            border: '4px solid #ccff00', backgroundColor: '#ccff00',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#020617" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <h3 style={{ fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '-0.01em', margin: '0 0 8px' }}>
+            CRIE SEU PERFIL
+          </h3>
+          <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 24, maxWidth: 360, margin: '0 auto 24px', lineHeight: 1.6 }}>
+            Importe seu currículo do LinkedIn para extrair automaticamente skills, experiência e formação.
+          </p>
+          <button
+            onClick={() => setShowManualForm(true)}
+            style={{
+              backgroundColor: '#020617', color: '#ccff00', fontWeight: 900,
+              padding: '12px 32px', border: '4px solid #020617',
+              boxShadow: '4px 4px 0px #000', cursor: 'pointer',
+              fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+              fontFamily: 'ui-monospace, monospace', marginBottom: 12, display: 'block',
+              width: '100%', maxWidth: 320, margin: '0 auto 12px',
+            }}
+          >
+            COMEÇAR
+          </button>
+          <button
+            onClick={() => setShowManualForm(true)}
+            style={{
+              background: 'none', border: '2px solid #020617', color: '#020617',
+              fontWeight: 700, padding: '10px 24px', cursor: 'pointer',
+              fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+              fontFamily: 'ui-monospace, monospace',
+            }}
+          >
+            Preencher manualmente
+          </button>
+        </div>
       )}
 
-      {/* Importando: sem currículo, modo manual ativado, ainda sem skills */}
-      {profileStatus === 'importing' && (
+      {/* Estado com dados: formulário de edição */}
+      {!isSetup && (
         <>
-          <ProfileImportSection
-            extracting={profile.extracting}
-            dragOver={profile.dragOver}
-            onDragOver={profile.setDragOver}
-            onExtract={handleExtract}
-          />
-          <ProfileReviewSection
-            skills={profile.skills}
-            currentRole={profile.currentRole}
-            seniority={profile.seniority}
-            area={profile.area}
-            experienceYears={profile.experienceYears}
-            education={profile.education}
-            profileSource="manual"
-            fieldOverrides={profile.fieldOverrides}
-            onFieldChange={(field, value) => profile.setField(field as any, value)}
-            onAddSkill={profile.addSkill}
-            onAddSkills={profile.addSkills}
-            onRemoveSkill={profile.removeSkill}
-            onRevertField={() => {}}
-          />
-        </>
-      )}
-
-      {/* Revisando ou completo: currículo importado ou skills preenchidas manualmente */}
-      {(profileStatus === 'reviewing' || profileStatus === 'complete') && (
-        <>
-          {profileStatus === 'complete' && (
-            <div className="card-brutalist" style={{ padding: 16, marginBottom: 24, borderLeft: '4px solid #16a34a', background: '#f0fdf4' }}>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: '0.8rem', color: '#16a34a' }}>
-                ✓ Perfil completo! Você está pronto para receber as melhores recomendações.
-              </p>
-            </div>
-          )}
-
           <ProfileCompletionCard
             percent={profile.completionPercent}
             completedCount={profile.completionScore}
@@ -145,18 +130,15 @@ export default function PerfilPage() {
             skills={profile.skills}
           />
 
-          <button
-            onClick={() => openWithPrompt('Analise meu perfil e me diga como estão minhas chances nas vagas disponíveis.')}
-            style={{
-              display: 'block', width: '100%', marginBottom: 24,
-              border: '2px solid #020617', background: 'transparent',
-              padding: '10px 16px', cursor: 'pointer', textAlign: 'left',
-              fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase',
-              letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace',
-            }}
-          >
-            Peça pro assistente analisar seu perfil →
-          </button>
+          {/* Upload de currículo (se não tem ou quer re-importar) */}
+          {!hasResume && (
+            <ProfileImportSection
+              extracting={profile.extracting}
+              dragOver={profile.dragOver}
+              onDragOver={profile.setDragOver}
+              onExtract={handleExtract}
+            />
+          )}
 
           <ProfileReviewSection
             skills={profile.skills}
@@ -175,27 +157,25 @@ export default function PerfilPage() {
           />
 
           {hasResume && (
-            <div style={{ marginBottom: 24 }}>
-              <ProfileImportSection
-                extracting={profile.extracting}
-                dragOver={profile.dragOver}
-                onDragOver={profile.setDragOver}
-                onExtract={handleExtract}
-              />
-            </div>
+            <ProfileImportSection
+              extracting={profile.extracting}
+              dragOver={profile.dragOver}
+              onDragOver={profile.setDragOver}
+              onExtract={handleExtract}
+            />
+          )}
+
+          {hasChanges && (
+            <button
+              onClick={handleSave}
+              disabled={profile.saving}
+              className="btn-neon"
+              style={{ padding: '14px 48px', fontSize: '0.8rem', width: '100%' }}
+            >
+              {profile.saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
+            </button>
           )}
         </>
-      )}
-
-      {hasChanges && (
-        <button
-          onClick={handleSave}
-          disabled={profile.saving}
-          className="btn-neon"
-          style={{ padding: '14px 48px', fontSize: '0.8rem', width: '100%' }}
-        >
-          {profile.saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
-        </button>
       )}
     </Container>
   );
