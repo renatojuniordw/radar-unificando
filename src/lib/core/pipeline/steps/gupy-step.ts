@@ -27,7 +27,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
           current: i + 1, total: queries.length,
           message: `Gupy MCP (${i + 1}/${queries.length}): ${queries[i]}`,
         });
-        const result = await gupyMcpClient.searchJobs(queries[i], 100);
+        const result = await gupyMcpClient.searchJobs(queries[i], 500);
         jobs.push(...filterByCompany(result, companies));
       }
       progressEmitter.emit(runId, {
@@ -77,41 +77,51 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
 
   for (let i = 0; i < searches.length; i++) {
     const s = searches[i];
-    const params = new URLSearchParams({ offset: '0', limit: '100' });
-    if (s.jobName) params.set('jobName', s.jobName);
-    if (s.careerPageName) params.set('careerPageName', s.careerPageName);
+    const MAX_PER_SEARCH = 500;
+    const PAGE_SIZE = 100;
+    let offset = 0;
+    let pageResults: any[] = [];
 
-    const desc = s.jobName || s.careerPageName || 'todas';
-    progressEmitter.emit(runId, {
-      type: 'step_progress', step: 'Gupy',
-      current: i + 1, total: searches.length,
-      message: `Gupy REST (${i + 1}/${searches.length}): ${desc}`,
-    });
+    while (offset < MAX_PER_SEARCH) {
+      const params = new URLSearchParams({ offset: String(offset), limit: String(PAGE_SIZE) });
+      if (s.jobName) params.set('jobName', s.jobName);
+      if (s.careerPageName) params.set('careerPageName', s.careerPageName);
 
-    try {
-      const url = `${API}?${params}`;
-      const res = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!res.ok) continue;
-      const json = await res.json();
-      const data = json.data || [];
+      const desc = s.jobName || s.careerPageName || 'todas';
+      progressEmitter.emit(runId, {
+        type: 'step_progress', step: 'Gupy',
+        current: i + 1, total: searches.length,
+        message: `Gupy REST (${i + 1}/${searches.length}): ${desc} (offset ${offset})`,
+      });
 
-      for (const j of data) {
-        results.push({
-          empresa: j.careerPageName || j.companyName || '',
-          plataforma: 'Gupy',
-          na_lista: companies.some(c => c.toLowerCase() === (j.careerPageName || '').toLowerCase()) ? 'Sim' : 'Não',
-          cargo_categoria: inferRole(j.name),
-          titulo_vaga: j.name,
-          tipo: j.workplaceType,
-          local: [j.city, j.state, j.country].filter(Boolean).join(' / '),
-          link: j.jobUrl || j.careerPageUrl || '',
-          nome_na_plataforma: j.careerPageName,
-          publicado: j.publishedDate || '',
-          alerta: '',
-        });
+      try {
+        const url = `${API}?${params}`;
+        const res = await fetch(url, { headers: { Accept: 'application/json' } });
+        if (!res.ok) break;
+        const json = await res.json();
+        const data = json.data || [];
+        if (data.length === 0) break;
+        pageResults.push(...data);
+        offset += PAGE_SIZE;
+      } catch {
+        break;
       }
-    } catch {
-      continue;
+    }
+
+    for (const j of pageResults) {
+      results.push({
+        empresa: j.careerPageName || j.companyName || '',
+        plataforma: 'Gupy',
+        na_lista: companies.some(c => c.toLowerCase() === (j.careerPageName || '').toLowerCase()) ? 'Sim' : 'Não',
+        cargo_categoria: inferRole(j.name),
+        titulo_vaga: j.name,
+        tipo: j.workplaceType,
+        local: [j.city, j.state, j.country].filter(Boolean).join(' / '),
+        link: j.jobUrl || j.careerPageUrl || '',
+        nome_na_plataforma: j.careerPageName,
+        publicado: j.publishedDate || '',
+        alerta: '',
+      });
     }
   }
 

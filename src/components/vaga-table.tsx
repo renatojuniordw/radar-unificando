@@ -102,7 +102,7 @@ export function VagaTable({ vagas, loading, cargos, scores, session, onJobClick,
           <Select
             value={filtroPlataforma}
             onChange={e => { setFiltroPlataforma(e.target.value); handleFilterChange({ plataforma: e.target.value }); }}
-            displayEmpty size="small" sx={{ minWidth: 120, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 2 } }}
+            displayEmpty size="small" sx={{ minWidth: 120 }}
           >
             <MenuItem value="">TODAS</MenuItem>
             <MenuItem value="Gupy">GUPY</MenuItem>

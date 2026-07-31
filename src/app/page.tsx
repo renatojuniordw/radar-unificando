@@ -6,11 +6,8 @@ import { Container, Box, Typography, Snackbar } from '@mui/material';
 import { AnonymousStorage } from '@/lib/infrastructure/storage/local-storage';
 import { CompanyInput } from '@/components/company-input';
 import { CargoInput } from '@/components/cargo-input';
-import { PipelineProgress } from '@/components/pipeline-progress';
 import { VagaTable } from '@/components/vaga-table';
 import { MatchDialog } from '@/components/match-dialog';
-import type { JobData } from '@/types';
-
 interface Vaga {
   id?: number;
   empresa: string;
@@ -25,14 +22,6 @@ interface Vaga {
   publicado: string;
   alerta: string;
   detectado_em: string;
-}
-
-interface LogEntry {
-  type: string;
-  step?: string;
-  message?: string;
-  error?: string;
-  jobs?: JobData[];
 }
 
 const SUGGESTED_CARGOS = ['Analista de Dados', 'Data Engineer', 'Growth', 'BI Analyst', 'Data Scientist'];
@@ -96,10 +85,8 @@ export default function HomePage() {
   const [empresas, setEmpresas] = useState<string[]>([]);
   const [cargosBusca, setCargosBusca] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [cargos, setCargos] = useState<string[]>([]);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [selectedJob, setSelectedJob] = useState<{ id: string; empresa: string; titulo: string; score: number } | null>(null);
@@ -184,8 +171,6 @@ export default function HomePage() {
   async function handleStart() {
     setRunning(true);
     setVagas([]);
-    setLogs([]);
-    setExpanded(true);
     if (!session) AnonymousStorage.clear();
 
     try {
@@ -203,7 +188,6 @@ export default function HomePage() {
           setCooldown(body.retryAfter);
           setSnackbar({ message: body.error || 'Muitas requisições. Aguarde.', severity: 'info' });
         } else {
-          setLogs(prev => [...prev, { type: 'pipeline_error', message: body.error || 'Erro ao iniciar pipeline' }]);
           setSnackbar({ message: body.error || 'Erro ao iniciar pipeline', severity: 'error' });
         }
         setRunning(false);
@@ -220,18 +204,17 @@ export default function HomePage() {
 
       evtSource.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data) as LogEntry;
-          setLogs(prev => [...prev, data]);
+          const data = JSON.parse(event.data);
 
           if (data.type === 'pipeline_complete' || data.type === 'pipeline_error' || data.type === 'pipeline_cancelled') {
             evtSource.close();
             setRunning(false);
 
             if (!session && data.type === 'pipeline_complete' && Array.isArray(data.jobs)) {
-              const jobs: Vaga[] = data.jobs.map(j => ({ ...j, detectado_em: j.detectado_em || '' }));
+              const jobs: Vaga[] = data.jobs.map((j: any) => ({ ...j, detectado_em: j.detectado_em || '' }));
               setVagas(jobs);
               AnonymousStorage.setVagas(data.jobs);
-              const uniqueCargos = [...new Set(jobs.map(j => j.cargo_categoria).filter(Boolean))];
+              const uniqueCargos = [...new Set(jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean))];
               setCargos(uniqueCargos);
             } else {
               carregarVagas();
@@ -250,8 +233,8 @@ export default function HomePage() {
         setRunning(false);
         carregarVagas();
       };
-    } catch (error) {
-      setLogs(prev => [...prev, { type: 'pipeline_error', message: `Erro: ${error instanceof Error ? error.message : 'desconhecido'}` }]);
+    } catch {
+      setSnackbar({ message: 'Erro ao iniciar pipeline', severity: 'error' });
       setRunning(false);
     }
   }
@@ -280,9 +263,29 @@ export default function HomePage() {
         <Container maxWidth="xl" sx={{ py: { xs: 6, md: 8 }, position: 'relative', zIndex: 1 }}>
           <Box
             className="badge-neon"
-            sx={{ mb: 3 }}
+            sx={{ mb: 1 }}
           >
             GUPY + INHIRE · GRÁTIS
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3, alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: 'inline-flex', alignItems: 'center', gap: 1,
+                border: '2px solid #334155', px: 1.5, py: 0.5,
+              }}
+            >
+              <span style={{ fontSize: '0.6rem', lineHeight: 1 }}>⚡</span>
+              <span
+                style={{
+                  color: '#94a3b8', fontSize: '0.55rem', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.05em',
+                  fontFamily: 'ui-monospace, monospace', lineHeight: 1,
+                }}
+              >
+                Sem filtros: até 500 vagas aleatórias
+              </span>
+            </Box>
           </Box>
 
           <Typography
@@ -390,15 +393,36 @@ export default function HomePage() {
         </Container>
       </Box>
 
+      {running && (
+        <Box
+          sx={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            bgcolor: 'rgba(2, 6, 23, 0.92)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 3,
+          }}
+        >
+          <Box
+            className="hero-radar"
+            sx={{
+              width: 80, height: 80,
+              borderRadius: '50%',
+              background: 'conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)',
+              opacity: 0.6,
+            }}
+          />
+          <Typography sx={{ color: '#ccff00', fontWeight: 900, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
+            Buscando vagas...
+          </Typography>
+          <Typography sx={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            Gupy · InHire
+          </Typography>
+        </Box>
+      )}
+
       <Box className="section-white">
         <Container maxWidth="xl" sx={{ py: 5 }}>
-          <PipelineProgress
-            logs={logs}
-            running={running}
-            expanded={expanded}
-            onToggle={() => setExpanded(!expanded)}
-          />
-
           <VagaTable
             vagas={vagas}
             loading={loading}
