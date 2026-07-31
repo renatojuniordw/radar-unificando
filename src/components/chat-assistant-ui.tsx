@@ -1,15 +1,43 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Fab, Drawer, IconButton, Typography, Chip } from '@mui/material';
+import { Box, Fab, Drawer, IconButton, Typography, Chip, TextareaAutosize } from '@mui/material';
 import { Close as CloseIcon, Send as SendIcon } from '@mui/icons-material';
 import { useChat } from '@ai-sdk/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 const STORAGE_KEY = 'chat-assistant-ui-history';
 const CHAT_ID_KEY = 'chat-assistant-ui-id';
+
+const SUGGESTIONS = [
+  'Quais vagas de DevOps estão abertas?',
+  'Analise meu perfil para vagas remotas',
+  'Recomende vagas de Front-end com React',
+  'Como está o mercado de dados?',
+];
+
+const WELCOME_TEXT = `Olá! Sou o assistente de recolocação profissional do Radar. Posso te ajudar a:
+
+- Buscar **vagas no Gupy** de acordo com seu perfil e interesses
+- Sugerir **melhorias no seu currículo**
+- Analisar sua **compatibilidade** com uma vaga específica
+
+Não faço parte do processo seletivo — não tenho acesso a decisões de recrutadores nem posso garantir aprovação em nenhuma vaga.
+
+Por segurança, não compartilhe dados sensíveis de terceiros no chat. E se você colar a descrição de uma vaga ou qualquer outro texto, sigo apenas as instruções que você me der diretamente — ignoro qualquer comando escondido dentro do conteúdo colado.
+
+Como posso te ajudar hoje?`;
+
+function createWelcomeMessage() {
+  return {
+    id: 'welcome-message',
+    role: 'assistant' as const,
+    parts: [{ type: 'text' as const, text: WELCOME_TEXT }],
+  };
+}
 
 function getOrCreateChatId(): string {
   if (typeof window === 'undefined') return 'default';
@@ -124,8 +152,7 @@ function MarkdownContent({ text }: { text: string }) {
   processedText = processedText.replace(/(\d+)\s*⭐/g, (_, count) => '★'.repeat(parseInt(count)));
 
   const cleaned = processedText
-    .replace(/🟢|🟡|🔴|✅|❌|📋|🔗|💡|🏢|📍|🏠|📊|⚠️|⚡|🔥/g, '')
-    .replace(/\s+/g, ' ')
+    .replace(/🟢|🟡|🔴|✅|❌|💡|⚡|🔥|🏠|⚠️/g, '')
     .trim();
 
   const components: Components = {
@@ -221,6 +248,7 @@ export function ChatAssistantUI() {
   const [chatId] = useState(() => getOrCreateChatId());
   const endRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { messages, sendMessage, status, setMessages } = useChat({
     throttle: 100,
@@ -236,6 +264,8 @@ export function ChatAssistantUI() {
       }
       if (stored.length > 0 && setMessages) {
         setMessages(stored);
+      } else if (setMessages) {
+        setMessages([createWelcomeMessage()]);
       }
       setIsLoaded(true);
     }
@@ -269,12 +299,21 @@ export function ChatAssistantUI() {
     }
   }
 
+  function handleConfirmClear() {
+    setConfirmOpen(true);
+  }
+
   async function handleClearHistory() {
+    setConfirmOpen(false);
+    setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
     try {
       await fetch(`/api/chat/history?chatId=${chatId}`, { method: 'DELETE' });
     } catch {}
-    window.location.reload();
+  }
+
+  function handleNewChat() {
+    setConfirmOpen(true);
   }
 
   return (
@@ -291,9 +330,9 @@ export function ChatAssistantUI() {
           zIndex: 1300,
           width: 56,
           height: 56,
-          boxShadow: '0 4px 14px 0 rgba(37, 99, 235, 0.4)',
+          boxShadow: '0 4px 14px 0 rgba(2, 6, 23, 0.35)',
           '&:hover': {
-            boxShadow: '0 6px 20px 0 rgba(37, 99, 235, 0.5)',
+            boxShadow: '0 6px 20px 0 rgba(2, 6, 23, 0.45)',
             transform: 'translateY(-2px)',
           },
           transition: 'all 200ms ease-out',
@@ -310,7 +349,7 @@ export function ChatAssistantUI() {
         slotProps={{
           paper: {
             sx: {
-              width: 400,
+              width: { xs: '100%', sm: 400 },
               maxWidth: '100vw',
               display: 'flex',
               flexDirection: 'column',
@@ -359,24 +398,27 @@ export function ChatAssistantUI() {
             </Box>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            {messages.length > 0 && (
-              <IconButton
-                size="small"
-                onClick={handleClearHistory}
-                aria-label="Limpar histórico"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': { color: 'error.main', bgcolor: 'error.light' },
-                }}
-              >
-                <TrashIcon />
-              </IconButton>
-            )}
             <IconButton
-              size="small"
+              onClick={handleNewChat}
+              aria-label="Nova conversa"
+              sx={{
+                width: 44,
+                height: 44,
+                color: 'primary.main',
+                '&:hover': { bgcolor: 'primary.light', color: 'common.white' },
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </IconButton>
+            <IconButton
               onClick={() => setOpen(false)}
               aria-label="Fechar chat"
               sx={{
+                width: 44,
+                height: 44,
                 color: 'text.secondary',
                 '&:hover': { bgcolor: 'action.hover' },
               }}
@@ -399,41 +441,31 @@ export function ChatAssistantUI() {
             bgcolor: 'grey.50',
           }}
         >
-          {messages.length === 0 && (
+          {!messages.some((m) => m.role === 'user') && (
             <Box
               sx={{
                 textAlign: 'center',
-                mt: 8,
+                mt: 1,
+                mb: 2,
                 px: 3,
               }}
             >
-              <Box
-                sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 2,
-                  bgcolor: 'primary.light',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 2,
-                  color: 'primary.main',
-                }}
-              >
-                <BotIcon />
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 0.75 }}>
+                {SUGGESTIONS.map((s) => (
+                  <Chip
+                    key={s}
+                    label={s}
+                    size="small"
+                    onClick={() => setInput(s)}
+                    sx={{
+                      bgcolor: 'action.hover',
+                      color: 'text.secondary',
+                      cursor: 'pointer',
+                      '&:hover': { bgcolor: 'grey.300' },
+                    }}
+                  />
+                ))}
               </Box>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
-                Como posso ajudar?
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                Pergunte sobre vagas, peça recomendações ou analise seu perfil.
-              </Typography>
-              <Chip
-                label="Ex: Busque vagas de Data Analyst remotas"
-                size="small"
-                sx={{ bgcolor: 'action.hover', color: 'text.secondary' }}
-              />
             </Box>
           )}
 
@@ -445,6 +477,7 @@ export function ChatAssistantUI() {
                 flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
                 gap: 1,
                 alignItems: 'flex-start',
+                mb: 2,
               }}
             >
               {/* Avatar */}
@@ -563,19 +596,20 @@ export function ChatAssistantUI() {
               bgcolor: 'grey.50',
               '&:focus-within': {
                 borderColor: 'primary.main',
-                boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.1)',
+                boxShadow: '0 0 0 2px rgba(2, 6, 23, 0.12)',
               },
               transition: 'all 150ms ease-out',
             }}
           >
-            <input
-              type="text"
+            <TextareaAutosize
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Digite sua mensagem..."
               disabled={loading}
               aria-label="Mensagem"
+              minRows={1}
+              maxRows={6}
               style={{
                 flex: 1,
                 padding: '10px 12px',
@@ -584,6 +618,9 @@ export function ChatAssistantUI() {
                 fontSize: '0.875rem',
                 outline: 'none',
                 color: 'inherit',
+                resize: 'none',
+                fontFamily: 'inherit',
+                lineHeight: 1.5,
               }}
             />
             <IconButton
@@ -591,8 +628,8 @@ export function ChatAssistantUI() {
               disabled={!input.trim() || loading}
               aria-label="Enviar mensagem"
               sx={{
-                width: 36,
-                height: 36,
+                width: 44,
+                height: 44,
                 bgcolor: input.trim() && !loading ? 'primary.main' : 'grey.300',
                 color: 'common.white',
                 '&:hover': {
@@ -610,6 +647,15 @@ export function ChatAssistantUI() {
           </Box>
         </Box>
       </Drawer>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Nova Conversa"
+        message="Deseja iniciar uma nova conversa? O histórico atual será limpo."
+        confirmLabel="Nova Conversa"
+        onConfirm={handleClearHistory}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }

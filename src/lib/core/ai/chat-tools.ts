@@ -9,8 +9,12 @@ export function createChatTools(userId: string) {
     search_jobs: tool({
       description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição de cada vaga — use-a diretamente em analyze_job_fit, sem precisar de outra busca.',
       inputSchema: z.object({
-        query: z.string().describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
-        limit: z.number().optional().default(20).describe('Máximo de resultados'),
+        query: z.string()
+          .min(2, 'Query muito curta')
+          .max(200, 'Query muito longa')
+          .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Caracteres não permitidos na query')
+          .describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
+        limit: z.number().min(1).max(100).optional().default(20).describe('Máximo de resultados'),
       }),
       execute: async ({ query, limit }: { query: string; limit?: number }) => {
         console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
@@ -48,8 +52,16 @@ export function createChatTools(userId: string) {
     analyze_job_fit: tool({
       description: 'Analisar a compatibilidade do perfil do usuário com uma vaga específica. Use o título e a descrição já retornados por search_jobs — não invente ou peça um ID.',
       inputSchema: z.object({
-        jobTitle: z.string().describe('Título da vaga (campo "titulo" retornado por search_jobs)'),
-        jobDescription: z.string().describe('Descrição da vaga (campo "descricao" retornado por search_jobs)'),
+        jobTitle: z.string()
+          .min(1, 'Título da vaga obrigatório')
+          .max(200, 'Título muito longo')
+          .trim()
+          .describe('Título da vaga (campo "titulo" retornado por search_jobs)'),
+        jobDescription: z.string()
+          .min(10, 'Descrição muito curta')
+          .max(5000, 'Descrição muito longa')
+          .trim()
+          .describe('Descrição da vaga (campo "descricao" retornado por search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
         console.log(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
