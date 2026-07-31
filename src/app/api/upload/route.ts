@@ -90,8 +90,7 @@ export async function POST(req: NextRequest) {
       count: extracted.skills.length,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro ao processar upload';
-    console.error('[upload] Error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[upload] Error:', error);
+    return NextResponse.json({ error: 'Erro ao processar upload' }, { status: 500 });
   }
 }

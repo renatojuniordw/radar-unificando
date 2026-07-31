@@ -33,8 +33,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    console.error('[empresas] Error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao salvar empresa' },
+      { error: 'Erro ao salvar empresa' },
       { status: 500 }
     );
   }
@@ -54,11 +55,12 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 });
     }
 
-    await newCompanyRepository.deleteById(id);
+    await newCompanyRepository.deleteById(session.user.id, id);
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('[empresas] Delete error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao deletar empresa' },
+      { error: 'Erro ao deletar empresa' },
       { status: 500 }
     );
   }

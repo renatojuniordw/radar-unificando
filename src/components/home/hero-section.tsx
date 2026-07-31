@@ -298,7 +298,7 @@ export function HeroSection({
             </Typography>
 
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 3.5 }}>
-              <Box sx={{ flex: 1, minWidth: 260 }}>
+              <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
                 <CompanyInput
                   value={empresas}
                   onChange={onEmpresasChange}
@@ -307,7 +307,7 @@ export function HeroSection({
                   compact
                 />
               </Box>
-              <Box sx={{ flex: 1, minWidth: 260 }}>
+              <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
                 <CargoInput
                   value={cargosBusca}
                   onChange={onCargosBuscaChange}
@@ -340,13 +340,19 @@ export function HeroSection({
                 gap: 2,
                 alignItems: "center",
                 mb: 3,
+                width: { xs: "100%", sm: "auto" },
               }}
             >
               <button
                 onClick={onStart}
                 disabled={running || cooldown > 0}
                 className="btn-neon"
-                style={{ padding: "14px 36px", fontSize: "0.95rem" }}
+                style={{
+                  width: "100%",
+                  padding: "14px 24px",
+                  fontSize: "0.9rem",
+                  textAlign: "center",
+                }}
               >
                 {running
                   ? "BUSCANDO VAGAS..."

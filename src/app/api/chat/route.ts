@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       success: false,
       error: message,
     });
-    console.error('[chat] Error:', message);
-    return new Response(JSON.stringify({ error: message }), { status: 500 });
+    console.error('[chat] Error:', error);
+    return new Response(JSON.stringify({ error: 'Erro no chat' }), { status: 500 });
   }
 }

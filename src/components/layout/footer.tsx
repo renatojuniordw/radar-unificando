@@ -72,15 +72,15 @@ export function Footer() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
             <p
               style={{
                 color: '#64748b',
                 fontWeight: 900,
                 textTransform: 'uppercase',
-                fontSize: '0.5rem',
-                letterSpacing: '0.3em',
-                marginBottom: 16,
+                fontSize: '0.65rem',
+                letterSpacing: '0.15em',
+                marginBottom: 12,
                 fontFamily: 'ui-monospace, monospace',
               }}
             >
@@ -93,18 +93,21 @@ export function Footer() {
               style={{
                 color: '#ccff00',
                 border: '2px solid #ccff00',
-                padding: '12px 32px',
+                padding: '12px 24px',
                 fontWeight: 900,
                 textTransform: 'uppercase',
-                fontSize: '0.65rem',
-                letterSpacing: '0.1em',
+                fontSize: '0.7rem',
+                letterSpacing: '0.08em',
                 textDecoration: 'none',
                 fontFamily: 'ui-monospace, monospace',
                 transition: 'all 0.2s',
-                boxShadow: '6px 6px 0px rgba(204,255,0,0.3)',
+                boxShadow: '4px 4px 0px rgba(204,255,0,0.3)',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
+                textAlign: 'center',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = '#ccff00'; e.currentTarget.style.color = '#020617'; e.currentTarget.style.boxShadow = 'none'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccff00'; e.currentTarget.style.boxShadow = '6px 6px 0px rgba(204,255,0,0.3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccff00'; e.currentTarget.style.boxShadow = '4px 4px 0px rgba(204,255,0,0.3)'; }}
             >
               CONSULTORIA EM IA E DESENVOLVIMENTO
             </a>
@@ -112,19 +115,19 @@ export function Footer() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <p style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'ui-monospace, monospace', margin: 0 }}>
+          <p style={{ color: '#64748b', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace', margin: 0 }}>
             © 2026 Radar Unificando — Busca automática de vagas Gupy + InHire
           </p>
           <nav aria-label="Rodapé">
-            <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0 }}>
+            <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0, flexWrap: 'wrap' }}>
               <li>
                 <a
                   href="https://unificando.com.br/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; }}
                 >
                   SITE OFICIAL
                 </a>
@@ -134,7 +137,7 @@ export function Footer() {
                   href="https://github.com/anomalyco/busca-vagas-gupy-inhire"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#ccff00', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  style={{ color: '#ccff00', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                 >
                   PROJETO ORIGINAL
                 </a>
@@ -144,9 +147,9 @@ export function Footer() {
                   href="https://renatobezerra.com.br/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; }}
                 >
                   RENATO BEZERRA
                 </a>

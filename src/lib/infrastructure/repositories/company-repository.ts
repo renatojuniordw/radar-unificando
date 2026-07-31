@@ -4,7 +4,7 @@ import type { NewCompany, CompanyPresence } from '@prisma/client';
 export interface INewCompanyRepository {
   findByUserId(userId: string): Promise<NewCompany[]>;
   upsert(userId: string, data: { nome: string; totalVagas?: number; urlCarreiras?: string | null }): Promise<NewCompany>;
-  deleteById(id: string): Promise<void>;
+  deleteById(userId: string, id: string): Promise<void>;
 }
 
 export const newCompanyRepository: INewCompanyRepository = {
@@ -20,8 +20,8 @@ export const newCompanyRepository: INewCompanyRepository = {
     });
   },
 
-  async deleteById(id) {
-    await prisma.newCompany.delete({ where: { id } });
+  async deleteById(userId, id) {
+    await prisma.newCompany.delete({ where: { id, userId } });
   },
 };
 

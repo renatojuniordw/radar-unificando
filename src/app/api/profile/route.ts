@@ -34,8 +34,9 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('[profile] Error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao salvar perfil' },
+      { error: 'Erro ao salvar perfil' },
       { status: 500 }
     );
   }

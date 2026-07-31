@@ -36,8 +36,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    console.error('[presence] Error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao salvar presença' },
+      { error: 'Erro ao salvar presença' },
       { status: 500 }
     );
   }

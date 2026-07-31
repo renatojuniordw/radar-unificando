@@ -46,8 +46,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ runId, cooldownSeconds: Math.ceil(pipelineLimiter.windowMs / 1000) });
   } catch (error) {
+    console.error('[pipeline] Error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao iniciar pipeline' },
+      { error: 'Erro ao iniciar pipeline' },
       { status: 500 }
     );
   }

@@ -141,7 +141,7 @@ export function ProfileReviewSection({
         </div>
 
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-          <FormControl sx={{ minWidth: 200, flex: 1 }} size="small">
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: 1 }} size="small">
             <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, textTransform: 'uppercase' }}>
               Senioridade
             </InputLabel>
@@ -159,7 +159,7 @@ export function ProfileReviewSection({
             </Select>
           </FormControl>
 
-          <FormControl sx={{ minWidth: 160, flex: 1 }} size="small">
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 160 }, flex: 1 }} size="small">
             <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, textTransform: 'uppercase' }}>
               Área
             </InputLabel>

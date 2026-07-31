@@ -73,8 +73,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(mapped);
   } catch (error) {
+    console.error('[vagas] Error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao buscar vagas' },
+      { error: 'Erro ao buscar vagas' },
       { status: 500 }
     );
   }
