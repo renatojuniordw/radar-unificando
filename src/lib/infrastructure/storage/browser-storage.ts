@@ -50,9 +50,9 @@ function readLegacy(key: string): string | undefined {
 async function ensureMigration(db: IDBPDatabase<Schema>): Promise<void> {
   try {
     if (await db.get(STORE, KEYS.MIGRATED)) return;
-    const vagas = readLegacy(LEGACY_KEYS.VAGAS);
+    const jobs = readLegacy(LEGACY_KEYS.VAGAS);
     const cooldown = readLegacy(LEGACY_KEYS.COOLDOWN_END);
-    if (vagas) await db.put(STORE, JSON.parse(vagas), KEYS.JOBS);
+    if (jobs) await db.put(STORE, JSON.parse(jobs), KEYS.JOBS);
     if (cooldown) await db.put(STORE, Number(cooldown), KEYS.COOLDOWN_END);
     await db.put(STORE, true, KEYS.MIGRATED);
   } catch {

@@ -16,7 +16,7 @@ interface HeroSectionProps {
   cooldown: number;
   running: boolean;
   onStart: () => void;
-  onAddSuggestion: (cargo: string) => void;
+  onAddSuggestion: (role: string) => void;
 }
 
 export function HeroSection({

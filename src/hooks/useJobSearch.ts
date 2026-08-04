@@ -148,9 +148,9 @@ export function useJobSearch() {
     return () => clearInterval(id);
   }, [cooldown]);
 
-  function addSuggestion(cargo: string) {
-    if (!roleQueries.includes(cargo)) {
-      setRoleQueries([...roleQueries, cargo]);
+  function addSuggestion(role: string) {
+    if (!roleQueries.includes(role)) {
+      setRoleQueries([...roleQueries, role]);
     }
   }
 
