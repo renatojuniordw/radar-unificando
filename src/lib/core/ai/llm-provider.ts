@@ -113,18 +113,59 @@ function extractJson(raw: string): string {
 
   // Strip markdown codeblocks
   if (cleaned.includes('```')) {
-    cleaned = cleaned.replace(/^```(?:json)?\s*/gi, '').replace(/\s*```$/gi, '').trim();
+    cleaned = cleaned.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
   }
 
-  const start = cleaned.indexOf('{');
-  const end = cleaned.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error('JSON não encontrado na resposta');
+  // Reasoning models often narrate example JSON shapes before the real
+  // answer (e.g. `"skills": [...]`). Find every balanced, string-aware
+  // {...} span and take the last one that actually parses as JSON,
+  // since the real answer comes after the narration.
+  const candidates = findBalancedObjects(cleaned);
+  for (let i = candidates.length - 1; i >= 0; i--) {
+    const candidate = candidates[i].replace(/,\s*([}\]])/g, '$1');
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch {
+      // try the previous candidate
+    }
   }
 
-  let jsonCandidate = cleaned.slice(start, end + 1);
-  // Clean trailing commas before closing braces/brackets
-  jsonCandidate = jsonCandidate.replace(/,\s*([}\]])/g, '$1');
+  throw new Error('JSON não encontrado na resposta');
+}
 
-  return jsonCandidate;
+function findBalancedObjects(text: string): string[] {
+  const results: string[] = [];
+  let depth = 0;
+  let startIdx = -1;
+  let inString = false;
+  let escape = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    if (inString) {
+      if (escape) escape = false;
+      else if (ch === '\\') escape = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === '{') {
+      if (depth === 0) startIdx = i;
+      depth++;
+    } else if (ch === '}') {
+      if (depth > 0) {
+        depth--;
+        if (depth === 0 && startIdx !== -1) {
+          results.push(text.slice(startIdx, i + 1));
+          startIdx = -1;
+        }
+      }
+    }
+  }
+
+  return results;
 }

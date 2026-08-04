@@ -10,6 +10,7 @@ vi.mock('@/lib/core/dedup', () => ({
 vi.mock('@/lib/infrastructure/repositories', () => ({
   jobRepository: {
     createMany: vi.fn(),
+    findExistingLinks: vi.fn(),
   },
 }));
 
@@ -18,6 +19,14 @@ vi.mock('@/lib/core/pipeline/progress-emitter', () => ({
     emit: vi.fn(),
   },
 }));
+
+vi.mock('@/lib/core/pipeline/link-check', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/core/pipeline/link-check')>('@/lib/core/pipeline/link-check');
+  return {
+    ...actual,
+    isLinkDead: vi.fn().mockResolvedValue(false),
+  };
+});
 
 import { dedupEngine } from '@/lib/core/dedup';
 import { jobRepository } from '@/lib/infrastructure/repositories';
@@ -39,6 +48,7 @@ const makeJob = (link: string) => ({
 describe('SaveStep', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(jobRepository.findExistingLinks).mockResolvedValue(new Set());
   });
 
   it('should_dedup_and_save_jobs_returning_inserted_count', async () => {
