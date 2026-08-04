@@ -49,6 +49,15 @@ describe('browserStorage', () => {
     expect(await browserStorage.getCooldownEnd()).toBeNull();
   });
 
+  // ── LastRunAt ──
+
+  it('should_store_and_retrieve_last_run_at', async () => {
+    const timestamp = Date.now();
+    expect(await browserStorage.getLastRunAt()).toBeNull();
+    await browserStorage.setLastRunAt(timestamp);
+    expect(await browserStorage.getLastRunAt()).toBe(timestamp);
+  });
+
   // ── Filtros ──
 
   it('should_store_and_retrieve_filters', async () => {

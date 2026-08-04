@@ -13,7 +13,6 @@
 
 - [Página Principal / Busca](https://radar.unificando.com.br/): Acesso ao motor de busca e filtros.
 - [Termos de Uso & Privacidade (LGPD)](https://radar.unificando.com.br/termos): Política de privacidade e garantias de segurança.
-- [Projeto no GitHub](https://github.com/anomalyco/busca-vagas-gupy-inhire): Código-fonte e repositório oficial do ecossistema.
 
 ## Especificação Técnica
 

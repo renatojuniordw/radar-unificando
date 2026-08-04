@@ -26,9 +26,19 @@ O pipeline busca vagas em Gupy e InHire, processa e salva no PostgreSQL.
 
 ## Fluxo
 
-1. **Gupy MCP** (logados + com queries) — usa MCP oficial da Gupy (JSON-RPC)
-2. **Gupy REST** (todos os casos) — usa API pública Gupy com parâmetros `jobName` e/ou `careerPageName`
-3. **Merge** — salva vagas no banco (ignora duplicatas)
+1. **Gupy MCP** (logados + com queries) — usa MCP oficial da Gupy (JSON-RPC), limite 500 vagas/query; fallback para REST em falha
+2. **Gupy REST** (todos os casos) — API pública Gupy com parâmetros `jobName` e/ou `careerPageName`
+3. **InHire** — `inhire-scraper.ts` (GET `api.inhire.app/job-posts/public/pages`, header `X-Inhire-Client: web-inhire`), só vagas `published`
+4. **Merge + Save** — `DedupEngine.mergeSources` + `dedupByLink`, cap `slice(0, 200)`, `createMany` com `skipDuplicates`
+
+> O `discovery-step.ts` (descoberta de empresas) **existe mas não é chamado** pela rota ativa
+> (`discoveryEnabled: false`). É código preparado para o roadmap v3.
+
+## Rate Limit e Cooldown
+
+- `POST /api/pipeline` retorna `{ runId, cooldownSeconds? }`.
+- Máx. 1 execução a cada 5 min por usuário (ou IP anônimo). Ao exceder, retorna 429 com `retryAfter`.
+- O cooldown é persistido no IndexedDB (`cooldown_end`) e conta regressiva na UI.
 
 ## Estrutura
 

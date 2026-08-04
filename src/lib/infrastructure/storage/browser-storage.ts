@@ -8,6 +8,7 @@ const STORE = 'kv';
 const KEYS = {
   VAGAS: 'anon_vagas',
   COOLDOWN_END: 'cooldown_end',
+  LAST_RUN_AT: 'last_run_at',
   FILTERS: 'filters',
   CHAT_ID: 'chat_id',
   CHAT_MESSAGES: 'chat_messages',
@@ -23,6 +24,7 @@ const LEGACY_KEYS = {
 const DATA_KEYS = [
   KEYS.VAGAS,
   KEYS.COOLDOWN_END,
+  KEYS.LAST_RUN_AT,
   KEYS.FILTERS,
   KEYS.CHAT_ID,
   KEYS.CHAT_MESSAGES,
@@ -114,6 +116,9 @@ export const browserStorage = {
   getCooldownEnd: () => getValue<number | null>(KEYS.COOLDOWN_END, null),
   setCooldownEnd: (endsAt: number) => setValue(KEYS.COOLDOWN_END, endsAt),
   clearCooldown: () => del(KEYS.COOLDOWN_END),
+
+  getLastRunAt: () => getValue<number | null>(KEYS.LAST_RUN_AT, null),
+  setLastRunAt: (timestamp: number) => setValue(KEYS.LAST_RUN_AT, timestamp),
 
   getFilters: () =>
     getValue<{ empresas: string[]; cargos: string[] } | null>(KEYS.FILTERS, null),

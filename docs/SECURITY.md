@@ -16,14 +16,31 @@
 
 ## Rate Limits por Operação
 
-| Operação | Janela | Limite | Chave |
-|----------|--------|--------|-------|
-| Pipeline | 5 min | 1 | user_id |
-| Login | 1 min | 5 | IP |
-| API geral | 1 min | 60 | IP |
-| Upload currículo | 1 hora | 10 | user_id |
-| Export CSV | 1 min | 10 | user_id |
-| Chat | 1 min | 20 | user_id + IP |
+Dois sistemas:
+- `src/lib/infrastructure/security/rate-limiter.ts` — **in-memory** (`pipelineLimiter`, `uploadLimiter`).
+- `src/lib/rate-limit.ts` — **Redis** (`rate-limiter-flexible`) com fallback em memória (`chat`, `chat_daily`, `auth`).
+
+| Operação | Janela | Limite | Backend | Chave |
+|----------|--------|--------|---------|-------|
+| Pipeline (`/api/pipeline`) | 5 min | 1 | in-memory | user_id / IP |
+| Upload currículo (`/api/upload`) | 1 hora | 10 | in-memory | user_id / IP |
+| Chat (`/api/chat`) | 1 min | 10 | Redis | user_id + IP |
+| Chat diário (`/api/chat`) | 24 h | 50 | Redis | user_id + IP |
+| Registro (`/api/auth/register`) | 1 min | 5 | Redis | IP |
+
+> `loginLimiter`, `apiLimiter` e `exportLimiter` estão definidos em `rate-limiter.ts`
+> mas **não são usados** na produção hoje.
+
+## Limites de Conversa (Chat)
+
+- **Thread**: máximo de 25 mensagens (`MAX_THREAD_MESSAGES`) → 400 `THREAD_LIMIT_REACHED`.
+- **Contexto**: janela deslizante de 15 mensagens (`MAX_CONTEXT_MESSAGES`) enviadas ao LLM.
+
+## Redação de PII (LGPD)
+
+`src/lib/core/ai/pii-redactor.ts` remove CPF, CNPJ, RG, telefone e cartão de crédito
+(`[CPF REDIGIDO]`, etc.) das mensagens do usuário, do POST de histórico e do botão
+copiar da UI. O chat exibe badge "🔒 LGPD Sanitizado".
 
 ## Proteção contra Prompt Injection
 

@@ -2,8 +2,7 @@
 
 > Plataforma inteligente de busca de vagas remotas com IA — busque em **Gupy** e **InHire**, analise seu perfil, receba recomendações personalizadas e converse com um assistente de carreira.
 
-Projeto original: [busca-vagas-gupy-inhire](https://github.com/anomalyco/busca-vagas-gupy-inhire)
-Reescrito para web por: [Renato Bezerra](https://renatobezerra.com.br/)
+Desenvolvido por: [Renato Bezerra](https://renatobezerra.com.br/)
 Licença: MIT
 
 ---
@@ -11,12 +10,12 @@ Licença: MIT
 ## Funcionalidades
 
 - **Busca em tempo real** em Gupy e InHire — sem base pré-carregada
-- **Chat IA** para análise de perfil, recomendação de vagas, carta de apresentação e preparação de entrevistas
+- **Chat IA** para análise de perfil, recomendação de vagas, carta de apresentação e preparação de entrevistas (com redação de PII e proteção contra prompt injection)
 - **Importação de currículo** — upload PDF do LinkedIn ou texto colado, com extração automática de skills, experiência e senioridade
-- **Score de match** — percentual de compatibilidade entre perfil e vaga com breakdown detalhado
+- **Análise de match** — compara perfil × vaga com skills casadas/faltantes e fit geral
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
-- **Export CSV** — exporte a tabela de resultados filtrada
-- **100% gratuito** — sem taxas, sem limite de buscas
+- **Export CSV/JSON** — exporte a tabela de resultados filtrada
+- **100% gratuito** — sem taxas (com rate limits anti-abuso)
 
 ## Stack
 
@@ -26,10 +25,11 @@ Licença: MIT
 | UI | MUI 7 + Tailwind v4 |
 | Design | Neo-Brutalism + Premium SaaS |
 | Banco | PostgreSQL via Prisma ORM |
-| Auth | Auth.js v5 (JWT + bcrypt) |
+| Auth | Auth.js v5 (credentials + JWT + bcrypt) |
 | Scraper Gupy | MCP oficial + REST fallback |
 | AI | Vercel AI SDK (OpenAI-compatible) |
-| Chat | @assistant-ui/react |
+| Chat | MUI + `@ai-sdk/react` (useChat) |
+| Storage anônimo | IndexedDB via `idb` |
 
 ## Como Rodar
 
@@ -74,16 +74,19 @@ src/
   app/
     (auth)/        → Login e registro
     (dashboard)/   → Perfil do usuário
-    api/           → API routes (pipeline, chat, profile, vagas)
+    api/           → API routes (pipeline, chat, empresas, profile, vagas, upload…)
+    export/        → Export CSV/JSON
+    termos/        → Termos LGPD
   components/
     home/          → Hero, WhyUse, FAQ, Results, Loading
     profile/       → Import, Review, Completion
-    layout/        → Header, Footer
+    layout/        → Header, Footer, UserMenu
+    seo/           → Structured data, JobPosting schema
   contexts/        → Chat assistant context
   hooks/           → Custom hooks (useJobSearch, useProfile)
   lib/
     core/          → Domínio (matching, pipeline, scrapers, AI)
-    infrastructure/ → Infra (db, ui, security, repositories)
+    infrastructure/ → Infra (db, repositories, storage, security, ui)
 ```
 
 ## Documentação

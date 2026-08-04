@@ -1,7 +1,10 @@
 # Radar Unificando — Plano de Evolução v2
 
-> Documento mestre que consolida todo o planejamento da versão 2.
-> Data: Julho 2026 · Branch: `v2/redesign`
+> ⚠️ **Documento histórico** (Jul 2026 · Branch: `v2/redesign`).
+> Consolidava o planejamento da v2. Grande parte foi implementada; itens que **não** foram
+> (kanban/aplicações, matching engine por regras, Transformers.js no browser, PWA, dark mode
+> toggle) estão listados para referência e não existem no código atual. Ver `ROADMAP.md` para
+> o estado vigente.
 
 ---
 

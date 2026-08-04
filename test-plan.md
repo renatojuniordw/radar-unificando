@@ -12,6 +12,13 @@
 - 🔄 Em andamento: — 
 - ⬜ Pendentes: 0
 
+> ⚠️ **Situação real (ago 2026):** Este plano foi parcialmente executado. Os testes das fases
+> 1, 4 e 5 que citam módulos removidos/não implementados **não existem** no repositório
+> (`scoring-engine`, `state-machine`, `skill-taxonomy`, `resume-adapter`, `api-applications`,
+> `api-match`, `api-resume-adapt`, `score-ring`, `skill-pill`). A suíte real está em
+> `src/__tests__/` (ver `test-report.md`). O teste de storage foi renomeado de
+> `anonymous-storage.test.ts` → `browser-storage.test.ts` após a migração para IndexedDB.
+
 ---
 
 ## Fase 1 — Core Business Logic: Matching + State Machine + Dedup
@@ -86,7 +93,7 @@
 - Testes gerados: 3 arquivos, 26 testes
   - `src/__tests__/rate-limiter.test.ts` — 8 testes
   - `src/__tests__/env-validator.test.ts` — 4 testes
-  - `src/__tests__/anonymous-storage.test.ts` — 14 testes
+  - `src/__tests__/browser-storage.test.ts` — 9+ testes (IndexedDB via `fake-indexeddb`)
 
 ---
 

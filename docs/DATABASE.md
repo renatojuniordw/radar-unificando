@@ -19,6 +19,9 @@
 | PipelineRun | `pipeline_runs` | id, userId, status, totalJobs, gupyJobs, inhireJobs, newCompaniesFound, discoveryEnabled, startedAt, finishedAt |
 | CompanyPresence | `company_presence` | id, userId, empresa, temGupy, paginaGupy, temInhire, paginaInhire, totalVagasInhire |
 
+> ⚠️ `Application` e `ApplicationLog` existem **apenas no schema** — não há API nem UI
+> (kanban de candidaturas ficou no plano, não foi implementado).
+
 ### Comandos
 
 ```bash

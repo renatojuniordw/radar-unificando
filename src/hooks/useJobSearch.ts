@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
 import type { Vaga } from "@/lib/types/vaga";
+
+const AUTO_SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
 
 export function useJobSearch() {
   const { data: session } = useSession();
@@ -12,6 +14,8 @@ export function useJobSearch() {
   const [empresas, setEmpresas] = useState<string[]>([]);
   const [cargosBusca, setCargosBusca] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
+  const [autoSyncing, setAutoSyncing] = useState(false);
+  const [lastRunAt, setLastRunAt] = useState<number | null>(null);
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [loading, setLoading] = useState(false);
   const [cargos, setCargos] = useState<string[]>([]);
@@ -27,8 +31,11 @@ export function useJobSearch() {
     return profile.skills.length >= 3 && (profile.currentRole || profile.area);
   }, [profile.skills.length, profile.currentRole, profile.area]);
 
+  // Carregar vagas salvas na montagem (para logados e anônimos)
   useEffect(() => {
-    if (!session && vagas.length === 0) {
+    if (session) {
+      void carregarVagas();
+    } else {
       let cancelled = false;
       browserStorage.getVagas().then((stored) => {
         if (!cancelled && stored.length > 0) setVagas(stored as Vaga[]);
@@ -38,6 +45,13 @@ export function useJobSearch() {
       };
     }
   }, [session]);
+
+  // Carregar timestamp da última busca
+  useEffect(() => {
+    browserStorage.getLastRunAt().then((ts) => {
+      if (ts) setLastRunAt(ts);
+    });
+  }, []);
 
   // Carregar filtros persistidos (empresas/cargos) na montagem
   useEffect(() => {
@@ -128,10 +142,16 @@ export function useJobSearch() {
     }
   }
 
-  async function handleStart() {
-    setRunning(true);
-    setVagas([]);
-    if (!session) await browserStorage.clear();
+  const handleStart = useCallback(async (options?: { silent?: boolean }) => {
+    const isSilent = options?.silent ?? false;
+
+    if (isSilent) {
+      setAutoSyncing(true);
+    } else {
+      setRunning(true);
+      setVagas([]);
+      if (!session) await browserStorage.clear();
+    }
 
     try {
       const res = await fetch("/api/pipeline", {
@@ -146,17 +166,20 @@ export function useJobSearch() {
           const endsAt = Date.now() + body.retryAfter * 1000;
           await browserStorage.setCooldownEnd(endsAt);
           setCooldown(body.retryAfter);
-          setSnackbar({
-            message: body.error || "Muitas requisições. Aguarde.",
-            severity: "info",
-          });
-        } else {
+          if (!isSilent) {
+            setSnackbar({
+              message: body.error || "Muitas requisições. Aguarde.",
+              severity: "info",
+            });
+          }
+        } else if (!isSilent) {
           setSnackbar({
             message: body.error || "Erro ao iniciar pipeline",
             severity: "error",
           });
         }
         setRunning(false);
+        setAutoSyncing(false);
         return;
       }
 
@@ -166,6 +189,12 @@ export function useJobSearch() {
         await browserStorage.setCooldownEnd(endsAt);
         setCooldown(cd);
       }
+
+      // Marcar timestamp da busca iniciada com sucesso
+      const now = Date.now();
+      setLastRunAt(now);
+      void browserStorage.setLastRunAt(now);
+
       const evtSource = new EventSource(`/api/pipeline/stream?runId=${id}`);
 
       evtSource.onmessage = async (event) => {
@@ -179,6 +208,7 @@ export function useJobSearch() {
           ) {
             evtSource.close();
             setRunning(false);
+            setAutoSyncing(false);
 
             if (
               !session &&
@@ -201,10 +231,12 @@ export function useJobSearch() {
               carregarVagas();
             }
 
-            setSnackbar({
-              message: data.message || "Pipeline concluído!",
-              severity: data.type === "pipeline_complete" ? "success" : "error",
-            });
+            if (!isSilent) {
+              setSnackbar({
+                message: data.message || "Pipeline concluído!",
+                severity: data.type === "pipeline_complete" ? "success" : "error",
+              });
+            }
           }
         } catch {
           /* ignore */
@@ -214,13 +246,35 @@ export function useJobSearch() {
       evtSource.onerror = () => {
         evtSource.close();
         setRunning(false);
+        setAutoSyncing(false);
         carregarVagas();
       };
     } catch {
-      setSnackbar({ message: "Erro ao iniciar pipeline", severity: "error" });
+      if (!isSilent) {
+        setSnackbar({ message: "Erro ao iniciar pipeline", severity: "error" });
+      }
       setRunning(false);
+      setAutoSyncing(false);
     }
-  }
+  }, [empresas, cargosBusca, session]);
+
+  // Auto-sync na montagem se o tempo decorrido for > 15min e cooldown for 0
+  useEffect(() => {
+    if (cooldown > 0 || running || autoSyncing) return;
+
+    let cancelled = false;
+    browserStorage.getLastRunAt().then((ts) => {
+      if (cancelled) return;
+      const now = Date.now();
+      if (!ts || now - ts > AUTO_SYNC_INTERVAL_MS) {
+        void handleStart({ silent: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cooldown === 0]);
 
   return {
     session,
@@ -230,6 +284,8 @@ export function useJobSearch() {
     cargosBusca,
     setCargosBusca,
     running,
+    autoSyncing,
+    lastRunAt,
     vagas,
     loading,
     cargos,

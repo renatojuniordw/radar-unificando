@@ -6,14 +6,13 @@
 
 ```
 /  (página única)
-├── 1. HERO SECTION (dark background)
+├── 1. HERO SECTION (dark background, coluna única)
 │   ├── Badge: "GUPY + INHIRE · GRÁTIS"
-│   ├── Badges IA (logados): Chat IA · Perfil com IA · Score de Match
-│   ├── Saudação personalizada (logados)
+│   ├── Badge info: "Empresas e cargos opcionais — sem filtros, até 500 vagas"
 │   ├── Alerta: complete seu perfil (logados sem perfil completo)
 │   ├── Heading: "RADAR DE VAGAS REMOTAS"
 │   ├── Subtítulo: descrição com texto rotativo
-│   ├── Inputs: Empresas + Cargos (opcionais)
+│   ├── Inputs: Empresas + Cargos (opcionais, Enter/vírgula adiciona)
 │   ├── Botão: "BUSCAR VAGAS EM TEMPO REAL"
 │   └── Sugestões de cargos clicáveis
 ├── 2. LOADING OVERLAY (quando buscando)
@@ -28,12 +27,13 @@
 │   └── 6 cards: Gratuito · Sem Cadastro · Tempo Real · IA Perfil · Score · Assistente
 ├── 5. FAQ SECTION (light gray background)
 │   ├── Heading: "PERGUNTAS FREQUENTES"
-│   └── 8 itens expandíveis (details/summary)
-└── 6. CHAT ASSISTENT (FAB + Drawer)
+│   └── 9 itens expandíveis (details/summary)
+└── 6. CHAT ASSISTENT (FAB + Drawer) — só para logados
     ├── Botão flutuante canto inferior direito
     ├── Drawer lateral (100% mobile, 400px desktop)
     ├── Histórico de conversas
     ├── Sugestões clicáveis
+    ├── Badge "🔒 LGPD Sanitizado"
     └── Streaming de resposta IA
 ```
 

@@ -87,7 +87,7 @@ To improve conversion rates from paid ads, we are blending this raw look with a 
 - **Support & Details**: Monospace (`ui-monospace`, `SF Mono`), giving a developer/terminal feel to secondary descriptions, status indicators, and tooltips.
 
 ## Layout
-- **Hero Grid**: 12-column grid. On desktop, we transition from a centered column to a high-impact grid where the left/center holds the main search filters, and the right holds interactive preview panels displaying the Match Score and Resume Generator.
+- **Hero**: Single content column (max-width 720px) — badge, heading, inputs and CTA stacked vertically over a conic neon radar backdrop. No side preview panels.
 - **Padding**: Vertical spacing is large (`py: 5` to `py: 8`) to let sections breathe despite the thick, harsh borders.
 
 ## Elevation & Depth
@@ -100,7 +100,8 @@ To improve conversion rates from paid ads, we are blending this raw look with a 
 
 ## Components
 - **Search Inputs**: Thick black borders, dark backgrounds, high-contrast text.
-- **Interactive Preview Cards**: Cards that mimic live interface elements (e.g., scoring matched skills, resume snippet adaptation) with hover-state translations (`translateY(-4px)`).
+- **Suggestion chips**: Monospace uppercase chips that fill the cargo input on click, with neon hover state.
+- **Result table**: Monospace header with uppercase labels, compact rows, optional JobPosting structured data.
 
 ## Do's and Don'ts
 - **DO** use `#ccff00` for active states and critical CTAs.

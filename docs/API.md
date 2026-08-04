@@ -2,12 +2,14 @@
 
 ## Autenticação
 
-Todas as rotas protegidas usam Auth.js v5 com JWT.
+Todas as rotas protegidas usam Auth.js v5 (credentials) com JWT.
 
 Headers para requisições autenticadas:
 ```
 Cookie: next-auth.session-token=<token>
 ```
+
+Base URL local: `http://localhost:11010`.
 
 ## Rotas
 
@@ -15,95 +17,116 @@ Cookie: next-auth.session-token=<token>
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password) |
-| POST | `/api/auth/signin` | ❌ | Login (email, password) |
-| GET | `/api/auth/session` | ❌ | Obter sessão atual |
+| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limit: 5/min (Redis). 409 em e-mail duplicado |
+| POST | `/api/auth/callback/credentials` | ❌ | Login (email, password) — rota do NextAuth |
+| GET | `/api/auth/session` | ❌ | Obter sessão atual — rota do NextAuth |
+| GET/POST | `/api/auth/[...nextauth]` | ❌ | Handlers do NextAuth |
 
 ### Pipeline
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/pipeline` | ❌ | Iniciar pipeline (companies[], queries[]) |
+| POST | `/api/pipeline` | ❌ | Iniciar pipeline (`{companies[], queries[]}`). Rate limit: 1/5min por usuário (ou IP anônimo). Retorna `{runId, cooldownSeconds?}` |
 | GET | `/api/pipeline/stream?runId=` | ❌ | SSE — eventos de progresso em tempo real |
-| GET | `/api/pipeline/:runId` | ❌ | Status de uma execução |
+| GET | `/api/pipeline/:runId` | ❌ | Status de uma execução (404 se não existir) |
 
 ### Vagas
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| GET | `/api/vagas` | ❌ | Listar vagas (filtros: plataforma, cargo, search) |
+| GET | `/api/vagas` | ❌ | Listar vagas. `recomendado=1` → ranqueadas por perfil (máx. 30); senão filtros `plataforma`, `cargo`, `search` (máx. 200). Anônimo usa UUID zero |
 
 ### Perfil
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
 | GET | `/api/profile` | ✅ | Obter perfil do usuário |
-| PUT | `/api/profile` | ✅ | Atualizar perfil (skills, seniority, resumeText) |
+| PUT | `/api/profile` | ✅ | Atualizar perfil (skills, seniority, currentRole, area, education, resumeText, resumeMarkdown) |
 
 ### Chat
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE) |
+| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE). Rate limit: 10/min + 50/dia (Redis). Thread: 25 mensagens (400 `THREAD_LIMIT_REACHED`) |
 | GET | `/api/chat/history?chatId=` | ✅ | Carregar histórico de uma conversa |
-| POST | `/api/chat/history` | ✅ | Salvar histórico (body: `{ chatId, messages }`) |
+| POST | `/api/chat/history` | ✅ | Salvar histórico (body: `{ chatId, messages }`, PII sanitizado) |
 | DELETE | `/api/chat/history?chatId=` | ✅ | Apagar histórico de uma conversa |
+| GET | `/api/chat/conversations` | ✅ | Listar conversas (id, título, última mensagem, data) |
 
 **Segurança do chat:**
-- Rate limit: 20 mensagens/min por usuário (retorna `429` ao exceder)
+- Rate limits: 10 mensagens/min + 50/dia por usuário (retorna `429` ao exceder)
 - Input sanitizado (truncado em 2000 chars, tags HTML removidas)
-- Tentativas de prompt injection geram log `[AI_LOG] suspicious_activity`
+- Redação de PII (CPF, CNPJ, RG, telefone, cartão) → `[CPF REDIGIDO]`
+- Tentativas de prompt injection geram log `[AI_LOG] suspicious_activity` (400)
 
 **Exemplo (chat streaming):**
 ```bash
-curl -X POST http://localhost:3000/api/chat \
+curl -X POST http://localhost:11010/api/chat \
   -H 'Content-Type: application/json' \
   -H 'Cookie: next-auth.session-token=<token>' \
   -d '{"messages":[{"role":"user","content":"Busque vagas de Data Analyst"}]}'
 ```
 
+### Empresas
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/empresas` | ✅ | Listar empresas (NewCompany) |
+| POST | `/api/empresas` | ✅ | Criar empresa (`{nome}`) |
+| DELETE | `/api/empresas?id=` | ✅ | Remover empresa |
+
+### Presença de empresa
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/presence` | ✅ | Listar presença (temGupy, temInhire, links) |
+| POST | `/api/presence` | ✅ | Criar/atualizar presença de empresa |
+
+### Upload de currículo
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/upload` | ✅ | Multipart `file` (PDF ≤ 5MB, ≤ 20 páginas) ou `text` (colado). Extrai skills e faz upsert do perfil. Rate limit: 10/hora |
+
 ### Export
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| GET | `/export?format=csv` | ❌ | Exportar vagas em CSV |
+| GET | `/export?format=csv` | ❌ | Exportar até 500 vagas em CSV (default, com BOM) ou `format=json` |
 
 ### Health
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| GET | `/api/health` | ❌ | Health check do servidor + banco |
+| GET | `/api/health` | ❌ | Health check do servidor + banco (`SELECT 1`) |
 
 ## Exemplos
 
 ```bash
 # Pipeline — todas as vagas
-curl -X POST http://localhost:3000/api/pipeline \
+curl -X POST http://localhost:11010/api/pipeline \
   -H 'Content-Type: application/json' \
   -d '{"companies":[],"queries":[]}'
 
-# Pipeline — vagas de uma empresa específica
-curl -X POST http://localhost:3000/api/pipeline \
-  -H 'Content-Type: application/json' \
-  -d '{"companies":["Globo"],"queries":[]}'
-
 # Pipeline — busca por cargo em todas empresas
-curl -X POST http://localhost:3000/api/pipeline \
+curl -X POST http://localhost:11010/api/pipeline \
   -H 'Content-Type: application/json' \
   -d '{"companies":[],"queries":["Agile Coach"]}'
 
-# Pipeline — cargo + empresa específica
-curl -X POST http://localhost:3000/api/pipeline \
-  -H 'Content-Type: application/json' \
-  -d '{"companies":["Globo"],"queries":["Agile Coach"]}'
-
 # SSE
-curl http://localhost:3000/api/pipeline/stream?runId=<id>
+curl http://localhost:11010/api/pipeline/stream?runId=<id>
+
+# Vagas recomendadas (autenticado + perfil mínimo)
+curl http://localhost:11010/api/vagas?recomendado=1 \
+  -H 'Cookie: next-auth.session-token=<token>'
 
 # Vagas com filtro
-curl http://localhost:3000/api/vagas?plataforma=Gupy&search=Analista
+curl http://localhost:11010/api/vagas?plataforma=Gupy&search=Analista
 
 # Perfil (autenticado)
-curl http://localhost:3000/api/profile \
+curl http://localhost:11010/api/profile \
   -H 'Cookie: next-auth.session-token=<token>'
+
+# Export JSON
+curl http://localhost:11010/export?format=json
 ```

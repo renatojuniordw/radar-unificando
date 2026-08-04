@@ -4,57 +4,70 @@
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Provider | Verboo (OpenAI-compatible) ou OpenAI |
-| SDK | Vercel AI SDK (`ai` + `@ai-sdk/openai`) |
+| Provider | OpenAI-compatible (`AI_BASE_URL`) — Verboo ou OpenAI |
+| SDK | Vercel AI SDK (`ai` + `@ai-sdk/openai-compatible`) |
 | Validação | Zod schemas |
-| Logging | JSONL estruturado (`[AI_LOG]`) |
-| Modelo | `deepseek-v4-flash` (Verboo) / `gpt-4o-mini` (OpenAI) |
+| Logging | JSON estruturado no stdout (`[AI_LOG]`) |
+| Modelo | `AI_MODEL` (default `deepseek-v4-flash`) |
+| Cache | `GeneratedContentCache` (TTL 30 dias, chave SHA-256) |
 
-## Pipeline de Extração
+## Extração de Currículo
 
 ```
 Upload PDF (LinkedIn export) ou texto colado
   → pdfjs-dist extrai texto raw (ou texto direto)
   → LLM extrai: skills, experienceYears, seniority, education, currentRole, area
-  → Salva no Profile: resumeText, resumeMarkdown, skills, seniority, experienceYears, currentRole, area, education, profileSource=linkedin
+  → Salva no Profile: resumeText, resumeMarkdown, skills, seniority,
+    experienceYears, currentRole, area, education, profileSource=linkedin
 ```
+
+Limite de input: `MAX_RESUME_CHARS = 12000`.
 
 ### Campos Extraídos do Currículo
 
 | Campo | Extraído | Descrição |
 |-------|----------|-----------|
 | skills | Sim | Skills técnicas e ferramentas mencionadas |
-| experienceYears | Sim | Anos totais de experiência profissional |
+| experienceYears | Sim | Anos totais de experiência (nullable) |
 | seniority | Sim | junior/pleno/senior/lead/manager/head |
 | education | Sim | Áreas de formação acadêmica |
-| currentRole | Sim | Cargo mais recente/atual |
+| currentRole | Sim | Cargo mais recente/atual (nullable) |
 | area | Sim | Área de atuação (Dados/BI/Business/Growth/Engenharia/Produto/Outro) |
 
-## Pipeline de Análise de Vaga
+## Análise de Vaga e Fit (via chat)
+
+Não existe rota dedicada `/api/analyze` — a análise é feita **dentro do chat** via ferramentas:
 
 ```
-Usuário clica "ANALISAR PERFIL" no MatchDialog
-  → POST /api/analyze { jobId }
-  → LLM compara perfil vs descrição da vaga
-  → Retorna matched/missing skills, fit, recomendações
+Chat UI → POST /api/chat (streaming)
+  → LLM decide usar tools
+  → analyze_job_fit(jobTitle, jobDescription, profile) → matched/missing skills,
+    experiência, senioridade, educação, fit geral (high/medium/low) + recomendações
+  → compare_jobs(2-5 vagas) → comparação lado a lado
 ```
 
-## Pipeline de Adaptação
+Auxiliares (sem rota própria, usados pelas tools):
+- `job-analyzer.ts` — `analyzeJobFit()` (limites: resumo 30–15000 chars, descrição ≤ 8000, skills ≤ 60, timeout 20s)
+- `cover-letter-generator.ts` — `generateCoverLetter()` (carta ≤ 3000 chars, ≤ 10 key points)
+- `interview-questions.ts` — `generateInterviewQuestions()` (até 8 perguntas categorizadas)
 
-```
-Usuário clica "ADAPTAR CURRÍCULO" no MatchDialog
-  → POST /api/resume/adapt { jobId }
-  → LLM adapta currículo para a vaga
-  → Retorna currículo markdown + highlights + missing skills
-```
+> A **adaptação de currículo** (`resume_adaptation`) **não foi implementada** — a tool
+> mais próxima é `generate_cover_letter`.
 
 ## Chat Assistente
 
 ```
-Chat UI → POST /api/chat (streaming)
-  → LLM com ferramentas: search_jobs, get_my_profile, analyze_job_fit
+Chat UI (MUI + @ai-sdk/react) → POST /api/chat (streaming)
+  → LLM com ferramentas: search_jobs, get_my_profile, analyze_job_fit,
+    compare_jobs, generate_cover_letter, get_interview_questions
   → Stream de resposta + logs no onFinish
 ```
+
+Regras do sistema:
+- Persona: consultor sênior de carreira (RH) em PT-BR
+- `search_jobs`: no máximo 2 usos por pergunta do usuário
+- Modo simulação de entrevista
+- Limites de conversa: **25 mensagens por thread** e **50 interações/dia** (retorno 429/400)
 
 ### Formatação das Vagas
 
@@ -65,13 +78,21 @@ O prompt do sistema instrui o LLM a:
 - Nunca enviar tabelas — usar listas ou cards com `label: valor`
 - Links sozinhos em sua linha para facilitar clique
 
+### Redação de PII (LGPD)
+
+`pii-redactor.ts` aplica regex e remove CPF, CNPJ, RG, telefone e cartão de crédito
+→ `[CPF REDIGIDO]`, etc. Aplicado em: mensagens do usuário no `/api/chat`, POST de
+histórico (`/api/chat/history`) e no botão copiar da UI. A UI exibe badge "🔒 LGPD Sanitizado".
+
 ### Proteção contra Prompt Injection
 
 O `POST /api/chat` aplica três camadas de proteção:
 
 1. **Validação de input**: mensagens truncadas em 2000 chars, tags HTML (`<>`) removidas
-2. **Detecção de padrões suspeitos**: regex para jailbreak (`ignore instructions`, `system prompt`, etc.) — gera log `suspicious_activity`
+2. **Detecção de padrões suspeitos**: regex para jailbreak (`ignore instructions`, `system prompt`, `reveal instructions`, `bypass rules`) — gera log `suspicious_activity` (400)
 3. **Hardening do system prompt**: seção `SEGURANÇA E LIMITES` que proíbe revelar instruções internas, executar bypass ou desviar do foco
+
+`stopWhen: stepCountIs(10)` limita passos de tool por mensagem.
 
 ### Validação de Inputs das Tools
 
@@ -92,19 +113,12 @@ AI_API_KEY=sk-xxx
 AI_MODEL=deepseek-v4-flash
 ```
 
-## Migração Verboo → OpenAI
-
-| Variável | Verboo | OpenAI |
-|---|---|---|
-| `AI_BASE_URL` | `https://code.verboo.ai/router` | `https://api.openai.com/v1` |
-| `AI_MODEL` | `deepseek-v4-flash` | `gpt-4o-mini` |
-| `AI_API_KEY` | Chave Verboo | Chave OpenAI |
-
-Apenas alterar `.env`. Zero mudanças de código.
+> Nota: `.env.example` atual usa `https://code.verboo.ai/router/v1` (com `/v1`).
+> O provider (`llm-provider.ts`) tem default `https://api.openai.com/v1`.
 
 ## Logging
 
-Todos os eventos AI geram logs JSONL no stdout com prefixo `[AI_LOG]`:
+Todos os eventos AI geram logs JSON no stdout com prefixo `[AI_LOG]`:
 
 ```bash
 # Acompanhar em tempo real
@@ -126,6 +140,7 @@ npm run dev 2>&1 | grep "\[AI_LOG\]" | jq 'select(.traceId == "uuid-aqui")'
 |---|---|
 | `resume_extraction` | traceId, latencyMs, skillsCount, experienceYears, seniority, success |
 | `job_analysis` | traceId, latencyMs, jobTitle, matchedCount, missingCount, overallFit, success |
-| `resume_adaptation` | traceId, latencyMs, jobTitle, highlightsCount, missingSkillsCount, success |
+| `cover_letter_generation` | traceId, latencyMs, jobTitle, letterLength, keyPoints, success |
+| `interview_questions` | traceId, latencyMs, jobTitle, questionsCount, success |
 | `chat_interaction` | traceId, latencyMs, messageCount, toolsCalled, finishReason, usage, success |
 | `suspicious_activity` | traceId, userId, pattern (`potential_prompt_injection`), success |

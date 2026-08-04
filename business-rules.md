@@ -1,130 +1,11 @@
-# Mapped Business Rules — Phase 1
+# Mapped Business Rules
 
-## ScoringEngine (scoring-engine.ts)
-
-### Expected Behavior
-**Input → Output/Side-Effect:**
-- When `CandidateProfile` + `JobRequirements` provided, returns `MatchResult` with totalScore 0-1, breakdown, matchedSkills, missingMandatory, evidence
-- When all mandatory skills match, `missingMandatory` is empty
-- When no mandatory skills match, `matchedSkills` is empty and `missingMandatory` contains all required skills
-- When requirements have empty arrays, that dimension scores 1.0 (neutral)
-- `totalScore` is weighted average of all breakdown dimensions
-
-### Validations and Rules
-1. **Skill matching (mandatory)**: If `profile.skills` contains a substring match (case-insensitive, `includes`) against `requirements.mandatorySkills`[i], it counts as matched. Weight: 0.30.
-2. **Skill matching (desirable)**: Same substring logic. Weight: 0.15.
-3. **Text matching (responsibilities/domain)**: Split `texts[i]` by space; if any word is found (case-insensitive `includes`) in concatenated profile skills, count as match. Weight: 0.15.
-4. **Seniority matching**: Both values mapped to index in [junior, pleno, senior, lead, manager, head, director]. Score = max(0, 1 - abs(diff) * 0.25). Unknown levels → score 0.5. Weight: 0.10.
-5. **List matching (education/languages)**: Case-insensitive `includes` match. Weight: 0.05 each.
-6. **Logistics matching**: Start at 1.0, subtract 0.3 if `requiredRemote=true` and `profileRemote=false`. Subtract 0.3 if both locations are non-empty and profile doesn't include required location. Clamp at 0. Weight: 0.05.
-7. **Behavioral**: Always returns score 1.0. Weight: 0.05.
-8. **Total calculation**: Sum of (score[i] * weight[i]) / sum(weights). Returns 0 if totalWeight is 0.
-9. **Evidence generation**: If `matchedSkills.length > 0`, adds line. If `missingMandatory.length > 0`, adds top-3 missing. Always adds total score percentage.
-
-### Mapped Edge Cases
-- **Empty profile skills []**: All skill/lists score 0. Only behavioral/logistics contribute.
-- **Empty requirements (all arrays empty)**: All dimensions score 1.0 → totalScore = 1.0.
-- **Seniority unknown**: Both profile.seniority and required.seniority unknown → score 0.5.
-- **Seniority same level**: diff=0 → score 1.0.
-- **Seniority max diff**: e.g. junior vs director → diff=6 → score = max(0, 1-6*0.25) = 0.
-- **Location empty strings**: If profileLoc="" or requiredLoc="", no penalty applied (condition checks both truthy).
-- **Remote preference**: requiredRemote=true, profileRemote=false → score -= 0.3. If both remote/preferred align, no penalty.
-- **Zero weights total**: Edge case where breakdown has 0 total weight → returns 0.
-- **Case sensitivity**: All matching uses `.toLowerCase()`.
-- **Substring matching**: "python" matches "python", "python3", "data python analysis". But "data analysis" in profile matches "data" or "analysis" as separate tokens.
-
-### Expected Error Scenarios
-- None — no exceptions thrown. All edge cases handled gracefully.
-
-### State Transitions (If Applicable)
-- N/A — pure computation class
-
-### Critical Dependencies
-- No external dependencies. Pure computation.
-- Depends on `CandidateProfile`, `JobRequirements`, `ScoreBreakdown`, `MatchResult` types from `types.ts`.
-
----
-
-## SkillTaxonomy (skill-taxonomy.ts)
-
-### Expected Behavior
-**Input → Output/Side-Effect:**
-- `findMatchingSkills(text)`: Given a string, returns deduplicated array of all known skills found (case-insensitive substring match) across all taxonomy categories.
-
-### Validations and Rules
-1. **Taxonomy lookup**: For each (category → skills[]) entry, iterate skills. If `text.toLowerCase().includes(skill.toLowerCase())`, add to results.
-2. **Deduplication**: Returns `[...new Set(found)]`.
-3. **Overlapping patterns**: "sql" matches both database category and also appears inside "sqlite" match. "python" matches programming.
-4. **Multi-word skills**: "power bi", "machine learning", "google analytics" — matched if the exact multi-word string appears in text.
-
-### Mapped Edge Cases
-- **Empty string**: Returns [].
-- **Short text**: "sql" → returns ["sql"].
-- **Overlapping categories**: "power bi" exists in bi_tools only, not duplicated.
-- **Partial word match**: "aws" in "awslambda" matches because `includes("aws")` is true (but this is probably intended as broad match).
-
-### Expected Error Scenarios
-- None — pure function, no throws.
-
----
-
-## ResumeAdapter (resume-adapter.ts)
-
-### Expected Behavior
-**Input → Output/Side-Effect:**
-- `adapt(profile, requirements, match)`: Returns a formatted resume adaptation string with 4-5 sections.
-- If `match.missingMandatory.length > 0`, generates opening with compensation note.
-- If `match.missingMandatory.length === 0`, generates standard opening.
-
-### Validations and Rules
-1. **Opening without gaps**: Generates "Seniority de Domain com X+ anos..." using profile.seniority (or "profissional" if empty) and requirements.domain (or "Dados e Analytics" if empty).
-2. **Opening with gaps**: Same as above, plus compensation paragraph mentioning top-3 missing mandatory skills.
-3. **Skills section**: Groups all unique skills from requirements.mandatorySkills + desirableSkills + profile.skills. Creates two sublists: matched (intersection) and extra (profile-only, not matched).
-4. **Experience section**: "X anos de experiência na área de domain/Dados, com histórico de entrega..."
-5. **Education section**: Only included if `profile.education.length > 0`.
-6. **Closing**: Mentions first 4 mandatory skills.
-
-### Mapped Edge Cases
-- **Empty profile skills**: `generateSkillsSection` produces grouped lists — matched will be empty (since no profile skills) + extra empty (since no profile-only skills). Outputs empty skill lines with just the header.
-- **Empty mandatory skills**: Closing generates empty skills mention.
-- **Empty domain**: Falls back to "Dados e Analytics" / "Dados".
-- **Empty seniority**: Falls back to "profissional".
-
-### Expected Error Scenarios
-- None — pure string generation.
-
----
-
-## State Machine (state-machine.ts)
-
-### Expected Behavior
-**Input → Output/Side-Effect:**
-- `canTransition(from, to)`: Returns boolean if transition allowed.
-- `getStageLabel(stage)`: Returns Portuguese label string.
-- `getAllowedTransitions(stage)`: Returns array of allowed next stages.
-- `getStageGroups()`: Returns Record<string, Stage[]> grouping stages by phase.
-- `InvalidStatusTransition`: Error class with message "Transição inválida: {from} → {to}" and name "InvalidStatusTransition".
-
-### Validations and Rules
-1. **18 defined stages**: discovered, analyzed, prioritized, documents_pending, ready_to_apply, applied, recruiter_contacted, response_received, hr_interview, technical_interview, manager_interview, case_study, final_stage, offer, hired, rejected, withdrawn, no_response.
-2. **Terminal stages**: 'hired' and 'withdrawn' have empty transitions (no outgoing).
-3. **Stage labels**: All 18 stages have Portuguese labels defined in STAGE_LABELS.
-4. **Stage groups**: 5 groups — triagem (3), preparacao (2), aplicacao (3), entrevistas (5), resultado (5).
-5. **Transition matrix**: Fully defined for all 18 stages (see ALLOWED_TRANSITIONS in code).
-6. **Fallback label**: `getStageLabel` returns the raw stage string if not found in STAGE_LABELS.
-
-### Mapped Edge Cases
-- **Unknown stage**: `canTransition` with invalid stage returns false (ALLOWED_TRANSITIONS[stage] is undefined → false).
-- **Unknown stage in getStageLabel**: Returns the input string itself.
-- **Unknown stage in getAllowedTransitions**: Returns [].
-- **rejected → withdrawn**: Allowed (rejected has 1 outgoing).
-- **hired → anything**: Disallowed (terminal).
-- **withdrawn → anything**: Disallowed (terminal).
-
-### Expected Error Scenarios
-- `InvalidStatusTransition(from, to)` is thrown explicitly in PATCH route; it's an Error subclass with custom name.
-
----
+> ⚠️ **Nota:** Este documento descreve apenas módulos que existem hoje no código.
+> As seções originais de `ScoringEngine`, `SkillTaxonomy`, `ResumeAdapter` e `State Machine`
+> foram removidas — esses módulos **não foram implementados** na v2/redesign.
+> O matching atual é `src/lib/core/matching/recommendation.ts` (token overlap) e a análise
+> de fit é feita via chat IA (`job-analyzer.ts`). Os modelos `Application`/`ApplicationLog`
+> existem apenas no schema Prisma, sem API nem UI.
 
 ## DedupEngine (dedup/index.ts)
 
@@ -363,9 +244,10 @@ Deduplicates jobs by link (limit 200), maps to Prisma.JobCreateManyInput, calls 
 ## browserStorage (storage/browser-storage.ts)
 
 ### Expected Behavior
-- Async CRUD operations for anonymous vagas, cooldown, filters, chat id and chat messages in IndexedDB (DB `radar-unificando`, store `kv`).
+- Async CRUD operations for anonymous vagas, cooldown, last run timestamp, filters, chat id and chat messages in IndexedDB (DB `radar-unificando`, store `kv`).
 - All methods guard against SSR/IndexedDB-unavailable (`typeof window === 'undefined' || typeof indexedDB === 'undefined'`).
-- One-time backfill from legacy `ru_anon_*` localStorage keys (flag `migrated_v1`).
+- One-time backfill from legacy `ru_anon_vagas` / `ru_cooldown_end` localStorage keys (flag `migrated_v1`).
+- Chaves: `anon_vagas`, `cooldown_end`, `last_run_at`, `filters`, `chat_id`, `chat_messages`, `migrated_v1`.
 
 ### Validations and Rules
 1. All getters resolve to null/[] if window or indexedDB is undefined (SSR/unavailable guard).
@@ -373,6 +255,7 @@ Deduplicates jobs by link (limit 200), maps to Prisma.JobCreateManyInput, calls 
 3. `clear`: Removes anonymous data only (vagas + cooldown), preserving filters and chat.
 4. Reads return default values on missing keys or errors ([] or null).
 5. `ensureMigration`: best-effort, idempotent via `migrated_v1` flag.
+6. `setLastRunAt`: Grava timestamp da última busca; usado pelo auto-sync de 15 min em `useJobSearch`.
 
 ---
 
@@ -383,8 +266,7 @@ Deduplicates jobs by link (limit 200), maps to Prisma.JobCreateManyInput, calls 
 - **ASSUMPTION 4**: `SkillExtractor`'s `extractByNER` with model loading is too heavy for unit tests — mocked/stubbed. Focus on taxonomy+bullet+regex extraction.
 - **ASSUMPTION 5**: `GupyMcpClient` MCP endpoint is external — mocked fetch.
 
-## ⚠️ Assumptions Section (Phase 1)
-- **ASSUMPTION 1**: `findMatchingSkills` from `skill-taxonomy.ts` is used by API routes to extract skills from job descriptions — its output is implicitly trusted as source of job requirements skills.
-- **ASSUMPTION 2**: The `ResumeAdapter` formatting logic (markdown bold `**`, line breaks) is intentionally not validated in unit tests — it's formatting-only. We test the structure/logic, not exact formatting strings.
-- **ASSUMPTION 3**: `DedupEngine` methods preserve order (first occurrence wins) — this matches standard Map behavior.
-- **ASSUMPTION 4**: The `ScoringEngine`'s `calcLogisticsMatch` behavior when both locations are empty: condition `if (requiredLoc && profileLoc && ...)` means no penalty when either is empty. Confirmed via code reading.
+## ⚠️ Assumptions Section (fases históricas)
+- **ASSUMPTION 1**: `SkillExtractor`'s NER model loading is mocked/stubbed in unit tests (heavy); tests focus on taxonomy + bullet + regex extraction.
+- **ASSUMPTION 2**: `DedupEngine` methods preserve order (first occurrence wins) — this matches standard Map behavior.
+- **ASSUMPTION 3**: `recommendation.ts` (`buildProfileTokens` cap 10 tokens, `rankJobsByProfile` overlap score 0–1) is a pure function tested without LLM dependency.

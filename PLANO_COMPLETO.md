@@ -1,5 +1,18 @@
 # Plano Completo: Home Personalizada + Redesign /perfil + Todas as Melhorias
 
+> ⚠️ **Documento histórico (plano de execução da v2/redesign, Jul 2026).**
+> As fases descritas abaixo foram majoritariamente implementadas. Alterações posteriores
+> que divergem deste plano:
+> - Persistência local migrada de `localStorage` → **IndexedDB** (`browser-storage.ts`),
+>   incluindo a chave `radar-filters` e o histórico do chat.
+> - `ProfileEmptyState` foi removido; o estado vazio do `/perfil` é renderizado inline na página.
+> - Saudação com `primeiroNome` no hero foi removida (só resta o CTA "Complete seu perfil").
+> - A stack de chat passou a usar **MUI + `@ai-sdk/react`** (`@assistant-ui/*` ficou como código morto).
+> - Sessões anônimas ganharam **auto-sync** de 15 min (chave `last_run_at`).
+> - As seções "ScoringEngine / StateMachine / SkillTaxonomy / ResumeAdapter" de
+>   `business-rules.md` e os testes planejados para elas **não foram implementados**;
+>   o matching atual é `recommendation.ts` (token overlap) + análise de fit via chat IA.
+
 ## RESUMO EXECUTIVO
 
 | Feature | Prioridade | Esforço |

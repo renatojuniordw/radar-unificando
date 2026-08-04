@@ -8,18 +8,20 @@
 ## v2 (branch `v2/redesign` — em desenvolvimento)
 - ✅ PostgreSQL + Prisma ORM
 - ✅ Auth.js v5 (credentials + JWT)
-- ✅ MUI 7 + Dark mode
+- ✅ MUI 7 (tema claro fixo; visual dark via estilos brutalistas — sem toggle)
 - ✅ Gupy MCP + REST fallback
-- ✅ Páginas: home unificada, perfil, login/register
-- ✅ Chat assistente IA (assistant-ui + Vercel AI SDK)
+- ✅ Páginas: home unificada, perfil, login/register, termos
+- ✅ Chat assistente IA (MUI + `@ai-sdk/react`, com PII redaction e proteção anti prompt injection)
 - ✅ Upload PDF + extração IA (skills, cargo, área, senioridade, formação)
-- ✅ Score de match (compatibilidade perfil × vaga)
-- ✅ Recomendação por perfil (ranked jobs)
-- ✅ Export CSV
+- ✅ Análise de fit perfil × vaga (via chat) + recomendação por perfil (ranked jobs)
+- ✅ Export CSV/JSON
 - ✅ Design system Neo-Brutalism
 - ✅ Documentação (docs/)
-- ✅ Segurança: rate limiting, prompt injection protection, env validation
-- ⏳ Testes (Vitest + Playwright)
+- ✅ Segurança: rate limiting (Redis + in-memory), prompt injection protection, env validation
+- ✅ Persistência anônima em IndexedDB (com auto-sync de 15 min)
+- ✅ Suíte Vitest (45 arquivos · 232 testes) — 30 falhas pré-existentes em arquivos com trabalho não commitado
+- ⏳ E2E Playwright (spec desatualizado — referência textos antigos da UI)
+- ⏳ Corrigir falhas pré-existentes dos testes
 - ⏳ Performance audit
 - ⏳ Acessibilidade audit
 

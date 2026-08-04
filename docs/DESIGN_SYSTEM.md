@@ -64,24 +64,23 @@ Configurado em `src/lib/infrastructure/ui/theme.ts`:
 
 ## Dark Mode
 
-Gerenciado via `ThemeProvider` com `colorScheme` toggle.
-Preferência salva em `localStorage`, respeita `prefers-color-scheme` na primeira visita.
+**Não há toggle de tema.** O `ThemeProvider` usa `mode: 'light'` fixo
+(`src/lib/infrastructure/ui/theme.ts`). O visual escuro da home vem de estilos
+inline brutalistas (backgrounds `#020617`/`#0f172a`), não de um tema dark configurável.
 
 ## Componentes MUI por Bloco
 
 | Bloco | Componentes |
 |-------|-------------|
 | Header | AppBar, Toolbar, Button, IconButton |
-| Input | TextField (multiline), Button, FormControlLabel |
-| Progresso | Accordion, LinearProgress |
+| Input | TextField (multiline), Button, TextareaAutosize |
+| Progresso | LinearProgress |
 | Resultados | Table, TableHead, TableRow, TableCell, Chip |
 | Filtros | Select, MenuItem, TextField |
 | Cards | Card, CardContent |
-| Score | CircularProgress (determinate) |
 | Modais | Dialog, DialogTitle, DialogContent, DialogActions |
-| Kanban | Paper, Box + dnd-kit |
 | Alertas | Alert, AlertTitle |
-| Loading | Skeleton, LinearProgress |
+| Loading | Skeleton, LinearProgress, CircularProgress |
 
 ## Chat Assistente (`chat-assistant-ui.tsx`)
 

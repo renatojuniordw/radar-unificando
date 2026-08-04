@@ -17,6 +17,7 @@ export default function HomePage() {
     cargosBusca,
     setCargosBusca,
     running,
+    autoSyncing,
     vagas,
     loading,
     cargos,
@@ -51,6 +52,7 @@ export default function HomePage() {
         modoRecomendado={modoRecomendado}
         vagas={vagas}
         loading={loading}
+        autoSyncing={autoSyncing}
         cargos={cargos}
         areaOuCargo={profile.area || profile.currentRole || ""}
         onFilterChange={carregarVagas}

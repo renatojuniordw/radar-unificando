@@ -36,7 +36,10 @@ Toda feature nova começa com um branch a partir de `v2/redesign`.
 |---------|-----------|
 | `npm run dev` | Dev server |
 | `npm run build` | Build produção |
-| `npm run lint` | Lint |
+| `npm run lint` | Lint (precisa de `eslint.config.*` — o repo usa `.eslintrc.json` legado, erro circular pré-existente) |
+| `npm run test` | Suíte Vitest (unit/integration) |
+| `npm run test:e2e` | Playwright (spec em `e2e/`) |
+| `npm run test:coverage` | Cobertura Vitest |
 | `npm run db:migrate` | Migrations Prisma |
 | `npm run db:seed` | Seed dados iniciais |
 | `npm run db:studio` | Prisma Studio (GUI) |

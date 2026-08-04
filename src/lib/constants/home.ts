@@ -27,61 +27,65 @@ export const ROTATING_WORDS = [
 export const WHY_USE_ITEMS = [
   {
     title: "100% GRATUITO",
-    desc: "Sem taxas escondidas e sem limite de buscas. Acesse todas as funcionalidades sem custo.",
+    desc: "Sem taxas escondidas e sem custo. Acesse todas as funcionalidades de busca e análise gratuitamente.",
   },
   {
     title: "SEM CADASTRO OBRIGATÓRIO",
-    desc: "Busque vagas sem criar conta. Crie uma conta para acessar chat IA, perfil e recomendações personalizadas.",
+    desc: "Busque vagas sem precisar criar conta. Cadastre-se apenas se quiser usar o assistente de IA e perfil personalizado.",
   },
   {
     title: "DADOS EM TEMPO REAL",
-    desc: "Consulta direta em Gupy e InHire no momento da busca — sem base pré-carregada. Resultados sempre atualizados.",
+    desc: "Buscamos as vagas diretamente nas empresas no momento da sua pesquisa. Resultados sempre atualizados.",
   },
   {
     title: "IA QUE ENTENDE SEU PERFIL",
-    desc: "Importe seu currículo do LinkedIn ou cole o texto. A IA extrai skills, experiência, senioridade e área automaticamente.",
+    desc: "Importe seu currículo em PDF ou cole o texto. A IA identifica suas habilidades, experiência e área automaticamente.",
   },
   {
-    title: "SCORE DE MATCH INTELIGENTE",
-    desc: "Percentual de compatibilidade entre seu perfil e cada vaga, com breakdown de skills obrigatórias e desejáveis.",
+    title: "SCORE DE COMPATIBILIDADE",
+    desc: "Veja o percentual de afinidade entre seu perfil e cada vaga, com detalhamento dos requisitos alinhados.",
   },
   {
-    title: "ASSISTENTE DE VAGAS",
-    desc: "Chat IA disponível 24h para analisar seu perfil, recomendar vagas, gerar carta de apresentação e preparar entrevistas.",
+    title: "ASSISTENTE DE VAGAS 24H",
+    desc: "Chat inteligente disponível para tirar dúvidas, sugerir oportunidades, gerar cartas de apresentação e simular entrevistas.",
   },
 ];
 
 export const FAQ_ITEMS = [
   {
     q: "COMO FUNCIONA O RADAR DE VAGAS?",
-    a: "Buscamos automaticamente vagas publicadas nas plataformas Gupy e InHire. Basta definir empresas e cargos de interesse e executar a busca. Os resultados são exibidos em tempo real, com opção de filtrar por plataforma, cargo e texto.",
+    a: "Buscamos automaticamente vagas abertas em grandes empresas. Basta selecionar os cargos e empresas do seu interesse e clicar em buscar. Você também pode filtrar por tipo de trabalho, área ou palavra-chave.",
   },
   {
     q: "PRECISO CRIAR UMA CONTA?",
-    a: "Não. Você pode buscar vagas sem cadastro. Criar uma conta dá acesso a funcionalidades avançadas: chat IA, importação de currículo com extração automática, score de match e recomendações personalizadas.",
+    a: "Não. Você pode pesquisar vagas livremente. Ao criar uma conta gratuita, você ganha acesso ao assistente de IA, análise de compatibilidade e recomendações personalizadas.",
   },
   {
     q: "AS VAGAS SÃO ATUALIZADAS COM QUE FREQUÊNCIA?",
-    a: "Cada busca consulta as plataformas em tempo real. Os resultados refletem as vagas disponíveis no momento da execução. Não há banco de dados pré-carregado — você decide quando buscar.",
+    a: "As buscas ao vivo consultam as oportunidades em tempo real. Além disso, ao recarregar a página, o sistema verifica e atualiza as novidades automaticamente em segundo plano a cada 15 minutos.",
+  },
+  {
+    q: "EXISTE LIMITE DE BUSCA OU DE USO DO CHAT DE IA?",
+    a: "Para garantir rapidez e evitar sobrecarga nos sites de vagas, existe um pequeno tempo de espera entre buscas consecutivas ao vivo. O assistente de IA também possui um limite saudável de mensagens por conversa para garantir uma resposta rápida a todos.",
   },
   {
     q: "MEUS DADOS ESTÃO SEGUROS?",
-    a: "Sim. Usuários logados têm dados criptografados e protegidos no PostgreSQL. Usuários anônimos têm dados armazenados apenas localmente no navegador (IndexedDB). Não compartilhamos dados com terceiros.",
+    a: "Sim. Suas informações são protegidas com criptografia de alta segurança. Se você navegar sem criar conta, seus dados ficam salvos exclusivamente no seu próprio navegador. Não vendemos nem compartilhamos seus dados com terceiros.",
   },
   {
     q: "O QUE É O ASSISTENTE DE VAGAS?",
-    a: "É um chat IA disponível 24h que pode analisar seu perfil, recomendar vagas compatíveis, gerar carta de apresentação personalizada, criar perguntas de entrevista e comparar seu perfil com vagas específicas. Acesse pelo botão flutuante no canto inferior direito.",
+    a: "É um chat inteligente disponível 24h que analisa seu perfil, indica as melhores oportunidades, cria cartas de apresentação personalizadas e ajuda você a se preparar para entrevistas.",
   },
   {
     q: "COMO FUNCIONA A IMPORTAÇÃO DE CURRÍCULO?",
-    a: "Na página de perfil, faça upload do PDF exportado do LinkedIn ou cole o texto do currículo. A IA extrai automaticamente: skills técnicas, anos de experiência, senioridade, formação acadêmica, cargo atual e área de atuação. Você pode revisar e ajustar tudo antes de salvar.",
+    a: "No seu perfil, você pode enviar o arquivo do seu currículo ou colar o texto. A inteligência artificial organiza suas habilidades, tempo de experiência e área de atuação para acelerar sua busca por emprego.",
   },
   {
-    q: "O QUE É O SCORE DE MATCH?",
-    a: "É um percentual de compatibilidade entre seu perfil e cada vaga, calculado por IA. Considera skills obrigatórias e desejáveis, senioridade, localização, experiência e outros fatores. Usuários logados com perfil completo veem o score na tabela de resultados.",
+    q: "O QUE É O SCORE DE COMPATIBILIDADE (MATCH)?",
+    a: "É um indicador percentual que mostra o quanto seu perfil combina com os requisitos da vaga. Ele avalia seus conhecimentos, nível de experiência e diferenciais desejados pela empresa.",
   },
   {
     q: "COMO EXPORTAR AS VAGAS?",
-    a: "Clique no botão 'Exportar CSV' na tabela de resultados. O arquivo inclui todas as vagas filtradas com empresa, cargo, plataforma, link e outros dados. Funciona para usuários anônimos e logados.",
+    a: "Clique no botão 'Exportar' na tabela de resultados para baixar uma planilha completa com as vagas encontradas, contendo links diretos, empresas e descrições.",
   },
 ];

@@ -42,5 +42,4 @@ Os dados sensíveis são redigidos automaticamente (PII Redactor) em conformidad
 ## Informações do Projeto
 - **Website**: https://radar.unificando.com.br
 - **Desenvolvedor**: Unificando / Renato Bezerra
-- **Repositório**: https://github.com/anomalyco/busca-vagas-gupy-inhire
-- **Licença**: MIT / Open Source
+- **Licença**: Proprietary / Unificando Platform
