@@ -12,8 +12,15 @@ export async function register() {
       if (checked > 0) {
         console.log(`[revalidate-jobs] ${checked} vaga(s) checada(s), ${deactivated} marcada(s) como inativa(s)`);
       }
-    } catch (err) {
-      console.error('[revalidate-jobs] Falha ao revalidar vagas:', err);
+    } catch (err: unknown) {
+      const isDbConnError =
+        typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === 'P1001';
+
+      if (isDbConnError) {
+        console.warn('[revalidate-jobs] Banco de dados indisponível no ambiente local (P1001). Revalidação em segundo plano pausada.');
+      } else {
+        console.error('[revalidate-jobs] Falha ao revalidar vagas:', err);
+      }
     }
   };
 
