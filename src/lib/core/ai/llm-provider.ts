@@ -26,6 +26,29 @@ export async function generate<T extends z.ZodType>(
   prompt: string,
   opts?: LlmOptions,
 ): Promise<z.infer<T>> {
+  try {
+    return await callLlm(schema, prompt, opts);
+  } catch (err) {
+    // Some models (esp. reasoning models routed transparently) burn the whole
+    // token budget on hidden chain-of-thought and never reach the JSON answer.
+    // Retry once with more room and a stronger nudge before giving up.
+    if (err instanceof Error && err.message === 'JSON não encontrado na resposta') {
+      return await callLlm(
+        schema,
+        prompt +
+          '\n\nIMPORTANTE: não pense em voz alta nem explique seu raciocínio. Responda IMEDIATAMENTE apenas com o JSON, sem nenhum texto antes.',
+        { maxOutputTokens: (opts?.maxOutputTokens ?? 1500) * 2 },
+      );
+    }
+    throw err;
+  }
+}
+
+async function callLlm<T extends z.ZodType>(
+  schema: T,
+  prompt: string,
+  opts?: LlmOptions,
+): Promise<z.infer<T>> {
   const bodyPayload: Record<string, unknown> = {
     model: modelName,
     messages: [{ role: 'user', content: prompt }],
