@@ -26,20 +26,37 @@ export async function generate<T extends z.ZodType>(
   prompt: string,
   opts?: LlmOptions,
 ): Promise<z.infer<T>> {
-  const res = await fetch(`${baseURL}/chat/completions`, {
+  const bodyPayload: Record<string, unknown> = {
+    model: modelName,
+    messages: [{ role: 'user', content: prompt }],
+    stream: false,
+    response_format: { type: 'json_object' },
+    ...(opts?.maxOutputTokens ? { max_tokens: opts.maxOutputTokens } : {}),
+  };
+
+  let res = await fetch(`${baseURL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [{ role: 'user', content: prompt }],
-      stream: false,
-      ...(opts?.maxOutputTokens ? { max_tokens: opts.maxOutputTokens } : {}),
-    }),
+    body: JSON.stringify(bodyPayload),
     signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
   });
+
+  // Fallback if provider doesn't support response_format
+  if (!res.ok && res.status === 400) {
+    delete bodyPayload.response_format;
+    res = await fetch(`${baseURL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bodyPayload),
+      signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+    });
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
@@ -47,17 +64,44 @@ export async function generate<T extends z.ZodType>(
   }
 
   const data = await res.json();
-  const content: string = data.choices?.[0]?.message?.content ?? '';
-  const parsed = JSON.parse(extractJson(content));
-  return schema.parse(parsed);
+  const choice = data.choices?.[0]?.message;
+  const content: string = choice?.content || choice?.reasoning_content || '';
+
+  if (!content) {
+    console.error('[llm-provider] Resposta vazia da LLM:', data);
+    throw new Error('Resposta vazia da LLM');
+  }
+
+  try {
+    const jsonString = extractJson(content);
+    const parsed = JSON.parse(jsonString);
+    return schema.parse(parsed);
+  } catch (err) {
+    console.error('[llm-provider] Erro ao analisar JSON da LLM:', {
+      error: err instanceof Error ? err.message : String(err),
+      rawContentSnippet: content.slice(0, 300),
+    });
+    throw err instanceof Error ? err : new Error(String(err));
+  }
 }
 
 function extractJson(raw: string): string {
-  const cleaned = raw.trim();
+  let cleaned = raw.trim();
+
+  // Strip markdown codeblocks
+  if (cleaned.includes('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/gi, '').replace(/\s*```$/gi, '').trim();
+  }
+
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start === -1 || end === -1 || end <= start) {
     throw new Error('JSON não encontrado na resposta');
   }
-  return cleaned.slice(start, end + 1);
+
+  let jsonCandidate = cleaned.slice(start, end + 1);
+  // Clean trailing commas before closing braces/brackets
+  jsonCandidate = jsonCandidate.replace(/,\s*([}\]])/g, '$1');
+
+  return jsonCandidate;
 }

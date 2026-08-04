@@ -43,7 +43,7 @@ describe('extractSkillsFromResume', () => {
     vi.mocked(generate).mockRejectedValueOnce(new Error('LLM timeout'));
 
     await expect(extractSkillsFromResume('some text')).rejects.toThrow(
-      'Não foi possível extrair as skills. Tente novamente.',
+      'Não foi possível extrair as skills',
     );
   });
 
@@ -51,7 +51,7 @@ describe('extractSkillsFromResume', () => {
     vi.mocked(generate).mockRejectedValueOnce(new Error('JSON não encontrado'));
 
     await expect(extractSkillsFromResume('some text')).rejects.toThrow(
-      'Não foi possível extrair as skills. Tente novamente.',
+      'Não foi possível extrair as skills',
     );
   });
 
@@ -59,7 +59,7 @@ describe('extractSkillsFromResume', () => {
     vi.mocked(generate).mockRejectedValueOnce(new Error('Empty input'));
 
     await expect(extractSkillsFromResume('')).rejects.toThrow(
-      'Não foi possível extrair as skills. Tente novamente.',
+      'Não foi possível extrair as skills',
     );
   });
 });

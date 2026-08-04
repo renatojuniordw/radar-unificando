@@ -28,6 +28,9 @@ export async function POST(req: NextRequest) {
       if (file.size > 5 * 1024 * 1024) {
         return NextResponse.json({ error: 'Arquivo muito grande. Máximo 5MB.' }, { status: 400 });
       }
+      if (file.size === 0) {
+        return NextResponse.json({ error: 'O arquivo enviado está vazio (0 bytes).' }, { status: 400 });
+      }
 
       const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -65,7 +68,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Texto muito curto. Cole o conteúdo do currículo.' }, { status: 400 });
     }
 
-    const extracted = await extractSkillsFromResume(markdown, traceId);
+    let extracted;
+    try {
+      extracted = await extractSkillsFromResume(markdown, traceId);
+    } catch (extractError) {
+      console.error('[upload] AI extraction failed:', extractError);
+      const msg = extractError instanceof Error ? extractError.message : 'Falha ao extrair skills via IA';
+      return NextResponse.json({ error: msg }, { status: 422 });
+    }
 
     await profileRepository.upsert(session.user.id, {
       resumeText: rawText,
@@ -93,6 +103,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('[upload] Error:', error);
-    return NextResponse.json({ error: 'Erro ao processar upload' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Erro ao processar upload';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

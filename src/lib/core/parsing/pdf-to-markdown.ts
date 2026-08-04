@@ -71,14 +71,14 @@ export function textToMarkdown(text: string): string {
 }
 
 function groupItemsIntoLines(items: TextItem[]): TextLine[] {
-  if (items.length === 0) return [];
+  if (!items || items.length === 0) return [];
 
   const sorted = items
-    .filter(item => item.str.trim().length > 0)
+    .filter(item => item && typeof item.str === 'string' && item.str.trim().length > 0 && Array.isArray(item.transform))
     .sort((a, b) => {
-      const yA = a.transform[5];
-      const yB = b.transform[5];
-      if (Math.abs(yA - yB) < 3) return a.transform[4] - b.transform[4];
+      const yA = a.transform[5] ?? 0;
+      const yB = b.transform[5] ?? 0;
+      if (Math.abs(yA - yB) < 3) return (a.transform[4] ?? 0) - (b.transform[4] ?? 0);
       return yB - yA;
     });
 
@@ -87,7 +87,7 @@ function groupItemsIntoLines(items: TextItem[]): TextLine[] {
   let currentY = sorted[0]?.transform[5] ?? 0;
 
   for (const item of sorted) {
-    const y = item.transform[5];
+    const y = item.transform[5] ?? 0;
     if (Math.abs(y - currentY) > 3) {
       if (currentLine.length > 0) {
         lines.push(buildLine(currentLine, currentY));
@@ -107,15 +107,15 @@ function groupItemsIntoLines(items: TextItem[]): TextLine[] {
 }
 
 function buildLine(items: TextItem[], y: number): TextLine {
-  const sortedItems = items.sort((a, b) => a.transform[4] - b.transform[4]);
+  const sortedItems = items.sort((a, b) => (a.transform[4] ?? 0) - (b.transform[4] ?? 0));
   const text = sortedItems.map(i => i.str).join(' ').trim();
-  const fontSize = Math.max(...items.map(i => Math.abs(i.transform[0] || i.transform[3] || 12)));
+  const fontSize = Math.max(...items.map(i => Math.abs(i?.transform?.[0] || i?.transform?.[3] || 12)));
   const isBold = items.some(i =>
-    i.fontName.toLowerCase().includes('bold') ||
-    i.fontName.toLowerCase().includes('heavy')
+    i.fontName?.toLowerCase().includes('bold') ||
+    i.fontName?.toLowerCase().includes('heavy')
   );
 
-  return { y, items: sortedItems, text, fontSize, isBold };
+  return { y, items: sortedItems, text, fontSize, isBold: Boolean(isBold) };
 }
 
 function linesToMarkdown(lines: TextLine[]): string {
