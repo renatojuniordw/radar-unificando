@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Container, Typography } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile, type ProfileField, type ProfileData } from '@/hooks/useProfile';
 import { ProfileCompletionCard } from '@/components/profile/profile-completion-card';
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
@@ -20,6 +20,12 @@ export default function PerfilPage() {
   const isSetup = !hasData && !showManualForm;
 
   const hasChanges = profile.fieldOverrides.size > 0 || (!profile.saving && hasData);
+
+  const { setField } = profile;
+
+  const handleFieldChange = useCallback((field: ProfileField, value: ProfileData[ProfileField]) => {
+    setField(field, value);
+  }, [setField]);
 
   async function handleSave() {
     const result = await profile.handleSave();
@@ -48,7 +54,7 @@ export default function PerfilPage() {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.5, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+      <Typography variant="h1" sx={{ fontWeight: 900, mb: 0.5, textTransform: 'uppercase', letterSpacing: '-0.02em', fontSize: '2rem' }}>
         MEU PERFIL
       </Typography>
       <Typography sx={{ mb: 3, color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
@@ -147,13 +153,10 @@ export default function PerfilPage() {
             area={profile.area}
             experienceYears={profile.experienceYears}
             education={profile.education}
-            profileSource={profile.profileSource}
-            fieldOverrides={profile.fieldOverrides}
-            onFieldChange={(field, value) => profile.setField(field as any, value)}
+            onFieldChange={handleFieldChange}
             onAddSkill={profile.addSkill}
             onAddSkills={profile.addSkills}
             onRemoveSkill={profile.removeSkill}
-            onRevertField={(field) => profile.revertField(field as any)}
           />
 
           {hasResume && (

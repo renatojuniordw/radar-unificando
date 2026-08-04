@@ -7,7 +7,7 @@ interface Props {
   skills: string[];
 }
 
-export function ProfileCompletionCard({ percent, completedCount, totalCount, skills }: Props) {
+export function ProfileCompletionCard({ percent, completedCount, totalCount }: Props) {
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

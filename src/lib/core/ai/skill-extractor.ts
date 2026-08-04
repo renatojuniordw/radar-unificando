@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { generate } from './llm-provider';
 import { resumeExtractionSchema, type ResumeExtraction } from './extraction-schema';
 import { logAiEvent } from './ai-logger';

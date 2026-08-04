@@ -6,9 +6,9 @@ function normalizeSkill(s: string): string {
   return s.trim().toLowerCase().replace(/[\s-]+/g, ' ');
 }
 
-type ProfileField = 'skills' | 'seniority' | 'experienceYears' | 'currentRole' | 'area' | 'education';
+export type ProfileField = 'skills' | 'seniority' | 'experienceYears' | 'currentRole' | 'area' | 'education';
 
-interface ProfileData {
+export interface ProfileData {
   skills: string[];
   seniority: string;
   experienceYears: number;
@@ -128,14 +128,14 @@ export function useProfile() {
     }));
   }
 
-  function revertField(field: ProfileField) {
+  const revertField = useCallback((field: ProfileField) => {
     setState(prev => {
       const next = { ...prev };
       next.fieldOverrides = new Set(prev.fieldOverrides);
       next.fieldOverrides.delete(field);
       return next;
     });
-  }
+  }, []);
 
   function revertAll() {
     setState(prev => ({ ...prev, fieldOverrides: new Set() }));

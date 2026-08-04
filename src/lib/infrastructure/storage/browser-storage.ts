@@ -1,5 +1,11 @@
 import { openDB, type IDBPDatabase, type DBSchema } from 'idb';
-import type { JobData } from '@/types';
+import type { Vaga } from '@/lib/types/vaga';
+
+interface StoredChatMessage {
+  role?: string;
+  content?: string;
+  parts?: { type: string; text?: string }[];
+}
 
 export const DB_NAME = 'radar-unificando';
 const DB_VERSION = 1;
@@ -20,15 +26,6 @@ const LEGACY_KEYS = {
   VAGAS: 'ru_anon_vagas',
   COOLDOWN_END: 'ru_cooldown_end',
 } as const;
-
-const DATA_KEYS = [
-  KEYS.VAGAS,
-  KEYS.COOLDOWN_END,
-  KEYS.LAST_RUN_AT,
-  KEYS.FILTERS,
-  KEYS.CHAT_ID,
-  KEYS.CHAT_MESSAGES,
-] as const;
 
 interface Schema extends DBSchema {
   kv: {
@@ -110,8 +107,8 @@ async function del(key: string): Promise<void> {
 }
 
 export const browserStorage = {
-  getVagas: () => getValue<JobData[]>(KEYS.VAGAS, []),
-  setVagas: (vagas: JobData[]) => setValue(KEYS.VAGAS, vagas),
+  getVagas: () => getValue<Vaga[]>(KEYS.VAGAS, []),
+  setVagas: (vagas: Vaga[]) => setValue(KEYS.VAGAS, vagas),
 
   getCooldownEnd: () => getValue<number | null>(KEYS.COOLDOWN_END, null),
   setCooldownEnd: (endsAt: number) => setValue(KEYS.COOLDOWN_END, endsAt),
@@ -128,8 +125,8 @@ export const browserStorage = {
   getChatId: () => getValue<string | null>(KEYS.CHAT_ID, null),
   setChatId: (id: string) => setValue(KEYS.CHAT_ID, id),
 
-  getChatMessages: () => getValue<any[]>(KEYS.CHAT_MESSAGES, []),
-  setChatMessages: (messages: any[]) => setValue(KEYS.CHAT_MESSAGES, messages),
+  getChatMessages: () => getValue<StoredChatMessage[]>(KEYS.CHAT_MESSAGES, []),
+  setChatMessages: (messages: StoredChatMessage[]) => setValue(KEYS.CHAT_MESSAGES, messages),
 
   // Limpa os dados anônimos (vagas + cooldown), preservando filtros e chat
   clear: async (): Promise<void> => {

@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requireAuth } from '@/lib/api/auth-guard';
 import { chatRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-  }
+  const { session, response } = await requireAuth();
+  if (response) return response;
 
   try {
     const conversations = await chatRepository.listChats(session.user.id);

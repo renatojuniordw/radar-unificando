@@ -62,8 +62,6 @@ describe('Middleware', () => {
   it('should_allow_public_routes_without_authentication', async () => {
     const publicPaths = ['/', '/login', '/register', '/api/auth/session'];
     for (const path of publicPaths) {
-      const request = new NextRequest(`http://localhost${path}`);
-      const url = request.nextUrl;
       const isPublic = path === '/' || path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth');
       expect(isPublic).toBe(true);
     }

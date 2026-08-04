@@ -1,5 +1,25 @@
 import type { JobData } from '@/types';
 
+interface RawGupyJob {
+  careerPageName?: string;
+  company?: string;
+  empresa?: string;
+  title?: string;
+  name?: string;
+  workplaceType?: string;
+  work_type?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  location?: string;
+  jobUrl?: string;
+  url?: string;
+  link?: string;
+  publishedDate?: string;
+  created_at?: string;
+  description?: string;
+}
+
 interface McpResponse {
   jsonrpc: string;
   id: string;
@@ -78,8 +98,8 @@ export class GupyMcpClient {
     return res.json();
   }
 
-  private normalizeJobs(raw: any[]): JobData[] {
-    return (raw || []).map((j: any) => ({
+  private normalizeJobs(raw: RawGupyJob[]): JobData[] {
+    return (raw || []).map((j) => ({
       empresa: j.careerPageName || j.company || j.empresa || '',
       plataforma: 'Gupy' as const,
       na_lista: 'Não' as const,

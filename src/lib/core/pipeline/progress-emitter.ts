@@ -16,7 +16,7 @@ export class ProgressEmitter {
     if (this.cleanupTimer) return;
     this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
     if (this.cleanupTimer && typeof this.cleanupTimer === 'object' && 'unref' in this.cleanupTimer) {
-      (this.cleanupTimer as any).unref();
+      (this.cleanupTimer as { unref(): void }).unref();
     }
   }
 
@@ -92,7 +92,9 @@ export class ProgressEmitter {
   }
 }
 
-const GLOBAL_KEY = '__radar_progress_emitter__';
+declare global {
+  var __radar_progress_emitter__: ProgressEmitter | undefined;
+}
 
 export const progressEmitter: ProgressEmitter =
-  (globalThis as any)[GLOBAL_KEY] ??= new ProgressEmitter();
+  (globalThis.__radar_progress_emitter__ ??= new ProgressEmitter());

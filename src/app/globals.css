@@ -277,6 +277,20 @@ body {
   animation: float-card-reverse 5s ease-in-out infinite;
 }
 
+/* Respeita usuários com sensibilidade a movimento (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  .hero-radar,
+  .hero-glow,
+  .radar-scan-line,
+  .animate-float-1,
+  .animate-float-2 {
+    animation: none;
+  }
+  .hero-word {
+    animation: fade-slide-up 0.01s ease-out;
+  }
+}
+
 /* ===== Range Slider ===== */
 
 input[type="range"] {

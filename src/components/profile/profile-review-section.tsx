@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { memo } from 'react';
 import { Autocomplete, TextField, Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/material';
+import { BaseCard } from '@/components/base-card';
+import type { ProfileField, ProfileData } from '@/hooks/useProfile';
 
 const SENIORITY_LEVELS = ['junior', 'pleno', 'senior', 'lead', 'manager', 'head'];
 const AREA_OPTIONS = ['Dados', 'BI', 'Business', 'Growth', 'Engenharia', 'Produto', 'Outro'];
@@ -24,28 +26,22 @@ interface Props {
   area: string;
   experienceYears: number;
   education: string[];
-  profileSource: 'linkedin' | 'manual' | null;
-  fieldOverrides: Set<string>;
-  onFieldChange: (field: string, value: any) => void;
+  onFieldChange: (field: ProfileField, value: ProfileData[ProfileField]) => void;
   onAddSkill: (skill: string) => void;
   onAddSkills: (skills: string[]) => void;
   onRemoveSkill: (skill: string) => void;
-  onRevertField: (field: string) => void;
 }
 
-export function ProfileReviewSection({
+export const ProfileReviewSection = memo(function ProfileReviewSection({
   skills, currentRole, seniority, area, experienceYears, education,
-  profileSource, fieldOverrides, onFieldChange, onAddSkill, onAddSkills, onRemoveSkill, onRevertField,
+  onFieldChange, onAddSkill, onAddSkills, onRemoveSkill,
 }: Props) {
   return (
     <>
       {/* SKILLS */}
-      <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
-        <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 16px' }}>
-          SKILLS {skills.length > 0 && (
-            <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.6rem', marginLeft: 8 }}>{skills.length}</span>
-          )}
-        </h3>
+      <BaseCard title={<>SKILLS {skills.length > 0 && (
+        <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.6rem', marginLeft: 8 }}>{skills.length}</span>
+      )}</>}>
 
         <Autocomplete
           options={ALL_SUGGESTED_SKILLS.filter(s => !skills.includes(s.toLowerCase()))}
@@ -113,13 +109,10 @@ export function ProfileReviewSection({
             </button>
           ))}
         </div>
-      </div>
+      </BaseCard>
 
       {/* DADOS PROFISSIONAIS */}
-      <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
-        <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 16px' }}>
-          DADOS PROFISSIONAIS
-        </h3>
+      <BaseCard title="DADOS PROFISSIONAIS">
 
         <div style={{ marginBottom: 16 }}>
           <label htmlFor="current-role" style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
@@ -204,7 +197,7 @@ export function ProfileReviewSection({
             </div>
           </div>
         )}
-      </div>
+      </BaseCard>
     </>
   );
-}
+});

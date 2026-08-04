@@ -57,17 +57,32 @@ describe('Pipeline API', () => {
   });
 
   describe('GET /api/pipeline/[runId]', () => {
+    it('should_return_401_when_not_authenticated', async () => {
+      vi.mocked(auth).mockResolvedValue(null);
+      const res = await PipelineGetRun({} as any, { params: Promise.resolve({ runId: 'run-1' }) });
+      expect(res.status).toBe(401);
+    });
+
     it('should_return_404_when_run_not_found', async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
       vi.mocked(pipelineRunRepository.findById).mockResolvedValue(null);
       const res = await PipelineGetRun({} as any, { params: Promise.resolve({ runId: 'missing' }) });
       expect(res.status).toBe(404);
     });
 
     it('should_return_run_when_found', async () => {
-      vi.mocked(pipelineRunRepository.findById).mockResolvedValue({ id: 'run-1', status: 'completed' } as any);
+      vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+      vi.mocked(pipelineRunRepository.findById).mockResolvedValue({ id: 'run-1', status: 'completed', userId: 'user-1' } as any);
       const res = await PipelineGetRun({} as any, { params: Promise.resolve({ runId: 'run-1' }) });
       const body = await res.json();
       expect(body.id).toBe('run-1');
+    });
+
+    it('should_return_404_when_run_belongs_to_another_user', async () => {
+      vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+      vi.mocked(pipelineRunRepository.findById).mockResolvedValue({ id: 'run-1', status: 'completed', userId: 'other-user' } as any);
+      const res = await PipelineGetRun({} as any, { params: Promise.resolve({ runId: 'run-1' }) });
+      expect(res.status).toBe(404);
     });
   });
 });

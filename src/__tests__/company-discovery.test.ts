@@ -53,7 +53,6 @@ describe('CompanyDiscovery', () => {
   });
 
   it('should_deduplicate_results_by_company_name', async () => {
-    const errorMock = vi.fn().mockRejectedValue(new Error('fail'));
     global.fetch = vi.fn()
       .mockResolvedValueOnce(mockWaybackSuccess())
       .mockResolvedValueOnce(mockWaybackEmpty())

@@ -15,9 +15,11 @@ describe('Sitemap', () => {
   it('should_return_pages', async () => {
     const sitemap = (await import('@/app/sitemap')).default;
     const result = sitemap();
-    expect(result).toHaveLength(3);
-    expect(result[0].url).toContain('radarunificando.com.br');
+    expect(result).toHaveLength(5);
+    expect(result[0].url).toBe('https://radar.unificando.com.br');
     expect(result[0].changeFrequency).toBe('daily');
+    expect(result.map(r => r.url)).toContain('https://radar.unificando.com.br/sobre');
+    expect(result.map(r => r.url)).toContain('https://radar.unificando.com.br/termos');
   });
 });
 

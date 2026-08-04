@@ -28,7 +28,7 @@ describe('Middleware Security Headers', () => {
   });
 
   it('should_set_security_headers_via_mock', () => {
-    const response = mockNextResponse.next();
+    mockNextResponse.next();
     const headers = new Map<string, string>();
     headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('X-Frame-Options', 'DENY');
@@ -69,7 +69,6 @@ describe('Middleware Route Protection', () => {
 
 describe('Middleware Matcher', () => {
   it('should_exclude_static_assets', () => {
-    const matcher = ['/((?!_next/static|_next/image|favicon.ico).*)'];
     const excludePattern = /_next\/static|_next\/image|favicon\.ico/;
     expect(excludePattern.test('/_next/static/chunk.js')).toBe(true);
     expect(excludePattern.test('/_next/image/logo.png')).toBe(true);

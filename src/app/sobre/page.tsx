@@ -1,11 +1,21 @@
-"use client";
-
+import type { Metadata } from "next";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Sobre | Radar Unificando",
+  description:
+    "Conheça o Radar Unificando: a ferramenta que unifica vagas de tecnologia de Gupy e InHire em um só lugar, com busca inteligente e recomendações personalizadas.",
+  openGraph: {
+    title: "Sobre | Radar Unificando",
+    description:
+      "Conheça o Radar Unificando: a ferramenta que unifica vagas de tecnologia de Gupy e InHire em um só lugar.",
+  },
+};
 
 export default function SobrePage() {
   return (

@@ -2,13 +2,19 @@
 
 import { useEffect } from "react";
 
+declare global {
+  interface Window {
+    __RADAR_EASTER_EGG_LOGGED__?: boolean;
+  }
+}
+
 export function ConsoleEasterEgg() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     // Evita duplicar logs no StrictMode
-    if ((window as any).__RADAR_EASTER_EGG_LOGGED__) return;
-    (window as any).__RADAR_EASTER_EGG_LOGGED__ = true;
+    if (window.__RADAR_EASTER_EGG_LOGGED__) return;
+    window.__RADAR_EASTER_EGG_LOGGED__ = true;
 
     console.log(
       "%c RADAR UNIFICANDO ",

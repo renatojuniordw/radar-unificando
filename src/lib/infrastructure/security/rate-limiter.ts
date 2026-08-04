@@ -32,7 +32,4 @@ export class RateLimiter {
 }
 
 export const pipelineLimiter = new RateLimiter(300_000, 1);
-export const loginLimiter = new RateLimiter(60_000, 5);
-export const apiLimiter = new RateLimiter(60_000, 60);
 export const uploadLimiter = new RateLimiter(3_600_000, 10);
-export const exportLimiter = new RateLimiter(60_000, 10);

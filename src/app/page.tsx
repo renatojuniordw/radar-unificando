@@ -1,12 +1,13 @@
 "use client";
 
-import { Snackbar } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 import { useJobSearch } from "@/hooks/useJobSearch";
 import { HeroSection } from "@/components/home/hero-section";
 import { LoadingOverlay } from "@/components/home/loading-overlay";
 import { ResultsSection } from "@/components/home/results-section";
 import { WhyUseSection } from "@/components/home/why-use-section";
 import { FaqSection } from "@/components/home/faq-section";
+import { FaqStructuredData } from "@/components/seo/faq-structured-data";
 
 export default function HomePage() {
   const {
@@ -33,6 +34,7 @@ export default function HomePage() {
 
   return (
     <>
+      <FaqStructuredData />
       <HeroSection
         isLoggedIn={!!session}
         perfilCompleto={!!perfilMinimo}
@@ -67,9 +69,12 @@ export default function HomePage() {
           open
           autoHideDuration={4000}
           onClose={() => setSnackbar(null)}
-          message={snackbar.message}
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        />
+        >
+          <Alert severity={snackbar.severity} variant="filled" onClose={() => setSnackbar(null)}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       )}
     </>
   );

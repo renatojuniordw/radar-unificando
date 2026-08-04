@@ -1,5 +1,3 @@
-import { FAQ_ITEMS } from "@/lib/constants/home";
-
 export function StructuredData() {
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -40,19 +38,6 @@ export function StructuredData() {
       "Buscador e agregador automático de vagas de emprego que unifica as plataformas Gupy e InHire em tempo real com inteligência artificial.",
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: FAQ_ITEMS.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.a,
-      },
-    })),
-  };
-
   return (
     <>
       <script
@@ -66,10 +51,6 @@ export function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
     </>
   );

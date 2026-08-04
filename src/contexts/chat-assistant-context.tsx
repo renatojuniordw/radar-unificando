@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
 interface ChatAssistantState {
   open: boolean;
@@ -38,8 +38,13 @@ export function ChatAssistantProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, pendingPrompt: null }));
   }, []);
 
+  const value = useMemo(
+    () => ({ ...state, openDrawer, openWithPrompt, close, clearPendingPrompt }),
+    [state, openDrawer, openWithPrompt, close, clearPendingPrompt],
+  );
+
   return (
-    <ChatAssistantContext.Provider value={{ ...state, openDrawer, openWithPrompt, close, clearPendingPrompt }}>
+    <ChatAssistantContext.Provider value={value}>
       {children}
     </ChatAssistantContext.Provider>
   );
