@@ -17,6 +17,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=11010
+ENV HOME=/tmp
 
 RUN apt-get update -y && apt-get install -y wget openssl && rm -rf /var/lib/apt/lists/* && \
     addgroup --system --gid 1001 nodejs && \
@@ -24,6 +25,12 @@ RUN apt-get update -y && apt-get install -y wget openssl && rm -rf /var/lib/apt/
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN chmod +x ./docker-entrypoint.sh
 
 USER nextjs
 EXPOSE 11010
@@ -31,4 +38,5 @@ EXPOSE 11010
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
   CMD wget -qO- http://localhost:11010/api/health || exit 1
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
