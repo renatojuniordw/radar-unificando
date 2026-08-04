@@ -42,7 +42,7 @@ export async function runPipeline(
 
     progressEmitter.emit(runId, {
       type: 'pipeline_complete',
-      message: `Pipeline concluído! ${allJobs.length} vagas encontradas (Gupy: ${gupyJobs.length}, InHire: ${inhireJobs.length})`,
+      message: `Busca concluída! ${allJobs.length} vaga(s) encontrada(s).`,
       ...(isLoggedIn ? {} : { jobs: allJobs }),
     });
   } catch (error) {

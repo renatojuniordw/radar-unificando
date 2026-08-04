@@ -68,7 +68,7 @@ export function createChatTools(userId: string) {
       execute: async ({ query, limit }: { query: string; limit?: number }) => {
         console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
         const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 20, 100));
-        return jobs.slice(0, 10).map(j => ({
+        return jobs.map(j => ({
           titulo: j.titulo_vaga,
           empresa: j.empresa,
           tipo: j.tipo,

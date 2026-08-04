@@ -846,7 +846,7 @@ export function ChatAssistantUI() {
               label="Buscar vagas"
               size="small"
               disabled={loading}
-              onClick={() => sendMessage({ text: "Busque vagas de dados" })}
+              onClick={() => sendMessage({ text: "Busque vagas alinhadas ao meu perfil" })}
               sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
             />
             <Chip

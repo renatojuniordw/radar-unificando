@@ -45,7 +45,12 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
 
         <Autocomplete
           options={ALL_SUGGESTED_SKILLS.filter(s => !skills.includes(s.toLowerCase()))}
-          onChange={(_, value) => { if (value) onAddSkill(value); }}
+          onChange={(_, value) => {
+            if (!value) return;
+            const parts = value.split(',').map(s => s.trim()).filter(Boolean);
+            if (parts.length > 1) onAddSkills(parts);
+            else onAddSkill(value);
+          }}
           renderInput={(params) => (
             <TextField
               {...params}

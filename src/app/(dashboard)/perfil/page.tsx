@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Container, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useProfile, type ProfileField, type ProfileData } from '@/hooks/useProfile';
@@ -11,6 +12,7 @@ import { ProfileReviewSection } from '@/components/profile/profile-review-sectio
 
 export default function PerfilPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
   const [showManualForm, setShowManualForm] = useState(false);
@@ -38,6 +40,7 @@ export default function PerfilPage() {
         profile.area && 'Área',
       ].filter(Boolean);
       showSnackbar(`Perfil salvo! (${parts.join(' · ')})`, 'success');
+      router.push('/');
     } else {
       showSnackbar(result.error || 'Erro ao salvar', 'error');
     }
