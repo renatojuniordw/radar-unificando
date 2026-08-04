@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import {
   Box, Typography, TextField, Button,
-  Select, MenuItem, InputAdornment, Autocomplete, Skeleton, Drawer, IconButton,
+  Select, MenuItem, InputAdornment, Autocomplete, Skeleton, Drawer, IconButton, Tooltip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
@@ -14,6 +14,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useDebounce } from 'use-debounce';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { uniqueValues } from '@/lib/array';
+import { formatVagaDate } from '@/lib/date';
 import { JobPostingSchema } from '@/components/seo/job-posting-schema';
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';
@@ -679,11 +680,16 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
 
                   {/* Metadata Pills */}
                   <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                    {vaga.cargo_categoria && (
-                      <Box sx={{ border: '1px solid #020617', bgcolor: '#f8fafc', px: 1, py: 0.25, fontSize: '0.65rem', fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#334155' }}>
-                        {vaga.cargo_categoria}
-                      </Box>
-                    )}
+                    {(() => {
+                      const dateInfo = formatVagaDate(vaga.publicado, vaga.detectado_em);
+                      return dateInfo && (
+                        <Tooltip title={`${dateInfo.label} em ${dateInfo.full}`} arrow>
+                          <Box sx={{ border: '1px solid #020617', bgcolor: '#f8fafc', px: 1, py: 0.25, fontSize: '0.65rem', fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#334155' }}>
+                            📅 {dateInfo.label} {dateInfo.relative}
+                          </Box>
+                        </Tooltip>
+                      );
+                    })()}
                     {vaga.tipo && (
                       <Box sx={{ border: '1px solid #020617', bgcolor: '#f8fafc', px: 1, py: 0.25, fontSize: '0.65rem', fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#334155' }}>
                         {vaga.tipo}
@@ -818,7 +824,7 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
                 minWidth: 800,
               }}
             >
-              {['EMPRESA', 'PLATAFORMA', 'CARGO', 'TÍTULO DA VAGA', 'LOCALIDADE', 'AÇÃO'].map(h => (
+              {['EMPRESA', 'PLATAFORMA', 'DATA', 'TÍTULO DA VAGA', 'LOCALIDADE', 'AÇÃO'].map(h => (
                 <div key={h} role="columnheader" style={{ color: '#ccff00', fontWeight: 900, padding: '10px 12px', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
                   {h}
                 </div>
@@ -851,9 +857,11 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
                       }}
                     >
                       <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                        <span style={{ fontWeight: 800, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {vaga.empresa}
-                        </span>
+                        <Tooltip title={vaga.empresa} arrow>
+                          <span style={{ fontWeight: 800, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {vaga.empresa}
+                          </span>
+                        </Tooltip>
                       </div>
 
                       <div style={{ padding: '10px 12px', minWidth: 0 }}>
@@ -873,15 +881,27 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
                       </div>
 
                       <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace' }}>
-                        {vaga.cargo_categoria}
+                        {(() => {
+                          const dateInfo = formatVagaDate(vaga.publicado, vaga.detectado_em);
+                          if (!dateInfo) return '';
+                          return (
+                            <Tooltip title={`${dateInfo.label} em ${dateInfo.full}`} arrow>
+                              <span>{dateInfo.label} {dateInfo.relative}</span>
+                            </Tooltip>
+                          );
+                        })()}
                       </div>
 
                       <div style={{ padding: '10px 12px', fontSize: '0.75rem', fontWeight: 700, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {vaga.titulo_vaga}
+                        <Tooltip title={vaga.titulo_vaga} arrow>
+                          <span>{vaga.titulo_vaga}</span>
+                        </Tooltip>
                       </div>
 
                       <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {vaga.local}
+                        <Tooltip title={vaga.local} arrow>
+                          <span>{vaga.local}</span>
+                        </Tooltip>
                       </div>
 
                       <div style={{ padding: '10px 12px' }}>

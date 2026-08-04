@@ -25,7 +25,7 @@ export const jobRepository: IJobRepository = {
         { nomeNaPlataforma: { contains: opts.search, mode: 'insensitive' } },
       ];
     }
-    return prisma.job.findMany({ where, orderBy: { createdAt: 'asc' }, take: opts.take ?? 200 });
+    return prisma.job.findMany({ where, orderBy: { createdAt: 'desc' }, take: opts.take ?? 200 });
   },
 
   async findRecommendedByUserId(userId, profile, take = 30) {

@@ -56,7 +56,7 @@ async function analyzeWithCache(
 export function createChatTools(userId: string) {
   return {
     search_jobs: tool({
-      description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição de cada vaga — use-a diretamente em analyze_job_fit, sem precisar de outra busca.',
+      description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição e a data de publicação de cada vaga (quando disponível) — use a descrição diretamente em analyze_job_fit, sem precisar de outra busca, e mencione/priorize vagas mais recentes quando isso for relevante para a pergunta do usuário.',
       inputSchema: z.object({
         query: z.string()
           .min(2, 'Query muito curta')
@@ -74,6 +74,7 @@ export function createChatTools(userId: string) {
           tipo: j.tipo,
           local: j.local,
           link: j.link,
+          publicado: j.publicado || null,
           descricao: j.descricao
             ? `<untrusted_content>\n${j.descricao.slice(0, 1200)}\n</untrusted_content>`
             : '',

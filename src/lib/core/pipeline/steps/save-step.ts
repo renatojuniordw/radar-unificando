@@ -33,6 +33,7 @@ export async function runSaveStep(runId: string, jobs: JobData[], options: SaveS
     nomeNaPlataforma: job.nome_na_plataforma,
     publicado: job.publicado,
     alerta: job.alerta || '',
+    detectadoEm: new Date().toISOString(),
   }));
 
   const inserted = await jobRepository.createMany(data);
