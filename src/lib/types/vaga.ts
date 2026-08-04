@@ -2,7 +2,7 @@ export interface Vaga {
   id?: number;
   empresa: string;
   plataforma: string;
-  na_lista: string;
+  na_lista?: string;
   cargo_categoria: string;
   titulo_vaga: string;
   tipo: string;

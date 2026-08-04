@@ -102,34 +102,6 @@ export function HeroSection({
             </Box>
           )}
 
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1,
-              border: "2px solid #334155",
-              px: 1.5,
-              py: 0.5,
-              mb: 2,
-            }}
-          >
-            <span style={{ fontSize: "0.6rem", lineHeight: 1 }}>⚡</span>
-            <br />
-            <span
-              style={{
-                color: "#94a3b8",
-                fontSize: "0.55rem",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                fontFamily: "ui-monospace, monospace",
-                lineHeight: 1,
-              }}
-            >
-              Empresas e cargos opcionais — sem filtros, até 500 vagas
-            </span>
-          </Box>
-
           <Typography
             component="h1"
             sx={{
@@ -176,69 +148,121 @@ export function HeroSection({
             , calcula seu score de match e adapta seu currículo sob medida.
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 3.5 }}>
-            <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
-              <CompanyInput
-                value={empresas}
-                onChange={onEmpresasChange}
-                autoFocus
-                dark
-                compact
-              />
-            </Box>
-            <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
-              <CargoInput
-                value={cargosBusca}
-                onChange={onCargosBuscaChange}
-                dark
-                compact
-              />
-            </Box>
-          </Box>
-
-          {cooldown > 0 && (
-            <Typography
-              sx={{
-                display: "block",
-                mb: 2,
-                color: "#ccff00",
-                fontWeight: 900,
-                textTransform: "uppercase",
-                fontSize: "0.75rem",
-                fontFamily: "ui-monospace, monospace",
-              }}
-            >
-              ⏱ Limite de buscas atingido. Aguarde {Math.floor(cooldown / 60)}
-              min {cooldown % 60}s.
-            </Typography>
-          )}
-
+          {/* Search Card Container (Opção 2: Container Unificado) */}
           <Box
             sx={{
-              display: "flex",
-              gap: 2,
-              alignItems: "center",
-              mb: 3,
-              width: { xs: "100%", sm: "auto" },
+              bgcolor: "#0f172a",
+              border: "2px solid #334155",
+              p: { xs: 2.5, sm: 3 },
+              boxShadow: "6px 6px 0px #000",
+              mb: 3.5,
             }}
           >
-            <button
-              onClick={onStart}
-              disabled={running || cooldown > 0}
-              className="btn-neon"
-              style={{
-                width: "100%",
-                padding: "14px 24px",
-                fontSize: "0.9rem",
-                textAlign: "center",
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 1,
+                mb: 2.5,
+                pb: 1.5,
+                borderBottom: "1px solid #1e293b",
               }}
             >
-              {running
-                ? "BUSCANDO VAGAS..."
-                : cooldown > 0
-                  ? `AGUARDAR ${Math.floor(cooldown / 60)}min ${cooldown % 60}s`
-                  : "BUSCAR VAGAS EM TEMPO REAL"}
-            </button>
+              <Typography
+                sx={{
+                  fontFamily: "ui-monospace, monospace",
+                  fontSize: "0.7rem",
+                  color: "#ccff00",
+                  fontWeight: 800,
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <span>⚡</span> PARÂMETROS DE BUSCA
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontFamily: "ui-monospace, monospace",
+                  fontSize: "0.65rem",
+                  color: "#94a3b8",
+                  fontWeight: 700,
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Empresas e cargos opcionais — sem filtros, até 500 vagas
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2.5 }}>
+              <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
+                <CompanyInput
+                  value={empresas}
+                  onChange={onEmpresasChange}
+                  autoFocus
+                  dark
+                  compact
+                />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
+                <CargoInput
+                  value={cargosBusca}
+                  onChange={onCargosBuscaChange}
+                  dark
+                  compact
+                />
+              </Box>
+            </Box>
+
+            {cooldown > 0 && (
+              <Typography
+                sx={{
+                  display: "block",
+                  mb: 2,
+                  color: "#ccff00",
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  fontSize: "0.75rem",
+                  fontFamily: "ui-monospace, monospace",
+                }}
+              >
+                ⏱ Limite de buscas atingido. Aguarde {Math.floor(cooldown / 60)}
+                min {cooldown % 60}s.
+              </Typography>
+            )}
+
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <button
+                onClick={onStart}
+                disabled={running || cooldown > 0}
+                className="btn-neon"
+                style={{
+                  width: "100%",
+                  padding: "14px 24px",
+                  fontSize: "0.9rem",
+                  textAlign: "center",
+                }}
+              >
+                {running
+                  ? "BUSCANDO VAGAS..."
+                  : cooldown > 0
+                    ? `AGUARDAR ${Math.floor(cooldown / 60)}min ${cooldown % 60}s`
+                    : "BUSCAR VAGAS EM TEMPO REAL"}
+              </button>
+            </Box>
           </Box>
 
           <Box

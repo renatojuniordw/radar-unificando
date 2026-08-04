@@ -49,11 +49,6 @@ export function ResultsSection({
                 size="small"
               />
               <Chip
-                label={`${vagas.filter((v) => v.na_lista === "Sim").length} na sua lista`}
-                color="warning"
-                size="small"
-              />
-              <Chip
                 label={`${new Set(vagas.map((v) => v.empresa)).size} empresas`}
                 color="secondary"
                 size="small"

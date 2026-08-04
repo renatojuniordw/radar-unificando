@@ -24,7 +24,7 @@ export async function runSaveStep(runId: string, jobs: JobData[], options: SaveS
     source,
     empresa: job.empresa || 'Desconhecida',
     plataforma: job.plataforma,
-    naLista: job.na_lista,
+    naLista: job.na_lista || 'Não',
     cargoCategoria: job.cargo_categoria,
     tituloVaga: job.titulo_vaga,
     tipo: job.tipo,

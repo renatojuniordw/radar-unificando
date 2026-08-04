@@ -1,7 +1,7 @@
 export interface JobData {
   empresa: string;
   plataforma: Platform;
-  na_lista: 'Sim' | 'Não';
+  na_lista?: 'Sim' | 'Não';
   cargo_categoria: string;
   titulo_vaga: string;
   tipo: string;

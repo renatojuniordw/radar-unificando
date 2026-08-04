@@ -17,7 +17,7 @@ interface Vaga {
   id?: number;
   empresa: string;
   plataforma: string;
-  na_lista: string;
+  na_lista?: string;
   cargo_categoria: string;
   titulo_vaga: string;
   tipo: string;
@@ -323,7 +323,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
                   <div
                     style={{
                       padding: 14,
-                      backgroundColor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.08)' : '#ffffff',
+                      backgroundColor: '#ffffff',
                       border: '3px solid #020617',
                       boxShadow: '3px 3px 0px #000',
                       display: 'flex',
@@ -334,20 +334,6 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
                     {/* Top Row: Empresa & Badges */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                        {vaga.na_lista === 'Sim' && (
-                          <span style={{
-                            backgroundColor: '#020617',
-                            color: '#ccff00',
-                            fontWeight: 900,
-                            fontSize: '0.5rem',
-                            padding: '2px 5px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            whiteSpace: 'nowrap',
-                          }}>
-                            LISTA
-                          </span>
-                        )}
                         <span style={{ fontWeight: 900, fontSize: '0.85rem', color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {vaga.empresa}
                         </span>
@@ -448,27 +434,13 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
                       display: 'grid',
                       gridTemplateColumns: GRID_COLUMNS,
                       alignItems: 'center',
-                      backgroundColor: vaga.na_lista === 'Sim' ? 'rgba(204, 255, 0, 0.06)' : (virtualRow.index % 2 === 0 ? '#ffffff' : '#f8fafc'),
+                      backgroundColor: virtualRow.index % 2 === 0 ? '#ffffff' : '#f8fafc',
                       borderBottom: '1px solid #e2e8f0',
                       fontSize: '0.75rem',
                       boxSizing: 'border-box',
                     }}
                   >
                     <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                      {vaga.na_lista === 'Sim' && (
-                        <span style={{
-                          backgroundColor: '#020617',
-                          color: '#ccff00',
-                          fontWeight: 900,
-                          fontSize: '0.45rem',
-                          padding: '1px 4px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          flexShrink: 0,
-                        }}>
-                          LISTA
-                        </span>
-                      )}
                       <span style={{ fontWeight: 800, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {vaga.empresa}
                       </span>
