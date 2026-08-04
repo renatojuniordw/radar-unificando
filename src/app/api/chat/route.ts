@@ -3,6 +3,7 @@ import { streamText, stepCountIs, convertToModelMessages, type UIMessage } from 
 import { requireAuth } from '@/lib/api/auth-guard';
 import { chatLlm } from '@/lib/core/ai/llm-provider';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
+import { chatRepository } from '@/lib/infrastructure/repositories';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -120,6 +121,19 @@ export async function POST(req: NextRequest) {
           toolCalls: event.steps?.flatMap((s) => s.toolCalls?.map((t) => t.toolName) || []),
           success: true,
         });
+
+        // Persistência assíncrona do histórico se a IA gerou texto
+        if (event.text && Array.isArray(messages)) {
+          try {
+            const updatedMessages = [
+              ...messages,
+              { role: 'assistant', parts: [{ type: 'text', text: event.text }] },
+            ];
+            await chatRepository.replaceMessages(session.user.id, 'default', updatedMessages);
+          } catch (err) {
+            console.error('[chat] Erro ao auto-salvar histórico:', err);
+          }
+        }
       },
       onError: ({ error }: { error: unknown }) => {
         console.error('[chat] streamText onError:', error);
