@@ -2,11 +2,11 @@ node_modules/
 .next/
 data/
 .env
-.env.local
+.env.production
+.env*.local
 pgdata/
 *.tsbuildinfo
 next-env.d.ts
-
 
 coverage/
 coverage

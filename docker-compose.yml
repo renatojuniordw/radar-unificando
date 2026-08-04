@@ -2,8 +2,6 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -23,15 +21,17 @@ services:
           cpus: '1.0'
         reservations:
           memory: 128M
+    security_opt:
+      - no-new-privileges:true
     networks:
       - internal
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-radar_redis_secret_password_change_in_prod} --maxmemory 128mb --maxmemory-policy allkeys-lru
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 128mb --maxmemory-policy allkeys-lru
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-radar_redis_secret_password_change_in_prod}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,11 +49,10 @@ services:
       - internal
 
   app:
-    profiles: ["production"]
     build: .
     restart: unless-stopped
     ports:
-      - "11010:11010"
+      - "127.0.0.1:11010:11010"
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,10 +62,10 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://${DB_USER:-radar}:${DB_PASSWORD}@postgres:5432/radar_unificando
       AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_URL: http://localhost:11010
+      AUTH_URL: ${AUTH_URL:-http://localhost:11010}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-radar_redis_secret_password_change_in_prod}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     env_file:
       - .env
     deploy:
@@ -94,4 +93,3 @@ volumes:
 networks:
   internal:
     driver: bridge
-
