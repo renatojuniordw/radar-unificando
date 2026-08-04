@@ -79,6 +79,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ConsoleEasterEgg } from "@/components/console-easter-egg";
+
 export default function RootLayout({
   children,
 }: {
@@ -119,6 +121,7 @@ export default function RootLayout({
                     Pular para conteúdo principal
                   </Box>
 
+                  <ConsoleEasterEgg />
                   <Header />
                   <main id="main-content" style={{ flex: 1 }}>
                     {children}
