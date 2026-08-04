@@ -76,7 +76,10 @@ export function HeroSection({
                 gap: 2,
               }}
             >
-              <Typography variant="body2" sx={{ fontWeight: 700, color: "#f8fafc" }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 700, color: "#f8fafc" }}
+              >
                 Complete seu perfil para receber vagas recomendadas
               </Typography>
               <Link href="/perfil" style={{ textDecoration: "none" }}>
@@ -111,6 +114,7 @@ export function HeroSection({
             }}
           >
             <span style={{ fontSize: "0.6rem", lineHeight: 1 }}>⚡</span>
+            <br />
             <span
               style={{
                 color: "#94a3b8",

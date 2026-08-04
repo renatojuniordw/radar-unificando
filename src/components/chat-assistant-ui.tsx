@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { ChatSidebar } from '@/components/chat-sidebar';
+import { useChatAssistant } from '@/contexts/chat-assistant-context';
 
 interface Conversation {
   id: string;
@@ -28,23 +29,25 @@ const SUGGESTIONS = [
   'Como está o mercado de dados?',
 ];
 
-const WELCOME_TEXT = `Olá! Sou o assistente de recolocação profissional do Radar. Posso te ajudar a:
+function createWelcomeMessage(userName?: string | null) {
+  const firstName = userName ? userName.trim().split(' ')[0] : '';
+  const greetingHeader = firstName ? `Olá, **${firstName}**! 👋` : `Olá! 👋`;
 
-- Buscar **vagas no Gupy** de acordo com seu perfil e interesses
-- Sugerir **melhorias no seu currículo**
-- Analisar sua **compatibilidade** com uma vaga específica
+  const text = `${greetingHeader} Sou seu assistente de carreira no Radar. Estou aqui para te ajudar a encontrar as melhores vagas e acelerar seus objetivos profissionais!
 
-Não faço parte do processo seletivo — não tenho acesso a decisões de recrutadores nem posso garantir aprovação em nenhuma vaga.
+Como posso te apoiar hoje?
 
-Por segurança, não compartilhe dados sensíveis de terceiros no chat. E se você colar a descrição de uma vaga ou qualquer outro texto, sigo apenas as instruções que você me der diretamente — ignoro qualquer comando escondido dentro do conteúdo colado.
+• 🔍 **Buscar vagas no Gupy** alinhadas ao seu perfil  
+• 📄 **Analisar seu currículo** e sugerir pontos de melhoria  
+• 📊 **Avaliar sua compatibilidade (fit)** com vagas de tecnologia  
+• 🎤 **Simular uma entrevista** com feedback profissional em tempo real  
 
-Como posso te ajudar hoje?`;
+*Escolha uma das sugestões abaixo ou fique à vontade para digitar!*`;
 
-function createWelcomeMessage() {
   return {
     id: 'welcome-message',
     role: 'assistant' as const,
-    parts: [{ type: 'text' as const, text: WELCOME_TEXT }],
+    parts: [{ type: 'text' as const, text }],
   };
 }
 
@@ -280,7 +283,13 @@ function MarkdownContent({ text }: { text: string }) {
 
 export function ChatAssistantUI() {
   const { data: session, status } = useSession();
-  const [open, setOpen] = useState(false);
+  const chatContext = useChatAssistant();
+  const open = chatContext.open;
+  const openDrawer = chatContext.openDrawer;
+  const closeDrawer = chatContext.close;
+  const pendingPrompt = chatContext.pendingPrompt;
+  const clearPendingPrompt = chatContext.clearPendingPrompt;
+
   const [input, setInput] = useState('');
   const [chatId, setChatId] = useState(() => getOrCreateChatId());
   const endRef = useRef<HTMLDivElement>(null);
@@ -299,20 +308,24 @@ export function ChatAssistantUI() {
   useEffect(() => {
     async function load() {
       const { messages: fromServer, error } = await loadMessagesFromServer(chatId);
-      // localStorage também serve como caminho de migração: usuários que só
-      // tinham histórico salvo localmente (server-side ainda vazio) o adotam
-      // aqui e ele é regravado no Postgres no próximo save.
       let stored = fromServer.length > 0 ? fromServer : loadMessagesLocal();
       if (error) setSyncError(true);
       if (stored.length > 0 && setMessages) {
         setMessages(stored);
       } else if (setMessages) {
-        setMessages([createWelcomeMessage()]);
+        setMessages([createWelcomeMessage(session?.user?.name)]);
       }
       setIsLoaded(true);
     }
     load();
-  }, [chatId, setMessages]);
+  }, [chatId, setMessages, session?.user?.name]);
+
+  useEffect(() => {
+    if (open && pendingPrompt) {
+      sendMessage({ text: pendingPrompt });
+      clearPendingPrompt();
+    }
+  }, [open, pendingPrompt, sendMessage, clearPendingPrompt]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -359,7 +372,7 @@ export function ChatAssistantUI() {
     const newId = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     localStorage.setItem(CHAT_ID_KEY, newId);
     setChatId(newId);
-    setMessages([createWelcomeMessage()]);
+    setMessages([createWelcomeMessage(session?.user?.name)]);
     setIsLoaded(true);
     setSidebarOpen(false);
   }
@@ -403,16 +416,17 @@ export function ChatAssistantUI() {
 
   return (
     <>
-      {/* FAB Button */}
+      {/* FAB Button - Oculto quando o chat drawer estiver aberto */}
       <Fab
         color="primary"
-        onClick={() => setOpen(true)}
+        onClick={openDrawer}
         aria-label="Abrir assistente de vagas"
         sx={{
           position: 'fixed',
           bottom: 24,
           right: 24,
           zIndex: 1300,
+          display: open ? 'none' : 'flex',
           width: 56,
           height: 56,
           boxShadow: '0 4px 14px 0 rgba(2, 6, 23, 0.35)',
@@ -430,7 +444,7 @@ export function ChatAssistantUI() {
       <Drawer
         anchor="right"
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={closeDrawer}
         slotProps={{
           paper: {
             sx: {
@@ -511,7 +525,7 @@ export function ChatAssistantUI() {
               </svg>
             </IconButton>
             <IconButton
-              onClick={() => setOpen(false)}
+              onClick={closeDrawer}
               aria-label="Fechar chat"
               sx={{
                 width: 44,
