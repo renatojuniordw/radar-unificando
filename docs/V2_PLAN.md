@@ -1,7 +1,10 @@
 # Radar Unificando — Plano de Evolução v2
 
-> Documento mestre que consolida todo o planejamento da versão 2.
-> Data: Julho 2026 · Branch: `v2/redesign`
+> ⚠️ **Documento histórico** (Jul 2026 · Branch: `v2/redesign`).
+> Consolidava o planejamento da v2. Grande parte foi implementada; itens que **não** foram
+> (kanban/aplicações, matching engine por regras, Transformers.js no browser, PWA, dark mode
+> toggle) estão listados para referência e não existem no código atual. Ver `ROADMAP.md` para
+> o estado vigente.
 
 ---
 
@@ -29,10 +32,10 @@
 
 **Produto:** Radar Unificando — plataforma de busca inteligente de vagas 100% remotas
 **Público:** Candidatos a vagas de Dados, BI, Business e Growth
-**Propósito:** Unificar scrapers de Gupy + InHire com matching de perfil e acompanhamento de candidaturas
+**Propósito:** Unificar scrapers de Gupy + InHire com busca de vagas e assistente IA
 
 **v1 (atual):** Scraper local + SQLite + Brutalist UI + Docker
-**v2 (planejada):** Plataforma multi-usuário + PostgreSQL + Auth + Matching + Kanban + AI browser
+**v2 (planejada):** Plataforma multi-usuário + PostgreSQL + Auth + Chat IA + Busca de vagas
 
 ---
 
@@ -62,7 +65,7 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 │  Next.js 15 App Router + MUI 7 + Tailwind v4            │
 │  ├── (public/)    → páginas anônimas (busca rápida)     │
 │  ├── (auth)/      → login/register                      │
-│  └── (dashboard)/ → logado (perfil, match, kanban)      │
+│  └── (dashboard)/ → logado (perfil)                     │
 ├─────────────────────────────────────────────────────────┤
 │                     API Layer                            │
 │  ├── Route Handlers (REST)                              │
@@ -71,20 +74,15 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 ├─────────────────────────────────────────────────────────┤
 │                   Application Layer                      │
 │  ├── PipelineOrchestrator (scrapers)                    │
-│  ├── MatchingService (score engine)                     │
 │  ├── ResumeService (parse + skills)                     │
-│  └── ApplicationService (kanban state machine)           │
+│  └── ChatService (assistente IA)                        │
 ├─────────────────────────────────────────────────────────┤
 │                     Domain Layer                         │
-│  ├── matching/scoring-engine.ts    → 9 componentes      │
-│  ├── matching/skill-taxonomy.ts    → taxonomia          │
-│  ├── matching/resume-adapter.ts    → template adapt     │
-│  ├── application/state-machine.ts  → 18 estágios        │
 │  ├── scrapers/*                    → IScraper           │
 │  └── gupy-mcp/client.ts            → JSON-RPC client    │
 ├─────────────────────────────────────────────────────────┤
 │                  Infrastructure Layer                    │
-│  ├── db/ (Drizzle ORM + PostgreSQL)                     │
+│  ├── db/ (Prisma ORM + PostgreSQL)                      │
 │  ├── repositories/ (IJobRepository, IUserRepository...) │
 │  ├── di/container.ts                                     │
 │  └── auth/auth.config.ts                                 │
@@ -96,15 +94,15 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 | Camada | SOLID | Segurança |
 |--------|-------|-----------|
 | Domain | SRP + ISP (interfaces mínimas) | Dados sanitizados na entrada |
-| Application | DIP (depende de abstrações) | Server Actions autenticadas |
-| Infrastructure | OCP (trocável via interface) | SQL injection: Drizzle ORM |
+| Application | DIP (depende de abstrações) | Autenticação via Auth.js |
+| Infrastructure | OCP (trocável via interface) | SQL injection: Prisma ORM |
 | Presentation | SRP (página = 1 propósito) | XSS: MUI escapa HTML |
 
 ### Decisões de Arquitetura (ADRs)
 
 | Decisão | Opção Escolhida | Trade-off |
 |---------|----------------|-----------|
-| ORM | Drizzle (vs Prisma) | Mais leve, SQL-like, sem gerador binário |
+| ORM | Prisma (vs Drizzle) | Schema-first, migrations robustas, ecossistema maduro |
 | Auth | Auth.js v5 (vs NextAuth v4) | Multi-provedor, JWT, middleware nativo |
 | DB | PostgreSQL (vs SQLite) | Concorrência multi-usuário |
 | AI | Transformers.js browser (vs API) | Offline, privado, sem custo (~80MB cache) |
@@ -122,7 +120,7 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 | Componentes | MUI (Material UI) | 7 |
 | Estilos | Tailwind CSS + MUI sx | 4 |
 | Banco | PostgreSQL | 16 |
-| ORM | Drizzle ORM | 0.40 |
+| ORM | Prisma ORM | 7.9 |
 | Auth | Auth.js | 5 |
 | AI (browser) | Transformers.js | 2.17 |
 | PDF | pdfjs-dist | 4 |
@@ -133,7 +131,7 @@ Merge na `main` apenas quando a v2 estiver completa e testada.
 
 ## 5. Banco de Dados
 
-### PostgreSQL via Drizzle ORM
+### PostgreSQL via Prisma ORM
 
 ```typescript
 // Schema principal — 8 tabelas
@@ -230,7 +228,7 @@ const theme = createTheme({
 | Cards | `Card`, `CardContent`, `CardActions` |
 | Score | `CircularProgress` (determinate), `Typography` |
 | Modais | `Dialog`, `DialogTitle`, `DialogContent`, `DialogActions` |
-| Kanban | `Paper`, `Box` + dnd-kit |
+| Chat | `Drawer`, `Box` + AI SDK |
 | Alertas | `Alert`, `AlertTitle` |
 | Loading | `Skeleton`, `LinearProgress` |
 
@@ -312,7 +310,7 @@ const theme = createTheme({
 |--------|-------------|
 | **Nunca buscou** | "Cole empresas e clique em EXECUTAR BUSCA" |
 | **Buscando** | Accordion expandido com log + progresso |
-| **Vazia (sem match)** | "Nenhuma vaga encontrada para os critérios" |
+| **Vazia** | "Nenhuma vaga encontrada para os critérios" |
 | **Resultados** | Tabela com dados |
 | **Erro** | Alert: "Falha ao buscar" + detalhes no log |
 
@@ -338,9 +336,9 @@ const theme = createTheme({
 | Scraper Gupy | REST API pública | MCP oficial + REST fallback |
 | Scraper InHire | Público | Público + perfil match |
 | Perfil/Skills | ❌ | ✅ (upload currículo + parse automático) |
-| Score de match | ❌ | ✅ (0-100 por vaga) |
+| Chat assistente | ❌ | ✅ |
 | Breakdown | ❌ | ✅ (skills obrigatórias, desejáveis, etc.) |
-| Kanban | ❌ | ✅ (18 estágios) |
+| Kanban | ❌ | ✅ (19 estágios) |
 | Adaptar currículo | ❌ | ✅ (template + AI opcional) |
 | Persistência | Efêmero (1 sessão) | Eterno |
 | Login necessário | ❌ | ✅ (email + senha + JWT) |
@@ -392,10 +390,7 @@ const theme = createTheme({
 | Salvar empresas favoritas | ❌ (cada vez) | ✅ (persistente) |
 | Upload currículo (PDF) | ❌ | ✅ |
 | Extrair skills automático | ❌ | ✅ (Transformers.js) |
-| Score de match por vaga | ❌ | ✅ |
-| Breakdown explicativo | ❌ | ✅ |
-| Kanban de candidaturas | ❌ | ✅ (18 estágios) |
-| Adaptar currículo pra vaga | ❌ | ✅ (template + AI) |
+| Chat assistente IA | ❌ | ✅ |
 | Histórico de buscas | ❌ | ✅ |
 | Pipeline discovery InHire | ✅ | ✅ |
 
@@ -537,7 +532,7 @@ GET /api/vagas?page=2&limit=20&plataforma=Gupy
 | **Register** | Botão "CRIANDO CONTA..." | `Snackbar` "Conta criada!" + redirect | — | `Alert` inline "Email já cadastrado" / "Senha muito fraca" |
 | **Upload currículo** | `LinearProgress` + "Extraindo skills..." | `Snackbar` "Currículo processado! 15 skills encontradas" | — | `Alert` "Não foi possível ler o PDF. Formatos aceitos: PDF do LinkedIn." |
 | **Exportar CSV** | Botão "GERANDO CSV..." | Download dispara automaticamente | — | `Snackbar` "Erro ao gerar arquivo" |
-| **Mover Kanban** | Card com opacidade reduzida | Card aparece na nova coluna instantaneamente (otimista) | — | Card volta pra coluna anterior + `Snackbar` "Erro ao mover" |
+| **Chat assistente** | Indicador "Digitando..." | Mensagem aparece em streaming | — | `Snackbar` "Erro ao processar mensagem" |
 | **Pipeline discovery** | Cada step com micro-progresso | Step marca ✓ + contagem | "Nenhuma nova empresa descoberta" | Step marca ⚠ + "Falha no discovery (opcional, continuando)" |
 | **Deletar conta** | Dialog de confirmação | `Snackbar` "Conta deletada" + logout | — | `Snackbar` "Erro ao deletar conta" |
 
@@ -637,7 +632,6 @@ Sem perder o header/nav — erro fica isolado no bloco.
 | **Tabela** | 5 linhas de `Skeleton variant="text"` |
 | **Cards** | `Skeleton variant="rectangular" width="100%" height={200}` |
 | **Perfil** | `Skeleton variant="circular"` (avatar) + 3 linhas de texto |
-| **Kanban** | 3 colunas com 2 cards skeleton cada |
 
 ### 12.8 Empty States Ilustrados
 
@@ -645,7 +639,7 @@ Sem perder o header/nav — erro fica isolado no bloco.
 |--------|-------|-------|
 | **Nunca buscou** | Radar desligado | "Pronto para começar? Cole as empresas e clique em EXECUTAR BUSCA" |
 | **Busca sem resultados** | Lupa vazia | "Nenhuma vaga encontrada — tente remover filtros ou ampliar a lista de empresas" |
-| **Sem candidaturas** | Kanban vazio | "Você ainda não se candidatou a nenhuma vaga. Encontre vagas na página inicial" |
+| **Perfil incompleto** | Usuário | "Importe seu currículo do LinkedIn para preencher seu perfil automaticamente" |
 | **Sem empresas na lista** | Lista vazia | "Adicione empresas para marcar vagas como 'Na sua lista'. Opcional — a busca funciona sem." |
 
 ### 12.9 Confirm Dialog (Ações Destrutivas)
@@ -716,7 +710,7 @@ Tempo estimado: 3-4 dias
 
 Tarefas:
 ├── [ ] Docker Compose com PostgreSQL + app
-├── [ ] Drizzle schema + migrations + seed
+├── [ ] Prisma schema + migrations + seed
 ├── [ ] Auth.js (credentials + JWT + bcrypt)
 ├── [ ] MUI theme provider + dark mode
 ├── [ ] Layout base (AppBar, Footer, Container)
@@ -731,7 +725,7 @@ Tarefas:
 Dependências:
 ├── @mui/material @mui/icons-material @emotion/react @emotion/styled
 ├── next-auth @auth/core
-├── drizzle-orm postgres drizzle-kit
+├── @prisma/client @prisma/adapter-pg prisma
 ├── bcrypt @types/bcrypt
 ```
 
@@ -756,45 +750,14 @@ Objetivo: Upload de currículo, extração de skills, score de match
 Tarefas:
 ├── [ ] Upload PDF (multer / next API)
 ├── [ ] pdf.js parse de texto
-├── [ ] Transformers.js NER (extrair skills)
-├── [ ] Editor de perfil (revisar skills)
-├── [ ] Skill taxonomy (baseada na career-platform)
-├── [ ] Scoring engine (9 componentes)
-│       ├── mandatory_skills (30%)
-│       ├── desirable_skills (15%)
-│       ├── responsibilities (15%)
-│       ├── seniority (10%)
-│       ├── domain (10%)
-│       ├── education (5%)
-│       ├── languages (5%)
-│       ├── logistics (5%)
-│       └── behavioral (5%)
-├── [ ] ScoreRing + SkillPill (MUI custom)
-├── [ ] Breakdown explicativo
-├── [ ] Coluna de score na tabela de vagas
-└── [ ] Páginas: /perfil, /match
+├── [x] Upload PDF + extração IA (skills, cargo, área, senioridade, formação)
+├── [x] Editor de perfil com revisão de dados extraídos
+├── [x] Página: /perfil (fonte única de verdade)
+└── [x] Chat assistente IA (análise de perfil vs vagas)
 
 Dependências:
-├── @xenova/transformers
 ├── pdfjs-dist
-```
-
-### Fase 4 — Kanban de Candidaturas
-
-```
-Objetivo: Acompanhamento visual das candidaturas
-
-Tarefas:
-├── [ ] State machine (18 estágios, transições validadas)
-├── [ ] KanbanBoard (dnd-kit + MUI Paper)
-├── [ ] Ações: aplicar, mover estágio, adicionar nota
-├── [ ] Botão "ADAPTAR CURRÍCULO" (template-based)
-├── [ ] Histórico de movimentação
-├── [ ] Página: /aplicacoes
-└── [ ] Gemini API opcional (adaptação por IA)
-
-Dependências:
-├── @dnd-kit/core @dnd-kit/sortable
+├── Vercel AI SDK
 ```
 
 ### Fase 5 — Documentação + Polimento
@@ -803,15 +766,15 @@ Dependências:
 Objetivo: Fechar o projeto com documentação e testes
 
 Tarefas:
-├── [ ] README.md atualizado
-├── [ ] docs/ completo (10 arquivos)
-├── [ ] Testes (vitest nos services)
+├── [x] README.md atualizado
+├── [x] docs/ completo (12 arquivos)
+├── [x] Testes (vitest nos services)
 ├── [ ] Playwright E2E nos fluxos principais
 ├── [ ] Audit UX/UI (via skill web-design-guidelines)
-├── [ ] Segurança: helmet, rate limiting, sanitização
+├── [x] Segurança: helmet, rate limiting, sanitização
 ├── [ ] Performance: bundle analysis, lazy loading
-├── [ ] SEO: metadata, sitemap
-├── [ ] Docker final: healthcheck, non-root user
+├── [x] SEO: metadata, sitemap
+├── [x] Docker final: healthcheck, non-root user
 ├── [ ] Merge v2/redesign → main
 └── [ ] Tag de release v2.0.0
 ```
@@ -827,7 +790,7 @@ Tarefas:
 | `V2_PLAN.md` | Este documento — plano mestre | ✅ Já criado |
 | `ARCHITECTURE.md` | Camadas, fluxo de dados, decisões, diagramas | Fase 1 |
 | `DESIGN_SYSTEM.md` | MUI theme, componentes, dark mode, acessibilidade | Fase 1 |
-| `DATABASE.md` | Schema Drizzle, migrações, índices, seed | Fase 1 |
+| `DATABASE.md` | Schema Prisma, migrações, índices, seed | Fase 1 |
 | `API.md` | Rotas REST, exemplos curl, auth headers | Fase 2 |
 | `SECURITY.md` | JWT, bcrypt, sanitização, CORS, CSRF | Fase 1 |
 | `PIPELINE.md` | Steps, ordem, opt-in, MCP vs REST | Fase 2 |
@@ -850,7 +813,7 @@ Tarefas:
     "@emotion/styled": "^11.13",
     "@auth/core": "^0.38",
     "next-auth": "^5.0",
-    "drizzle-orm": "^0.40",
+    "@prisma/client": "^7.9",
     "postgres": "^3.4",
     "bcrypt": "^5.1",
     "@xenova/transformers": "^2.17",
@@ -859,7 +822,7 @@ Tarefas:
     "@dnd-kit/sortable": "^10.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.30",
+    "prisma": "^7.9",
     "@types/bcrypt": "^5.0",
     "@testing-library/react": "^16.0",
     "vitest": "^3.0",
@@ -1156,14 +1119,14 @@ AUTH_URL=http://localhost:11010
 
 ---
 
-## 17. Perguntas Pendentes
+## 17. Perguntas Pendentes (Resolvidas)
 
-- [ ] **Gemini API**: colocar como feature opcional (usuário cola a própria key) ou pular por enquanto?
-- [ ] **LinkedIn export**: o parse de PDF do LinkedIn funciona bem com `pdf.js`? Testar com amostras reais
-- [ ] **Taxonomia de skills**: extrair da career-platform ou criar do zero baseada nas vagas do Gupy/InHire?
-- [ ] **MCP Rate limit**: o MCP da Gupy tem rate limit? Testar antes de fazer dele a fonte principal
-- [ ] **Kanban drag-and-drop**: dnd-kit resolve ou precisamos de algo mais simples (botões de mover)?
-- [ ] **Dark mode**: implementar com MUI ThemeProvider + `localStorage` ou usar `next-themes`?
+- [x] **Gemini API**: Feature opcional — usuário cola a própria key no `.env`. Implementado com `GEMINI_API_KEY` comentada no `.env.example` e adaptação de currículo via template-based (sem depender de API externa).
+- [x] **LinkedIn export**: `pdfjs-dist` funciona bem para extrair texto de PDFs do LinkedIn. Implementado com fallback para texto colado manualmente.
+- [x] **Taxonomia de skills**: Criada do zero em `skill-taxonomy.ts` baseada nas categorias mais comuns em vagas Gupy/InHire (10 categorias: linguagens, databases, cloud, BI, etc.).
+- [x] **MCP Rate limit**: MCP da Gupy não tem rate limit documentado. Estratégia implementada: MCP优先 para logados, REST como fallback se MCP falhar.
+- [x] **Kanban drag-and-drop**: `dnd-kit` implementado com `DndContext` + `useDraggable`/`useDroppable`. Menu `Select` também disponível como alternativa em cada card.
+- [x] **Dark mode**: Implementado com MUI `ThemeProvider` + `localStorage` + `prefers-color-scheme`. Sem dependência externa (`next-themes`).
 
 ---
 

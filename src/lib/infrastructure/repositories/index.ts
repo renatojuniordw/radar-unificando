@@ -1,5 +1,11 @@
-export { JobRepository } from './job-repository';
-export { CompanyRepository } from './company-repository';
-export { PresenceRepository } from './presence-repository';
-export { NewCompanyRepository } from './new-company-repository';
-export { RunRepository } from './run-repository';
+export { userRepository } from './user-repository';
+export type { IUserRepository, IProfileRepository } from './user-repository';
+export { profileRepository } from './user-repository';
+export { jobRepository } from './job-repository';
+export type { IJobRepository } from './job-repository';
+export { newCompanyRepository, companyPresenceRepository } from './company-repository';
+export type { INewCompanyRepository, ICompanyPresenceRepository } from './company-repository';
+export { pipelineRunRepository } from './pipeline-repository';
+export type { IPipelineRunRepository } from './pipeline-repository';
+export { chatRepository } from './chat-repository';
+export type { IChatRepository, ChatMessageData } from './chat-repository';

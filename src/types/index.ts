@@ -1,7 +1,7 @@
 export interface JobData {
   empresa: string;
   plataforma: Platform;
-  na_lista: 'Sim' | 'Não';
+  na_lista?: 'Sim' | 'Não';
   cargo_categoria: string;
   titulo_vaga: string;
   tipo: string;
@@ -11,6 +11,7 @@ export interface JobData {
   publicado: string;
   alerta: string;
   detectado_em?: string;
+  descricao?: string;
 }
 
 export type Platform = 'Gupy' | 'InHire';
@@ -62,4 +63,5 @@ export interface ProgressEvent {
   current?: number;
   total?: number;
   error?: string;
+  jobs?: JobData[];
 }

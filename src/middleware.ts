@@ -1,4 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+
+const { auth } = NextAuth(authConfig);
 
 const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
@@ -8,7 +12,7 @@ const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
 
-export function middleware(req: NextRequest) {
+export default auth((req) => {
   const response = NextResponse.next();
 
   for (const [key, value] of Object.entries(securityHeaders)) {
@@ -17,21 +21,51 @@ export function middleware(req: NextRequest) {
 
   const path = req.nextUrl.pathname;
 
+  // CORS for API routes — only our own origin is ever allowed, never reflected back
   if (path.startsWith('/api/')) {
     const origin = req.headers.get('origin');
-    const host = req.headers.get('host');
-    response.headers.set('Access-Control-Allow-Origin', origin || `http://${host}`);
+    const referer = req.headers.get('referer');
+    const selfOrigin = req.nextUrl.origin;
+    let requestOrigin = origin;
+    if (!requestOrigin && referer) {
+      try { requestOrigin = new URL(referer).origin; } catch { /* malformed referer */ }
+    }
+    const sameOrigin = requestOrigin === selfOrigin;
+
+    if (origin === selfOrigin) {
+      response.headers.set('Access-Control-Allow-Origin', origin);
+      response.headers.set('Access-Control-Allow-Credentials', 'true');
+    }
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
 
     if (req.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: response.headers });
+      return new Response(null, { status: sameOrigin ? 204 : 403, headers: response.headers });
+    }
+
+    // Reject state-changing requests that don't carry a matching Origin/Referer —
+    // blocks other sites, scripts, and direct HTTP clients from driving this API.
+    const isMutating = !['GET', 'HEAD'].includes(req.method);
+    if (isMutating && !sameOrigin && !path.startsWith('/api/auth')) {
+      return NextResponse.json({ error: 'Origem não permitida' }, { status: 403 });
     }
   }
 
+  // Protect dashboard routes
+  const protectedPaths = ['/perfil'];
+  if (protectedPaths.some(p => path.startsWith(p)) && !req.auth) {
+    const loginUrl = new URL('/login', req.url);
+    loginUrl.searchParams.set('callbackUrl', path);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Public routes that don't require auth
+  if (path === '/' || path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth')) {
+    return response;
+  }
+
   return response;
-}
+});
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],

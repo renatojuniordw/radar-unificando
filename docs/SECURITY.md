@@ -1,71 +1,62 @@
-# Segurança — Radar Unificando
+# Segurança — Radar Unificando v2
 
-> Práticas e configurações de segurança adotadas no projeto.
+## Medidas Implementadas
 
----
+| Medida | Implementação |
+|--------|---------------|
+| Security Headers | `next.config.ts` (HSTS, X-Frame-Options, etc.) |
+| CORS | `middleware.ts` (Access-Control headers) |
+| Rate Limiting | `src/lib/infrastructure/security/rate-limiter.ts` |
+| Env Validation | `src/lib/infrastructure/security/env.ts` |
+| Auth | Auth.js v5 com JWT + bcrypt (cost=12) |
+| Docker | `no-new-privileges`, resource limits, non-root user |
+| SQL Injection | Prevenido pelo Prisma ORM (queries parametrizadas) |
+| Prompt Injection | `api/chat/route.ts` — sanitização de input + detecção de padrões + hardening do prompt |
+| Validação de Tools | `chat-tools.ts` — Zod schema com limites de tamanho e regex |
 
-## 1. Docker
+## Rate Limits por Operação
 
-| Prática | Implementação |
-|---------|--------------|
-| Usuário não-root | `USER nextjs` no Dockerfile |
-| Resource limits | Memory (512M máx) e CPU (1.0) no docker-compose |
-| Healthcheck | Verifica `/api/health` a cada 30s |
-| Sem privilégios extras | `security_opt: no-new-privileges:true` |
-| Isolamento de rede | Rede `internal` segregada |
-| Build limpo | `.dockerignore` exclui node_modules, .env, docs |
+Dois sistemas:
+- `src/lib/infrastructure/security/rate-limiter.ts` — **in-memory** (`pipelineLimiter`, `uploadLimiter`).
+- `src/lib/rate-limit.ts` — **Redis** (`rate-limiter-flexible`) com fallback em memória (`chat`, `chat_daily`, `auth`).
 
-## 2. HTTP Headers
+| Operação | Janela | Limite | Backend | Chave |
+|----------|--------|--------|---------|-------|
+| Pipeline (`/api/pipeline`) | 5 min | 1 | in-memory | user_id / IP |
+| Upload currículo (`/api/upload`) | 1 hora | 10 | in-memory | user_id / IP |
+| Chat (`/api/chat`) | 1 min | 10 | Redis | user_id + IP |
+| Chat diário (`/api/chat`) | 24 h | 50 | Redis | user_id + IP |
+| Registro (`/api/auth/register`) | 1 min | 5 | Redis | IP |
 
-| Header | Valor | Efeito |
-|--------|-------|--------|
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | Força HTTPS |
-| `X-Content-Type-Options` | `nosniff` | Previne MIME sniffing |
-| `X-Frame-Options` | `DENY` | Previne clickjacking |
-| `X-XSS-Protection` | `1; mode=block` | Previne XSS |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | Controla referrer |
-| `Permissions-Policy` | Desabilita câmera/mic/geo | Restringe APIs do browser |
+> `loginLimiter`, `apiLimiter` e `exportLimiter` estão definidos em `rate-limiter.ts`
+> mas **não são usados** na produção hoje.
 
-## 3. Autenticação
+## Limites de Conversa (Chat)
 
-- **Auth.js v5** com `CredentialsProvider`
-- JWT assinado com `AUTH_SECRET` (mínimo 64 caracteres)
-- Senhas hashadas com **bcrypt** (cost=12)
-- Rate limit de login: 5 tentativas/min por IP
+- **Thread**: máximo de 25 mensagens (`MAX_THREAD_MESSAGES`) → 400 `THREAD_LIMIT_REACHED`.
+- **Contexto**: janela deslizante de 15 mensagens (`MAX_CONTEXT_MESSAGES`) enviadas ao LLM.
 
-## 4. Rate Limiting
+## Redação de PII (LGPD)
 
-| Operação | Janela | Limite | Chave |
-|----------|--------|--------|-------|
-| Pipeline | 5 min | 1 req | `user_id` |
-| Login | 1 min | 5 tentativas | IP |
-| API geral | 1 min | 60 req | IP |
-| Upload currículo | 1 hora | 10 req | `user_id` |
-| Export CSV | 1 min | 10 req | `user_id` |
+`src/lib/core/ai/pii-redactor.ts` remove CPF, CNPJ, RG, telefone e cartão de crédito
+(`[CPF REDIGIDO]`, etc.) das mensagens do usuário, do POST de histórico e do botão
+copiar da UI. O chat exibe badge "🔒 LGPD Sanitizado".
 
-## 5. Variáveis de Ambiente
+## Proteção contra Prompt Injection
 
-- `.env` no `.gitignore` — nunca versionado
-- Validação na inicialização via `validateEnv()`
-- `AUTH_SECRET` obrigatório e validado
-- `DATABASE_URL` obrigatório
+Aplicada no `POST /api/chat` (`src/app/api/chat/route.ts`):
 
-## 6. Injeção
+1. **Sanitização de input**: mensagens truncadas em 2000 chars, tags HTML (`<>`) removidas
+2. **Detecção de padrões suspeitos**: regex para tentativas de jailbreak (`ignore instructions`, `system prompt`, `reveal instructions`, `bypass rules`). Gera log `[AI_LOG] suspicious_activity`
+3. **Hardening do system prompt**: seção `SEGURANÇA E LIMITES` que proíbe revelar instruções internas, executar bypass e desviar do foco
+4. **Validação de inputs das tools** via Zod (`src/lib/core/ai/chat-tools.ts`):
+   - `search_jobs.query`: 2-200 chars, regex `[a-zA-Z0-9\s\-_.]`
+   - `analyze_job_fit.jobTitle`: 1-200 chars
+   - `analyze_job_fit.jobDescription`: 10-5000 chars
 
-- SQL: **Drizzle ORM** com queries parametrizadas
-- XSS: Security headers + MUI escapa output
-- Input: Server Actions validam dados na entrada
+## Variáveis de Ambiente Obrigatórias
 
-## 7. Dependências
-
-- `npm ci --frozen-lockfile` no Docker (versões fixas)
-- `--no-audit --no-fund` para não expor dados do registry
-- `npm audit` verificado em CI
-
-## 8. Práticas Futuras (v2)
-
-- [ ] Helmet middleware para headers adicionais
-- [ ] CSRF token em mutations (Auth.js já protege)
-- [ ] Row-Level Security no PostgreSQL (multi-tenancy)
-- [ ] Criptografia de dados sensíveis em repouso
-- [ ] Auditoria de acesso (log de quem acessou o quê)
+```
+DATABASE_URL=postgresql://...
+AUTH_SECRET=<openssl rand -base64 64>
+```

@@ -1,27 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getContainer } from '@/lib/di/container';
+import { auth } from '@/auth';
+import { newCompanyRepository } from '@/lib/infrastructure/repositories';
 
 export async function GET() {
-  const { companyRepo } = getContainer();
-  const companies = await companyRepo.findAll();
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+  }
+
+  const companies = await newCompanyRepository.findByUserId(session.user.id);
   return NextResponse.json(companies);
 }
 
-export async function PUT(req: NextRequest) {
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+  }
+
   try {
-    const { companies } = await req.json();
-    if (!Array.isArray(companies)) {
-      return NextResponse.json({ error: 'companies deve ser uma lista' }, { status: 400 });
+    const { nome, totalVagas, urlCarreiras } = await req.json();
+
+    if (!nome) {
+      return NextResponse.json({ error: 'Nome da empresa é obrigatório' }, { status: 400 });
     }
 
-    const { companyRepo } = getContainer();
-    const names = companies.map(String).map(s => s.trim()).filter(Boolean);
-    await companyRepo.setList(names);
+    const result = await newCompanyRepository.upsert(session.user.id, {
+      nome,
+      totalVagas: totalVagas || 0,
+      urlCarreiras: urlCarreiras || null,
+    });
 
-    return NextResponse.json({ count: names.length });
+    return NextResponse.json(result);
   } catch (error) {
+    console.error('[empresas] Error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erro ao salvar empresas' },
+      { error: 'Erro ao salvar empresa' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 });
+    }
+
+    await newCompanyRepository.deleteById(session.user.id, id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[empresas] Delete error:', error);
+    return NextResponse.json(
+      { error: 'Erro ao deletar empresa' },
       { status: 500 }
     );
   }

@@ -1,0 +1,45 @@
+# Documentação Completa do Radar Unificando para LLMs e Motores de IA Generativa
+
+## Visão Geral
+O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-source e ecossistema de produtividade para profissionais de tecnologia que procuram vagas de emprego no Brasil e no exterior. Desenvolvido pela Unificando, o sistema integra APIs públicas e raspadores eficientes das plataformas Gupy e InHire para oferecer uma experiência de busca sem ruídos, rápida e altamente relevante.
+
+---
+
+## Recursos e Capacidades Principais
+
+### 1. Motor de Busca e Filtragem
+- **Busca por Tecnologia**: Permite consultar termos como "React", "Node.js", "Python", "DevOps", "AWS", "Data Analyst".
+- **Filtros Avançados**: Suporte a filtro por tipo (Remoto, Híbrido, Presencial), empresa específica (ex: Nubank, Itaú, Mercado Livre) e nível de senioridade.
+- **Formato dos Resultados**: Retorna dados estruturados incluindo Título do Cargo, Empresa, Localização, Tipo de Contrato, Link Oficial de Candidatura e Descrição Sanitizada.
+
+### 2. Assistente de IA para Carreira (Chat Consultivo)
+- **Análise de Fit (Compatibilidade)**: Compara o currículo/perfil do candidato com a descrição da vaga e gera um diagnóstico objetivo com pontos fortes e lacunas técnicas.
+- **Simulação de Entrevistas**: Conduz entrevistas simuladas (uma pergunta por vez) fornecendo feedback sênior após cada resposta do usuário.
+- **Gerador de Cartas de Apresentação**: Escreve cartas de apresentação personalizadas ajustadas ao currículo do usuário e à oportunidade desejada.
+
+### 3. Segurança e Privacidade (LGPD & OWASP)
+- **Anonimização PII**: Todos os dados sensíveis (CPF, RG, Telefones, Cartões) colados ou enviados são redigidos automaticamente como `[CPF REDIGIDO]` antes do processamento por Inteligência Artificial ou gravação no banco de dados.
+- **Limites de Proteção**:
+  - Limite de **25 mensagens por conversa** para manter respostas rápidas e contexto focado.
+  - Limite diário de **50 mensagens por usuário (24h)** contra uso abusivo e estresse de infraestrutura.
+- **OWASP LLM 2025**: Proteções ativas contra Prompt Injection, System Prompt Leakage e XSS em Markdown.
+
+---
+
+## Perguntas Frequentes (FAQ)
+
+### O que é o Radar Unificando?
+É um buscador gratuito de vagas de tecnologia que agrega oportunidades publicadas no Gupy e InHire em uma interface rápida e sem propagandas.
+
+### O Radar Unificando cobra pelas candidaturas?
+Não. Todas as buscas e recursos são 100% gratuitos para os candidatos.
+
+### Como os dados pessoais são tratados?
+Os dados sensíveis são redigidos automaticamente (PII Redactor) em conformidade com a LGPD. Nossos bancos de dados e chamadas de IA utilizam apenas textos sanitizados.
+
+---
+
+## Informações do Projeto
+- **Website**: https://radar.unificando.com.br
+- **Desenvolvedor**: Unificando / Renato Bezerra
+- **Licença**: Proprietary / Unificando Platform

@@ -1,180 +1,122 @@
-import type { JobData, ProgressEvent } from '@/types';
-import type { Result, TenantProbeResult } from './types';
-import { RoleMatcher } from '../matching/role-matcher';
-import { CompanyMatcher } from '../matching/company-matcher';
-import { textUtils } from '../matching/text-utils';
-import { config } from '@/config';
+import type { JobData } from '@/types';
 
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-interface InhireApiResponse {
-  tenantName?: string;
-  jobsPage?: Array<{
-    jobId: string;
-    displayName: string;
-    workplaceType: string;
-    location: string;
-    status: string;
-  }>;
+interface ApiJob {
+  careerPageId: string;
+  careerPageIds: string[];
+  displayName: string;
+  jobId: string;
+  status: string;
+  workplaceType: string;
+  location: string;
 }
 
-export class InhireScraper {
-  constructor(
-    private readonly roleMatcher: RoleMatcher,
-    private readonly companyMatcher: CompanyMatcher
-  ) {}
+interface ApiResponse {
+  tenantName: string;
+  about?: string;
+  logo?: string;
+  bannerTitle?: string;
+  background?: string[];
+  jobsPage: ApiJob[];
+}
 
-  async fetchTenant(slug: string): Promise<InhireApiResponse | null> {
-    try {
-      const res = await fetch(config.inhire.apiUrl, {
-        headers: {
-          'X-Inhire-Client': 'web-inhire',
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'X-Tenant': slug,
-        },
-      });
-      if (!res.ok) return null;
-      const json = await res.json();
-      if (Array.isArray(json)) return null;
-      return json;
-    } catch {
-      return null;
+export class InHireScraper {
+  private baseUrl = 'https://api.inhire.app/job-posts/public/pages';
+  private headers = {
+    'X-Inhire-Client': 'web-inhire',
+    'Content-Type': 'application/json',
+  };
+
+  async searchJobs(companies?: string[]): Promise<JobData[]> {
+    if (!companies?.length) return [];
+
+    const results: JobData[] = [];
+    for (const company of companies) {
+      const jobs = await this.searchCompany(company);
+      results.push(...jobs);
     }
+    return results;
   }
 
-  async validateTenants(
-    slugs: string[],
-    companies: string[],
-    onProgress: (event: ProgressEvent) => void
-  ): Promise<Result<TenantProbeResult[]>> {
-    try {
-      const tenants: TenantProbeResult[] = [];
-      let done = 0;
+  async searchCompany(name: string): Promise<JobData[]> {
+    const slugs = this.slugVariants(name);
 
-      onProgress({ type: 'step_progress', step: 'Validar InHire', message: `Validando ${slugs.length} slugs...` });
+    for (const slug of slugs) {
+      try {
+        const res = await fetch(this.baseUrl, {
+          method: 'GET',
+          headers: { ...this.headers, 'X-Tenant': slug },
+          signal: AbortSignal.timeout(10000),
+        });
 
-      for (const slug of slugs) {
-        let data: InhireApiResponse | null = null;
-        for (let attempt = 0; attempt < config.inhire.retriesPerSlug; attempt++) {
-          data = await this.fetchTenant(slug);
-          if (data) break;
-          await sleep(config.inhire.retryDelay);
-        }
+        if (!res.ok) continue;
 
-        if (data && data.tenantName !== undefined) {
-          const jobs = Array.isArray(data.jobsPage) ? data.jobsPage : [];
-          const hit = companies.find(c => this.companyMatcher.matches(c, data.tenantName || slug)) || null;
-          tenants.push({
-            slug,
-            tenantName: data.tenantName || slug,
-            jobsCount: jobs.length,
-            jobs: jobs.map(j => ({
-              jobId: j.jobId,
-              displayName: j.displayName,
-              workplaceType: j.workplaceType,
-              location: j.location,
-              status: j.status,
-            })),
-            listCompany: hit,
-          });
-        }
+        const data: ApiResponse = await res.json();
+        if (Array.isArray(data) || !data.tenantName) continue;
 
-        done++;
-        if (done % 50 === 0) {
-          onProgress({
-            type: 'step_progress',
-            step: 'Validar InHire',
-            message: `${done}/${slugs.length} validados, ${tenants.length} tenants reais`,
-          });
-        }
+        const jobs = Array.isArray(data.jobsPage) ? data.jobsPage : [];
+        return jobs
+          .filter(j => String(j.status || '').toLowerCase() === 'published')
+          .map(j => this.normalize(j, data.tenantName, slug));
+      } catch {
+        continue;
       }
-
-      const bySlug = new Map<string, TenantProbeResult>();
-      tenants.forEach(t => bySlug.set(t.slug, t));
-      const unique = [...bySlug.values()];
-
-      onProgress({
-        type: 'step_complete',
-        step: 'Validar InHire',
-        message: `${unique.length} tenants confirmados`,
-      });
-
-      return { ok: true, value: unique };
-    } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof Error ? error : new Error(String(error)),
-        recoverable: true,
-      };
     }
+    return [];
   }
 
-  async scrapeAll(
-    tenants: TenantProbeResult[],
-    companies: string[],
-    onProgress: (event: ProgressEvent) => void
-  ): Promise<Result<{ jobs: JobData[]; newCompanies: Array<{ nome: string; total_vagas: number; url_carreiras: string }> }>> {
-    try {
-      const allJobs: JobData[] = [];
-      let processed = 0;
+  private slugVariants(name: string): string[] {
+    const base = name.toLowerCase().trim();
+    const compacted = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
+    const tokens = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
 
-      onProgress({ type: 'step_progress', step: 'Scrape InHire', message: `Buscando vagas em ${tenants.length} tenants...` });
-
-      for (const tenant of tenants) {
-        for (const j of tenant.jobs) {
-          if (String(j.status || '').toLowerCase() !== 'published' && j.status) continue;
-          const role = this.roleMatcher.match(j.displayName);
-          const wp = String(j.workplaceType || '').toLowerCase();
-          if (!role || !(wp.includes('remote') || wp.includes('remoto'))) continue;
-
-          allJobs.push({
-            empresa: tenant.listCompany || tenant.tenantName,
-            plataforma: 'InHire',
-            na_lista: tenant.listCompany ? 'Sim' : 'Não',
-            cargo_categoria: role,
-            titulo_vaga: j.displayName,
-            tipo: j.workplaceType,
-            local: j.location || '',
-            link: `https://${tenant.slug}.inhire.app/vagas/${j.jobId}/${textUtils.slugify(j.displayName)}`,
-            nome_na_plataforma: tenant.tenantName,
-            publicado: '',
-            alerta: this.companyMatcher.alerta(j.displayName, j.location || ''),
-          });
-        }
-
-        processed++;
-        if (processed % 100 === 0) {
-          onProgress({
-            type: 'step_progress',
-            step: 'Scrape InHire',
-            message: `${processed}/${tenants.length} processados, ${allJobs.length} vagas`,
-          });
-        }
-      }
-
-      const newCompanies = tenants
-        .filter(t => !t.listCompany && t.jobsCount > 0)
-        .map(t => ({
-          nome: t.tenantName,
-          total_vagas: t.jobsCount,
-          url_carreiras: `https://${t.slug}.inhire.app/vagas`,
-        }))
-        .sort((a, b) => b.total_vagas - a.total_vagas);
-
-      onProgress({
-        type: 'step_complete',
-        step: 'Scrape InHire',
-        message: `${allJobs.length} vagas, ${newCompanies.length} novas empresas descobertas`,
-      });
-
-      return { ok: true, value: { jobs: allJobs, newCompanies } };
-    } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof Error ? error : new Error(String(error)),
-        recoverable: true,
-      };
+    const variants = [compacted];
+    if (tokens.length > 1) {
+      variants.push(tokens.join('-'));
+      variants.push(tokens[0]);
     }
+    if (base.includes(' ') && base !== compacted) {
+      variants.push(base.replace(/\s+/g, ''));
+    }
+    return [...new Set(variants.filter(Boolean))];
+  }
+
+  private normalize(j: ApiJob, tenantName: string, slug: string): JobData {
+    return {
+      empresa: tenantName || slug,
+      plataforma: 'InHire',
+      na_lista: 'Não',
+      cargo_categoria: this.inferRole(j.displayName),
+      titulo_vaga: j.displayName.trim(),
+      tipo: j.workplaceType || '',
+      local: j.location || '',
+      link: `https://${slug}.inhire.app/vagas/${j.jobId}/${this.slugify(j.displayName)}`,
+      nome_na_plataforma: tenantName || slug,
+      publicado: '',
+      alerta: '',
+    };
+  }
+
+  private slugify(s: string): string {
+    return String(s)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'vaga';
+  }
+
+  private inferRole(title: string): string {
+    const t = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (t.includes('revenue') || t.includes('revops')) return 'Revenue Operations / RevOps';
+    if (t.includes('growth')) return 'Growth Analyst / Analista de Growth';
+    if (t.includes('insights')) return 'Analista de Insights';
+    if (t.includes('inteligencia') || t.includes('market intelligence')) return 'Analista de Inteligência de Mercado';
+    if (t.includes('business analyst') || t.includes('analista de negocios')) return 'Business Analyst / Analista de Negocios';
+    if (t.includes('business intelligence') || t.includes('bi ') || t.includes('analista de bi')) return 'BI / Business Intelligence';
+    if (t.includes('data analyst') || t.includes('analista de dados')) return 'Analista de Dados / Data Analyst';
+    if (t.includes('dados')) return 'Analista de Dados / Data Analyst';
+    return '';
   }
 }
+
+export const inhireScraper = new InHireScraper();
