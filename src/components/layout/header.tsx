@@ -47,6 +47,25 @@ export function Header() {
 
           <div style={{ flexGrow: 1 }} />
 
+          <Link
+            href="/sobre"
+            style={{
+              color: '#94a3b8',
+              fontSize: '0.75rem',
+              fontWeight: 900,
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+              fontFamily: 'ui-monospace, monospace',
+              marginRight: 12,
+              transition: 'color 0.15s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; }}
+          >
+            SOBRE
+          </Link>
+
           <UserMenu />
         </div>
       </div>
