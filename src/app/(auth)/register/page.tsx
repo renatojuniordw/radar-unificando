@@ -5,17 +5,27 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
 import { FormField } from '@/components/form-field';
+import { PasswordStrengthMeter } from '@/components/password-strength-meter';
 import { zodFieldErrors } from '@/lib/form-errors';
+import { Eye, EyeOff, UserPlus, ArrowRight } from 'lucide-react';
 
-const registerSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'Mínimo 8 caracteres'),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'Senhas não conferem',
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    name: z.string().optional(),
+    email: z.string().email('Email inválido'),
+    password: z
+      .string()
+      .min(8, 'Mínimo de 8 caracteres')
+      .regex(/[A-Z]/, 'Precisa ter letra maiúscula (A-Z)')
+      .regex(/[a-z]/, 'Precisa ter letra minúscula (a-z)')
+      .regex(/[0-9]/, 'Precisa ter número (0-9)')
+      .regex(/[^A-Za-z0-9]/, 'Precisa ter caractere especial (!@#$...)'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,6 +33,10 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,75 +75,229 @@ export default function RegisterPage() {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontWeight: 900, fontSize: '2rem', textTransform: 'uppercase', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+    <div style={{ maxWidth: 440, margin: '0 auto' }}>
+      {/* Header section */}
+      <div style={{ marginBottom: 24, textAlign: 'center' }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            backgroundColor: '#ccff00',
+            color: '#020617',
+            border: '2px solid #020617',
+            boxShadow: '3px 3px 0px #000',
+            padding: '4px 10px',
+            fontSize: '0.75rem',
+            fontWeight: 900,
+            fontFamily: 'ui-monospace, monospace',
+            textTransform: 'uppercase',
+            marginBottom: 10,
+          }}
+        >
+          <UserPlus size={14} />
+          <span>NOVO USUÁRIO</span>
+        </div>
+        <h1
+          style={{
+            fontWeight: 900,
+            fontSize: '2.2rem',
+            textTransform: 'uppercase',
+            letterSpacing: '-0.03em',
+            margin: '0 0 6px',
+            color: '#020617',
+          }}
+        >
           CRIAR CONTA
         </h1>
-        <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', margin: 0 }}>
-          Crie sua conta para salvar empresas, vagas e acompanhar candidaturas.
+        <p
+          style={{
+            color: '#475569',
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            margin: 0,
+            lineHeight: 1.4,
+          }}
+        >
+          Cadastre-se para salvar vagas, empresas e acelerar sua busca por trabalho remoto.
         </p>
       </div>
 
-      <div className="card-brutalist" style={{ padding: 32 }}>
+      {/* Main Card */}
+      <div className="card-brutalist" style={{ padding: 24 }}>
         {apiError && (
-          <div style={{ border: '2px solid #dc2626', padding: 12, marginBottom: 16, backgroundColor: '#fef2f2' }}>
-            <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'ui-monospace, monospace', margin: 0 }}>{apiError}</p>
+          <div
+            style={{
+              border: '2px solid #dc2626',
+              padding: 10,
+              marginBottom: 16,
+              backgroundColor: '#fef2f2',
+            }}
+          >
+            <p
+              style={{
+                color: '#dc2626',
+                fontWeight: 800,
+                fontSize: '0.75rem',
+                fontFamily: 'ui-monospace, monospace',
+                margin: 0,
+              }}
+            >
+              ⚠️ {apiError}
+            </p>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <FormField
-            label="Nome"
+            label="Nome Completo"
             type="text"
+            placeholder="Ex: Maria Silva"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
           />
 
           <FormField
             label="Email"
             type="email"
+            placeholder="seu.email@exemplo.com"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
             error={errors.email}
           />
 
-          <FormField
-            label="Senha"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            minLength={8}
-            error={errors.password}
+          {/* Password Input with Toggle */}
+          <div style={{ position: 'relative' }}>
+            <FormField
+              label="Senha"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              error={errors.password}
+              marginBottom={10}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: 28,
+                background: 'none',
+                border: 'none',
+                color: '#475569',
+                cursor: 'pointer',
+                padding: 4,
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
+          {/* Real-time Password Strength Meter */}
+          <PasswordStrengthMeter
+            password={password}
+            confirmPassword={confirmPassword}
+            showMatchStatus={true}
           />
 
-          <FormField
-            label="Confirmar senha"
-            type="password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            required
-            error={errors.confirmPassword}
-            marginBottom={24}
-          />
+          {/* Confirm Password Input with Toggle */}
+          <div style={{ position: 'relative', marginBottom: 20 }}>
+            <FormField
+              label="Confirmar Senha"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              error={errors.confirmPassword}
+              marginBottom={0}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: 28,
+                background: 'none',
+                border: 'none',
+                color: '#475569',
+                cursor: 'pointer',
+                padding: 4,
+              }}
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           <button
             type="submit"
             disabled={loading}
             className="btn-neon"
-            style={{ width: '100%', padding: '14px 24px', fontSize: '0.8rem' }}
+            style={{
+              width: '100%',
+              padding: '12px 20px',
+              fontSize: '0.85rem',
+              fontWeight: 900,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
           >
-            {loading ? 'CRIANDO CONTA...' : 'CRIAR CONTA'}
+            <span>{loading ? 'CRIANDO CONTA...' : 'CRIAR CONTA'}</span>
+            {!loading && <ArrowRight size={16} />}
           </button>
         </form>
       </div>
 
-      <p style={{ textAlign: 'center', marginTop: 24, fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-        Já tem conta?{' '}
-        <Link href="/login" style={{ color: '#020617', fontWeight: 900, textDecoration: 'none' }}>Entrar</Link>
-      </p>
+      {/* Bottom Login Link Callout */}
+      <div
+        style={{
+          textAlign: 'center',
+          marginTop: 18,
+          padding: '12px 16px',
+          border: '3px solid #020617',
+          backgroundColor: '#ffffff',
+          boxShadow: '4px 4px 0px #000',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.75rem',
+            color: '#475569',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+          }}
+        >
+          Já possui uma conta?{' '}
+        </span>
+        <Link
+          href="/login"
+          style={{
+            color: '#020617',
+            fontWeight: 900,
+            textDecoration: 'underline',
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+          }}
+        >
+          ENTRAR AGORA
+        </Link>
+      </div>
     </div>
   );
 }

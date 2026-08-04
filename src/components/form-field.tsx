@@ -9,31 +9,35 @@ interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'st
 }
 
 const labelStyle: React.CSSProperties = {
-  fontWeight: 700,
-  fontSize: '0.7rem',
+  fontWeight: 800,
+  fontSize: '0.72rem',
   textTransform: 'uppercase',
-  letterSpacing: '0.02em',
+  letterSpacing: '0.04em',
   fontFamily: 'ui-monospace, monospace',
   display: 'block',
   marginBottom: 6,
+  color: '#020617',
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  border: '4px solid #020617',
+  border: '3px solid #020617',
+  backgroundColor: '#ffffff',
+  color: '#020617',
   padding: '10px 12px',
   fontSize: '0.85rem',
   fontFamily: 'inherit',
-  boxShadow: '4px 4px 0px #000',
+  boxShadow: '3px 3px 0px #000',
   boxSizing: 'border-box',
+  outline: 'none',
 };
 
 const errorStyle: React.CSSProperties = {
   color: '#dc2626',
-  fontSize: '0.65rem',
+  fontSize: '0.7rem',
   fontFamily: 'ui-monospace, monospace',
-  margin: '4px 0 0',
-  fontWeight: 700,
+  margin: '6px 0 0',
+  fontWeight: 800,
 };
 
 export function FormField({ label, error, id, marginBottom = 16, ...inputProps }: FormFieldProps) {
@@ -44,7 +48,7 @@ export function FormField({ label, error, id, marginBottom = 16, ...inputProps }
         {label}
       </label>
       <input id={fieldId} style={inputStyle} {...inputProps} />
-      {error && <p style={errorStyle}>{error}</p>}
+      {error && <p style={errorStyle}>⚠️ {error}</p>}
     </div>
   );
 }

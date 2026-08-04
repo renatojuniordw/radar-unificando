@@ -7,12 +7,19 @@ import { checkRateLimit } from '@/lib/rate-limit';
 
 const registerSchema = z.object({
   name: z.string().trim().max(80).optional().or(z.literal('')),
-  email: z.string().trim().email(),
-  password: z.string().min(8).max(200),
+  email: z.string({ message: 'Email é obrigatório' }).trim().email('Email inválido'),
+  password: z
+    .string({ message: 'Senha é obrigatória' })
+    .min(8, 'A senha deve ter no mínimo 8 caracteres')
+    .regex(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula (A-Z)')
+    .regex(/[a-z]/, 'A senha deve conter pelo menos uma letra minúscula (a-z)')
+    .regex(/[0-9]/, 'A senha deve conter pelo menos um número (0-9)')
+    .regex(/[^A-Za-z0-9]/, 'A senha deve conter pelo menos um caractere especial (!@#$...)')
+    .max(200),
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+  const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
   const { success, msBeforeNext } = await checkRateLimit(ip, 'auth');
 
   if (!success) {

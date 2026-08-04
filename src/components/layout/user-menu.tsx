@@ -35,27 +35,55 @@ export function UserMenu() {
 
   if (!session?.user) {
     return (
-      <Link
-        href="/login"
-        style={{
-          backgroundColor: '#ccff00',
-          color: '#020617',
-          border: '2px solid #020617',
-          fontWeight: 900,
-          fontSize: 11,
-          letterSpacing: '0.05em',
-          textTransform: 'uppercase',
-          padding: '6px 14px',
-          textDecoration: 'none',
-          fontFamily: 'ui-monospace, monospace',
-          boxShadow: '2px 2px 0px #000',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
-      >
-        ENTRAR
-      </Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Link
+          href="/login"
+          style={{
+            backgroundColor: '#0f172a',
+            color: '#ffffff',
+            border: '2px solid #334155',
+            fontWeight: 800,
+            fontSize: 11,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            padding: '6px 14px',
+            textDecoration: 'none',
+            fontFamily: 'ui-monospace, monospace',
+            transition: 'all 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#ccff00';
+            e.currentTarget.style.color = '#ccff00';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#334155';
+            e.currentTarget.style.color = '#ffffff';
+          }}
+        >
+          ENTRAR
+        </Link>
+        <Link
+          href="/register"
+          style={{
+            backgroundColor: '#ccff00',
+            color: '#020617',
+            border: '2px solid #020617',
+            fontWeight: 900,
+            fontSize: 11,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            padding: '6px 14px',
+            textDecoration: 'none',
+            fontFamily: 'ui-monospace, monospace',
+            boxShadow: '2px 2px 0px #000',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          CRIAR CONTA
+        </Link>
+      </div>
     );
   }
 

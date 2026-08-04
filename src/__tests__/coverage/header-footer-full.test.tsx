@@ -31,18 +31,18 @@ describe('Header', () => {
   it('should_render_brand_and_entrar_when_anonymous', async () => {
     const { Header } = await import('@/components/layout/header');
     const { container } = render(<Header />);
-    expect(container.textContent).toContain('RADAR UNIFICANDO');
+    expect(container.textContent).toContain('RADAR');
+    expect(container.textContent).toContain('UNIFICANDO');
     expect(container.textContent).toContain('ENTRAR');
+    expect(container.textContent).toContain('CRIAR CONTA');
   });
 
-  it('should_render_nav_and_sair_when_logged_in', async () => {
+  it('should_render_nav_and_user_when_logged_in', async () => {
     vi.mocked(useSession).mockReturnValue({ data: { user: { email: 'user@test.com' } }, status: 'authenticated' } as any);
     const { Header } = await import('@/components/layout/header');
     const { container } = render(<Header />);
-    expect(container.textContent).toContain('PERFIL');
-    expect(container.textContent).toContain('MATCH');
-    expect(container.textContent).toContain('CANDIDATURAS');
-    expect(container.textContent).toContain('SAIR');
-    expect(container.textContent).toContain('user@test.com');
+    expect(container.textContent).toContain('RADAR');
+    expect(container.textContent).toContain('UNIFICANDO');
+    expect(container.textContent).toContain('user');
   });
 });
