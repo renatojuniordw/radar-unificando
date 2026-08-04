@@ -22,13 +22,26 @@ export const jobRepository: IJobRepository = {
     const where: Prisma.JobWhereInput = { userId, status: 'active' };
     if (opts.plataforma) where.plataforma = opts.plataforma;
     if (opts.cargo) where.cargoCategoria = opts.cargo;
-    if (opts.search) {
-      where.OR = [
-        { empresa: { contains: opts.search, mode: 'insensitive' } },
-        { tituloVaga: { contains: opts.search, mode: 'insensitive' } },
-        { nomeNaPlataforma: { contains: opts.search, mode: 'insensitive' } },
-      ];
+
+    if (opts.search && opts.search.trim()) {
+      const STOPWORDS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'no', 'na', 'nos', 'nas', 'a', 'o', 'para', 'com']);
+      const searchTerms = opts.search
+        .split(/\s+/)
+        .map(t => t.trim())
+        .filter(t => t.length > 0 && !STOPWORDS.has(t.toLowerCase()));
+
+      if (searchTerms.length > 0) {
+        where.AND = searchTerms.map(term => ({
+          OR: [
+            { empresa: { contains: term, mode: 'insensitive' } },
+            { tituloVaga: { contains: term, mode: 'insensitive' } },
+            { nomeNaPlataforma: { contains: term, mode: 'insensitive' } },
+            { cargoCategoria: { contains: term, mode: 'insensitive' } },
+          ],
+        }));
+      }
     }
+
     return prisma.job.findMany({ where, orderBy: { createdAt: 'desc' }, take: opts.take ?? 200 });
   },
 

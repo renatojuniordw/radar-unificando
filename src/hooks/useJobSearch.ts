@@ -185,7 +185,7 @@ export function useJobSearch() {
           }
         } else if (!isSilent) {
           setSnackbar({
-            message: body.error || "Erro ao iniciar pipeline",
+            message: body.error || "Erro ao iniciar a busca de vagas",
             severity: "error",
           });
         }
@@ -246,7 +246,7 @@ export function useJobSearch() {
 
             if (!isSilent) {
               setSnackbar({
-                message: data.message || "Pipeline concluído!",
+                message: data.message || "Busca de vagas concluída!",
                 severity: data.type === "pipeline_complete" ? "success" : "error",
               });
             }
@@ -272,7 +272,7 @@ export function useJobSearch() {
       };
     } catch {
       if (!isSilent) {
-        setSnackbar({ message: "Erro ao iniciar pipeline", severity: "error" });
+        setSnackbar({ message: "Erro ao iniciar a busca de vagas", severity: "error" });
       }
       setRunning(false);
       setAutoSyncing(false);

@@ -17,10 +17,14 @@ interface Props {
 export function TagInput({ label, helperText, placeholder, value, onChange, autoFocus, dark, compact }: Props) {
   const [input, setInput] = useState('');
 
-  function add(v: string) {
-    const trimmed = v.trim();
-    if (trimmed && !value.includes(trimmed)) {
-      onChange([...value, trimmed]);
+  function addBatch(text: string) {
+    const parts = text
+      .split(/[,;\n]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !value.includes(s));
+
+    if (parts.length > 0) {
+      onChange([...value, ...parts]);
     }
   }
 
@@ -29,14 +33,21 @@ export function TagInput({ label, helperText, placeholder, value, onChange, auto
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ';' || e.key === 'Tab') {
       e.preventDefault();
-      input.split(',').map(s => s.trim()).filter(Boolean).forEach(add);
+      addBatch(input);
       setInput('');
     }
     if (e.key === 'Backspace' && input === '' && value.length > 0) {
       onChange(value.slice(0, -1));
     }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    addBatch(pastedText);
+    setInput('');
   }
 
   return (
@@ -74,7 +85,8 @@ export function TagInput({ label, helperText, placeholder, value, onChange, auto
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onBlur={() => { if (input.trim()) { add(input); setInput(''); } }}
+          onPaste={handlePaste}
+          onBlur={() => { if (input.trim()) { addBatch(input); setInput(''); } }}
           placeholder={value.length === 0 ? placeholder : ''}
           autoFocus={autoFocus}
           aria-label={label}
