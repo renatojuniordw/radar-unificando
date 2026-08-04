@@ -30,9 +30,28 @@ export default auth((req) => {
     if (!requestOrigin && referer) {
       try { requestOrigin = new URL(referer).origin; } catch { /* malformed referer */ }
     }
-    const sameOrigin = requestOrigin === selfOrigin;
 
-    if (origin === selfOrigin) {
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const forwardedOrigin = host ? `${proto}://${host}` : null;
+
+    const allowedOrigins = new Set<string>();
+    allowedOrigins.add(selfOrigin);
+    if (forwardedOrigin) allowedOrigins.add(forwardedOrigin);
+    if (host) {
+      allowedOrigins.add(`http://${host}`);
+      allowedOrigins.add(`https://${host}`);
+    }
+    if (process.env.AUTH_URL) {
+      try { allowedOrigins.add(new URL(process.env.AUTH_URL).origin); } catch {}
+    }
+    if (process.env.NEXTAUTH_URL) {
+      try { allowedOrigins.add(new URL(process.env.NEXTAUTH_URL).origin); } catch {}
+    }
+
+    const sameOrigin = requestOrigin ? allowedOrigins.has(requestOrigin) : true;
+
+    if (origin && allowedOrigins.has(origin)) {
       response.headers.set('Access-Control-Allow-Origin', origin);
       response.headers.set('Access-Control-Allow-Credentials', 'true');
     }
