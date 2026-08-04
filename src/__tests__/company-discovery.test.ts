@@ -31,7 +31,7 @@ describe('CompanyDiscovery', () => {
       });
     const result = await discovery.discover(['Corp']);
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].fonte).toBeDefined();
+    expect(result[0].source).toBeDefined();
   });
 
   it('should_return_empty_array_when_all_searches_fail', async () => {
@@ -61,7 +61,7 @@ describe('CompanyDiscovery', () => {
       .mockResolvedValueOnce(mockWaybackEmpty())
       .mockRejectedValueOnce(new Error('urlscan ignored'));
     const result = await discovery.discover(['Corp']);
-    const seenNames = new Set(result.map(r => r.nome.toLowerCase().trim()));
+    const seenNames = new Set(result.map(r => r.name.toLowerCase().trim()));
     expect(seenNames.size).toBe(result.length);
   });
 
@@ -84,6 +84,6 @@ describe('CompanyDiscovery', () => {
     });
     const result = await discovery.discover(['Corp']);
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].fonte).toBe('urlscan');
+    expect(result[0].source).toBe('urlscan');
   });
 });

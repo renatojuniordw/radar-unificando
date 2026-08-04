@@ -20,12 +20,12 @@ import { JobDesktopTable } from '@/components/job-table/job-desktop-table';
 interface Props {
   jobs: Job[];
   loading: boolean;
-  cargos: string[];
+  roleCategories: string[];
   onExportCsv: () => void;
   onFilterChange: (filters: { platform?: string; role?: string; search?: string }) => void;
 }
 
-export const JobTable = memo(function JobTable({ jobs, loading, cargos, onExportCsv, onFilterChange }: Props) {
+export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, onExportCsv, onFilterChange }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobilePage, setMobilePage] = useState(1);
   const [exporting, setExporting] = useState(false);
@@ -126,7 +126,7 @@ export const JobTable = memo(function JobTable({ jobs, loading, cargos, onExport
           types={types}
           typeFilter={typeFilter}
           onTypeChange={setTypeFilter}
-          roles={cargos}
+          roles={roleCategories}
           roleFilter={roleFilter}
           onRoleChange={handleRoleChange}
           searchFilter={searchFilter}
@@ -146,7 +146,7 @@ export const JobTable = memo(function JobTable({ jobs, loading, cargos, onExport
           types={types}
           typeFilter={typeFilter}
           onTypeChange={setTypeFilter}
-          roles={cargos}
+          roles={roleCategories}
           roleFilter={roleFilter}
           onRoleChange={handleRoleChange}
           filteredTotal={filteredJobs.length}

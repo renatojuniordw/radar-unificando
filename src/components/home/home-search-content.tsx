@@ -18,7 +18,7 @@ export function HomeSearchContent() {
     autoSyncing,
     jobs,
     loading,
-    cargos,
+    roleCategories,
     snackbar,
     setSnackbar,
     cooldown,
@@ -51,8 +51,8 @@ export function HomeSearchContent() {
         jobs={jobs}
         loading={loading}
         autoSyncing={autoSyncing}
-        cargos={cargos}
-        areaOuCargo={profile.area || profile.currentRole || ""}
+        roleCategories={roleCategories}
+        areaOrRole={profile.area || profile.currentRole || ""}
         onFilterChange={loadJobs}
       />
 

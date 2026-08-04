@@ -20,7 +20,7 @@ export function useJobSearch() {
   const [lastRunAt, setLastRunAt] = useState<number | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
-  const [cargos, setCargos] = useState<string[]>([]);
+  const [roleCategories, setRoleCategories] = useState<string[]>([]);
   const [snackbar, setSnackbar] = useState<{
     message: string;
     severity: "success" | "error" | "info";
@@ -75,8 +75,8 @@ export function useJobSearch() {
 
       if (!session && loadedJobs.length > 0) await browserStorage.setJobs(loadedJobs);
 
-      const uniqueCargos = uniqueValues(loadedJobs.map((j: Job) => j.roleCategory)) as string[];
-      setCargos(uniqueCargos);
+      const uniqueRoleCategories = uniqueValues(loadedJobs.map((j: Job) => j.roleCategory)) as string[];
+      setRoleCategories(uniqueRoleCategories);
     } catch {
       setSnackbar({ message: "Erro de conexão ao carregar vagas.", severity: "error" });
     } finally {
@@ -109,7 +109,7 @@ export function useJobSearch() {
     }).catch(() => {});
   }, []);
 
-  // Carregar filtros persistidos (empresas/cargos) na montagem
+  // Carregar filtros persistidos (companies/roles) na montagem
   useEffect(() => {
     browserStorage.getFilters().then((filters) => {
       if (!filters) return;
@@ -238,10 +238,10 @@ export function useJobSearch() {
               }));
               setJobs(completedJobs);
               await browserStorage.setJobs(data.jobs);
-              const uniqueCargos = uniqueValues(
+              const uniqueRoleCategories = uniqueValues(
                 completedJobs.map((j: Job) => j.roleCategory),
               );
-              setCargos(uniqueCargos);
+              setRoleCategories(uniqueRoleCategories);
             } else {
               loadJobs();
             }
@@ -316,7 +316,7 @@ export function useJobSearch() {
     lastRunAt,
     jobs,
     loading,
-    cargos,
+    roleCategories,
     snackbar,
     setSnackbar,
     cooldown,

@@ -1,7 +1,7 @@
 interface DiscoveredCompany {
-  nome: string;
-  urlCarreiras: string;
-  fonte: 'wayback' | 'urlscan' | 'commoncrawl';
+  name: string;
+  careersUrl: string;
+  source: 'wayback' | 'urlscan' | 'commoncrawl';
 }
 
 export class CompanyDiscovery {
@@ -31,7 +31,7 @@ export class CompanyDiscovery {
 
       const results: DiscoveredCompany[] = [];
 
-      for (const { empresa, url } of targets.slice(0, 5)) {
+      for (const { company, url } of targets.slice(0, 5)) {
         try {
           const res = await fetch(`${cdxUrl}&url=${encodeURIComponent(url)}*`, {
             signal: AbortSignal.timeout(5000),
@@ -41,9 +41,9 @@ export class CompanyDiscovery {
             const data = await res.json();
             if (Array.isArray(data) && data.length > 1) {
               results.push({
-                nome: empresa,
-                urlCarreiras: url,
-                fonte: 'wayback',
+                name: company,
+                careersUrl: url,
+                source: 'wayback',
               });
             }
           }
@@ -62,9 +62,9 @@ export class CompanyDiscovery {
     try {
       const results: DiscoveredCompany[] = [];
 
-      for (const empresa of knownCompanies.slice(0, 5)) {
+      for (const company of knownCompanies.slice(0, 5)) {
         try {
-          const searchUrl = `https://urlscan.io/api/v1/search/?q=${encodeURIComponent(empresa + ' carreiras')}`;
+          const searchUrl = `https://urlscan.io/api/v1/search/?q=${encodeURIComponent(company + ' carreiras')}`;
           const res = await fetch(searchUrl, {
             headers: { 'Accept': 'application/json' },
             signal: AbortSignal.timeout(5000),
@@ -77,9 +77,9 @@ export class CompanyDiscovery {
               const pageUrl = item.page?.url || '';
               if (pageUrl.toLowerCase().includes('carreira') || pageUrl.toLowerCase().includes('trabalhe')) {
                 results.push({
-                  nome: empresa,
-                  urlCarreiras: pageUrl,
-                  fonte: 'urlscan',
+                  name: company,
+                  careersUrl: pageUrl,
+                  source: 'urlscan',
                 });
               }
             }
@@ -95,14 +95,14 @@ export class CompanyDiscovery {
     }
   }
 
-  private generateTargetUrls(companies: string[]): Array<{ empresa: string; url: string }> {
-    const targets: Array<{ empresa: string; url: string }> = [];
+  private generateTargetUrls(companies: string[]): Array<{ company: string; url: string }> {
+    const targets: Array<{ company: string; url: string }> = [];
 
-    for (const empresa of companies) {
-      const slug = empresa.toLowerCase().replace(/[^a-z0-9]+/g, '').replace(/^(https?:\/\/)?(www\.)?/, '');
+    for (const company of companies) {
+      const slug = company.toLowerCase().replace(/[^a-z0-9]+/g, '').replace(/^(https?:\/\/)?(www\.)?/, '');
 
       variants(slug).forEach(url => {
-        targets.push({ empresa, url });
+        targets.push({ company, url });
       });
     }
 
@@ -112,7 +112,7 @@ export class CompanyDiscovery {
   private dedup(results: DiscoveredCompany[]): DiscoveredCompany[] {
     const seen = new Set<string>();
     return results.filter(r => {
-      const key = r.nome.toLowerCase().trim();
+      const key = r.name.toLowerCase().trim();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;

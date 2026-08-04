@@ -10,8 +10,8 @@ interface ResultsSectionProps {
   jobs: Job[];
   loading: boolean;
   autoSyncing?: boolean;
-  cargos: string[];
-  areaOuCargo: string;
+  roleCategories: string[];
+  areaOrRole: string;
   onFilterChange: (filters?: {
     platform?: string;
     role?: string;
@@ -24,8 +24,8 @@ export const ResultsSection = memo(function ResultsSection({
   jobs,
   loading,
   autoSyncing,
-  cargos,
-  areaOuCargo,
+  roleCategories,
+  areaOrRole,
   onFilterChange,
 }: ResultsSectionProps) {
   const handleExportCsv = useCallback(() => {
@@ -51,7 +51,7 @@ export const ResultsSection = memo(function ResultsSection({
                   wordBreak: "break-word",
                 }}
               >
-                RECOMENDADAS PARA VOCÊ · {areaOuCargo}
+                RECOMENDADAS PARA VOCÊ · {areaOrRole}
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                 <Chip
@@ -96,7 +96,7 @@ export const ResultsSection = memo(function ResultsSection({
         <JobTable
           jobs={jobs}
           loading={loading}
-          cargos={cargos}
+          roleCategories={roleCategories}
           onExportCsv={handleExportCsv}
           onFilterChange={onFilterChange}
         />
