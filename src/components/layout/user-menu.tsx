@@ -3,7 +3,23 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { User, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
+import { User, LogOut, ChevronDown, ShieldCheck, Info } from 'lucide-react';
+
+/**
+ * Safely extracts only the first name of the user.
+ * Handles whitespace, null/undefined, and fallback to email username or 'Usuário'.
+ */
+function getFirstName(name?: string | null, email?: string | null): string {
+  if (name && name.trim()) {
+    const first = name.trim().split(/\s+/)[0];
+    if (first) return first;
+  }
+  if (email && email.trim()) {
+    const emailName = email.trim().split('@')[0];
+    if (emailName) return emailName;
+  }
+  return 'Usuário';
+}
 
 export function UserMenu() {
   const { data: session } = useSession();
@@ -35,51 +51,16 @@ export function UserMenu() {
 
   if (!session?.user) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <Link
           href="/login"
-          style={{
-            backgroundColor: '#0f172a',
-            color: '#ffffff',
-            border: '2px solid #334155',
-            fontWeight: 800,
-            fontSize: 11,
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            padding: '6px 14px',
-            textDecoration: 'none',
-            fontFamily: 'ui-monospace, monospace',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#ccff00';
-            e.currentTarget.style.color = '#ccff00';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#334155';
-            e.currentTarget.style.color = '#ffffff';
-          }}
+          className="bg-[#0f172a] text-white border-2 border-[#334155] font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase px-2.5 py-1 sm:px-3.5 sm:py-1.5 no-underline font-mono transition-all hover:border-[#ccff00] hover:text-[#ccff00]"
         >
           ENTRAR
         </Link>
         <Link
           href="/register"
-          style={{
-            backgroundColor: '#ccff00',
-            color: '#020617',
-            border: '2px solid #020617',
-            fontWeight: 900,
-            fontSize: 11,
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            padding: '6px 14px',
-            textDecoration: 'none',
-            fontFamily: 'ui-monospace, monospace',
-            boxShadow: '2px 2px 0px #000',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
+          className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-[10px] sm:text-[11px] tracking-wider uppercase px-2.5 py-1 sm:px-3.5 sm:py-1.5 no-underline font-mono shadow-[2px_2px_0px_#000] inline-flex items-center gap-1 sm:gap-1.5 hover:bg-[#d9ff33]"
         >
           CRIAR CONTA
         </Link>
@@ -87,226 +68,99 @@ export function UserMenu() {
     );
   }
 
-  const userInitial = session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U';
-  const displayName = session.user.name || session.user.email?.split('@')[0] || 'Usuário';
+  const firstName = getFirstName(session.user.name, session.user.email);
+  const fullName = session.user.name?.trim() || session.user.email || 'Usuário';
+  const userInitial = firstName[0]?.toUpperCase() || 'U';
 
   return (
-    <div ref={menuRef} style={{ position: 'relative' }}>
+    <div ref={menuRef} className="relative">
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          backgroundColor: isOpen ? '#1e293b' : '#0f172a',
-          color: '#ffffff',
-          border: isOpen ? '2px solid #ccff00' : '2px solid #334155',
-          padding: '4px 10px 4px 6px',
-          cursor: 'pointer',
-          fontFamily: 'ui-monospace, monospace',
-          transition: 'all 0.15s ease',
-          outline: 'none',
-        }}
+        className={`flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 border-2 font-mono transition-all outline-none cursor-pointer ${
+          isOpen
+            ? 'bg-[#1e293b] text-white border-[#ccff00]'
+            : 'bg-[#0f172a] text-white border-[#334155] hover:border-[#ccff00]'
+        }`}
       >
         {/* Avatar Circle with Online Badge */}
-        <div style={{ position: 'relative', width: 26, height: 26 }}>
+        <div className="relative w-5 h-5 sm:w-6 sm:h-6 shrink-0">
           {session.user.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={session.user.image}
-              alt={displayName}
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '1px solid #ccff00',
-              }}
+              alt={firstName}
+              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-[#ccff00]"
             />
           ) : (
-            <div
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: '50%',
-                backgroundColor: '#ccff00',
-                color: '#020617',
-                fontWeight: 900,
-                fontSize: 12,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#ccff00] text-[#020617] font-black text-[10px] sm:text-[12px] flex items-center justify-center">
               {userInitial}
             </div>
           )}
           {/* Status Indicator */}
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 8,
-              height: 8,
-              backgroundColor: '#00ff66',
-              borderRadius: '50%',
-              border: '1.5px solid #020617',
-            }}
-          />
+          <span className="absolute bottom-0 right-0 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#00ff66] rounded-full border border-[#020617]" />
         </div>
 
-        {/* User Info Label */}
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: '#f8fafc',
-            maxWidth: 120,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {displayName}
+        {/* First Name Label with Truncation */}
+        <span className="text-[10px] sm:text-[11px] font-bold text-[#f8fafc] max-w-[65px] xs:max-w-[85px] sm:max-w-[120px] truncate">
+          {firstName}
         </span>
 
         <ChevronDown
-          size={14}
-          style={{
-            color: isOpen ? '#ccff00' : '#94a3b8',
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.15s ease',
-          }}
+          size={13}
+          className={`text-[#94a3b8] transition-transform duration-150 shrink-0 ${
+            isOpen ? 'rotate-180 text-[#ccff00]' : ''
+          }`}
         />
       </button>
 
       {/* Floating Dropdown Menu */}
       {isOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            right: 0,
-            width: 240,
-            backgroundColor: '#0f172a',
-            border: '2px solid #ccff00',
-            boxShadow: '6px 6px 0px #000',
-            zIndex: 200,
-            padding: '12px',
-            animation: 'fadeIn 0.15s ease-out',
-          }}
-        >
+        <div className="absolute top-[calc(100%+8px)] right-0 w-[240px] max-w-[calc(100vw-24px)] bg-[#0f172a] border-2 border-[#ccff00] shadow-[6px_6px_0px_#000] z-50 p-3">
           {/* Header info inside dropdown */}
-          <div
-            style={{
-              paddingBottom: 10,
-              marginBottom: 10,
-              borderBottom: '1px solid #1e293b',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  backgroundColor: '#ccff00',
-                  color: '#020617',
-                  fontWeight: 900,
-                  fontSize: 14,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+          <div className="pb-2.5 mb-2.5 border-b border-[#1e293b]">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-full bg-[#ccff00] text-[#020617] font-black text-sm flex items-center justify-center shrink-0">
                 {userInitial}
               </div>
-              <div style={{ overflow: 'hidden' }}>
-                <p
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 800,
-                    color: '#ffffff',
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {session.user.name || 'Usuário'}
+              <div className="overflow-hidden min-w-0">
+                <p className="text-xs font-extrabold text-white m-0 truncate" title={fullName}>
+                  {fullName}
                 </p>
-                <p
-                  style={{
-                    fontSize: 10,
-                    color: '#94a3b8',
-                    fontFamily: 'ui-monospace, monospace',
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <p className="text-[10px] text-[#94a3b8] font-mono m-0 truncate" title={session.user.email || ''}>
                   {session.user.email}
                 </p>
               </div>
             </div>
 
             {/* Status Chip */}
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                backgroundColor: 'rgba(204, 255, 0, 0.1)',
-                border: '1px solid rgba(204, 255, 0, 0.3)',
-                padding: '2px 6px',
-                fontSize: 9,
-                fontWeight: 800,
-                color: '#ccff00',
-                fontFamily: 'ui-monospace, monospace',
-                textTransform: 'uppercase',
-                marginTop: 4,
-              }}
-            >
+            <div className="inline-flex items-center gap-1 bg-[#ccff00]/10 border border-[#ccff00]/30 px-1.5 py-0.5 text-[9px] font-extrabold text-[#ccff00] font-mono uppercase mt-1">
               <ShieldCheck size={10} />
               <span>Conectado</span>
             </div>
           </div>
 
           {/* Menu Links/Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div className="flex flex-col gap-1">
             <Link
               href="/perfil"
               onClick={() => setIsOpen(false)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 10px',
-                color: '#f8fafc',
-                fontSize: 11,
-                fontWeight: 700,
-                fontFamily: 'ui-monospace, monospace',
-                textDecoration: 'none',
-                backgroundColor: '#1e293b',
-                border: '1px solid transparent',
-                transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ccff00';
-                e.currentTarget.style.color = '#020617';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1e293b';
-                e.currentTarget.style.color = '#f8fafc';
-              }}
+              className="flex items-center gap-2.5 p-2 text-[#f8fafc] text-xs font-bold font-mono no-underline bg-[#1e293b] border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
             >
               <User size={14} />
               <span>MEU PERFIL</span>
+            </Link>
+
+            {/* Quick Link to Sobre on Mobile */}
+            <Link
+              href="/sobre"
+              onClick={() => setIsOpen(false)}
+              className="flex sm:hidden items-center gap-2.5 p-2 text-[#94a3b8] text-xs font-bold font-mono no-underline bg-[#1e293b]/50 border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
+            >
+              <Info size={14} />
+              <span>SOBRE O RADAR</span>
             </Link>
 
             <button
@@ -314,31 +168,7 @@ export function UserMenu() {
                 setIsOpen(false);
                 signOut();
               }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 10px',
-                color: '#ff4d4d',
-                fontSize: 11,
-                fontWeight: 700,
-                fontFamily: 'ui-monospace, monospace',
-                textTransform: 'uppercase',
-                backgroundColor: 'rgba(255, 77, 77, 0.08)',
-                border: '1px solid rgba(255, 77, 77, 0.2)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                width: '100%',
-                transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff4d4d';
-                e.currentTarget.style.color = '#ffffff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 77, 77, 0.08)';
-                e.currentTarget.style.color = '#ff4d4d';
-              }}
+              className="flex items-center gap-2.5 p-2 text-[#ff4d4d] text-xs font-bold font-mono uppercase bg-[#ff4d4d]/10 border border-[#ff4d4d]/20 transition-all hover:bg-[#ff4d4d] hover:text-white cursor-pointer w-full text-left mt-1"
             >
               <LogOut size={14} />
               <span>SAIR DA CONTA</span>
@@ -349,3 +179,4 @@ export function UserMenu() {
     </div>
   );
 }
+
