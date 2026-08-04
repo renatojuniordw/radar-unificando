@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requireAuth } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { uploadLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
 import { pdfToMarkdown, textToMarkdown } from '@/lib/core/parsing/pdf-to-markdown';
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-  }
+  const { session, response } = await requireAuth();
+  if (response) return response;
 
   const { allowed } = uploadLimiter.check(session.user.id);
   if (!allowed) {
@@ -42,7 +40,11 @@ export async function POST(req: NextRequest) {
           for (let i = 1; i <= Math.min(doc.numPages, 20); i++) {
             const page = await doc.getPage(i);
             const content = await page.getTextContent();
-            pages.push(content.items.map((item: any) => item.str).join(' '));
+            pages.push(
+              content.items
+                .map((item) => ('str' in item ? (item as { str: string }).str : ''))
+                .join(' ')
+            );
           }
           rawText = pages.join('\n');
           markdown = await pdfToMarkdown(buffer);
