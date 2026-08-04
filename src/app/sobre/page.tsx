@@ -6,7 +6,6 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2 } from "lucide-react";
-import GitHubIcon from "@mui/icons-material/GitHub";
 
 export default function SobrePage() {
   return (
@@ -188,7 +187,7 @@ export default function SobrePage() {
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <Button
               component="a"
-              href="https://github.com/renatojuniordw/radar-unificando"
+              href="https://renatobezerra.com.br/"
               target="_blank"
               rel="noopener noreferrer"
               variant="contained"
@@ -203,9 +202,6 @@ export default function SobrePage() {
                 px: 3,
                 py: 1.2,
                 textTransform: "uppercase",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 1,
                 "&:hover": {
                   bgcolor: "#ffffff",
                   color: "#020617",
@@ -213,31 +209,7 @@ export default function SobrePage() {
                 },
               }}
             >
-              <GitHubIcon sx={{ fontSize: 18 }} /> REPOSITÓRIO GITHUB
-            </Button>
-
-            <Button
-              component="a"
-              href="https://renatobezerra.com.br/"
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="outlined"
-              sx={{
-                borderColor: "#ccff00",
-                color: "#ccff00",
-                fontWeight: 900,
-                fontSize: "0.85rem",
-                borderRadius: 0,
-                px: 3,
-                py: 1.2,
-                textTransform: "uppercase",
-                "&:hover": {
-                  bgcolor: "rgba(204, 255, 0, 0.1)",
-                  borderColor: "#ccff00",
-                },
-              }}
-            >
-              MEU PORTFÓLIO
+              CONHEÇA MEU PORTFÓLIO
             </Button>
 
             <Button
