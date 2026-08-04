@@ -1,4 +1,4 @@
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
 
 interface ApiJob {
   careerPageId: string;
@@ -26,10 +26,10 @@ export class InHireScraper {
     'Content-Type': 'application/json',
   };
 
-  async searchJobs(companies?: string[]): Promise<JobData[]> {
+  async searchJobs(companies?: string[]): Promise<Job[]> {
     if (!companies?.length) return [];
 
-    const results: JobData[] = [];
+    const results: Job[] = [];
     for (const company of companies) {
       const jobs = await this.searchCompany(company);
       results.push(...jobs);
@@ -37,7 +37,7 @@ export class InHireScraper {
     return results;
   }
 
-  async searchCompany(name: string): Promise<JobData[]> {
+  async searchCompany(name: string): Promise<Job[]> {
     const slugs = this.slugVariants(name);
 
     for (const slug of slugs) {
@@ -80,19 +80,19 @@ export class InHireScraper {
     return [...new Set(variants.filter(Boolean))];
   }
 
-  private normalize(j: ApiJob, tenantName: string, slug: string): JobData {
+  private normalize(j: ApiJob, tenantName: string, slug: string): Job {
     return {
-      empresa: tenantName || slug,
-      plataforma: 'InHire',
-      na_lista: 'Não',
-      cargo_categoria: this.inferRole(j.displayName),
-      titulo_vaga: j.displayName.trim(),
-      tipo: j.workplaceType || '',
-      local: j.location || '',
+      company: tenantName || slug,
+      platform: 'InHire',
+      onList: 'Não',
+      roleCategory: this.inferRole(j.displayName),
+      title: j.displayName.trim(),
+      type: j.workplaceType || '',
+      location: j.location || '',
       link: `https://${slug}.inhire.app/vagas/${j.jobId}/${this.slugify(j.displayName)}`,
-      nome_na_plataforma: tenantName || slug,
-      publicado: '',
-      alerta: '',
+      companyNameOnPlatform: tenantName || slug,
+      postedAt: '',
+      alert: '',
     };
   }
 

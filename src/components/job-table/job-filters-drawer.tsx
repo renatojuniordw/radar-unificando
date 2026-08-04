@@ -6,37 +6,37 @@ import CloseIcon from '@mui/icons-material/Close';
 interface Props {
   open: boolean;
   onClose: () => void;
-  filtroPlataforma: string;
-  onPlataformaChange: (value: string) => void;
-  empresas: string[];
-  filtroEmpresa: string;
-  onEmpresaChange: (value: string) => void;
-  modalidades: string[];
-  filtroModalidade: string;
-  onModalidadeChange: (value: string) => void;
-  cargos: string[];
-  filtroCargo: string;
-  onCargoChange: (value: string) => void;
-  totalFiltradas: number;
+  platformFilter: string;
+  onPlatformChange: (value: string) => void;
+  companies: string[];
+  companyFilter: string;
+  onCompanyChange: (value: string) => void;
+  types: string[];
+  typeFilter: string;
+  onTypeChange: (value: string) => void;
+  roles: string[];
+  roleFilter: string;
+  onRoleChange: (value: string) => void;
+  filteredTotal: number;
   countSecondaryFilters: number;
   onClearFilters: () => void;
 }
 
-export function VagaFiltersDrawer({
+export function JobFiltersDrawer({
   open,
   onClose,
-  filtroPlataforma,
-  onPlataformaChange,
-  empresas,
-  filtroEmpresa,
-  onEmpresaChange,
-  modalidades,
-  filtroModalidade,
-  onModalidadeChange,
-  cargos,
-  filtroCargo,
-  onCargoChange,
-  totalFiltradas,
+  platformFilter,
+  onPlatformChange,
+  companies,
+  companyFilter,
+  onCompanyChange,
+  types,
+  typeFilter,
+  onTypeChange,
+  roles,
+  roleFilter,
+  onRoleChange,
+  filteredTotal,
   countSecondaryFilters,
   onClearFilters,
 }: Props) {
@@ -72,8 +72,8 @@ export function VagaFiltersDrawer({
           </Typography>
           <Select
             fullWidth
-            value={filtroPlataforma}
-            onChange={e => onPlataformaChange(e.target.value)}
+            value={platformFilter}
+            onChange={e => onPlatformChange(e.target.value)}
             displayEmpty
             size="small"
             sx={{
@@ -96,9 +96,9 @@ export function VagaFiltersDrawer({
             Empresa
           </Typography>
           <Autocomplete
-            options={empresas}
-            value={filtroEmpresa || null}
-            onChange={(_, v) => onEmpresaChange(v || '')}
+            options={companies}
+            value={companyFilter || null}
+            onChange={(_, v) => onCompanyChange(v || '')}
             renderInput={(params) => (
               <TextField {...params} placeholder="SELECIONE UMA EMPRESA" size="small" />
             )}
@@ -113,9 +113,9 @@ export function VagaFiltersDrawer({
             Modalidade
           </Typography>
           <Autocomplete
-            options={modalidades}
-            value={filtroModalidade || null}
-            onChange={(_, v) => onModalidadeChange(v || '')}
+            options={types}
+            value={typeFilter || null}
+            onChange={(_, v) => onTypeChange(v || '')}
             renderInput={(params) => (
               <TextField {...params} placeholder="SELECIONE A MODALIDADE" size="small" />
             )}
@@ -130,9 +130,9 @@ export function VagaFiltersDrawer({
             Cargo
           </Typography>
           <Autocomplete
-            options={cargos}
-            value={filtroCargo || null}
-            onChange={(_, v) => onCargoChange(v || '')}
+            options={roles}
+            value={roleFilter || null}
+            onChange={(_, v) => onRoleChange(v || '')}
             renderInput={(params) => (
               <TextField {...params} placeholder="SELECIONE O CARGO" size="small" />
             )}
@@ -163,7 +163,7 @@ export function VagaFiltersDrawer({
             },
           }}
         >
-          VER {totalFiltradas} VAGAS →
+          VER {filteredTotal} VAGAS →
         </Button>
 
         {countSecondaryFilters > 0 && (

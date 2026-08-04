@@ -1,10 +1,10 @@
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
 
 export class DedupEngine {
-  dedupByLink(jobs: JobData[]): JobData[] {
-    const seen = new Map<string, JobData>();
+  dedupByLink(jobs: Job[]): Job[] {
+    const seen = new Map<string, Job>();
     for (const job of jobs) {
-      const key = job.link || `${job.empresa}-${job.titulo_vaga}`;
+      const key = job.link || `${job.company}-${job.title}`;
       if (!seen.has(key)) {
         seen.set(key, job);
       }
@@ -12,10 +12,10 @@ export class DedupEngine {
     return Array.from(seen.values());
   }
 
-  dedupByTitleAndCompany(jobs: JobData[]): JobData[] {
-    const seen = new Map<string, JobData>();
+  dedupByTitleAndCompany(jobs: Job[]): Job[] {
+    const seen = new Map<string, Job>();
     for (const job of jobs) {
-      const key = `${(job.empresa || '').toLowerCase().trim()}|${(job.titulo_vaga || '').toLowerCase().trim()}`;
+      const key = `${(job.company || '').toLowerCase().trim()}|${(job.title || '').toLowerCase().trim()}`;
       if (!seen.has(key)) {
         seen.set(key, job);
       }
@@ -23,7 +23,7 @@ export class DedupEngine {
     return Array.from(seen.values());
   }
 
-  mergeSources(existing: JobData[], incoming: JobData[]): JobData[] {
+  mergeSources(existing: Job[], incoming: Job[]): Job[] {
     const merged = [...existing];
     const existingLinks = new Set(existing.map(j => j.link));
 

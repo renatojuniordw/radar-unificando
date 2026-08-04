@@ -14,19 +14,20 @@ vi.mock('@/lib/core/pipeline/progress-emitter', () => ({
 }));
 
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
+import type { Job } from '@/types';
 
-const mockJob = (overrides = {}) => ({
-  empresa: 'TestCorp',
-  plataforma: 'Gupy',
-  na_lista: 'Não',
-  cargo_categoria: 'Analista de Dados / Data Analyst',
-  titulo_vaga: 'Data Analyst',
-  tipo: 'Remoto',
-  local: 'Remote',
+const mockJob = (overrides: Partial<Job> = {}): Job => ({
+  company: 'TestCorp',
+  platform: 'Gupy',
+  onList: 'Não',
+  roleCategory: 'Analista de Dados / Data Analyst',
+  title: 'Data Analyst',
+  type: 'Remoto',
+  location: 'Remote',
   link: 'https://gupy.io/job/1',
-  nome_na_plataforma: 'TestCorp',
-  publicado: '2024-01-01',
-  alerta: '',
+  companyNameOnPlatform: 'TestCorp',
+  postedAt: '2024-01-01',
+  alert: '',
   ...overrides,
 });
 
@@ -39,7 +40,7 @@ describe('GupyStep', () => {
     vi.mocked(gupyMcpClient.searchJobs).mockResolvedValue([mockJob()]);
     const result = await runGupyStep('run-1', { companies: ['TestCorp'], isLoggedIn: true });
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].plataforma).toBe('Gupy');
+    expect(result[0].platform).toBe('Gupy');
   });
 
   it('should_fallback_to_rest_when_mcp_fails', async () => {
@@ -67,7 +68,7 @@ describe('GupyStep', () => {
     expect(result).toEqual([]);
   });
 
-  it('should_label_jobs_as_na_lista_sim_when_company_in_list', async () => {
+  it('should_label_jobs_as_on_list_sim_when_company_in_list', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -82,7 +83,7 @@ describe('GupyStep', () => {
       }),
     }) as any;
     const result = await runGupyStep('run-1', { companies: ['MyCompany'], isLoggedIn: false });
-    expect(result[0].na_lista).toBe('Sim');
+    expect(result[0].onList).toBe('Sim');
   });
 
   it('should_filter_out_non_remote_jobs_in_rest_mode', async () => {
@@ -96,7 +97,7 @@ describe('GupyStep', () => {
       }),
     }) as any;
     const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
-    const nonRemote = result.filter(j => j.tipo === 'Presencial');
+    const nonRemote = result.filter(j => j.type === 'Presencial');
     expect(nonRemote).toHaveLength(0);
     expect(result.length).toBeGreaterThan(0);
   });
@@ -116,6 +117,6 @@ describe('GupyStep', () => {
       }),
     }) as any;
     const result = await runGupyStep('run-1', { companies: ['ListedCorp'], isLoggedIn: false });
-    expect(result[0].na_lista).toBe('Não');
+    expect(result[0].onList).toBe('Não');
   });
 });

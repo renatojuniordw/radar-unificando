@@ -21,8 +21,8 @@ describe('GupyMcpClient', () => {
     }) as any;
     const result = await client.searchJobs('Data Analyst', 10);
     expect(result).toHaveLength(1);
-    expect(result[0].plataforma).toBe('Gupy');
-    expect(result[0].empresa).toBe('CorpA');
+    expect(result[0].platform).toBe('Gupy');
+    expect(result[0].company).toBe('CorpA');
   });
 
   it('should_return_empty_array_when_http_fails', async () => {
@@ -65,7 +65,7 @@ describe('GupyMcpClient', () => {
       }),
     }) as any;
     const result = await client.searchJobs('Business Analyst', 10);
-    expect(result[0].cargo_categoria).toContain('Business Analyst');
+    expect(result[0].roleCategory).toContain('Business Analyst');
   });
 
   it('should_handle_missing_fields_with_fallbacks', async () => {
@@ -77,7 +77,7 @@ describe('GupyMcpClient', () => {
       }),
     }) as any;
     const result = await client.searchJobs('Dev', 10);
-    expect(result[0].empresa).toBe('Startup');
-    expect(result[0].titulo_vaga).toBe('Dev');
+    expect(result[0].company).toBe('Startup');
+    expect(result[0].title).toBe('Dev');
   });
 });

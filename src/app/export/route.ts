@@ -19,11 +19,11 @@ export async function GET(req: NextRequest) {
       ];
 
       const csvRows = result.map(j => [
-        escapeCsv(j.empresa), j.plataforma, j.naLista || '',
-        escapeCsv(j.cargoCategoria || ''), escapeCsv(j.tituloVaga || ''),
-        escapeCsv(j.tipo || ''), escapeCsv(j.local || ''), j.link,
-        escapeCsv(j.nomeNaPlataforma || ''), j.publicado || '',
-        escapeCsv(j.alerta || ''), j.detectadoEm || '',
+        escapeCsv(j.company), j.platform, j.onList || '',
+        escapeCsv(j.roleCategory || ''), escapeCsv(j.title || ''),
+        escapeCsv(j.type || ''), escapeCsv(j.location || ''), j.link,
+        escapeCsv(j.companyNameOnPlatform || ''), j.postedAt || '',
+        escapeCsv(j.alert || ''), j.detectedAt || '',
       ].join(','));
 
       const csv = '\uFEFF' + [headers.join(','), ...csvRows].join('\n');

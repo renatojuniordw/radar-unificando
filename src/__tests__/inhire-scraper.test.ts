@@ -15,9 +15,9 @@ describe('InHireScraper', () => {
     }) as any;
     const result = await scraper.searchJobs(['CorpA']);
     expect(result).toHaveLength(1);
-    expect(result[0].plataforma).toBe('InHire');
-    expect(result[0].empresa).toBe('CorpA');
-    expect(result[0].tipo).toBe('Remoto');
+    expect(result[0].platform).toBe('InHire');
+    expect(result[0].company).toBe('CorpA');
+    expect(result[0].type).toBe('Remoto');
   });
 
   it('should_return_empty_array_when_fetch_fails', async () => {
@@ -47,7 +47,7 @@ describe('InHireScraper', () => {
       json: async () => ([{ id: 1, titulo: 'Analyst', empresa: 'Corp', local: 'Trabalho Remoto', dataPublicacao: '', url: '', descricao: '' }]),
     }) as any;
     const result = await scraper.searchJobs(['Corp']);
-    expect(result[0].tipo).toBe('Remoto');
+    expect(result[0].type).toBe('Remoto');
   });
 
   it('should_mark_non_remote_jobs_with_location_type', async () => {
@@ -56,7 +56,7 @@ describe('InHireScraper', () => {
       json: async () => ([{ id: 1, titulo: 'Analyst', empresa: 'Corp', local: 'São Paulo - SP', dataPublicacao: '', url: '', descricao: '' }]),
     }) as any;
     const result = await scraper.searchJobs(['Corp']);
-    expect(result[0].tipo).toBe('São Paulo - SP');
+    expect(result[0].type).toBe('São Paulo - SP');
   });
 
   it('should_infer_role_from_title', async () => {
@@ -68,8 +68,8 @@ describe('InHireScraper', () => {
       ]),
     }) as any;
     const result = await scraper.searchJobs(['Corp']);
-    expect(result[0].cargo_categoria).toContain('Revenue');
-    expect(result[1].cargo_categoria).toContain('Data Analyst');
+    expect(result[0].roleCategory).toContain('Revenue');
+    expect(result[1].roleCategory).toContain('Data Analyst');
   });
 
   it('should_return_empty_when_no_companies_provided_and_fetch_fails', async () => {
@@ -85,6 +85,6 @@ describe('InHireScraper', () => {
     }) as any;
     const result = await scraper.searchCompany('SingleCorp');
     expect(result).toHaveLength(1);
-    expect(result[0].empresa).toBe('SingleCorp');
+    expect(result[0].company).toBe('SingleCorp');
   });
 });

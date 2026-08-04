@@ -1,4 +1,4 @@
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
 
 interface RawGupyJob {
   careerPageName?: string;
@@ -33,7 +33,7 @@ interface McpResponse {
 export class GupyMcpClient {
   private url = 'https://candidates.mcp.api.gupy.io/mcp';
 
-  async searchJobs(query: string, limit = 50): Promise<JobData[]> {
+  async searchJobs(query: string, limit = 50): Promise<Job[]> {
     const res = await fetch(this.url, {
       method: 'POST',
       headers: {
@@ -98,20 +98,20 @@ export class GupyMcpClient {
     return res.json();
   }
 
-  private normalizeJobs(raw: RawGupyJob[]): JobData[] {
+  private normalizeJobs(raw: RawGupyJob[]): Job[] {
     return (raw || []).map((j) => ({
-      empresa: j.careerPageName || j.company || j.empresa || '',
-      plataforma: 'Gupy' as const,
-      na_lista: 'Não' as const,
-      cargo_categoria: this.inferRole(j.title || j.name || ''),
-      titulo_vaga: j.title || j.name || '',
-      tipo: j.workplaceType || j.work_type || '',
-      local: [j.city, j.state, j.country].filter(Boolean).join(' / ') || j.location || '',
+      company: j.careerPageName || j.company || j.empresa || '',
+      platform: 'Gupy' as const,
+      onList: 'Não' as const,
+      roleCategory: this.inferRole(j.title || j.name || ''),
+      title: j.title || j.name || '',
+      type: j.workplaceType || j.work_type || '',
+      location: [j.city, j.state, j.country].filter(Boolean).join(' / ') || j.location || '',
       link: j.jobUrl || j.url || j.link || '',
-      nome_na_plataforma: j.careerPageName || j.company || '',
-      publicado: j.publishedDate || j.created_at || '',
-      alerta: '',
-      descricao: j.description ? String(j.description).slice(0, 3000) : undefined,
+      companyNameOnPlatform: j.careerPageName || j.company || '',
+      postedAt: j.publishedDate || j.created_at || '',
+      alert: '',
+      description: j.description ? String(j.description).slice(0, 3000) : undefined,
     }));
   }
 

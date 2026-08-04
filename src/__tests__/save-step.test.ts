@@ -32,17 +32,17 @@ import { dedupEngine } from '@/lib/core/dedup';
 import { jobRepository } from '@/lib/infrastructure/repositories';
 
 const makeJob = (link: string) => ({
-  empresa: 'Corp',
-  plataforma: 'Gupy' as const,
-  na_lista: 'Não' as const,
-  cargo_categoria: 'Analyst',
-  titulo_vaga: 'Data Analyst',
-  tipo: 'Remoto',
-  local: 'Remote',
+  company: 'Corp',
+  platform: 'Gupy' as const,
+  onList: 'Não' as const,
+  roleCategory: 'Analyst',
+  title: 'Data Analyst',
+  type: 'Remoto',
+  location: 'Remote',
   link,
-  nome_na_plataforma: 'Corp',
-  publicado: '2024-01-01',
-  alerta: '',
+  companyNameOnPlatform: 'Corp',
+  postedAt: '2024-01-01',
+  alert: '',
 });
 
 describe('SaveStep', () => {
@@ -71,11 +71,11 @@ describe('SaveStep', () => {
     vi.mocked(dedupEngine.dedupByLink).mockReturnValue([job]);
     vi.mocked(jobRepository.createMany).mockImplementation(async (data) => {
       expect(data[0]).toHaveProperty('userId', 'user-1');
-      expect(data[0]).toHaveProperty('empresa', 'Corp');
-      expect(data[0]).toHaveProperty('plataforma', 'Gupy');
-      expect(data[0]).toHaveProperty('naLista', 'Não');
-      expect(data[0]).toHaveProperty('cargoCategoria', 'Analyst');
-      expect(data[0]).toHaveProperty('tituloVaga', 'Data Analyst');
+      expect(data[0]).toHaveProperty('company', 'Corp');
+      expect(data[0]).toHaveProperty('platform', 'Gupy');
+      expect(data[0]).toHaveProperty('onList', 'Não');
+      expect(data[0]).toHaveProperty('roleCategory', 'Analyst');
+      expect(data[0]).toHaveProperty('title', 'Data Analyst');
       expect(data[0]).toHaveProperty('link', 'https://a.com/1');
       return 1;
     });

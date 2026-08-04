@@ -8,11 +8,11 @@ import { SUGGESTED_CARGOS } from "@/lib/constants/home";
 
 interface HeroSectionProps {
   isLoggedIn: boolean;
-  perfilCompleto: boolean;
-  empresas: string[];
-  onEmpresasChange: (empresas: string[]) => void;
-  cargosBusca: string[];
-  onCargosBuscaChange: (cargos: string[]) => void;
+  minimalProfile: boolean;
+  companies: string[];
+  onCompaniesChange: (companies: string[]) => void;
+  roleQueries: string[];
+  onRoleQueriesChange: (roles: string[]) => void;
   cooldown: number;
   running: boolean;
   onStart: () => void;
@@ -21,11 +21,11 @@ interface HeroSectionProps {
 
 export function HeroSection({
   isLoggedIn,
-  perfilCompleto,
-  empresas,
-  onEmpresasChange,
-  cargosBusca,
-  onCargosBuscaChange,
+  minimalProfile,
+  companies,
+  onCompaniesChange,
+  roleQueries,
+  onRoleQueriesChange,
   cooldown,
   running,
   onStart,
@@ -65,7 +65,7 @@ export function HeroSection({
             GUPY + INHIRE · GRÁTIS
           </Box>
 
-          {isLoggedIn && !perfilCompleto && (
+          {isLoggedIn && !minimalProfile && (
             <Box
               sx={{
                 mb: 3,
@@ -210,8 +210,8 @@ export function HeroSection({
                   label="Empresas (opcional)"
                   helperText="Enter ou vírgula para adicionar. Deixe vazio para buscar todas."
                   placeholder="Ambev, Nubank, BRQ..."
-                  value={empresas}
-                  onChange={onEmpresasChange}
+                  value={companies}
+                  onChange={onCompaniesChange}
                   autoFocus
                   dark
                   compact
@@ -222,8 +222,8 @@ export function HeroSection({
                   label="Cargos (opcional)"
                   helperText="Enter ou vírgula para adicionar. Ex: Analista de Dados, Data Analyst, Growth"
                   placeholder="Analista de Dados, Data Analyst, Growth..."
-                  value={cargosBusca}
-                  onChange={onCargosBuscaChange}
+                  value={roleQueries}
+                  onChange={onRoleQueriesChange}
                   dark
                   compact
                 />

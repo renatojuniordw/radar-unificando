@@ -2,36 +2,36 @@
 
 import { type RefObject } from 'react';
 import { Box, Typography, Button } from '@mui/material';
-import { VagaMobileCard } from './vaga-mobile-card';
-import type { Vaga } from '@/lib/types/vaga';
+import { JobMobileCard } from './job-mobile-card';
+import type { Job } from '@/lib/types/job';
 
-const ITENS_POR_PAGINA = 10;
+const ITEMS_PER_PAGE = 10;
 
 interface Props {
-  vagas: Vaga[];
+  jobs: Job[];
   containerRef: RefObject<HTMLDivElement | null>;
-  pagina: number;
-  onPaginaChange: (pagina: number) => void;
+  page: number;
+  onPageChange: (page: number) => void;
 }
 
-export function VagaMobileList({ vagas, containerRef, pagina, onPaginaChange }: Props) {
-  const totalPaginas = Math.ceil(vagas.length / ITENS_POR_PAGINA);
+export function JobMobileList({ jobs, containerRef, page, onPageChange }: Props) {
+  const totalPages = Math.ceil(jobs.length / ITEMS_PER_PAGE);
 
-  function irParaPagina(novaPagina: number) {
-    onPaginaChange(novaPagina);
+  function goToPage(newPage: number) {
+    onPageChange(newPage);
     containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   return (
     <Box ref={containerRef} sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
-      {vagas
-        .slice((pagina - 1) * ITENS_POR_PAGINA, pagina * ITENS_POR_PAGINA)
-        .map((vaga, index) => (
-          <VagaMobileCard key={vaga.id || `${vaga.empresa}-${vaga.titulo_vaga}-${index}`} vaga={vaga} />
+      {jobs
+        .slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+        .map((job, index) => (
+          <JobMobileCard key={job.id || `${job.company}-${job.title}-${index}`} job={job} />
         ))}
 
       {/* Mobile Pagination Navigation Bar */}
-      {totalPaginas > 1 && (
+      {totalPages > 1 && (
         <Box
           sx={{
             display: 'flex',
@@ -45,21 +45,21 @@ export function VagaMobileList({ vagas, containerRef, pagina, onPaginaChange }: 
           }}
         >
           <Button
-            disabled={pagina === 1}
-            onClick={() => irParaPagina(Math.max(pagina - 1, 1))}
+            disabled={page === 1}
+            onClick={() => goToPage(Math.max(page - 1, 1))}
             size="small"
             sx={{
               border: '2px solid #020617',
-              bgcolor: pagina === 1 ? '#e2e8f0' : '#ffffff',
+              bgcolor: page === 1 ? '#e2e8f0' : '#ffffff',
               color: '#020617',
               fontWeight: 900,
               fontSize: '0.75rem',
               fontFamily: 'ui-monospace, monospace',
               borderRadius: 0,
-              boxShadow: pagina === 1 ? 'none' : '2px 2px 0px #000',
+              boxShadow: page === 1 ? 'none' : '2px 2px 0px #000',
               px: 1.5,
               py: 0.75,
-              opacity: pagina === 1 ? 0.5 : 1,
+              opacity: page === 1 ? 0.5 : 1,
             }}
           >
             ← ANTERIOR
@@ -73,25 +73,25 @@ export function VagaMobileList({ vagas, containerRef, pagina, onPaginaChange }: 
               color: '#020617',
             }}
           >
-            PÁG {pagina} / {totalPaginas}
+            PÁG {page} / {totalPages}
           </Typography>
 
           <Button
-            disabled={pagina >= totalPaginas}
-            onClick={() => irParaPagina(Math.min(pagina + 1, totalPaginas))}
+            disabled={page >= totalPages}
+            onClick={() => goToPage(Math.min(page + 1, totalPages))}
             size="small"
             sx={{
               border: '2px solid #020617',
-              bgcolor: pagina >= totalPaginas ? '#e2e8f0' : '#020617',
-              color: pagina >= totalPaginas ? '#94a3b8' : '#ccff00',
+              bgcolor: page >= totalPages ? '#e2e8f0' : '#020617',
+              color: page >= totalPages ? '#94a3b8' : '#ccff00',
               fontWeight: 900,
               fontSize: '0.75rem',
               fontFamily: 'ui-monospace, monospace',
               borderRadius: 0,
-              boxShadow: pagina >= totalPaginas ? 'none' : '2px 2px 0px #000',
+              boxShadow: page >= totalPages ? 'none' : '2px 2px 0px #000',
               px: 1.5,
               py: 0.75,
-              opacity: pagina >= totalPaginas ? 0.5 : 1,
+              opacity: page >= totalPages ? 0.5 : 1,
             }}
           >
             PRÓXIMA →

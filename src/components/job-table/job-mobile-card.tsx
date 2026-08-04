@@ -1,16 +1,16 @@
 'use client';
 
 import { Box, Typography, Tooltip } from '@mui/material';
-import { formatVagaDate } from '@/lib/date';
+import { formatJobDate } from '@/lib/date';
 import { trackJobApply } from '@/lib/analytics';
-import type { Vaga } from '@/lib/types/vaga';
+import type { Job } from '@/lib/types/job';
 
 interface Props {
-  vaga: Vaga;
+  job: Job;
 }
 
-export function VagaMobileCard({ vaga }: Props) {
-  const dateInfo = formatVagaDate(vaga.publicado, vaga.detectado_em);
+export function JobMobileCard({ job }: Props) {
+  const dateInfo = formatJobDate(job.postedAt, job.detectedAt);
 
   return (
     <Box
@@ -38,13 +38,13 @@ export function VagaMobileCard({ vaga }: Props) {
             whiteSpace: 'nowrap',
           }}
         >
-          {vaga.empresa}
+          {job.company}
         </Typography>
 
         <Box
           sx={{
             border: '2px solid #020617',
-            bgcolor: vaga.plataforma === 'Gupy' ? '#ccff00' : '#e2e8f0',
+            bgcolor: job.platform === 'Gupy' ? '#ccff00' : '#e2e8f0',
             color: '#020617',
             fontWeight: 900,
             fontSize: '0.6rem',
@@ -56,13 +56,13 @@ export function VagaMobileCard({ vaga }: Props) {
             whiteSpace: 'nowrap',
           }}
         >
-          {vaga.plataforma}
+          {job.platform}
         </Box>
       </Box>
 
       {/* Job Title */}
       <Typography sx={{ fontWeight: 900, fontSize: '1.05rem', color: '#020617', lineHeight: 1.25 }}>
-        {vaga.titulo_vaga}
+        {job.title}
       </Typography>
 
       {/* Metadata Pills */}
@@ -74,24 +74,24 @@ export function VagaMobileCard({ vaga }: Props) {
             </Box>
           </Tooltip>
         )}
-        {vaga.tipo && (
+        {job.type && (
           <Box sx={{ border: '1px solid #020617', bgcolor: '#f8fafc', px: 1, py: 0.25, fontSize: '0.65rem', fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#334155' }}>
-            {vaga.tipo}
+            {job.type}
           </Box>
         )}
-        {vaga.local && (
+        {job.location && (
           <Box sx={{ border: '1px solid #020617', bgcolor: '#f8fafc', px: 1, py: 0.25, fontSize: '0.65rem', fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#334155' }}>
-            📍 {vaga.local}
+            📍 {job.location}
           </Box>
         )}
       </Box>
 
       {/* Action CTA Button */}
       <a
-        href={vaga.link}
+        href={job.link}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => trackJobApply({ titulo: vaga.titulo_vaga, empresa: vaga.empresa, plataforma: vaga.plataforma, link: vaga.link })}
+        onClick={() => trackJobApply({ title: job.title, company: job.company, platform: job.platform, link: job.link })}
         style={{ textDecoration: 'none', marginTop: 4 }}
       >
         <Box
@@ -115,7 +115,7 @@ export function VagaMobileCard({ vaga }: Props) {
             },
           }}
         >
-          VER VAGA NO {vaga.plataforma.toUpperCase()} →
+          VER VAGA NO {job.platform.toUpperCase()} →
         </Box>
       </a>
     </Box>

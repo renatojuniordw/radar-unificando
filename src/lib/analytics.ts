@@ -22,14 +22,14 @@ export function trackEvent(
  */
 export function trackJobSearch(params: {
   searchTerm?: string;
-  empresas?: string[];
-  cargos?: string[];
+  companies?: string[];
+  roles?: string[];
 }) {
   trackEvent("search_jobs", {
     search_term: params.searchTerm || "",
-    total_empresas: params.empresas?.length || 0,
-    empresas: params.empresas?.slice(0, 5).join(",") || "",
-    cargos: params.cargos?.slice(0, 5).join(",") || "",
+    total_empresas: params.companies?.length || 0,
+    empresas: params.companies?.slice(0, 5).join(",") || "",
+    cargos: params.roles?.slice(0, 5).join(",") || "",
   });
 }
 
@@ -37,15 +37,15 @@ export function trackJobSearch(params: {
  * Evento: Clique no link de aplicação da vaga (Gupy / InHire)
  */
 export function trackJobApply(params: {
-  titulo: string;
-  empresa: string;
-  plataforma: string;
+  title: string;
+  company: string;
+  platform: string;
   link: string;
 }) {
   trackEvent("apply_job_click", {
-    job_title: params.titulo,
-    company: params.empresa,
-    platform: params.plataforma,
+    job_title: params.title,
+    company: params.company,
+    platform: params.platform,
     link_domain: params.link.includes("gupy") ? "gupy" : "inhire",
   });
 }
@@ -53,9 +53,9 @@ export function trackJobApply(params: {
 /**
  * Evento: Exportação da lista de vagas em CSV
  */
-export function trackExportCsv(totalVagas: number) {
+export function trackExportCsv(totalJobs: number) {
   trackEvent("export_csv", {
-    total_vagas: totalVagas,
+    total_vagas: totalJobs,
   });
 }
 

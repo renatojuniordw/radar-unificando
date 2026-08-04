@@ -6,19 +6,19 @@ import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
 import { uniqueValues } from "@/lib/array";
 import { trackJobSearch } from "@/lib/analytics";
-import type { Vaga } from "@/lib/types/vaga";
+import type { Job } from "@/lib/types/job";
 
 const AUTO_SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
 
 export function useJobSearch() {
   const { data: session } = useSession();
   const profile = useProfile();
-  const [empresas, setEmpresas] = useState<string[]>([]);
-  const [cargosBusca, setCargosBusca] = useState<string[]>([]);
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [roleQueries, setRoleQueries] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [autoSyncing, setAutoSyncing] = useState(false);
   const [lastRunAt, setLastRunAt] = useState<number | null>(null);
-  const [vagas, setVagas] = useState<Vaga[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
   const [cargos, setCargos] = useState<string[]>([]);
   const [snackbar, setSnackbar] = useState<{
@@ -28,31 +28,31 @@ export function useJobSearch() {
   const [cooldown, setCooldown] = useState(0);
 
   // Perfil mínimo: skills >= 3 E (currentRole OU area)
-  const perfilMinimo = useMemo(() => {
+  const minimalProfile = useMemo(() => {
     return profile.skills.length >= 3 && (profile.currentRole || profile.area);
   }, [profile.skills.length, profile.currentRole, profile.area]);
 
   // Modo recomendado é derivado (logado + perfil completo); não é estado.
-  const modoRecomendado = useMemo(
-    () => !!(session && perfilMinimo),
-    [session, perfilMinimo],
+  const recommendedMode = useMemo(
+    () => !!(session && minimalProfile),
+    [session, minimalProfile],
   );
 
-  const carregarVagas = useCallback(async (filters?: {
-    plataforma?: string;
-    cargo?: string;
+  const loadJobs = useCallback(async (filters?: {
+    platform?: string;
+    role?: string;
     search?: string;
   }) => {
     setLoading(true);
     const params = new URLSearchParams();
 
     // Se modo recomendado e logado
-    if (modoRecomendado && session) {
-      params.set("recomendado", "1");
+    if (recommendedMode && session) {
+      params.set("recommended", "1");
     } else {
       // Filtros normais
-      if (filters?.plataforma) params.set("plataforma", filters.plataforma);
-      if (filters?.cargo) params.set("cargo", filters.cargo);
+      if (filters?.platform) params.set("platform", filters.platform);
+      if (filters?.role) params.set("role", filters.role);
       if (filters?.search) params.set("search", filters.search);
     }
 
@@ -70,37 +70,37 @@ export function useJobSearch() {
       }
 
       const data = await res.json();
-      const jobs = Array.isArray(data) ? data : [];
-      setVagas(jobs);
+      const loadedJobs = Array.isArray(data) ? data : [];
+      setJobs(loadedJobs);
 
-      if (!session && jobs.length > 0) await browserStorage.setVagas(jobs);
+      if (!session && loadedJobs.length > 0) await browserStorage.setJobs(loadedJobs);
 
-      const uniqueCargos = uniqueValues(jobs.map((j: Vaga) => j.cargo_categoria)) as string[];
+      const uniqueCargos = uniqueValues(loadedJobs.map((j: Job) => j.roleCategory)) as string[];
       setCargos(uniqueCargos);
     } catch {
       setSnackbar({ message: "Erro de conexão ao carregar vagas.", severity: "error" });
     } finally {
       setLoading(false);
     }
-  }, [modoRecomendado, session]);
+  }, [recommendedMode, session]);
 
   // Carregar vagas salvas na montagem (para logados e anônimos)
   useEffect(() => {
     if (session) {
       // Adiado para fora do effect síncrono (evita setState em cascata)
       queueMicrotask(() => {
-        void carregarVagas();
+        void loadJobs();
       });
     } else {
       let cancelled = false;
-      browserStorage.getVagas().then((stored) => {
-        if (!cancelled && stored.length > 0) setVagas(stored as Vaga[]);
+      browserStorage.getJobs().then((stored) => {
+        if (!cancelled && stored.length > 0) setJobs(stored as Job[]);
       }).catch(() => {});
       return () => {
         cancelled = true;
       };
     }
-  }, [session, carregarVagas]);
+  }, [session, loadJobs]);
 
   // Carregar timestamp da última busca
   useEffect(() => {
@@ -113,15 +113,15 @@ export function useJobSearch() {
   useEffect(() => {
     browserStorage.getFilters().then((filters) => {
       if (!filters) return;
-      if (Array.isArray(filters.empresas)) setEmpresas(filters.empresas);
-      if (Array.isArray(filters.cargos)) setCargosBusca(filters.cargos);
+      if (Array.isArray(filters.companies)) setCompanies(filters.companies);
+      if (Array.isArray(filters.roles)) setRoleQueries(filters.roles);
     }).catch(() => {});
   }, []);
 
   // Persistir filtros a cada alteração
   useEffect(() => {
-    void browserStorage.setFilters({ empresas, cargos: cargosBusca }).catch(() => {});
-  }, [empresas, cargosBusca]);
+    void browserStorage.setFilters({ companies, roles: roleQueries }).catch(() => {});
+  }, [companies, roleQueries]);
 
   useEffect(() => {
     browserStorage.getCooldownEnd().then((endsAt) => {
@@ -149,8 +149,8 @@ export function useJobSearch() {
   }, [cooldown]);
 
   function addSuggestion(cargo: string) {
-    if (!cargosBusca.includes(cargo)) {
-      setCargosBusca([...cargosBusca, cargo]);
+    if (!roleQueries.includes(cargo)) {
+      setRoleQueries([...roleQueries, cargo]);
     }
   }
 
@@ -161,16 +161,16 @@ export function useJobSearch() {
       setAutoSyncing(true);
     } else {
       setRunning(true);
-      setVagas([]);
+      setJobs([]);
       if (!session) await browserStorage.clear();
-      trackJobSearch({ empresas, cargos: cargosBusca });
+      trackJobSearch({ companies, roles: roleQueries });
     }
 
     try {
       const res = await fetch("/api/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companies: empresas, queries: cargosBusca }),
+        body: JSON.stringify({ companies, queries: roleQueries }),
       });
 
       if (!res.ok) {
@@ -215,7 +215,7 @@ export function useJobSearch() {
           const data = JSON.parse(event.data) as {
             type: string;
             message?: string;
-            jobs?: Vaga[];
+            jobs?: Job[];
           };
 
           if (
@@ -232,18 +232,18 @@ export function useJobSearch() {
               data.type === "pipeline_complete" &&
               Array.isArray(data.jobs)
             ) {
-              const jobs: Vaga[] = data.jobs.map((j) => ({
+              const completedJobs: Job[] = data.jobs.map((j) => ({
                 ...j,
-                detectado_em: j.detectado_em || "",
+                detectedAt: j.detectedAt || "",
               }));
-              setVagas(jobs);
-              await browserStorage.setVagas(data.jobs);
+              setJobs(completedJobs);
+              await browserStorage.setJobs(data.jobs);
               const uniqueCargos = uniqueValues(
-                jobs.map((j: Vaga) => j.cargo_categoria),
+                completedJobs.map((j: Job) => j.roleCategory),
               );
               setCargos(uniqueCargos);
             } else {
-              carregarVagas();
+              loadJobs();
             }
 
             if (!isSilent) {
@@ -270,7 +270,7 @@ export function useJobSearch() {
         if (!isSilent) {
           setSnackbar({ message: "Falha na conexão com a busca. Tente novamente.", severity: "error" });
         }
-        carregarVagas().catch(() => {});
+        loadJobs().catch(() => {});
       };
     } catch {
       if (!isSilent) {
@@ -279,7 +279,7 @@ export function useJobSearch() {
       setRunning(false);
       setAutoSyncing(false);
     }
-  }, [empresas, cargosBusca, session, carregarVagas]);
+  }, [companies, roleQueries, session, loadJobs]);
 
   // Auto-sync na montagem se o tempo decorrido for > 15min e cooldown for 0
   const handleStartRef = useRef(handleStart);
@@ -307,22 +307,22 @@ export function useJobSearch() {
   return {
     session,
     profile,
-    empresas,
-    setEmpresas,
-    cargosBusca,
-    setCargosBusca,
+    companies,
+    setCompanies,
+    roleQueries,
+    setRoleQueries,
     running,
     autoSyncing,
     lastRunAt,
-    vagas,
+    jobs,
     loading,
     cargos,
     snackbar,
     setSnackbar,
     cooldown,
-    modoRecomendado,
-    perfilMinimo,
-    carregarVagas,
+    recommendedMode,
+    minimalProfile,
+    loadJobs,
     addSuggestion,
     handleStart,
   };

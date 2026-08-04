@@ -10,21 +10,21 @@ export function HomeSearchContent() {
   const {
     session,
     profile,
-    empresas,
-    setEmpresas,
-    cargosBusca,
-    setCargosBusca,
+    companies,
+    setCompanies,
+    roleQueries,
+    setRoleQueries,
     running,
     autoSyncing,
-    vagas,
+    jobs,
     loading,
     cargos,
     snackbar,
     setSnackbar,
     cooldown,
-    modoRecomendado,
-    perfilMinimo,
-    carregarVagas,
+    recommendedMode,
+    minimalProfile,
+    loadJobs,
     addSuggestion,
     handleStart,
   } = useJobSearch();
@@ -33,11 +33,11 @@ export function HomeSearchContent() {
     <>
       <HeroSection
         isLoggedIn={!!session}
-        perfilCompleto={!!perfilMinimo}
-        empresas={empresas}
-        onEmpresasChange={setEmpresas}
-        cargosBusca={cargosBusca}
-        onCargosBuscaChange={setCargosBusca}
+        minimalProfile={!!minimalProfile}
+        companies={companies}
+        onCompaniesChange={setCompanies}
+        roleQueries={roleQueries}
+        onRoleQueriesChange={setRoleQueries}
         cooldown={cooldown}
         running={running}
         onStart={handleStart}
@@ -47,13 +47,13 @@ export function HomeSearchContent() {
       {running && <LoadingOverlay />}
 
       <ResultsSection
-        modoRecomendado={modoRecomendado}
-        vagas={vagas}
+        recommendedMode={recommendedMode}
+        jobs={jobs}
         loading={loading}
         autoSyncing={autoSyncing}
         cargos={cargos}
         areaOuCargo={profile.area || profile.currentRole || ""}
-        onFilterChange={carregarVagas}
+        onFilterChange={loadJobs}
       />
 
       {snackbar && (

@@ -6,8 +6,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 interface Props {
-  filtroBusca: string;
-  onBuscaChange: (value: string) => void;
+  searchFilter: string;
+  onSearchChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   countSecondaryFilters: number;
   countTotalFilters: number;
@@ -15,9 +15,9 @@ interface Props {
   onClearFilters: () => void;
 }
 
-export function VagaFiltersMobile({
-  filtroBusca,
-  onBuscaChange,
+export function JobFiltersMobile({
+  searchFilter,
+  onSearchChange,
   onSubmit,
   countSecondaryFilters,
   countTotalFilters,
@@ -30,8 +30,8 @@ export function VagaFiltersMobile({
       <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
         <TextField
           size="small"
-          value={filtroBusca}
-          onChange={e => onBuscaChange(e.target.value)}
+          value={searchFilter}
+          onChange={e => onSearchChange(e.target.value)}
           placeholder="Buscar cargo, empresa, termo..."
           slotProps={{
             input: {

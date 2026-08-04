@@ -58,21 +58,21 @@ model Job {
   id                    String                  @id @default(uuid()) @db.Uuid
   userId                String                  @map("user_id") @db.Uuid
   source                String                  @default("gupy_api") @db.VarChar(20)
-  empresa               String                  @db.VarChar
-  plataforma            String                  @db.VarChar
-  naLista               String?                 @default("Não") @map("na_lista") @db.VarChar(3)
-  cargoCategoria        String?                 @map("cargo_categoria") @db.VarChar
-  tituloVaga            String?                 @map("titulo_vaga") @db.VarChar
-  tipo                  String?                 @db.VarChar
-  local                 String?                 @db.VarChar
+  company               String                  @db.VarChar
+  platform              String                  @db.VarChar
+  onList                String?                 @default("Não") @map("on_list") @db.VarChar(3)
+  roleCategory          String?                 @map("role_category") @db.VarChar
+  title                 String?                 @db.VarChar
+  type                  String?                 @db.VarChar
+  location              String?                 @db.VarChar
   link                  String                  @db.VarChar
-  nomeNaPlataforma      String?                 @map("nome_na_plataforma") @db.VarChar
-  publicado             String?                 @db.VarChar
-  descricao             String?                 @db.Text
+  companyNameOnPlatform String?                 @map("company_name_on_platform") @db.VarChar
+  postedAt              String?                 @map("posted_at") @db.VarChar
+  description           String?                 @db.Text
   skillsRequired        Json?                   @map("skills_required")
   score                 Float?                  @db.Real
-  alerta                String?                 @default("") @db.VarChar
-  detectadoEm           String?                 @map("detectado_em") @db.VarChar
+  alert                 String?                 @default("") @db.VarChar
+  detectedAt            String?                 @map("detected_at") @db.VarChar
   status                String                  @default("active") @db.VarChar(20)
   lastCheckedAt         DateTime?               @map("last_checked_at")
   createdAt             DateTime                @default(now()) @map("created_at")
@@ -159,13 +159,13 @@ model ApplicationLog {
 }
 
 model NewCompany {
-  id           String   @id @default(uuid()) @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
-  nome         String   @db.VarChar
-  totalVagas   Int?     @default(0) @map("total_vagas")
-  urlCarreiras String?  @map("url_carreiras") @db.VarChar
-  createdAt    DateTime @default(now()) @map("created_at")
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  name       String   @db.VarChar
+  totalJobs  Int?     @default(0) @map("total_jobs")
+  careersUrl String?  @map("careers_url") @db.VarChar
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("new_companies")
 }
@@ -187,15 +187,15 @@ model PipelineRun {
 }
 
 model CompanyPresence {
-  id               String  @id @default(uuid()) @db.Uuid
-  userId           String  @map("user_id") @db.Uuid
-  empresa          String  @db.VarChar
-  temGupy          String? @default("") @map("tem_gupy") @db.VarChar(3)
-  paginaGupy       String? @map("pagina_gupy") @db.VarChar
-  temInhire        String? @default("") @map("tem_inhire") @db.VarChar(3)
-  paginaInhire     String? @map("pagina_inhire") @db.VarChar
-  totalVagasInhire Int?    @default(0) @map("total_vagas_inhire")
-  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String  @id @default(uuid()) @db.Uuid
+  userId          String  @map("user_id") @db.Uuid
+  company         String  @db.VarChar
+  hasGupy         String? @default("") @map("has_gupy") @db.VarChar(3)
+  gupyPage        String? @map("gupy_page") @db.VarChar
+  hasInhire       String? @default("") @map("has_inhire") @db.VarChar(3)
+  inhirePage      String? @map("inhire_page") @db.VarChar
+  totalInhireJobs Int?    @default(0) @map("total_inhire_jobs")
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("company_presence")
 }

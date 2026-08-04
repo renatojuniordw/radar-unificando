@@ -1,13 +1,13 @@
 import { inhireScraper } from '@/lib/core/scrapers/inhire-scraper';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
 
 export interface InHireStepOptions {
   companies: string[];
   queries?: string[];
 }
 
-export async function runInHireStep(runId: string, options: InHireStepOptions): Promise<JobData[]> {
+export async function runInHireStep(runId: string, options: InHireStepOptions): Promise<Job[]> {
   const { companies, queries } = options;
 
   progressEmitter.emit(runId, {
@@ -21,15 +21,15 @@ export async function runInHireStep(runId: string, options: InHireStepOptions): 
     if (queries?.length) {
       const queryTerms = queries.map(q => q.toLowerCase().trim());
       jobs = jobs.filter(j => {
-        const titulo = j.titulo_vaga.toLowerCase();
-        return queryTerms.some(q => titulo.includes(q));
+        const title = j.title.toLowerCase();
+        return queryTerms.some(q => title.includes(q));
       });
     }
 
     const normalized = companies.map(c => c.toLowerCase().trim());
     const labeled = jobs.map(j => ({
       ...j,
-      na_lista: normalized.some(c => j.empresa.toLowerCase().includes(c)) ? 'Sim' as const : 'Não' as const,
+      onList: normalized.some(c => j.company.toLowerCase().includes(c)) ? 'Sim' as const : 'Não' as const,
     }));
 
     progressEmitter.emit(runId, {
