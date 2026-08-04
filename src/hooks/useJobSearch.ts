@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { AnonymousStorage } from "@/lib/infrastructure/storage/local-storage";
+import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
 import type { Vaga } from "@/lib/types/vaga";
-
-const FILTERS_STORAGE_KEY = "radar-filters";
 
 export function useJobSearch() {
   const { data: session } = useSession();
@@ -31,29 +29,28 @@ export function useJobSearch() {
 
   useEffect(() => {
     if (!session && vagas.length === 0) {
-      const stored = AnonymousStorage.getVagas();
-      if (stored.length > 0) setVagas(stored as Vaga[]);
+      let cancelled = false;
+      browserStorage.getVagas().then((stored) => {
+        if (!cancelled && stored.length > 0) setVagas(stored as Vaga[]);
+      });
+      return () => {
+        cancelled = true;
+      };
     }
   }, [session]);
 
   // Carregar filtros persistidos (empresas/cargos) na montagem
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(FILTERS_STORAGE_KEY);
-      if (saved) {
-        const filters = JSON.parse(saved);
-        if (Array.isArray(filters.empresas)) setEmpresas(filters.empresas);
-        if (Array.isArray(filters.cargos)) setCargosBusca(filters.cargos);
-      }
-    } catch {}
+    browserStorage.getFilters().then((filters) => {
+      if (!filters) return;
+      if (Array.isArray(filters.empresas)) setEmpresas(filters.empresas);
+      if (Array.isArray(filters.cargos)) setCargosBusca(filters.cargos);
+    });
   }, []);
 
   // Persistir filtros a cada alteração
   useEffect(() => {
-    localStorage.setItem(
-      FILTERS_STORAGE_KEY,
-      JSON.stringify({ empresas, cargos: cargosBusca }),
-    );
+    void browserStorage.setFilters({ empresas, cargos: cargosBusca });
   }, [empresas, cargosBusca]);
 
   // Ativar modo recomendado quando logado + perfil pronto
@@ -68,12 +65,13 @@ export function useJobSearch() {
   }, [session, perfilMinimo, profile.currentRole, profile.area]);
 
   useEffect(() => {
-    const endsAt = AnonymousStorage.getCooldownEnd();
-    if (endsAt) {
-      const remaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
-      if (remaining > 0) setCooldown(remaining);
-      else AnonymousStorage.clearCooldown();
-    }
+    browserStorage.getCooldownEnd().then((endsAt) => {
+      if (endsAt) {
+        const remaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+        if (remaining > 0) setCooldown(remaining);
+        else void browserStorage.clearCooldown();
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -82,7 +80,7 @@ export function useJobSearch() {
       setCooldown((prev) => {
         const next = prev - 1;
         if (next <= 0) {
-          AnonymousStorage.clearCooldown();
+          void browserStorage.clearCooldown();
           return 0;
         }
         return next;
@@ -115,7 +113,7 @@ export function useJobSearch() {
     const jobs = Array.isArray(data) ? data : [];
     setVagas(jobs);
 
-    if (!session && jobs.length > 0) AnonymousStorage.setVagas(jobs);
+    if (!session && jobs.length > 0) await browserStorage.setVagas(jobs);
 
     const uniqueCargos = [
       ...new Set(jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean)),
@@ -133,7 +131,7 @@ export function useJobSearch() {
   async function handleStart() {
     setRunning(true);
     setVagas([]);
-    if (!session) AnonymousStorage.clear();
+    if (!session) await browserStorage.clear();
 
     try {
       const res = await fetch("/api/pipeline", {
@@ -146,7 +144,7 @@ export function useJobSearch() {
         const body = await res.json().catch(() => ({}));
         if (res.status === 429 && body.retryAfter) {
           const endsAt = Date.now() + body.retryAfter * 1000;
-          AnonymousStorage.setCooldownEnd(endsAt);
+          await browserStorage.setCooldownEnd(endsAt);
           setCooldown(body.retryAfter);
           setSnackbar({
             message: body.error || "Muitas requisições. Aguarde.",
@@ -165,12 +163,12 @@ export function useJobSearch() {
       const { runId: id, cooldownSeconds: cd } = await res.json();
       if (cd) {
         const endsAt = Date.now() + cd * 1000;
-        AnonymousStorage.setCooldownEnd(endsAt);
+        await browserStorage.setCooldownEnd(endsAt);
         setCooldown(cd);
       }
       const evtSource = new EventSource(`/api/pipeline/stream?runId=${id}`);
 
-      evtSource.onmessage = (event) => {
+      evtSource.onmessage = async (event) => {
         try {
           const data = JSON.parse(event.data);
 
@@ -192,7 +190,7 @@ export function useJobSearch() {
                 detectado_em: j.detectado_em || "",
               }));
               setVagas(jobs);
-              AnonymousStorage.setVagas(data.jobs);
+              await browserStorage.setVagas(data.jobs);
               const uniqueCargos = [
                 ...new Set(
                   jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean),

@@ -83,7 +83,7 @@
 | T024 | should_buffer_and_replay_events | ProgressEmitter Rule 2,4 | Unit | 5 | ✅ |
 | T025 | should_allow_first_request_and_block_after_limit | RateLimiter Rule 1,2,3 | Unit | 1, 5 | ✅ |
 | T026 | should_log_error_when_env_vars_missing | EnvValidator Rule 1 | Unit | 1 | ✅ |
-| T027 | should_store_and_retrieve_vagas | AnonymousStorage Rule 2 | Unit | 1 | ✅ |
+| T027 | should_store_and_retrieve_vagas | browserStorage Rule 2 | Unit | 1 | ✅ |
 | T028 | should_return_401_when_not_authenticated | API Auth | Integration | 1, 6 | ✅ |
 | T029 | should_return_201_on_successful_registration | API Register | Integration | 1, 6 | ✅ |
 | T030 | should_update_stage_when_transition_valid | API Applications | Integration | 1, 6 | ✅ |
@@ -111,7 +111,7 @@
 | ProgressEmitter | 9 | 🟢 LOW | Simple event emitter — well-understood pattern |
 | UI Components | 23 | 🟢 LOW | Presentational — no business logic |
 | EnvValidator | 4 | 🟢 LOW | Simple validation checks |
-| AnonymousStorage | 14 | 🟢 LOW | localStorage wrapper |
+| browserStorage | 15 | 🟢 LOW | IndexedDB wrapper (idb) |
 
 ---
 

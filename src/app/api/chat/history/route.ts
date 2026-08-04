@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { chatRepository } from '@/lib/infrastructure/repositories';
+import { sanitizePiiInObject } from '@/lib/core/ai/pii-redactor';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -28,7 +29,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const { chatId = 'default', messages } = await req.json();
-    await chatRepository.replaceMessages(session.user.id, chatId, messages);
+    const sanitizedMessages = sanitizePiiInObject(messages);
+    await chatRepository.replaceMessages(session.user.id, chatId, sanitizedMessages);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[chat-history] Error saving:', error);

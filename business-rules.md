@@ -360,18 +360,19 @@ Deduplicates jobs by link (limit 200), maps to Prisma.JobCreateManyInput, calls 
 
 ---
 
-## AnonymousStorage (storage/local-storage.ts)
+## browserStorage (storage/browser-storage.ts)
 
 ### Expected Behavior
-- CRUD operations for vagas, companies, run, stats in localStorage under `ru_anon_*` keys.
-- All methods guard against SSR (`typeof window === 'undefined'`).
+- Async CRUD operations for anonymous vagas, cooldown, filters, chat id and chat messages in IndexedDB (DB `radar-unificando`, store `kv`).
+- All methods guard against SSR/IndexedDB-unavailable (`typeof window === 'undefined' || typeof indexedDB === 'undefined'`).
+- One-time backfill from legacy `ru_anon_*` localStorage keys (flag `migrated_v1`).
 
 ### Validations and Rules
-1. All getters return null/[] if window is undefined (SSR guard).
-2. All setters silently ignore on SSR or on QuotaExceededError.
-3. `addVagas`: Merges existing + new, deduplicating by link.
-4. `clear`: Removes all `ru_anon_*` keys.
-5. JSON parse failures return default values ([] or {} or null).
+1. All getters resolve to null/[] if window or indexedDB is undefined (SSR/unavailable guard).
+2. All operations silently fail if IndexedDB is unavailable (private mode, SSR).
+3. `clear`: Removes anonymous data only (vagas + cooldown), preserving filters and chat.
+4. Reads return default values on missing keys or errors ([] or null).
+5. `ensureMigration`: best-effort, idempotent via `migrated_v1` flag.
 
 ---
 

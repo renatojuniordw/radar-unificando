@@ -122,6 +122,14 @@ export function Footer() {
             <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0, flexWrap: 'wrap' }}>
               <li>
                 <a
+                  href="/termos"
+                  style={{ color: '#ccff00', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                >
+                  TERMOS & PRIVACIDADE
+                </a>
+              </li>
+              <li>
+                <a
                   href="https://unificando.com.br/"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -137,7 +145,9 @@ export function Footer() {
                   href="https://github.com/anomalyco/busca-vagas-gupy-inhire"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#ccff00', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; }}
                 >
                   PROJETO ORIGINAL
                 </a>

@@ -11,6 +11,7 @@ import type { Components } from 'react-markdown';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { ChatSidebar } from '@/components/chat-sidebar';
 import { useChatAssistant } from '@/contexts/chat-assistant-context';
+import { browserStorage } from '@/lib/infrastructure/storage/browser-storage';
 
 interface Conversation {
   id: string;
@@ -18,9 +19,6 @@ interface Conversation {
   lastMessage: string;
   createdAt: Date;
 }
-
-const STORAGE_KEY = 'chat-assistant-ui-history';
-const CHAT_ID_KEY = 'chat-assistant-ui-id';
 
 const SUGGESTIONS = [
   'Quais vagas de DevOps estão abertas?',
@@ -51,16 +49,6 @@ Como posso te apoiar hoje?
   };
 }
 
-function getOrCreateChatId(): string {
-  if (typeof window === 'undefined') return 'default';
-  let chatId = localStorage.getItem(CHAT_ID_KEY);
-  if (!chatId) {
-    chatId = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    localStorage.setItem(CHAT_ID_KEY, chatId);
-  }
-  return chatId;
-}
-
 async function loadMessagesFromServer(chatId: string = 'default'): Promise<{ messages: any[]; error: boolean }> {
   try {
     const res = await fetch(`/api/chat/history?chatId=${chatId}`);
@@ -87,22 +75,6 @@ async function saveMessagesToServer(chatId: string, messages: any[]): Promise<bo
   }
 }
 
-function loadMessagesLocal() {
-  if (typeof window === 'undefined') return [];
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveMessagesLocal(messages: any[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  } catch {}
-}
 
 // SVG Icons (no emojis)
 function BotIcon() {
@@ -291,7 +263,7 @@ export function ChatAssistantUI() {
   const clearPendingPrompt = chatContext.clearPendingPrompt;
 
   const [input, setInput] = useState('');
-  const [chatId, setChatId] = useState(() => getOrCreateChatId());
+  const [chatId, setChatId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -305,10 +277,28 @@ export function ChatAssistantUI() {
 
   const loading = chatStatus === 'submitted' || chatStatus === 'streaming';
 
+  // Carrega ou cria o chat id persistido (IndexedDB)
   useEffect(() => {
+    let cancelled = false;
+    browserStorage.getChatId().then((id) => {
+      if (cancelled) return;
+      const next = id ?? `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      setChatId(next);
+      if (!id) void browserStorage.setChatId(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chatId) return;
+    const currentChatId = chatId;
+    let cancelled = false;
     async function load() {
-      const { messages: fromServer, error } = await loadMessagesFromServer(chatId);
-      let stored = fromServer.length > 0 ? fromServer : loadMessagesLocal();
+      const { messages: fromServer, error } = await loadMessagesFromServer(currentChatId);
+      let stored = fromServer.length > 0 ? fromServer : await browserStorage.getChatMessages();
+      if (cancelled) return;
       if (error) setSyncError(true);
       if (stored.length > 0 && setMessages) {
         setMessages(stored);
@@ -318,6 +308,9 @@ export function ChatAssistantUI() {
       setIsLoaded(true);
     }
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [chatId, setMessages, session?.user?.name]);
 
   useEffect(() => {
@@ -332,10 +325,12 @@ export function ChatAssistantUI() {
   }, [messages, loading]);
 
   useEffect(() => {
+    if (!chatId) return;
+    const currentChatId = chatId;
     if (messages.length > 0 && isLoaded && !loading) {
-      saveMessagesLocal(messages);
+      void browserStorage.setChatMessages(messages);
       const timeoutId = setTimeout(() => {
-        saveMessagesToServer(chatId, messages).then((ok) => {
+        saveMessagesToServer(currentChatId, messages).then((ok) => {
           setSyncError(!ok);
           if (ok) loadConversations();
         });
@@ -364,13 +359,13 @@ export function ChatAssistantUI() {
     }
     setIsLoaded(false);
     setChatId(id);
-    localStorage.setItem(CHAT_ID_KEY, id);
+    void browserStorage.setChatId(id);
     setSidebarOpen(false);
   }
 
   function handleNewConversation() {
     const newId = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    localStorage.setItem(CHAT_ID_KEY, newId);
+    void browserStorage.setChatId(newId);
     setChatId(newId);
     setMessages([createWelcomeMessage(session?.user?.name)]);
     setIsLoaded(true);
@@ -383,16 +378,28 @@ export function ChatAssistantUI() {
   // Sem sessão → não renderiza FAB nem drawer
   if (!session) return null;
 
+  // Detecção dos limites de conversa (25 mensagens) e limite diário (50 mensagens)
+  const lastMessageText = messages.length > 0
+    ? messages[messages.length - 1].parts.filter(p => p.type === 'text').map(p => p.text).join('')
+    : '';
+
+  const isDailyLimitReached = lastMessageText.includes('Limite diário de interações atingido');
+  const isThreadLimitReached = !isDailyLimitReached && (
+    messages.length >= 25 || lastMessageText.includes('limite de 25 mensagens')
+  );
+
   function handleSend() {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || isThreadLimitReached || isDailyLimitReached) return;
     sendMessage({ text: input });
     setInput('');
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Bloquear envio por Enter se os limites forem atingidos ou estiver enviando
+      if (!e.shiftKey && !loading && !isThreadLimitReached && !isDailyLimitReached && input.trim()) {
+        handleSend();
+      }
     }
   }
 
@@ -401,10 +408,11 @@ export function ChatAssistantUI() {
   }
 
   async function handleClearHistory() {
+    if (!chatId) return;
     setConfirmOpen(false);
     setMessages([]);
     setSyncError(false);
-    localStorage.removeItem(STORAGE_KEY);
+    void browserStorage.setChatMessages([]);
     try {
       await fetch(`/api/chat/history?chatId=${chatId}`, { method: 'DELETE' });
     } catch {}
@@ -491,9 +499,31 @@ export function ChatAssistantUI() {
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
                 Assistente de Vagas
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                {loading ? 'Digitando...' : 'Online'}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                  {loading ? 'Digitando...' : 'Online'}
+                </Typography>
+                <Typography
+                  component="a"
+                  href="/termos"
+                  target="_blank"
+                  variant="caption"
+                  sx={{
+                    color: 'success.main',
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    bgcolor: 'rgba(0, 255, 102, 0.08)',
+                    px: 0.75,
+                    py: 0.2,
+                    borderRadius: 0.5,
+                    border: '1px solid rgba(0, 255, 102, 0.2)',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  🔒 LGPD Sanitizado
+                </Typography>
+              </Box>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -511,12 +541,14 @@ export function ChatAssistantUI() {
             </IconButton>
             <IconButton
               onClick={handleNewChat}
+              disabled={isDailyLimitReached}
               aria-label="Nova conversa"
+              title={isDailyLimitReached ? 'Limite diário de interações atingido' : 'Nova conversa'}
               sx={{
                 width: 44,
                 height: 44,
-                color: 'primary.main',
-                '&:hover': { bgcolor: 'primary.light', color: 'common.white' },
+                color: isDailyLimitReached ? 'grey.400' : 'primary.main',
+                '&:hover': { bgcolor: isDailyLimitReached ? 'transparent' : 'primary.light', color: isDailyLimitReached ? 'grey.400' : 'common.white' },
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -717,7 +749,7 @@ export function ChatAssistantUI() {
         </Box>
 
         {/* Quick Actions */}
-        {!messages.some((m) => m.role === 'user') && (
+        {!messages.some((m) => m.role === 'user') && !isThreadLimitReached && !isDailyLimitReached && (
           <Box sx={{ px: 2, pb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Chip 
               label="Buscar vagas" 
@@ -740,6 +772,71 @@ export function ChatAssistantUI() {
           </Box>
         )}
 
+        {/* Banner de aviso para Limite de Conversa (25 msgs) com Botão em Destaque */}
+        {isThreadLimitReached && (
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: 'grey.100',
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1.5,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+              Esta conversa atingiu o limite de 25 mensagens. Inicie um novo chat para continuar!
+            </Typography>
+            <IconButton
+              onClick={handleNewConversation}
+              disabled={isDailyLimitReached}
+              sx={{
+                bgcolor: 'primary.main',
+                color: 'common.white',
+                px: 3,
+                py: 1,
+                borderRadius: 2,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                width: 'auto',
+                height: 'auto',
+                gap: 1,
+                boxShadow: '0 4px 12px rgba(2,6,23,0.2)',
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                  transform: 'translateY(-1px)',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'grey.300',
+                  color: 'grey.500',
+                },
+              }}
+            >
+              + Iniciar Novo Chat
+            </IconButton>
+          </Box>
+        )}
+
+        {/* Banner de aviso para Limite Diário (50 msgs/dia) */}
+        {isDailyLimitReached && (
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: 'error.50',
+              borderTop: '1px solid',
+              borderColor: 'error.light',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.dark' }}>
+              Limite diário de interações atingido (50 mensagens/dia). O limite será renovado em breve.
+            </Typography>
+          </Box>
+        )}
+
         {/* Input */}
         <Box
           sx={{
@@ -757,11 +854,11 @@ export function ChatAssistantUI() {
               p: 0.5,
               borderRadius: 2,
               border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'grey.50',
+              borderColor: (isThreadLimitReached || isDailyLimitReached) ? 'grey.300' : 'divider',
+              bgcolor: (isThreadLimitReached || isDailyLimitReached) ? 'grey.100' : 'grey.50',
               '&:focus-within': {
-                borderColor: 'primary.main',
-                boxShadow: '0 0 0 2px rgba(2, 6, 23, 0.12)',
+                borderColor: (isThreadLimitReached || isDailyLimitReached) ? 'grey.300' : 'primary.main',
+                boxShadow: (isThreadLimitReached || isDailyLimitReached) ? 'none' : '0 0 0 2px rgba(2, 6, 23, 0.12)',
               },
               transition: 'all 150ms ease-out',
             }}
@@ -770,8 +867,14 @@ export function ChatAssistantUI() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Digite sua mensagem..."
-              disabled={loading}
+              placeholder={
+                isDailyLimitReached
+                  ? 'Limite diário atingido...'
+                  : isThreadLimitReached
+                  ? 'Limite desta conversa atingido. Inicie um novo chat.'
+                  : 'Digite sua mensagem...'
+              }
+              disabled={loading || isThreadLimitReached || isDailyLimitReached}
               aria-label="Mensagem"
               minRows={1}
               maxRows={6}
@@ -790,15 +893,15 @@ export function ChatAssistantUI() {
             />
             <IconButton
               onClick={handleSend}
-              disabled={!input.trim() || loading}
+              disabled={!input.trim() || loading || isThreadLimitReached || isDailyLimitReached}
               aria-label="Enviar mensagem"
               sx={{
                 width: 44,
                 height: 44,
-                bgcolor: input.trim() && !loading ? 'primary.main' : 'grey.300',
+                bgcolor: input.trim() && !loading && !isThreadLimitReached && !isDailyLimitReached ? 'primary.main' : 'grey.300',
                 color: 'common.white',
                 '&:hover': {
-                  bgcolor: input.trim() && !loading ? 'primary.dark' : 'grey.400',
+                  bgcolor: input.trim() && !loading && !isThreadLimitReached && !isDailyLimitReached ? 'primary.dark' : 'grey.400',
                 },
                 '&.Mui-disabled': {
                   bgcolor: 'grey.200',

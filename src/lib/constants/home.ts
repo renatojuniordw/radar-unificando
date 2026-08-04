@@ -66,7 +66,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "MEUS DADOS ESTÃO SEGUROS?",
-    a: "Sim. Usuários logados têm dados criptografados e protegidos no PostgreSQL. Usuários anônimos têm dados armazenados apenas localmente no navegador (localStorage). Não compartilhamos dados com terceiros.",
+    a: "Sim. Usuários logados têm dados criptografados e protegidos no PostgreSQL. Usuários anônimos têm dados armazenados apenas localmente no navegador (IndexedDB). Não compartilhamos dados com terceiros.",
   },
   {
     q: "O QUE É O ASSISTENTE DE VAGAS?",

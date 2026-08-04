@@ -74,7 +74,7 @@
 **Escopo:**
 - `src/lib/infrastructure/security/rate-limiter.ts`
 - `src/lib/infrastructure/security/env.ts`
-- `src/lib/infrastructure/storage/local-storage.ts`
+- `src/lib/infrastructure/storage/browser-storage.ts`
 - `src/lib/infrastructure/db/prisma-client.ts`
 - `src/lib/infrastructure/di/container.ts`
 - `src/types/index.ts`

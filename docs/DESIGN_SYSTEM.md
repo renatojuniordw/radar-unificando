@@ -95,7 +95,7 @@ Drawer lateral direito com FAB. Regras aplicadas:
 | Espaçamento mensagens | `mb: 2` entre bolhas |
 | Input | `TextareaAutosize` (auto-grow, máx. 6 linhas, Shift+Enter = quebra) |
 | Ações header | "+ Nova Conversa" (confirma via `ConfirmDialog`), "Fechar" |
-| Limpar chat | Limpa estado + localStorage + servidor, **sem reload** |
+| Limpar chat | Limpa estado + IndexedDB + servidor, **sem reload** |
 | Empty state | Chips de sugestão clicáveis que preenchem o input |
 
 ## Referência

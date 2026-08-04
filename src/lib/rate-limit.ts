@@ -38,11 +38,13 @@ try {
 
 // Fallback em memória para garantia de funcionamento (Fail-safe)
 const memoryLimiterChat = new RateLimiterMemory({ points: 10, duration: 60 });
+const memoryLimiterChatDaily = new RateLimiterMemory({ points: 50, duration: 86400 });
 const memoryLimiterAuth = new RateLimiterMemory({ points: 5, duration: 60 });
 const memoryLimiterGeneral = new RateLimiterMemory({ points: 60, duration: 60 });
 
 // Rate Limiters no Redis
 let redisLimiterChat: RateLimiterRedis | null = null;
+let redisLimiterChatDaily: RateLimiterRedis | null = null;
 let redisLimiterAuth: RateLimiterRedis | null = null;
 let redisLimiterGeneral: RateLimiterRedis | null = null;
 
@@ -52,6 +54,13 @@ if (redisClient) {
     keyPrefix: 'rl_chat',
     points: 10, // 10 requisições
     duration: 60, // por 60 segundos
+  });
+
+  redisLimiterChatDaily = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_chat_daily',
+    points: 50, // 50 requisições por dia
+    duration: 86400, // por 24 horas
   });
 
   redisLimiterAuth = new RateLimiterRedis({
@@ -69,7 +78,7 @@ if (redisClient) {
   });
 }
 
-export type RateLimitProfile = 'chat' | 'auth' | 'general';
+export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general';
 
 export interface RateLimitResult {
   success: boolean;
@@ -82,7 +91,7 @@ export interface RateLimitResult {
  * Verifica se uma requisição proveniente de determinado identificador (ex: IP ou userId:IP) excedeu o limite.
  * 
  * @param key Identificador do cliente (IP ou combinação userId:IP)
- * @param profile Tipo de perfil de limitação ('chat', 'auth', 'general')
+ * @param profile Tipo de perfil de limitação ('chat', 'chat_daily', 'auth', 'general')
  * @returns RateLimitResult contendo success, remainingPoints, msBeforeNext
  */
 export async function checkRateLimit(
@@ -95,11 +104,13 @@ export async function checkRateLimit(
 
   if (redisConnected && redisClient) {
     if (profile === 'chat') limiterToUse = redisLimiterChat!;
+    else if (profile === 'chat_daily') limiterToUse = redisLimiterChatDaily!;
     else if (profile === 'auth') limiterToUse = redisLimiterAuth!;
     else limiterToUse = redisLimiterGeneral!;
   } else {
     // Usar fallback em memória
     if (profile === 'chat') limiterToUse = memoryLimiterChat;
+    else if (profile === 'chat_daily') limiterToUse = memoryLimiterChatDaily;
     else if (profile === 'auth') limiterToUse = memoryLimiterAuth;
     else limiterToUse = memoryLimiterGeneral;
   }
