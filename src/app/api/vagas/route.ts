@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import type { Job } from '@prisma/client';
 import { jobRepository, profileRepository } from '@/lib/infrastructure/repositories';
+
+function mapJobToApi(j: Job, score?: number) {
+  return {
+    id: j.id,
+    empresa: j.empresa,
+    plataforma: j.plataforma,
+    na_lista: j.naLista || 'Não',
+    cargo_categoria: j.cargoCategoria,
+    titulo_vaga: j.tituloVaga,
+    tipo: j.tipo,
+    local: j.local,
+    link: j.link,
+    nome_na_plataforma: j.nomeNaPlataforma,
+    publicado: j.publicado,
+    alerta: j.alerta || '',
+    detectado_em: j.detectadoEm || '',
+    ...(score !== undefined ? { _score: score } : {}),
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,22 +47,7 @@ export async function GET(req: NextRequest) {
       });
 
       // Mapeia para o formato da API
-      const mapped = recommended.map(({ job: j, score }) => ({
-        id: j.id,
-        empresa: j.empresa,
-        plataforma: j.plataforma,
-        na_lista: j.naLista || 'Não',
-        cargo_categoria: j.cargoCategoria,
-        titulo_vaga: j.tituloVaga,
-        tipo: j.tipo,
-        local: j.local,
-        link: j.link,
-        nome_na_plataforma: j.nomeNaPlataforma,
-        publicado: j.publicado,
-        alerta: j.alerta || '',
-        detectado_em: j.detectadoEm || '',
-        _score: score, // Score para referência
-      }));
+      const mapped = recommended.map(({ job: j, score }) => mapJobToApi(j, score));
 
       return NextResponse.json(mapped);
     }
@@ -55,21 +60,7 @@ export async function GET(req: NextRequest) {
       search: searchParams.get('search') || undefined,
     });
 
-    const mapped = result.map(j => ({
-      id: j.id,
-      empresa: j.empresa,
-      plataforma: j.plataforma,
-      na_lista: j.naLista || 'Não',
-      cargo_categoria: j.cargoCategoria,
-      titulo_vaga: j.tituloVaga,
-      tipo: j.tipo,
-      local: j.local,
-      link: j.link,
-      nome_na_plataforma: j.nomeNaPlataforma,
-      publicado: j.publicado,
-      alerta: j.alerta || '',
-      detectado_em: j.detectadoEm || '',
-    }));
+    const mapped = result.map(j => mapJobToApi(j));
 
     return NextResponse.json(mapped);
   } catch (error) {

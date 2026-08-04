@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import { Container, Box, Typography, Chip, CircularProgress } from "@mui/material";
 import { VagaTable } from "@/components/vaga-table";
 import type { Vaga } from "@/lib/types/vaga";
@@ -18,7 +19,7 @@ interface ResultsSectionProps {
   }) => void;
 }
 
-export function ResultsSection({
+export const ResultsSection = memo(function ResultsSection({
   modoRecomendado,
   vagas,
   loading,
@@ -27,6 +28,10 @@ export function ResultsSection({
   areaOuCargo,
   onFilterChange,
 }: ResultsSectionProps) {
+  const handleExportCsv = useCallback(() => {
+    window.open("/export?format=csv", "_blank");
+  }, []);
+
   return (
     <Box className="section-white">
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 }, px: { xs: 2, sm: 3 } }}>
@@ -92,10 +97,10 @@ export function ResultsSection({
           vagas={vagas}
           loading={loading}
           cargos={cargos}
-          onExportCsv={() => window.open("/export?format=csv", "_blank")}
+          onExportCsv={handleExportCsv}
           onFilterChange={onFilterChange}
         />
       </Container>
     </Box>
   );
-}
+});

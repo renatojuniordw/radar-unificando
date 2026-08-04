@@ -48,10 +48,10 @@ describe('GET /export', () => {
     expect(text).toContain('"Data ""Analyst"""');
   });
 
-  it('should_use_anonymous_user_when_not_authenticated', async () => {
+  it('should_return_401_when_not_authenticated', async () => {
     vi.mocked(auth).mockResolvedValue(null);
-    vi.mocked(jobRepository.findByUserId).mockResolvedValue([]);
-    await GET(makeRequest('csv'));
-    expect(jobRepository.findByUserId).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000', expect.any(Object));
+    const res = await GET(makeRequest('csv'));
+    expect(res.status).toBe(401);
+    expect(jobRepository.findByUserId).not.toHaveBeenCalled();
   });
 });

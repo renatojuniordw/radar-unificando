@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { LinearProgress } from '@mui/material';
+import { BaseCard } from '@/components/base-card';
 
 interface Props {
   extracting: boolean;
@@ -36,11 +37,7 @@ export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtra
   }
 
   return (
-    <div className="card-brutalist" style={{ padding: 24, marginBottom: 24 }}>
-      <h3 style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em', fontSize: '0.9rem', margin: '0 0 12px' }}>
-        IMPORTAR CURRÍCULO
-      </h3>
-
+    <BaseCard title="IMPORTAR CURRÍCULO">
       {extracting && <LinearProgress sx={{ mb: 2, height: 4, bgcolor: '#e2e8f0', '& .MuiLinearProgress-bar': { bgcolor: '#020617' } }} />}
 
       <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 16, lineHeight: 1.6 }}>
@@ -49,6 +46,15 @@ export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtra
 
       {/* Upload PDF */}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="Selecionar arquivo PDF do currículo"
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         onDragOver={e => { e.preventDefault(); onDragOver(true); }}
         onDragLeave={() => onDragOver(false)}
         onDrop={handleDrop}
@@ -105,6 +111,6 @@ export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtra
           {extracting ? 'Extraindo...' : 'Extrair do texto'}
         </button>
       </div>
-    </div>
+    </BaseCard>
   );
 }

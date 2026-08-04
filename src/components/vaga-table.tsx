@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import {
   Box, Typography, TextField, Button,
   Select, MenuItem, InputAdornment, Autocomplete, Skeleton, Drawer, IconButton,
@@ -13,9 +13,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useDebounce } from 'use-debounce';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { uniqueValues } from '@/lib/array';
 import { JobPostingSchema } from '@/components/seo/job-posting-schema';
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';
+
+function normalizarModalidade(tipo: string | undefined | null): string {
+  const t = (tipo || '').toLowerCase();
+  if (t.includes('remote') || t.includes('remoto')) return 'Remota';
+  if (t.includes('hybrid') || t.includes('hibrido') || t.includes('híbrido')) return 'Híbrida';
+  if (t.includes('on-site') || t.includes('presencial') || t === 'on-site') return 'Presencial';
+  return tipo || '';
+}
 
 interface Vaga {
   id?: number;
@@ -41,7 +50,7 @@ interface Props {
   onFilterChange: (filters: { plataforma?: string; cargo?: string; search?: string }) => void;
 }
 
-export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange }: Props) {
+export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange }: Props) {
   const [filtroPlataforma, setFiltroPlataforma] = useState('');
   const [filtroCargo, setFiltroCargo] = useState('');
   const [filtroBusca, setFiltroBusca] = useState('');
@@ -50,6 +59,14 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
   const [filtroModalidade, setFiltroModalidade] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [paginaMobile, setPaginaMobile] = useState(1);
+  const [exporting, setExporting] = useState(false);
+
+  function handleExport() {
+    if (exporting) return;
+    setExporting(true);
+    onExportCsv();
+    setTimeout(() => setExporting(false), 2000);
+  }
   const ITENS_POR_PAGINA = 10;
 
   const parentRef = useRef<HTMLDivElement>(null);
@@ -78,22 +95,14 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
     onFilterChange({});
   }
 
-  const empresas = [...new Set(vagas.map(v => v.empresa).filter(Boolean))].sort();
-  const modalidades = [...new Set(vagas.map(v => normalizarModalidade(v.tipo)).filter(Boolean))].sort();
+  const empresas = useMemo(() => uniqueValues(vagas.map(v => v.empresa)).sort(), [vagas]);
+  const modalidades = useMemo(() => uniqueValues(vagas.map(v => normalizarModalidade(v.tipo))).sort(), [vagas]);
 
-  function normalizarModalidade(tipo: string | undefined | null): string {
-    const t = (tipo || '').toLowerCase();
-    if (t.includes('remote') || t.includes('remoto')) return 'Remota';
-    if (t.includes('hybrid') || t.includes('hibrido') || t.includes('híbrido')) return 'Híbrida';
-    if (t.includes('on-site') || t.includes('presencial') || t === 'on-site') return 'Presencial';
-    return tipo || '';
-  }
-
-  const vagasFiltradas = vagas.filter(v => {
+  const vagasFiltradas = useMemo(() => vagas.filter(v => {
     if (filtroEmpresa && v.empresa !== filtroEmpresa) return false;
     if (filtroModalidade && normalizarModalidade(v.tipo) !== filtroModalidade) return false;
     return true;
-  });
+  }), [vagas, filtroEmpresa, filtroModalidade]);
 
   function handleFilterChange(updates: { plataforma?: string; cargo?: string }) {
     const plataforma = updates.plataforma ?? filtroPlataforma;
@@ -123,7 +132,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
         search: debouncedSearch || undefined,
       });
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, filtroPlataforma, filtroCargo, onFilterChange]);
 
   const rowVirtualizer = useVirtualizer({
     count: vagasFiltradas.length,
@@ -183,7 +192,8 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
 
         {vagas.length > 0 && (
           <button
-            onClick={onExportCsv}
+            onClick={handleExport}
+            disabled={exporting}
             style={{
               border: '2px solid #020617',
               backgroundColor: '#ffffff',
@@ -203,7 +213,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
             }}
           >
             <DownloadIcon style={{ fontSize: 14 }} />
-            EXPORTAR CSV
+            {exporting ? 'EXPORTANDO...' : 'EXPORTAR CSV'}
           </button>
         )}
       </Box>
@@ -435,7 +445,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
           <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', color: '#020617', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
             ⚡ FILTROS AVANÇADOS
           </Typography>
-          <IconButton onClick={() => setDrawerOpen(false)} size="small" sx={{ border: '2px solid #020617', borderRadius: 0, p: 0.5, color: '#020617' }}>
+          <IconButton onClick={() => setDrawerOpen(false)} size="small" aria-label="Fechar filtros" sx={{ border: '2px solid #020617', borderRadius: 0, p: 0.5, color: '#020617' }}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -915,4 +925,4 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
       </Box>
     </>
   );
-}
+});

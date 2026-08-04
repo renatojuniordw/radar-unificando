@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
 
 import { checkRateLimit } from '@/lib/rate-limit';
+
+const registerSchema = z.object({
+  name: z.string().trim().max(80).optional().or(z.literal('')),
+  email: z.string().trim().email(),
+  password: z.string().min(8).max(200),
+});
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
@@ -22,15 +29,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, email, password } = await req.json();
-
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email e senha são obrigatórios' }, { status: 400 });
+    const parsed = registerSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
+        { status: 400 }
+      );
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Senha deve ter no mínimo 8 caracteres' }, { status: 400 });
-    }
+    const { name, email, password } = parsed.data;
 
     const existing = await userRepository.findByEmail(email);
     if (existing) {

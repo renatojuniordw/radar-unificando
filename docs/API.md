@@ -67,21 +67,6 @@ curl -X POST http://localhost:11010/api/chat \
   -d '{"messages":[{"role":"user","content":"Busque vagas de Data Analyst"}]}'
 ```
 
-### Empresas
-
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| GET | `/api/empresas` | ✅ | Listar empresas (NewCompany) |
-| POST | `/api/empresas` | ✅ | Criar empresa (`{nome}`) |
-| DELETE | `/api/empresas?id=` | ✅ | Remover empresa |
-
-### Presença de empresa
-
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
-| GET | `/api/presence` | ✅ | Listar presença (temGupy, temInhire, links) |
-| POST | `/api/presence` | ✅ | Criar/atualizar presença de empresa |
-
 ### Upload de currículo
 
 | Método | Rota | Auth | Descrição |

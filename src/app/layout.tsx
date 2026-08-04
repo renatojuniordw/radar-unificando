@@ -6,7 +6,7 @@ import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
 import { SnackbarProvider } from "@/hooks/useSnackbar";
 import { QueryProvider } from "@/lib/infrastructure/ui/query-provider";
 import { ChatAssistantProvider } from "@/contexts/chat-assistant-context";
-import { ChatAssistantUI } from "@/components/chat-assistant-ui";
+import { ChatAssistantMount } from "@/components/chat-assistant-mount";
 import { Header, Footer } from "@/components/layout";
 import "./globals.css";
 
@@ -127,7 +127,7 @@ export default function RootLayout({
                     {children}
                   </main>
                   <Footer />
-                  <ChatAssistantUI />
+                  <ChatAssistantMount />
                 </ChatAssistantProvider>
               </QueryProvider>
             </SnackbarProvider>

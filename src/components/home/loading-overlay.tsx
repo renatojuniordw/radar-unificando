@@ -5,6 +5,9 @@ import { Box, Typography } from "@mui/material";
 export function LoadingOverlay() {
   return (
     <Box
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
       sx={{
         position: "fixed",
         inset: 0,

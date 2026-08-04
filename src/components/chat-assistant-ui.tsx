@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { Box, Fab, Drawer, IconButton, Typography, Chip, TextareaAutosize } from '@mui/material';
 import { Close as CloseIcon, Send as SendIcon } from '@mui/icons-material';
-import { useChat } from '@ai-sdk/react';
+import { useChat, type UIMessage } from '@ai-sdk/react';
 import { useSession } from 'next-auth/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -18,6 +18,20 @@ interface Conversation {
   title: string;
   lastMessage: string;
   createdAt: Date;
+}
+
+interface ChatMessage {
+  id?: string;
+  role: string;
+  parts?: { type: string; text?: string }[];
+  content?: string;
+}
+
+function getMessageText(msg: { parts?: { type: string; text?: string }[] }): string {
+  return (msg.parts || [])
+    .filter(p => p.type === 'text')
+    .map(p => p.text || '')
+    .join('');
 }
 
 const SUGGESTIONS = [
@@ -49,12 +63,17 @@ Como posso te apoiar hoje?
   };
 }
 
-async function loadMessagesFromServer(chatId: string = 'default'): Promise<{ messages: any[]; error: boolean }> {
+async function loadMessagesFromServer(chatId: string = 'default'): Promise<{ messages: ChatMessage[]; error: boolean }> {
   try {
     const res = await fetch(`/api/chat/history?chatId=${chatId}`);
     if (res.ok) {
       const data = await res.json();
-      return { messages: data.messages || [], error: false };
+      // Normaliza mensagens legadas ({ role, content }) para o shape V4 com parts
+      const messages: ChatMessage[] = (data.messages || []).map((m: ChatMessage) => ({
+        ...m,
+        parts: m.parts || (m.content ? [{ type: 'text', text: m.content }] : []),
+      }));
+      return { messages, error: false };
     }
     return { messages: [], error: true };
   } catch {
@@ -62,7 +81,7 @@ async function loadMessagesFromServer(chatId: string = 'default'): Promise<{ mes
   }
 }
 
-async function saveMessagesToServer(chatId: string, messages: any[]): Promise<boolean> {
+async function saveMessagesToServer(chatId: string, messages: ChatMessage[]): Promise<boolean> {
   try {
     const res = await fetch('/api/chat/history', {
       method: 'POST',
@@ -98,15 +117,6 @@ function UserIcon() {
   );
 }
 
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
 function ChatIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -135,7 +145,7 @@ function ExternalLinkIcon() {
   );
 }
 
-function MarkdownContent({ text }: { text: string }) {
+const MarkdownContent = memo(function MarkdownContent({ text }: { text: string }) {
   let processedText = text.replace(
     /\|(.+)\|\n\|[-| ]+\|\n((?:\|.+\|\n?)+)/g,
     (match, header, rows) => {
@@ -251,16 +261,26 @@ function MarkdownContent({ text }: { text: string }) {
       {cleaned}
     </ReactMarkdown>
   );
-}
+});
 
 function CopyMessageButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   function handleCopy() {
     if (!text) return;
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).catch(() => {
+      /* clipboard indisponível fora de contexto seguro — falha silenciosa */
+    });
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -348,11 +368,11 @@ export function ChatAssistantUI() {
     let cancelled = false;
     async function load() {
       const { messages: fromServer, error } = await loadMessagesFromServer(currentChatId);
-      let stored = fromServer.length > 0 ? fromServer : await browserStorage.getChatMessages();
+      const stored = fromServer.length > 0 ? fromServer : await browserStorage.getChatMessages();
       if (cancelled) return;
       if (error) setSyncError(true);
       if (stored.length > 0 && setMessages) {
-        setMessages(stored);
+        setMessages(stored as UIMessage[]);
       } else if (setMessages) {
         setMessages([createWelcomeMessage(session?.user?.name)]);
       }
@@ -395,8 +415,12 @@ export function ChatAssistantUI() {
       const res = await fetch('/api/chat/conversations');
       if (res.ok) {
         setConversations(await res.json());
+      } else {
+        setSyncError(true);
       }
-    } catch {}
+    } catch {
+      setSyncError(true);
+    }
   }
 
   useEffect(() => {
@@ -431,7 +455,7 @@ export function ChatAssistantUI() {
 
   // Detecção dos limites de conversa (25 mensagens) e limite diário (50 mensagens)
   const lastMessageText = messages.length > 0
-    ? messages[messages.length - 1].parts.filter(p => p.type === 'text').map(p => p.text).join('')
+    ? getMessageText(messages[messages.length - 1])
     : '';
 
   const isDailyLimitReached = lastMessageText.includes('Limite diário de interações atingido');
@@ -454,10 +478,6 @@ export function ChatAssistantUI() {
     }
   }
 
-  function handleConfirmClear() {
-    setConfirmOpen(true);
-  }
-
   async function handleClearHistory() {
     if (!chatId) return;
     setConfirmOpen(false);
@@ -465,8 +485,11 @@ export function ChatAssistantUI() {
     setSyncError(false);
     void browserStorage.setChatMessages([]);
     try {
-      await fetch(`/api/chat/history?chatId=${chatId}`, { method: 'DELETE' });
-    } catch {}
+      const res = await fetch(`/api/chat/history?chatId=${chatId}`, { method: 'DELETE' });
+      if (!res.ok) setSyncError(true);
+    } catch {
+      setSyncError(true);
+    }
   }
 
   function handleNewChat() {
@@ -747,15 +770,15 @@ export function ChatAssistantUI() {
                 {msg.role === 'assistant' ? (
                   <>
                     <MarkdownContent
-                      text={msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
+                      text={getMessageText(msg)}
                     />
                     <CopyMessageButton
-                      text={msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
+                      text={getMessageText(msg)}
                     />
                   </>
                 ) : (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
+                    {getMessageText(msg)}
                   </Typography>
                 )}
               </Box>
@@ -819,21 +842,24 @@ export function ChatAssistantUI() {
         {/* Quick Actions */}
         {!messages.some((m) => m.role === 'user') && !isThreadLimitReached && !isDailyLimitReached && (
           <Box sx={{ px: 2, pb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Chip 
-              label="Buscar vagas" 
+            <Chip
+              label="Buscar vagas"
               size="small"
+              disabled={loading}
               onClick={() => sendMessage({ text: "Busque vagas de dados" })}
               sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
             />
-            <Chip 
-              label="Analisar perfil" 
+            <Chip
+              label="Analisar perfil"
               size="small"
+              disabled={loading}
               onClick={() => sendMessage({ text: "Analise meu perfil e me diga como estão minhas chances" })}
               sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
             />
-            <Chip 
-              label="Gerar carta" 
+            <Chip
+              label="Gerar carta"
               size="small"
+              disabled={loading}
               onClick={() => sendMessage({ text: "Gere uma carta de apresentação para uma vaga" })}
               sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
             />

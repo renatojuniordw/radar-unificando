@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
+import { FormField } from '@/components/form-field';
+import { zodFieldErrors } from '@/lib/form-errors';
 
 const registerSchema = z.object({
   name: z.string().optional(),
@@ -32,12 +34,7 @@ export default function RegisterPage() {
 
     const result = registerSchema.safeParse({ name, email, password, confirmPassword });
     if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      for (const issue of result.error.issues) {
-        const field = issue.path[0] as string;
-        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
-      }
-      setErrors(fieldErrors);
+      setErrors(zodFieldErrors(result.error));
       return;
     }
 
@@ -50,16 +47,17 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setApiError(data.error || 'Erro ao criar conta');
+        const data = await res.json().catch(() => null);
+        setApiError(data?.error || 'Erro ao criar conta');
         return;
       }
 
       router.push('/login?registered=true');
     } catch {
       setApiError('Erro ao criar conta');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -81,98 +79,41 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
-              Nome
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              style={{
-                width: '100%',
-                border: '4px solid #020617',
-                padding: '10px 12px',
-                fontSize: '0.85rem',
-                fontFamily: 'inherit',
-                boxShadow: '4px 4px 0px #000',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          <FormField
+            label="Nome"
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                border: '4px solid #020617',
-                padding: '10px 12px',
-                fontSize: '0.85rem',
-                fontFamily: 'inherit',
-                boxShadow: '4px 4px 0px #000',
-                boxSizing: 'border-box',
-              }}
-            />
-            {errors.email && (
-              <p style={{ color: '#dc2626', fontSize: '0.65rem', fontFamily: 'ui-monospace, monospace', margin: '4px 0 0', fontWeight: 700 }}>{errors.email}</p>
-            )}
-          </div>
+          <FormField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            error={errors.email}
+          />
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
-              Senha
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              minLength={8}
-              style={{
-                width: '100%',
-                border: '4px solid #020617',
-                padding: '10px 12px',
-                fontSize: '0.85rem',
-                fontFamily: 'inherit',
-                boxShadow: '4px 4px 0px #000',
-                boxSizing: 'border-box',
-              }}
-            />
-            {errors.password && (
-              <p style={{ color: '#dc2626', fontSize: '0.65rem', fontFamily: 'ui-monospace, monospace', margin: '4px 0 0', fontWeight: 700 }}>{errors.password}</p>
-            )}
-          </div>
+          <FormField
+            label="Senha"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            minLength={8}
+            error={errors.password}
+          />
 
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
-              Confirmar senha
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                border: '4px solid #020617',
-                padding: '10px 12px',
-                fontSize: '0.85rem',
-                fontFamily: 'inherit',
-                boxShadow: '4px 4px 0px #000',
-                boxSizing: 'border-box',
-              }}
-            />
-            {errors.confirmPassword && (
-              <p style={{ color: '#dc2626', fontSize: '0.65rem', fontFamily: 'ui-monospace, monospace', margin: '4px 0 0', fontWeight: 700 }}>{errors.confirmPassword}</p>
-            )}
-          </div>
+          <FormField
+            label="Confirmar senha"
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
+            error={errors.confirmPassword}
+            marginBottom={24}
+          />
 
           <button
             type="submit"

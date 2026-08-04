@@ -1,7 +1,7 @@
 'use client';
 
 interface Props {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   variant?: 'default' | 'highlight' | 'success' | 'warning';
 }

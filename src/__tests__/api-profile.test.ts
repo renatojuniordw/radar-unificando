@@ -1,6 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
-
 vi.mock('@/auth', () => ({ auth: vi.fn() }));
 vi.mock('@/lib/infrastructure/repositories', () => ({
   profileRepository: { findByUserId: vi.fn(), upsert: vi.fn() },

@@ -8,6 +8,10 @@ export interface JobPostingData {
   description?: string;
 }
 
+// Avaliados uma vez por carregamento de módulo (evita datas instáveis a cada render)
+const nowIso = new Date().toISOString();
+const validThroughIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
 export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
   if (!jobs || jobs.length === 0) return null;
 
@@ -17,8 +21,8 @@ export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
     '@type': 'JobPosting',
     title: job.title,
     description: job.description || `Vaga de ${job.title} na empresa ${job.company} via plataforma ${job.location || 'Gupy/InHire'}.`,
-    datePosted: job.datePosted || new Date().toISOString(),
-    validThrough: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias
+    datePosted: job.datePosted || nowIso,
+    validThrough: validThroughIso,
     employmentType: job.type?.toLowerCase().includes('remoto') ? 'FULL_TIME' : 'FULL_TIME',
     hiringOrganization: {
       '@type': 'Organization',

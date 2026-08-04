@@ -2,8 +2,7 @@
 
 import { Container, Box, Typography } from "@mui/material";
 import Link from "next/link";
-import { CompanyInput } from "@/components/company-input";
-import { CargoInput } from "@/components/cargo-input";
+import { TagInput } from "@/components/tag-input";
 import { RotatingText } from "@/components/home/rotating-text";
 import { SUGGESTED_CARGOS } from "@/lib/constants/home";
 
@@ -54,7 +53,12 @@ export function HeroSection({
 
       <Container
         maxWidth="xl"
-        sx={{ py: { xs: 4, sm: 6, md: 8 }, px: { xs: 2, sm: 3 }, position: "relative", zIndex: 1 }}
+        sx={{
+          py: { xs: 4, sm: 6, md: 8 },
+          px: { xs: 2, sm: 3 },
+          position: "relative",
+          zIndex: 1,
+        }}
       >
         <Box sx={{ maxWidth: 720 }}>
           <Box className="badge-neon" sx={{ mb: 2 }}>
@@ -202,7 +206,10 @@ export function HeroSection({
 
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2.5 }}>
               <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
-                <CompanyInput
+                <TagInput
+                  label="Empresas (opcional)"
+                  helperText="Enter ou vírgula para adicionar. Deixe vazio para buscar todas."
+                  placeholder="Ambev, Nubank, BRQ..."
                   value={empresas}
                   onChange={onEmpresasChange}
                   autoFocus
@@ -211,7 +218,10 @@ export function HeroSection({
                 />
               </Box>
               <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 240 } }}>
-                <CargoInput
+                <TagInput
+                  label="Cargos (opcional)"
+                  helperText="Enter ou vírgula para adicionar. Ex: Analista de Dados, Data Analyst, Growth"
+                  placeholder="Analista de Dados, Data Analyst, Growth..."
                   value={cargosBusca}
                   onChange={onCargosBuscaChange}
                   dark
@@ -318,22 +328,6 @@ export function HeroSection({
               </button>
             ))}
           </Box>
-
-          {!isLoggedIn && (
-            <Typography
-              sx={{
-                color: "#64748b",
-                fontWeight: 700,
-                fontSize: "0.65rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                fontFamily: "ui-monospace, monospace",
-              }}
-            >
-              💡 Dica: Crie uma conta para salvar empresas e ver histórico de
-              candidaturas.
-            </Typography>
-          )}
         </Box>
       </Container>
     </Box>

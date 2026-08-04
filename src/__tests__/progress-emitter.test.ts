@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ProgressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import type { ProgressEvent } from '@/types';
 
 describe('ProgressEmitter', () => {
   it('should_emit_event_to_registered_listener', () => {
