@@ -1,4 +1,4 @@
-export const SUGGESTED_CARGOS = [
+export const SUGGESTED_ROLES = [
   "Analista de Dados",
   "Analista de Marketing",
   "Assistente Administrativo",

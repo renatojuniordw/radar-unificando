@@ -4,7 +4,7 @@ import { Container, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { TagInput } from "@/components/tag-input";
 import { RotatingText } from "@/components/home/rotating-text";
-import { SUGGESTED_CARGOS } from "@/lib/constants/home";
+import { SUGGESTED_ROLES } from "@/lib/constants/home";
 
 interface HeroSectionProps {
   isLoggedIn: boolean;
@@ -296,7 +296,7 @@ export function HeroSection({
             >
               Sugestões:
             </Typography>
-            {SUGGESTED_CARGOS.slice(0, 8).map((s) => (
+            {SUGGESTED_ROLES.slice(0, 8).map((s) => (
               <button
                 key={s}
                 onClick={() => onAddSuggestion(s)}
