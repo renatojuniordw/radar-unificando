@@ -292,7 +292,7 @@ export function useJobSearch() {
     browserStorage.getLastRunAt().then((ts) => {
       if (cancelled) return;
       const now = Date.now();
-      if (!ts || now - ts > AUTO_SYNC_INTERVAL_MS) {
+      if (ts && now - ts > AUTO_SYNC_INTERVAL_MS) {
         void handleStartRef.current({ silent: true });
       }
     });
