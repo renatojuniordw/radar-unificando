@@ -1,66 +1,63 @@
-"use client";
-
-import { Container, Box, Typography } from "@mui/material";
 import { WHY_USE_ITEMS } from "@/lib/constants/home";
 
 export function WhyUseSection() {
   return (
-    <Box className="section-white" sx={{ borderTop: "4px solid #020617" }}>
-      <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 6, md: 8 }, px: { xs: 2, sm: 3 } }}>
-        <Box className="badge-dark" sx={{ mb: { xs: 2.5, sm: 4 } }}>
+    <section className="section-white" style={{ borderTop: "4px solid #020617" }}>
+      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 16px" }}>
+        <div className="badge-dark" style={{ marginBottom: "24px", display: "inline-block" }}>
           POR QUE USAR
-        </Box>
-        <Typography
-          component="h2"
-          sx={{
+        </div>
+        <h2
+          style={{
             fontWeight: 900,
             textTransform: "uppercase",
             letterSpacing: "-0.02em",
             color: "#020617",
-            fontSize: { xs: "1.65rem", sm: "2.25rem", md: "3rem" },
-            mb: { xs: 3.5, md: 6 },
+            fontSize: "clamp(1.65rem, 4vw, 3rem)",
+            marginBottom: "32px",
             lineHeight: 0.95,
           }}
         >
           TUDO QUE VOCÊ PRECISA
           <br />
           PARA SE RELOCAR
-        </Typography>
+        </h2>
 
-        <Box
-          sx={{
+        <div
+          style={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-            gap: 3,
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "24px",
           }}
         >
           {WHY_USE_ITEMS.map((item) => (
-            <Box key={item.title} className="card-brutalist" sx={{ p: 3 }}>
-              <Typography
-                sx={{
+            <div key={item.title} className="card-brutalist" style={{ padding: "24px" }}>
+              <h3
+                style={{
                   fontWeight: 900,
                   textTransform: "uppercase",
                   letterSpacing: "-0.01em",
                   fontSize: "1.1rem",
-                  mb: 1.5,
+                  marginBottom: "12px",
                   color: "#020617",
                 }}
               >
                 {item.title}
-              </Typography>
-              <Typography
-                sx={{
+              </h3>
+              <p
+                style={{
                   color: "#475569",
                   fontSize: "0.85rem",
                   lineHeight: 1.6,
+                  margin: 0,
                 }}
               >
                 {item.desc}
-              </Typography>
-            </Box>
+              </p>
+            </div>
           ))}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 }

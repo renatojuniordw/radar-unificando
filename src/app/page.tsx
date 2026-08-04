@@ -1,81 +1,15 @@
-"use client";
-
-import { Snackbar, Alert } from "@mui/material";
-import { useJobSearch } from "@/hooks/useJobSearch";
-import { HeroSection } from "@/components/home/hero-section";
-import { LoadingOverlay } from "@/components/home/loading-overlay";
-import { ResultsSection } from "@/components/home/results-section";
+import { FaqStructuredData } from "@/components/seo/faq-structured-data";
+import { HomeSearchContent } from "@/components/home/home-search-content";
 import { WhyUseSection } from "@/components/home/why-use-section";
 import { FaqSection } from "@/components/home/faq-section";
-import { FaqStructuredData } from "@/components/seo/faq-structured-data";
 
 export default function HomePage() {
-  const {
-    session,
-    profile,
-    empresas,
-    setEmpresas,
-    cargosBusca,
-    setCargosBusca,
-    running,
-    autoSyncing,
-    vagas,
-    loading,
-    cargos,
-    snackbar,
-    setSnackbar,
-    cooldown,
-    modoRecomendado,
-    perfilMinimo,
-    carregarVagas,
-    addSuggestion,
-    handleStart,
-  } = useJobSearch();
-
   return (
     <>
       <FaqStructuredData />
-      <HeroSection
-        isLoggedIn={!!session}
-        perfilCompleto={!!perfilMinimo}
-        empresas={empresas}
-        onEmpresasChange={setEmpresas}
-        cargosBusca={cargosBusca}
-        onCargosBuscaChange={setCargosBusca}
-        cooldown={cooldown}
-        running={running}
-        onStart={handleStart}
-        onAddSuggestion={addSuggestion}
-      />
-
-      {running && <LoadingOverlay />}
-
-      <ResultsSection
-        modoRecomendado={modoRecomendado}
-        vagas={vagas}
-        loading={loading}
-        autoSyncing={autoSyncing}
-        cargos={cargos}
-        areaOuCargo={profile.area || profile.currentRole || ""}
-        onFilterChange={carregarVagas}
-      />
-
+      <HomeSearchContent />
       <WhyUseSection />
-
       <FaqSection />
-
-      {snackbar && (
-        <Snackbar
-          open
-          autoHideDuration={4000}
-          onClose={() => setSnackbar(null)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <Alert severity={snackbar.severity} variant="filled" onClose={() => setSnackbar(null)}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      )}
     </>
   );
 }

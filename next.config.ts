@@ -13,6 +13,15 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: 'standalone',
   serverExternalPackages: ['@prisma/client', 'pdfjs-dist', 'pg', '@prisma/adapter-pg'],
+  experimental: {
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      'lucide-react',
+      '@emotion/react',
+      '@emotion/styled',
+    ],
+  },
   poweredByHeader: false,
   webpack: (config, { isServer }) => {
     if (isServer) {

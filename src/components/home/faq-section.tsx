@@ -1,38 +1,34 @@
-"use client";
-
-import { Container, Box, Typography } from "@mui/material";
 import { FAQ_ITEMS } from "@/lib/constants/home";
 
 export function FaqSection() {
   return (
-    <Box className="section-faq">
-      <Container maxWidth="xl" sx={{ py: { xs: 4, sm: 6, md: 8 }, px: { xs: 2, sm: 3 } }}>
-        <Box className="badge-dark" sx={{ mb: { xs: 2.5, sm: 4 } }}>
+    <section className="section-faq">
+      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 16px" }}>
+        <div className="badge-dark" style={{ marginBottom: "24px", display: "inline-block" }}>
           FAQ
-        </Box>
-        <Typography
-          component="h2"
-          sx={{
+        </div>
+        <h2
+          style={{
             fontWeight: 900,
             textTransform: "uppercase",
             letterSpacing: "-0.02em",
             color: "#020617",
-            fontSize: { xs: "1.65rem", sm: "2.25rem", md: "3rem" },
-            mb: { xs: 3.5, md: 6 },
+            fontSize: "clamp(1.65rem, 4vw, 3rem)",
+            marginBottom: "32px",
             lineHeight: 0.95,
           }}
         >
           PERGUNTAS
           <br />
           FREQUENTES
-        </Typography>
+        </h2>
 
-        <Box
-          sx={{
+        <div
+          style={{
             display: "flex",
             flexDirection: "column",
-            gap: 3,
-            maxWidth: 800,
+            gap: "24px",
+            maxWidth: "800px",
           }}
         >
           {FAQ_ITEMS.map((faq) => (
@@ -46,8 +42,8 @@ export function FaqSection() {
               </div>
             </details>
           ))}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 }

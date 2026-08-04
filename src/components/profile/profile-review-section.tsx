@@ -1,8 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { Autocomplete, TextField, Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/material';
 import { BaseCard } from '@/components/base-card';
+import { SkillInput } from '@/components/profile/skill-input';
 import type { ProfileField, ProfileData } from '@/hooks/useProfile';
 
 const SENIORITY_LEVELS = ['junior', 'pleno', 'senior', 'lead', 'manager', 'head'];
@@ -42,55 +43,14 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
       <BaseCard title={<>SKILLS {skills.length > 0 && (
         <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.6rem', marginLeft: 8 }}>{skills.length}</span>
       )}</>}>
-
-        <Autocomplete
-          options={ALL_SUGGESTED_SKILLS.filter(s => !skills.includes(s.toLowerCase()))}
-          onChange={(_, value) => {
-            if (!value) return;
-            const parts = value.split(',').map(s => s.trim()).filter(Boolean);
-            if (parts.length > 1) onAddSkills(parts);
-            else onAddSkill(value);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Buscar skill..."
-              size="small"
-              slotProps={{ input: { ...params.InputProps, sx: { border: '4px solid #020617', boxShadow: '2px 2px 0px #000', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem' } } }}
-            />
-          )}
-          sx={{ mb: 2 }}
-          noOptionsText="Nenhuma"
-          freeSolo
+        <SkillInput
+          skills={skills}
+          allSuggestions={ALL_SUGGESTED_SKILLS}
+          areaSkills={SKILLS_BY_AREA[area] || []}
+          onAddSkill={onAddSkill}
+          onAddSkills={onAddSkills}
+          onRemoveSkill={onRemoveSkill}
         />
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 32 }}>
-          {skills.length === 0 ? (
-            <p style={{ color: '#94a3b8', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', margin: 0 }}>
-              Adicione suas skills técnicas
-            </p>
-          ) : (
-            skills.map(skill => (
-              <span
-                key={skill}
-                style={{
-                  border: '2px solid #020617', padding: '2px 8px', fontWeight: 700,
-                  fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em',
-                  fontFamily: 'ui-monospace, monospace', display: 'inline-flex', alignItems: 'center', gap: 6,
-                }}
-              >
-                {skill}
-                <button
-                  onClick={() => onRemoveSkill(skill)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 900, padding: 0, fontSize: '0.7rem', color: '#64748b' }}
-                  aria-label={`Remover ${skill}`}
-                >
-                  ×
-                </button>
-              </span>
-            ))
-          )}
-        </div>
 
         {/* Categorias rápidas */}
         <div style={{ display: 'flex', gap: 4, marginTop: 12, flexWrap: 'wrap' }}>
