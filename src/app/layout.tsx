@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
 import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
@@ -133,6 +134,9 @@ export default function RootLayout({
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
     </html>
   );
