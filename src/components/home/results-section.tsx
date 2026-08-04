@@ -27,22 +27,25 @@ export function ResultsSection({
 }: ResultsSectionProps) {
   return (
     <Box className="section-white">
-      <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 }, px: { xs: 2, sm: 3 } }}>
         {modoRecomendado && vagas.length > 0 && (
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: { xs: 2.5, md: 4 } }}>
             <Typography
               variant="h3"
               sx={{
                 fontWeight: 900,
-                mb: 2,
+                mb: 1.5,
                 textTransform: "uppercase",
                 letterSpacing: "-0.01em",
                 color: "#020617",
+                fontSize: { xs: "1.25rem", sm: "1.75rem", md: "2.25rem" },
+                lineHeight: 1.15,
+                wordBreak: "break-word",
               }}
             >
               RECOMENDADAS PARA VOCÊ · {areaOuCargo}
             </Typography>
-            <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+            <Box sx={{ display: "flex", gap: 1.5, mb: { xs: 2, md: 3 }, flexWrap: "wrap" }}>
               <Chip
                 label={`${vagas.length} vagas encontradas`}
                 color="primary"

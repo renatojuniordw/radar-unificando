@@ -54,7 +54,7 @@ export function HeroSection({
 
       <Container
         maxWidth="xl"
-        sx={{ py: { xs: 5, md: 8 }, position: "relative", zIndex: 1 }}
+        sx={{ py: { xs: 4, sm: 6, md: 8 }, px: { xs: 2, sm: 3 }, position: "relative", zIndex: 1 }}
       >
         <Box sx={{ maxWidth: 720 }}>
           <Box className="badge-neon" sx={{ mb: 2 }}>
