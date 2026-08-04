@@ -253,6 +253,57 @@ function MarkdownContent({ text }: { text: string }) {
   );
 }
 
+function CopyMessageButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Box
+      component="button"
+      onClick={handleCopy}
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        mt: 1,
+        px: 1.25,
+        py: 0.4,
+        borderRadius: 1,
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: copied ? 'rgba(0, 255, 102, 0.1)' : 'grey.100',
+        color: copied ? 'success.main' : 'text.secondary',
+        fontSize: '0.7rem',
+        fontWeight: 600,
+        fontFamily: 'ui-monospace, monospace',
+        cursor: 'pointer',
+        transition: 'all 150ms ease-out',
+        '&:hover': {
+          bgcolor: copied ? 'rgba(0, 255, 102, 0.15)' : 'grey.200',
+        },
+      }}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {copied ? (
+          <polyline points="20 6 9 17 4 12" />
+        ) : (
+          <>
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </>
+        )}
+      </svg>
+      {copied ? 'Copiado!' : 'Copiar Texto'}
+    </Box>
+  );
+}
+
 export function ChatAssistantUI() {
   const { data: session, status } = useSession();
   const chatContext = useChatAssistant();
@@ -499,10 +550,22 @@ export function ChatAssistantUI() {
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
                 Assistente de Vagas
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25, flexWrap: 'wrap' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                   {loading ? 'Digitando...' : 'Online'}
                 </Typography>
+                <Chip
+                  label={`${messages.length}/25 msgs`}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.625rem',
+                    fontWeight: 700,
+                    bgcolor: messages.length >= 20 ? 'warning.light' : 'grey.200',
+                    color: messages.length >= 20 ? 'warning.contrastText' : 'text.secondary',
+                    fontFamily: 'ui-monospace, monospace',
+                  }}
+                />
                 <Typography
                   component="a"
                   href="/termos"
@@ -682,9 +745,14 @@ export function ChatAssistantUI() {
                 }}
               >
                 {msg.role === 'assistant' ? (
-                  <MarkdownContent
-                    text={msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
-                  />
+                  <>
+                    <MarkdownContent
+                      text={msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
+                    />
+                    <CopyMessageButton
+                      text={msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
+                    />
+                  </>
                 ) : (
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                     {msg.parts.filter(p => p.type === 'text').map(p => p.text).join('')}
@@ -914,9 +982,9 @@ export function ChatAssistantUI() {
             </IconButton>
           </Box>
         </Box>
-          </Box>
-        </Box>
-      </Drawer>
+      </Box>
+    </Box>
+  </Drawer>
 
       <ConfirmDialog
         open={confirmOpen}

@@ -13,6 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useDebounce } from 'use-debounce';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { JobPostingSchema } from '@/components/seo/job-posting-schema';
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';
 
@@ -132,9 +133,20 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
   });
 
   return (
-    <Box
-      className="card-brutalist"
-      sx={{
+    <>
+      <JobPostingSchema
+        jobs={vagasFiltradas.map((v) => ({
+          title: v.titulo_vaga,
+          company: v.empresa,
+          location: v.local,
+          type: v.tipo,
+          url: v.link,
+          datePosted: v.detectado_em,
+        }))}
+      />
+      <Box
+        className="card-brutalist"
+        sx={{
         p: { xs: 2, sm: 2.5, md: 3 },
         bgcolor: '#ffffff',
         border: '3px solid #020617',
@@ -900,6 +912,7 @@ export function VagaTable({ vagas, loading, cargos, onExportCsv, onFilterChange 
           Exibindo {vagasFiltradas.length} vaga{vagasFiltradas.length === 1 ? '' : 's'}
         </Typography>
       )}
-    </Box>
+      </Box>
+    </>
   );
 }
