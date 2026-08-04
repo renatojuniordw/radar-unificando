@@ -140,15 +140,26 @@ const defaultComponents = memoizeMarkdownComponents({
       {...props}
     />
   ),
-  a: ({ className, ...props }) => (
-    <a
-      className={cn(
-        "aui-md-a text-primary hover:text-primary/80 underline underline-offset-2",
-        className,
-      )}
-      {...props}
-    />
-  ),
+  a: ({ className, href, children, ...props }) => {
+    // Sanitizar URI de links (permitir apenas http, https, mailto, tel, caminhos relativos e fragmentos)
+    const isSafeHref = typeof href === 'string' && /^(https?:\/\/|mailto:|tel:|\/|#)/i.test(href.trim());
+    const safeHref = isSafeHref ? href : '#';
+    const isExternal = typeof href === 'string' && /^https?:\/\//i.test(href.trim());
+
+    return (
+      <a
+        className={cn(
+          "aui-md-a text-primary hover:text-primary/80 underline underline-offset-2",
+          className,
+        )}
+        href={safeHref}
+        {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
   blockquote: ({ className, ...props }) => (
     <blockquote
       className={cn(

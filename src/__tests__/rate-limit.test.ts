@@ -23,4 +23,11 @@ describe('Rate Limiter Module', () => {
     expect(blockedRes.success).toBe(false);
     expect(blockedRes.remainingPoints).toBe(0);
   });
+
+  it('deve suportar chaves compostas (userId:IP)', async () => {
+    const compositeKey = `user_12345:192.168.1.50`;
+    const result = await checkRateLimit(compositeKey, 'chat');
+    expect(result.success).toBe(true);
+    expect(result.remainingPoints).toBeGreaterThanOrEqual(0);
+  });
 });

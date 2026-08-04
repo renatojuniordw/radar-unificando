@@ -79,17 +79,17 @@ export interface RateLimitResult {
 }
 
 /**
- * Verifica se uma requisição proveniente de determinado IP excedeu o limite.
+ * Verifica se uma requisição proveniente de determinado identificador (ex: IP ou userId:IP) excedeu o limite.
  * 
- * @param ip IP do cliente
+ * @param key Identificador do cliente (IP ou combinação userId:IP)
  * @param profile Tipo de perfil de limitação ('chat', 'auth', 'general')
  * @returns RateLimitResult contendo success, remainingPoints, msBeforeNext
  */
 export async function checkRateLimit(
-  ip: string,
+  key: string,
   profile: RateLimitProfile = 'general'
 ): Promise<RateLimitResult> {
-  const cleanIp = ip.split(',')[0].trim() || '127.0.0.1';
+  const cleanKey = key.split(',')[0].trim() || '127.0.0.1';
 
   let limiterToUse: RateLimiterRedis | RateLimiterMemory;
 
@@ -105,7 +105,7 @@ export async function checkRateLimit(
   }
 
   try {
-    const res: RateLimiterRes = await limiterToUse.consume(cleanIp);
+    const res: RateLimiterRes = await limiterToUse.consume(cleanKey);
     return {
       success: true,
       remainingPoints: res.remainingPoints,

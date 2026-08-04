@@ -15,9 +15,10 @@ export async function POST(req: NextRequest) {
 
   const traceId = crypto.randomUUID();
   
-  // Rate limiting para chat via Redis / Fallback em memória (10 requisições/min)
+  // Rate limiting para chat via Redis / Fallback em memória (10 requisições/min por usuário+IP)
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
-  const { success, msBeforeNext, remainingPoints } = await checkRateLimit(ip, 'chat');
+  const rateLimitKey = `${session.user.id}:${ip.split(',')[0].trim()}`;
+  const { success, msBeforeNext, remainingPoints } = await checkRateLimit(rateLimitKey, 'chat');
   
   if (!success) {
     const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
@@ -84,6 +85,14 @@ export async function POST(req: NextRequest) {
         pattern: 'potential_prompt_injection',
         success: false,
       });
+
+      return new Response(
+        JSON.stringify({ error: 'Sua mensagem contém termos ou padrões não permitidos. Por favor, reformule sua pergunta.' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const result = streamText({
@@ -110,7 +119,8 @@ export async function POST(req: NextRequest) {
     return result.toUIMessageStreamResponse({
       onError: (error: unknown) => {
         console.error('[chat] toUIMessageStreamResponse onError:', error);
-        return error instanceof Error ? error.message : 'Erro ao processar a resposta.';
+        // Retornar mensagem de erro genérica sanitizada sem expor detalhes internos
+        return 'Ocorreu um erro ao processar a resposta. Tente novamente em instantes.';
       },
     });
   } catch (error) {
@@ -121,6 +131,6 @@ export async function POST(req: NextRequest) {
       error: message,
     });
     console.error('[chat] Error:', error);
-    return new Response(JSON.stringify({ error: 'Erro no chat' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Erro ao processar sua solicitação.' }), { status: 500 });
   }
 }

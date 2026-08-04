@@ -74,7 +74,9 @@ export function createChatTools(userId: string) {
           tipo: j.tipo,
           local: j.local,
           link: j.link,
-          descricao: j.descricao?.slice(0, 1200),
+          descricao: j.descricao
+            ? `<untrusted_content>\n${j.descricao.slice(0, 1200)}\n</untrusted_content>`
+            : '',
         }));
       },
     }),
