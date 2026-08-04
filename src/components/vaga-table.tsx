@@ -16,6 +16,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { uniqueValues } from '@/lib/array';
 import { formatVagaDate } from '@/lib/date';
 import { JobPostingSchema } from '@/components/seo/job-posting-schema';
+import { trackJobApply, trackExportCsv } from '@/lib/analytics';
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';
 
@@ -65,6 +66,7 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
   function handleExport() {
     if (exporting) return;
     setExporting(true);
+    trackExportCsv(vagas.length);
     onExportCsv();
     setTimeout(() => setExporting(false), 2000);
   }
@@ -707,6 +709,7 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
                     href={vaga.link}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackJobApply({ titulo: vaga.titulo_vaga, empresa: vaga.empresa, plataforma: vaga.plataforma, link: vaga.link })}
                     style={{ textDecoration: 'none', marginTop: 4 }}
                   >
                     <Box
@@ -909,6 +912,7 @@ export const VagaTable = memo(function VagaTable({ vagas, loading, cargos, onExp
                           href={vaga.link}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => trackJobApply({ titulo: vaga.titulo_vaga, empresa: vaga.empresa, plataforma: vaga.plataforma, link: vaga.link })}
                           aria-label={`Ver vaga ${vaga.titulo_vaga} na ${vaga.empresa}`}
                           style={{
                             backgroundColor: '#020617',

@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { ChatSidebar } from '@/components/chat-sidebar';
 import { useChatAssistant } from '@/contexts/chat-assistant-context';
 import { browserStorage } from '@/lib/infrastructure/storage/browser-storage';
+import { trackAiChat } from '@/lib/analytics';
 
 interface Conversation {
   id: string;
@@ -465,6 +466,7 @@ export function ChatAssistantUI() {
 
   function handleSend() {
     if (!input.trim() || loading || isThreadLimitReached || isDailyLimitReached) return;
+    trackAiChat('send_message');
     sendMessage({ text: input });
     setInput('');
   }

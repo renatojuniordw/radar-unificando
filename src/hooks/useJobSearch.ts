@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
 import { uniqueValues } from "@/lib/array";
+import { trackJobSearch } from "@/lib/analytics";
 import type { Vaga } from "@/lib/types/vaga";
 
 const AUTO_SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
@@ -162,6 +163,7 @@ export function useJobSearch() {
       setRunning(true);
       setVagas([]);
       if (!session) await browserStorage.clear();
+      trackJobSearch({ empresas, cargos: cargosBusca });
     }
 
     try {
