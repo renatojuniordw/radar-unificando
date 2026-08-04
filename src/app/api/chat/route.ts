@@ -1,18 +1,21 @@
 import { NextRequest } from 'next/server';
-import { streamText, stepCountIs, convertToModelMessages } from 'ai';
-import { auth } from '@/auth';
+import { streamText, stepCountIs, convertToModelMessages, type UIMessage } from 'ai';
+import { requireAuth } from '@/lib/api/auth-guard';
 import { chatLlm } from '@/lib/core/ai/llm-provider';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { redactPii } from '@/lib/core/ai/pii-redactor';
+import {
+  MAX_THREAD_MESSAGES,
+  MAX_CONTEXT_MESSAGES,
+  sanitizeChatMessages,
+  isPromptInjection,
+} from '@/lib/core/ai/chat-guard';
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Não autenticado' }), { status: 401 });
-  }
+  const { session, response } = await requireAuth();
+  if (response) return response;
 
   const traceId = crypto.randomUUID();
   
@@ -57,7 +60,6 @@ export async function POST(req: NextRequest) {
     const { messages } = await req.json();
     
     // Validar limite de 25 mensagens por conversa e avisar o usuário
-    const MAX_THREAD_MESSAGES = 25;
     if (Array.isArray(messages) && messages.length >= MAX_THREAD_MESSAGES) {
       return new Response(
         JSON.stringify({
@@ -72,52 +74,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Janela deslizante de contexto (enviar no máximo as 15 mensagens mais recentes para a LLM)
-    const MAX_CONTEXT_MESSAGES = 15;
     const recentMessages = Array.isArray(messages) && messages.length > MAX_CONTEXT_MESSAGES
       ? messages.slice(-MAX_CONTEXT_MESSAGES)
       : (messages || []);
 
     // Validação e sanitização de input (incluindo anonimização de PII)
-    const sanitizedMessages = recentMessages.map((msg: any) => {
-      if (msg.role === 'user') {
-        // Limitar tamanho da mensagem
-        const text = (msg.content || '').slice(0, 2000);
-        // Anonimizar PII (CPF, RG, Telefone, Cartões) em conformidade com LGPD
-        const redacted = redactPii(text);
-        // Remover caracteres potencialmente perigosos
-        const clean = redacted
-          .replace(/[<>]/g, '') // Remove HTML tags básicos
-          .trim();
-        return { ...msg, content: clean };
-      }
-      return msg;
-    });
-    
+    const sanitizedMessages = sanitizeChatMessages(recentMessages);
+
     // Detectar padrões suspeitos (prompt injection)
-    const suspiciousPatterns = [
-      /ignore.*instructions/i,
-      /system.*prompt/i,
-      /reveal.*instructions/i,
-      /bypass.*rules/i,
-      /ignore.*previous/i,
-      /disregard.*instructions/i,
-      /jailbreak/i,
-      /\bDAN\b/,
-      /aja como/i,
-      /finja que/i,
-      /esque(ç|c)a (as )?instru(ç|c)(õ|o)es/i,
-      /ignore (as )?instru(ç|c)(õ|o)es/i,
-      /modo desenvolvedor/i,
-      /voc(ê|e) n(ã|a)o tem regras/i,
-      /repita (o|seu) prompt/i,
-      /revele (seu|o) prompt/i,
-      /qual (é|e) (seu|o) prompt/i,
-    ];
-    
-    const isSuspicious = suspiciousPatterns.some((p) =>
-      sanitizedMessages.some((m: any) => p.test(m.content || ''))
-    );
-    
+    const isSuspicious = isPromptInjection(sanitizedMessages);
+
     if (isSuspicious) {
       logAiEvent('suspicious_activity', {
         traceId,
@@ -137,17 +103,21 @@ export async function POST(req: NextRequest) {
 
     const result = streamText({
       model: chatLlm,
-      messages: await convertToModelMessages(sanitizedMessages),
+      messages: await convertToModelMessages(sanitizedMessages as UIMessage[]),
       tools: createChatTools(session.user.id),
       stopWhen: stepCountIs(10),
       system: CHAT_SYSTEM_PROMPT,
-      onFinish: async (event: any) => {
+      onFinish: async (event: {
+        text?: string;
+        finishReason: unknown;
+        steps?: { toolCalls?: { toolName: string }[] }[];
+      }) => {
         logAiEvent('chat_interaction', {
           traceId,
           messageCount: messages.length,
           textLength: event.text?.length || 0,
           finishReason: event.finishReason,
-          toolCalls: event.steps?.flatMap((s: any) => s.toolCalls?.map((t: any) => t.toolName) || []),
+          toolCalls: event.steps?.flatMap((s) => s.toolCalls?.map((t) => t.toolName) || []),
           success: true,
         });
       },

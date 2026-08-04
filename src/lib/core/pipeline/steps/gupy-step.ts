@@ -2,6 +2,19 @@ import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import type { JobData } from '@/types';
 
+interface GupyRestJob {
+  careerPageName?: string;
+  companyName?: string;
+  name?: string;
+  workplaceType?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  jobUrl?: string;
+  careerPageUrl?: string;
+  publishedDate?: string;
+}
+
 export interface GupyStepOptions {
   companies: string[];
   isLoggedIn: boolean;
@@ -80,7 +93,7 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
     const MAX_PER_SEARCH = 500;
     const PAGE_SIZE = 100;
     let offset = 0;
-    let pageResults: any[] = [];
+    const pageResults: GupyRestJob[] = [];
 
     while (offset < MAX_PER_SEARCH) {
       const params = new URLSearchParams({ offset: String(offset), limit: String(PAGE_SIZE) });
@@ -99,7 +112,7 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
         const res = await fetch(url, { headers: { Accept: 'application/json' } });
         if (!res.ok) break;
         const json = await res.json();
-        const data = json.data || [];
+        const data: GupyRestJob[] = json.data || [];
         if (data.length === 0) break;
         pageResults.push(...data);
         offset += PAGE_SIZE;
@@ -113,12 +126,12 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
         empresa: j.careerPageName || j.companyName || '',
         plataforma: 'Gupy',
         na_lista: companies.some(c => c.toLowerCase() === (j.careerPageName || '').toLowerCase()) ? 'Sim' : 'Não',
-        cargo_categoria: inferRole(j.name),
-        titulo_vaga: j.name,
-        tipo: j.workplaceType,
+        cargo_categoria: inferRole(j.name || ''),
+        titulo_vaga: j.name || '',
+        tipo: j.workplaceType || '',
         local: [j.city, j.state, j.country].filter(Boolean).join(' / '),
         link: j.jobUrl || j.careerPageUrl || '',
-        nome_na_plataforma: j.careerPageName,
+        nome_na_plataforma: j.careerPageName || '',
         publicado: j.publishedDate || '',
         alerta: '',
       });

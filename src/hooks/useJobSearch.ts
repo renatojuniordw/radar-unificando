@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
+import { uniqueValues } from "@/lib/array";
 import type { Vaga } from "@/lib/types/vaga";
 
 const AUTO_SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
@@ -24,33 +25,87 @@ export function useJobSearch() {
     severity: "success" | "error" | "info";
   } | null>(null);
   const [cooldown, setCooldown] = useState(0);
-  const [modoRecomendado, setModoRecomendado] = useState(false);
 
   // Perfil mínimo: skills >= 3 E (currentRole OU area)
   const perfilMinimo = useMemo(() => {
     return profile.skills.length >= 3 && (profile.currentRole || profile.area);
   }, [profile.skills.length, profile.currentRole, profile.area]);
 
+  // Modo recomendado é derivado (logado + perfil completo); não é estado.
+  const modoRecomendado = useMemo(
+    () => !!(session && perfilMinimo),
+    [session, perfilMinimo],
+  );
+
+  const carregarVagas = useCallback(async (filters?: {
+    plataforma?: string;
+    cargo?: string;
+    search?: string;
+  }) => {
+    setLoading(true);
+    const params = new URLSearchParams();
+
+    // Se modo recomendado e logado
+    if (modoRecomendado && session) {
+      params.set("recomendado", "1");
+    } else {
+      // Filtros normais
+      if (filters?.plataforma) params.set("plataforma", filters.plataforma);
+      if (filters?.cargo) params.set("cargo", filters.cargo);
+      if (filters?.search) params.set("search", filters.search);
+    }
+
+    try {
+      const query = params.toString();
+      const res = await fetch(`/api/vagas${query ? "?" + query : ""}`);
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          setSnackbar({ message: "Muitas buscas em pouco tempo. Aguarde alguns segundos.", severity: "error" });
+        } else {
+          setSnackbar({ message: "Falha ao carregar vagas. Tente novamente.", severity: "error" });
+        }
+        return;
+      }
+
+      const data = await res.json();
+      const jobs = Array.isArray(data) ? data : [];
+      setVagas(jobs);
+
+      if (!session && jobs.length > 0) await browserStorage.setVagas(jobs);
+
+      const uniqueCargos = uniqueValues(jobs.map((j: Vaga) => j.cargo_categoria)) as string[];
+      setCargos(uniqueCargos);
+    } catch {
+      setSnackbar({ message: "Erro de conexão ao carregar vagas.", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }, [modoRecomendado, session]);
+
   // Carregar vagas salvas na montagem (para logados e anônimos)
   useEffect(() => {
     if (session) {
-      void carregarVagas();
+      // Adiado para fora do effect síncrono (evita setState em cascata)
+      queueMicrotask(() => {
+        void carregarVagas();
+      });
     } else {
       let cancelled = false;
       browserStorage.getVagas().then((stored) => {
         if (!cancelled && stored.length > 0) setVagas(stored as Vaga[]);
-      });
+      }).catch(() => {});
       return () => {
         cancelled = true;
       };
     }
-  }, [session]);
+  }, [session, carregarVagas]);
 
   // Carregar timestamp da última busca
   useEffect(() => {
     browserStorage.getLastRunAt().then((ts) => {
       if (ts) setLastRunAt(ts);
-    });
+    }).catch(() => {});
   }, []);
 
   // Carregar filtros persistidos (empresas/cargos) na montagem
@@ -59,24 +114,13 @@ export function useJobSearch() {
       if (!filters) return;
       if (Array.isArray(filters.empresas)) setEmpresas(filters.empresas);
       if (Array.isArray(filters.cargos)) setCargosBusca(filters.cargos);
-    });
+    }).catch(() => {});
   }, []);
 
   // Persistir filtros a cada alteração
   useEffect(() => {
-    void browserStorage.setFilters({ empresas, cargos: cargosBusca });
+    void browserStorage.setFilters({ empresas, cargos: cargosBusca }).catch(() => {});
   }, [empresas, cargosBusca]);
-
-  // Ativar modo recomendado quando logado + perfil pronto
-  useEffect(() => {
-    if (session && perfilMinimo) {
-      setModoRecomendado(true);
-      // Pré-preenche cargo
-      if (profile.currentRole || profile.area) {
-        setCargosBusca([profile.currentRole || profile.area]);
-      }
-    }
-  }, [session, perfilMinimo, profile.currentRole, profile.area]);
 
   useEffect(() => {
     browserStorage.getCooldownEnd().then((endsAt) => {
@@ -85,7 +129,7 @@ export function useJobSearch() {
         if (remaining > 0) setCooldown(remaining);
         else void browserStorage.clearCooldown();
       }
-    });
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -101,40 +145,7 @@ export function useJobSearch() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [cooldown > 0]);
-
-  async function carregarVagas(filters?: {
-    plataforma?: string;
-    cargo?: string;
-    search?: string;
-  }) {
-    setLoading(true);
-    const params = new URLSearchParams();
-
-    // Se modo recomendado e logado
-    if (modoRecomendado && session) {
-      params.set("recomendado", "1");
-    } else {
-      // Filtros normais
-      if (filters?.plataforma) params.set("plataforma", filters.plataforma);
-      if (filters?.cargo) params.set("cargo", filters.cargo);
-      if (filters?.search) params.set("search", filters.search);
-    }
-
-    const query = params.toString();
-    const res = await fetch(`/api/vagas${query ? "?" + query : ""}`);
-    const data = await res.json();
-    const jobs = Array.isArray(data) ? data : [];
-    setVagas(jobs);
-
-    if (!session && jobs.length > 0) await browserStorage.setVagas(jobs);
-
-    const uniqueCargos = [
-      ...new Set(jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean)),
-    ] as string[];
-    setCargos(uniqueCargos);
-    setLoading(false);
-  }
+  }, [cooldown]);
 
   function addSuggestion(cargo: string) {
     if (!cargosBusca.includes(cargo)) {
@@ -199,7 +210,11 @@ export function useJobSearch() {
 
       evtSource.onmessage = async (event) => {
         try {
-          const data = JSON.parse(event.data);
+          const data = JSON.parse(event.data) as {
+            type: string;
+            message?: string;
+            jobs?: Vaga[];
+          };
 
           if (
             data.type === "pipeline_complete" ||
@@ -215,17 +230,15 @@ export function useJobSearch() {
               data.type === "pipeline_complete" &&
               Array.isArray(data.jobs)
             ) {
-              const jobs: Vaga[] = data.jobs.map((j: any) => ({
+              const jobs: Vaga[] = data.jobs.map((j) => ({
                 ...j,
                 detectado_em: j.detectado_em || "",
               }));
               setVagas(jobs);
               await browserStorage.setVagas(data.jobs);
-              const uniqueCargos = [
-                ...new Set(
-                  jobs.map((j: Vaga) => j.cargo_categoria).filter(Boolean),
-                ),
-              ];
+              const uniqueCargos = uniqueValues(
+                jobs.map((j: Vaga) => j.cargo_categoria),
+              );
               setCargos(uniqueCargos);
             } else {
               carregarVagas();
@@ -239,7 +252,12 @@ export function useJobSearch() {
             }
           }
         } catch {
-          /* ignore */
+          evtSource.close();
+          setRunning(false);
+          setAutoSyncing(false);
+          if (!isSilent) {
+            setSnackbar({ message: "Erro ao processar a busca. Tente novamente.", severity: "error" });
+          }
         }
       };
 
@@ -247,7 +265,10 @@ export function useJobSearch() {
         evtSource.close();
         setRunning(false);
         setAutoSyncing(false);
-        carregarVagas();
+        if (!isSilent) {
+          setSnackbar({ message: "Falha na conexão com a busca. Tente novamente.", severity: "error" });
+        }
+        carregarVagas().catch(() => {});
       };
     } catch {
       if (!isSilent) {
@@ -256,9 +277,14 @@ export function useJobSearch() {
       setRunning(false);
       setAutoSyncing(false);
     }
-  }, [empresas, cargosBusca, session]);
+  }, [empresas, cargosBusca, session, carregarVagas]);
 
   // Auto-sync na montagem se o tempo decorrido for > 15min e cooldown for 0
+  const handleStartRef = useRef(handleStart);
+  useEffect(() => {
+    handleStartRef.current = handleStart;
+  });
+
   useEffect(() => {
     if (cooldown > 0 || running || autoSyncing) return;
 
@@ -267,14 +293,14 @@ export function useJobSearch() {
       if (cancelled) return;
       const now = Date.now();
       if (!ts || now - ts > AUTO_SYNC_INTERVAL_MS) {
-        void handleStart({ silent: true });
+        void handleStartRef.current({ silent: true });
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [cooldown === 0]);
+  }, [cooldown, running, autoSyncing]);
 
   return {
     session,
