@@ -5,7 +5,8 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "next/link";
-import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2, Github } from "lucide-react";
+import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2 } from "lucide-react";
+import GitHubIcon from "@mui/icons-material/GitHub";
 
 export default function SobrePage() {
   return (
@@ -212,7 +213,7 @@ export default function SobrePage() {
                 },
               }}
             >
-              <Github size={18} /> REPOSITÓRIO GITHUB
+              <GitHubIcon sx={{ fontSize: 18 }} /> REPOSITÓRIO GITHUB
             </Button>
 
             <Button
