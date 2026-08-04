@@ -134,9 +134,7 @@ export default function RootLayout({
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        )}
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92"} />
       </body>
     </html>
   );
