@@ -26,6 +26,28 @@ services:
     networks:
       - internal
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-radar_redis_secret_password_change_in_prod} --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-radar_redis_secret_password_change_in_prod}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+        reservations:
+          memory: 32M
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
+
   app:
     profiles: ["production"]
     build: .
@@ -35,11 +57,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${DB_USER:-radar}:${DB_PASSWORD}@postgres:5432/radar_unificando
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: http://localhost:11010
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-radar_redis_secret_password_change_in_prod}
     env_file:
       - .env
     deploy:
@@ -67,3 +94,4 @@ volumes:
 networks:
   internal:
     driver: bridge
+

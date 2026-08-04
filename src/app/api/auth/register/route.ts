@@ -2,7 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { userRepository } from '@/lib/infrastructure/repositories';
 
+import { checkRateLimit } from '@/lib/rate-limit';
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+  const { success, msBeforeNext } = await checkRateLimit(ip, 'auth');
+
+  if (!success) {
+    const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
+    return NextResponse.json(
+      { error: `Muitas tentativas de cadastro. Aguarde ${retryAfterSeconds} segundos.` },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(retryAfterSeconds),
+        },
+      }
+    );
+  }
+
   try {
     const { name, email, password } = await req.json();
 

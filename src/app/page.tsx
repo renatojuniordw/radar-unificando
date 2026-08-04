@@ -24,7 +24,6 @@ export default function HomePage() {
     setSnackbar,
     cooldown,
     modoRecomendado,
-    primeiroNome,
     perfilMinimo,
     carregarVagas,
     addSuggestion,
@@ -35,7 +34,6 @@ export default function HomePage() {
     <>
       <HeroSection
         isLoggedIn={!!session}
-        primeiroNome={primeiroNome}
         perfilCompleto={!!perfilMinimo}
         empresas={empresas}
         onEmpresasChange={setEmpresas}

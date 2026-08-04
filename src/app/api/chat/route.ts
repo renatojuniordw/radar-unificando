@@ -5,10 +5,7 @@ import { chatLlm } from '@/lib/core/ai/llm-provider';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
-import { RateLimiter } from '@/lib/infrastructure/security/rate-limiter';
-
-// Rate limiter para chat (20 msgs/min por usuário)
-const chatLimiter = new RateLimiter(60_000, 20);
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -18,13 +15,25 @@ export async function POST(req: NextRequest) {
 
   const traceId = crypto.randomUUID();
   
-  // Rate limiting para chat
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  const { allowed } = chatLimiter.check(`chat:${session.user.id}:${ip}`);
+  // Rate limiting para chat via Redis / Fallback em memória (10 requisições/min)
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+  const { success, msBeforeNext, remainingPoints } = await checkRateLimit(ip, 'chat');
   
-  if (!allowed) {
-    return new Response(JSON.stringify({ error: 'Muitas mensagens. Aguarde um momento.' }), { status: 429 });
+  if (!success) {
+    const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
+    return new Response(
+      JSON.stringify({ error: `Muitas mensagens. Aguarde ${retryAfterSeconds} segundos.` }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(retryAfterSeconds),
+          'X-RateLimit-Remaining': String(remainingPoints),
+        },
+      }
+    );
   }
+
 
   try {
     const { messages } = await req.json();

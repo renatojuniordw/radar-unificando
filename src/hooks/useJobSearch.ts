@@ -22,28 +22,12 @@ export function useJobSearch() {
     severity: "success" | "error" | "info";
   } | null>(null);
   const [cooldown, setCooldown] = useState(0);
-  const [vagasCount, setVagasCount] = useState(1200);
   const [modoRecomendado, setModoRecomendado] = useState(false);
-
-  const primeiroNome =
-    session?.user?.name?.split(" ")[0] ||
-    session?.user?.email?.split("@")[0] ||
-    "";
 
   // Perfil mínimo: skills >= 3 E (currentRole OU area)
   const perfilMinimo = useMemo(() => {
     return profile.skills.length >= 3 && (profile.currentRole || profile.area);
   }, [profile.skills.length, profile.currentRole, profile.area]);
-
-  useEffect(() => {
-    fetch("/api/vagas?limit=1")
-      .then((r) => r.json())
-      .then((data: Vaga[]) => {
-        if (Array.isArray(data) && data.length > 0)
-          setVagasCount((prev) => prev + 1);
-      })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!session && vagas.length === 0) {
@@ -254,9 +238,7 @@ export function useJobSearch() {
     snackbar,
     setSnackbar,
     cooldown,
-    vagasCount,
     modoRecomendado,
-    primeiroNome,
     perfilMinimo,
     carregarVagas,
     addSuggestion,
