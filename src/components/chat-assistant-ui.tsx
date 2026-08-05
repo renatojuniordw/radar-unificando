@@ -96,7 +96,6 @@ export function ChatAssistantUI() {
   return (
     <>
       <Fab
-        color="primary"
         onClick={openDrawer}
         aria-label="Abrir assistente de vagas"
         sx={{
@@ -107,9 +106,12 @@ export function ChatAssistantUI() {
           display: open ? 'none' : 'flex',
           width: 56,
           height: 56,
-          boxShadow: '0 4px 14px 0 rgba(2, 6, 23, 0.35)',
+          bgcolor: '#00ff66',
+          color: '#020617',
+          boxShadow: '0 4px 14px 0 rgba(0, 255, 102, 0.45)',
           '&:hover': {
-            boxShadow: '0 6px 20px 0 rgba(2, 6, 23, 0.45)',
+            bgcolor: '#00e65c',
+            boxShadow: '0 6px 20px 0 rgba(0, 255, 102, 0.6)',
             transform: 'translateY(-2px)',
           },
           transition: 'all 200ms ease-out',

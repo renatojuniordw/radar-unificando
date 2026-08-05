@@ -21,17 +21,17 @@ export function getDynamicSuggestions(text: string) {
   if (lower.includes('🏢') || lower.includes('vaga') || lower.includes('oportunidade')) {
     return [
       {
-        label: '📊 Analisar Fit',
+        label: 'Analisar Fit',
         prompt: 'Analise minha compatibilidade com a primeira vaga listada acima.',
         icon: <AssessmentIcon fontSize="small" />,
       },
       {
-        label: '📄 Gerar Carta',
+        label: 'Gerar Carta',
         prompt: 'Gere uma carta de apresentação para a primeira vaga.',
         icon: <DescriptionIcon fontSize="small" />,
       },
       {
-        label: '🔍 Ver Mais Vagas',
+        label: 'Ver Mais Vagas',
         prompt: 'Busque mais 3 vagas parecidas no Gupy.',
         icon: <SearchIcon fontSize="small" />,
       },
@@ -41,12 +41,12 @@ export function getDynamicSuggestions(text: string) {
   if (lower.includes('entrevista') || lower.includes('roteiro') || lower.includes('pergunta')) {
     return [
       {
-        label: '🎤 Simular Entrevista',
+        label: 'Simular Entrevista',
         prompt: 'Vamos simular essa entrevista! Faça a primeira pergunta.',
         icon: <RecordVoiceOverIcon fontSize="small" />,
       },
       {
-        label: '📊 Analisar Fit',
+        label: 'Analisar Fit',
         prompt: 'Analise minha compatibilidade com a vaga dessa entrevista.',
         icon: <AssessmentIcon fontSize="small" />,
       },
@@ -55,17 +55,17 @@ export function getDynamicSuggestions(text: string) {
 
   return [
     {
-      label: '📄 Analisar Currículo',
+      label: 'Analisar Currículo',
       prompt: 'Analise meu perfil cadastrado e sugira melhorias no currículo.',
       icon: <DescriptionIcon fontSize="small" />,
     },
     {
-      label: '🔍 Buscar Vagas',
+      label: 'Buscar Vagas',
       prompt: 'Busque vagas de tecnologia alinhadas ao meu perfil no Gupy.',
       icon: <SearchIcon fontSize="small" />,
     },
     {
-      label: '📊 Panorama do Mercado',
+      label: 'Panorama do Mercado',
       prompt: 'Como está o mercado de tecnologia para o meu perfil hoje?',
       icon: <TrendingUpIcon fontSize="small" />,
     },
@@ -81,16 +81,13 @@ export function ChatSuggestedReplies({ lastMessageText, loading, onSelect }: Pro
     <Box
       sx={{
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 1,
         px: 2,
         py: 1,
-        overflowX: 'auto',
-        overscrollBehavior: 'contain',
         bgcolor: 'background.paper',
         borderTop: '1px solid',
         borderColor: 'divider',
-        '&::-webkit-scrollbar': { display: 'none' },
-        scrollbarWidth: 'none',
       }}
     >
       {suggestions.map((item, i) => (

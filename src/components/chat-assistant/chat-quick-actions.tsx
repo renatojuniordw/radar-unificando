@@ -21,9 +21,32 @@ export function ChatQuickActions({ loading, onSelect }: Props) {
           key={action.label}
           label={action.label}
           size="small"
+          variant="outlined"
+          color="primary"
           disabled={loading}
           onClick={() => onSelect(action.prompt)}
-          sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'primary.light', color: 'common.white' } }}
+          sx={{
+            fontWeight: 600,
+            fontSize: '0.75rem',
+            py: 1.5,
+            px: 0.5,
+            bgcolor: 'grey.50',
+            borderColor: 'primary.light',
+            cursor: 'pointer',
+            transition: 'all 150ms ease-out',
+            '&:hover': {
+              bgcolor: 'primary.main',
+              color: 'common.white',
+              borderColor: 'primary.main',
+              transform: 'translateY(-1px)',
+            },
+            '&.Mui-disabled': {
+              opacity: 1,
+              color: 'text.disabled',
+              bgcolor: 'grey.100',
+              borderColor: 'grey.300',
+            },
+          }}
         />
       ))}
     </Box>

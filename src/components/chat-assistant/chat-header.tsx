@@ -1,6 +1,7 @@
 'use client';
 
-import { Box, IconButton, Typography, Chip, Tooltip } from '@mui/material';
+import { Box, IconButton, Typography, Chip, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/chat';
 import { BotIcon, HistoryIcon, PlusIcon } from './icons';
@@ -28,6 +29,9 @@ export function ChatHeader({
   isDailyLimitReached,
   onClose,
 }: Props) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Box
       sx={{
@@ -41,11 +45,12 @@ export function ChatHeader({
         bgcolor: 'background.paper',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1 }}>
         <Box
           sx={{
             width: 32,
             height: 32,
+            flexShrink: 0,
             borderRadius: 1,
             bgcolor: 'primary.main',
             display: 'flex',
@@ -56,17 +61,27 @@ export function ChatHeader({
         >
           <BotIcon />
         </Box>
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: 600,
+              color: 'text.primary',
+              lineHeight: 1.2,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
             Assistente de Vagas
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25, flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
               {loading ? 'Digitando...' : 'Online'}
             </Typography>
             <Tooltip title="Limite da janela de contexto para garantir respostas precisas nesta conversa." arrow>
               <Chip
-                label={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} chat`}
+                label={isMobile ? `${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT}` : `${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} chat`}
                 size="small"
                 sx={{
                   height: 18,
@@ -81,7 +96,7 @@ export function ChatHeader({
             </Tooltip>
             <Tooltip title="Limite diário de interações por conta. Renova automaticamente à meia-noite (00:00)." arrow>
               <Chip
-                label={`${dailyCount}/${dailyLimit} hoje`}
+                label={isMobile ? `${dailyCount}/${dailyLimit}` : `${dailyCount}/${dailyLimit} hoje`}
                 size="small"
                 sx={{
                   height: 18,
@@ -102,26 +117,29 @@ export function ChatHeader({
                 }}
               />
             </Tooltip>
-            <Typography
-              component="a"
-              href="/termos"
-              target="_blank"
-              variant="caption"
-              sx={{
-                color: 'success.main',
-                fontSize: '0.65rem',
-                fontWeight: 600,
-                textDecoration: 'none',
-                bgcolor: 'rgba(0, 255, 102, 0.08)',
-                px: 0.75,
-                py: 0.2,
-                borderRadius: 0.5,
-                border: '1px solid rgba(0, 255, 102, 0.2)',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            >
-              🔒 LGPD Sanitizado
-            </Typography>
+            {!isMobile && (
+              <Typography
+                component="a"
+                href="/termos"
+                target="_blank"
+                variant="caption"
+                sx={{
+                  color: 'success.main',
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  bgcolor: alpha('#00ff66', 0.08),
+                  px: 0.75,
+                  py: 0.2,
+                  borderRadius: 0.5,
+                  border: '1px solid',
+                  borderColor: alpha('#00ff66', 0.2),
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                🔒 LGPD Sanitizado
+              </Typography>
+            )}
           </Box>
         </Box>
       </Box>
