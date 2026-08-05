@@ -210,6 +210,18 @@ export function useJobSearch() {
 
       const evtSource = new EventSource(`/api/pipeline/stream?runId=${id}`);
 
+      // Watchdog: se o stream nunca emitir um evento terminal nem cair com
+      // erro (ex: proxy bufferizando a resposta SSE), evita travar a UI para sempre.
+      const watchdog = setTimeout(() => {
+        evtSource.close();
+        setRunning(false);
+        setAutoSyncing(false);
+        if (!isSilent) {
+          setSnackbar({ message: "A busca demorou mais que o esperado. Tente novamente.", severity: "error" });
+        }
+        loadJobs().catch(() => {});
+      }, 180_000);
+
       evtSource.onmessage = async (event) => {
         try {
           const data = JSON.parse(event.data) as {
@@ -223,6 +235,7 @@ export function useJobSearch() {
             data.type === "pipeline_error" ||
             data.type === "pipeline_cancelled"
           ) {
+            clearTimeout(watchdog);
             evtSource.close();
             setRunning(false);
             setAutoSyncing(false);
@@ -254,6 +267,7 @@ export function useJobSearch() {
             }
           }
         } catch {
+          clearTimeout(watchdog);
           evtSource.close();
           setRunning(false);
           setAutoSyncing(false);
@@ -264,6 +278,7 @@ export function useJobSearch() {
       };
 
       evtSource.onerror = () => {
+        clearTimeout(watchdog);
         evtSource.close();
         setRunning(false);
         setAutoSyncing(false);
