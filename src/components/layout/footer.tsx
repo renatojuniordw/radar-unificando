@@ -132,6 +132,14 @@ export function Footer() {
             <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0, flexWrap: 'wrap' }}>
               <li>
                 <a
+                  href="/doar"
+                  style={{ color: '#ccff00', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                >
+                  APOIAR
+                </a>
+              </li>
+              <li>
+                <a
                   href="/sobre"
                   style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}

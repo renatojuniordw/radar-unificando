@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2 } from "lucide-react";
+import { SupportSection } from "@/components/shared/support-section";
 
 export const metadata: Metadata = {
   title: "Sobre | Radar Unificando",
@@ -246,6 +247,11 @@ export default function SobrePage() {
               CONSULTORIA EM IA
             </Button>
           </Box>
+        </Box>
+
+        {/* Section: Apoie o projeto */}
+        <Box sx={{ mb: { xs: 6, md: 8 } }}>
+          <SupportSection />
         </Box>
 
         {/* Section 3: Pilares */}

@@ -4,6 +4,7 @@
 
 Desenvolvido por: [Renato Bezerra](https://renatobezerra.com.br/)
 Licença: MIT
+Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar.unificando.com.br/doar)
 
 ---
 
@@ -15,7 +16,7 @@ Licença: MIT
 - **Análise de match** — compara perfil × vaga com skills casadas/faltantes e fit geral
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
-- **100% gratuito** — sem taxas (com rate limits anti-abuso)
+- **100% gratuito para usuários** — mantido por doações (rate limits anti-abuso)
 
 ## Stack
 
@@ -30,6 +31,15 @@ Licença: MIT
 | AI | Vercel AI SDK (OpenAI-compatible) |
 | Chat | MUI + `@ai-sdk/react` (useChat) |
 | Storage anônimo | IndexedDB via `idb` |
+
+## Apoie o projeto
+
+O Radar Unificando é gratuito e open source, mas tem custos reais de infraestrutura
+(VPS, banco, Redis e tokens de IA no chat). Se a ferramenta te ajudou, considere doar:
+
+- **PIX** (Brasil, sem taxa): QR e chave em [radar.unificando.com.br/doar](https://radar.unificando.com.br/doar)
+
+Custos mensais transparentes: veja [`COSTS.md`](./COSTS.md).
 
 ## Como Rodar
 

@@ -1,0 +1,6 @@
+# Arquivo de financiamento — ativa o botão "Sponsor" no repo.
+# Ver: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-funding-files
+# github: [renatobezerra]   # descomente quando habilitar GitHub Sponsors
+# ko_fi: renatobezerra      # descomente quando criar Ko-fi
+custom:
+  - "https://radar.unificando.com.br/doar"
