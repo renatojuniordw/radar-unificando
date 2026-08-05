@@ -14,6 +14,7 @@ import { ChatHeader } from '@/components/chat-assistant/chat-header';
 import { ChatMessageList } from '@/components/chat-assistant/chat-message-list';
 import { ChatQuickActions } from '@/components/chat-assistant/chat-quick-actions';
 import { ChatInput } from '@/components/chat-assistant/chat-input';
+import { ChatSuggestedReplies } from '@/components/chat-assistant/chat-suggested-replies';
 import { SyncErrorBanner, ThreadLimitBanner, DailyLimitBanner } from '@/components/chat-assistant/chat-limit-banner';
 
 export function ChatAssistantUI() {
@@ -32,6 +33,7 @@ export function ChatAssistantUI() {
     syncError,
     conversations,
     dailyUsage,
+    reload,
     selectConversation,
     startNewConversation,
     clearHistory,
@@ -164,6 +166,7 @@ export function ChatAssistantUI() {
               loading={loading}
               hasUserMessage={hasUserMessage}
               onSelectSuggestion={setInput}
+              onRetry={reload}
             />
 
             {!hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (
@@ -175,6 +178,14 @@ export function ChatAssistantUI() {
             )}
 
             {isDailyLimitReached && <DailyLimitBanner />}
+
+            {hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (
+              <ChatSuggestedReplies
+                lastMessageText={lastMessageText}
+                loading={loading}
+                onSelect={(prompt) => sendMessage({ text: prompt })}
+              />
+            )}
 
             <ChatInput
               value={input}

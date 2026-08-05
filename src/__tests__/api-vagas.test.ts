@@ -1,16 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
-vi.mock('@/auth', () => ({
-  auth: vi.fn(),
-}));
+const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
+vi.mock('@/auth', () => ({ auth: mockAuth }));
 
 vi.mock('@/lib/infrastructure/repositories', () => ({
   jobRepository: { findByUserId: vi.fn(), findRecommendedByUserId: vi.fn() },
   profileRepository: { findByUserId: vi.fn() },
 }));
 
-import { auth } from '@/auth';
 import { jobRepository, profileRepository } from '@/lib/infrastructure/repositories';
 import { GET } from '@/app/api/vagas/route';
 
@@ -23,7 +21,7 @@ function makeRequest(searchParams: Record<string, string> = {}): NextRequest {
 describe('GET /api/vagas', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
   });
 
   it('should_return_mapped_jobs', async () => {
@@ -48,7 +46,7 @@ describe('GET /api/vagas', () => {
   });
 
   it('should_return_anonymous_user_id_when_not_authenticated', async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([]);
     await GET(makeRequest());
     expect(jobRepository.findByUserId).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000', expect.any(Object));
@@ -62,7 +60,7 @@ describe('GET /api/vagas', () => {
 
   describe('recommended=1', () => {
     it('should_return_empty_when_not_authenticated', async () => {
-      vi.mocked(auth).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
       const res = await GET(makeRequest({ recommended: '1' }));
       const body = await res.json();
       expect(body).toEqual([]);

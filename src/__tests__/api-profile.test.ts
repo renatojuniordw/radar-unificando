@@ -1,21 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-vi.mock('@/auth', () => ({ auth: vi.fn() }));
+const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
+vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/infrastructure/repositories', () => ({
   profileRepository: { findByUserId: vi.fn(), upsert: vi.fn() },
 }));
 
-import { auth } from '@/auth';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { GET, PUT } from '@/app/api/profile/route';
 
 describe('Profile API', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  function mockSession() { vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any); }
+  function mockSession() { mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any); }
 
   describe('GET /api/profile', () => {
     it('should_return_401_when_not_authenticated', async () => {
-      vi.mocked(auth).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
       expect((await GET()).status).toBe(401);
     });
 
@@ -36,7 +36,7 @@ describe('Profile API', () => {
 
   describe('PUT /api/profile', () => {
     it('should_return_401_when_not_authenticated', async () => {
-      vi.mocked(auth).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
       expect((await PUT({ json: async () => ({}) } as any)).status).toBe(401);
     });
 

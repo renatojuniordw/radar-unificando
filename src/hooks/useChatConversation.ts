@@ -35,11 +35,26 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     isDailyLimitReached: false,
   });
 
-  const { messages, sendMessage, status: chatStatus, setMessages } = useChat({
+  const { messages, sendMessage, status: chatStatus, setMessages, regenerate } = useChat({
     throttle: 100,
   });
 
   const loading = chatStatus === 'submitted' || chatStatus === 'streaming';
+  const prevLoadingRef = useRef(false);
+
+  // Trigger haptic feedback quando a resposta da IA terminar
+  useEffect(() => {
+    if (prevLoadingRef.current && !loading) {
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(15);
+        } catch {
+          // Ignorar se a API de vibração não estiver disponível
+        }
+      }
+    }
+    prevLoadingRef.current = loading;
+  }, [loading]);
 
   const fetchDailyUsage = useCallback(async () => {
     try {
@@ -120,16 +135,38 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
   }
 
   useEffect(() => {
-    if (active) {
-      void loadConversations();
-      void fetchDailyUsage();
-    }
+    if (!active) return;
+    let isMounted = true;
+
+    const loadInitialData = async () => {
+      await loadConversations();
+      if (isMounted) {
+        await fetchDailyUsage();
+      }
+    };
+
+    void loadInitialData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [active, fetchDailyUsage]);
 
   useEffect(() => {
-    if (!loading) {
-      void fetchDailyUsage();
-    }
+    if (loading) return;
+    let isMounted = true;
+
+    const syncUsage = async () => {
+      if (isMounted) {
+        await fetchDailyUsage();
+      }
+    };
+
+    void syncUsage();
+
+    return () => {
+      isMounted = false;
+    };
   }, [loading, fetchDailyUsage]);
 
   function selectConversation(id: string) {
@@ -170,6 +207,7 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     conversations,
     dailyUsage,
     refreshDailyUsage: fetchDailyUsage,
+    reload: regenerate,
     selectConversation,
     startNewConversation,
     clearHistory,

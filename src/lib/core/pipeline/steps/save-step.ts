@@ -10,10 +10,15 @@ export interface SaveStepOptions {
   source: string;
 }
 
+export interface SaveStepDeps {
+  jobRepository?: Pick<typeof jobRepository, 'findExistingLinks' | 'createMany'>;
+}
+
 const LINK_CHECK_CONCURRENCY = 10;
 
-export async function runSaveStep(runId: string, jobs: Job[], options: SaveStepOptions): Promise<number> {
+export async function runSaveStep(runId: string, jobs: Job[], options: SaveStepOptions, deps: SaveStepDeps = {}): Promise<number> {
   const { userId, source } = options;
+  const { jobRepository: repo = jobRepository } = deps;
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'Merge',
@@ -25,7 +30,7 @@ export async function runSaveStep(runId: string, jobs: Job[], options: SaveStepO
   // Only check links Gupy/InHire returned for jobs we haven't stored yet —
   // already-saved jobs are periodically re-checked by the revalidation job,
   // so re-validating them here would just slow down every pipeline run.
-  const existingLinks = await jobRepository.findExistingLinks(userId, deduped.map(j => j.link));
+  const existingLinks = await repo.findExistingLinks(userId, deduped.map(j => j.link));
   const candidates = deduped.filter(job => !existingLinks.has(job.link));
   const aliveFlags = await mapWithConcurrency(candidates, LINK_CHECK_CONCURRENCY, async job => !(await isLinkDead(job.link)));
   const deadLinks = new Set(candidates.filter((_, i) => !aliveFlags[i]).map(j => j.link));
@@ -56,7 +61,7 @@ export async function runSaveStep(runId: string, jobs: Job[], options: SaveStepO
     lastCheckedAt: new Date(),
   }));
 
-  const inserted = await jobRepository.createMany(data);
+  const inserted = await repo.createMany(data);
 
   progressEmitter.emit(runId, {
     type: 'step_complete', step: 'Merge',

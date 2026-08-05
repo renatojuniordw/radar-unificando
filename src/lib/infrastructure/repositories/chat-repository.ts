@@ -40,11 +40,21 @@ export const chatRepository: IChatRepository = {
   },
 
   async replaceMessages(userId, externalId, messages) {
+    const firstUserMsg = messages.find((m) => m.role === 'user');
+    const inferredTitle = firstUserMsg ? extractText(firstUserMsg).trim().slice(0, 40) : null;
+
     const chat = await prisma.chat.upsert({
       where: { userId_externalId: { userId, externalId } },
-      create: { userId, externalId },
+      create: { userId, externalId, title: inferredTitle },
       update: { updatedAt: new Date() },
     });
+
+    if (inferredTitle && !chat.title) {
+      await prisma.chat.update({
+        where: { id: chat.id },
+        data: { title: inferredTitle },
+      });
+    }
 
     await prisma.$transaction([
       prisma.chatMessage.deleteMany({ where: { chatId: chat.id } }),

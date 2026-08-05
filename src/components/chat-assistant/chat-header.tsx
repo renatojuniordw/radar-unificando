@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, IconButton, Typography, Chip } from '@mui/material';
+import { Box, IconButton, Typography, Chip, Tooltip } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/chat';
 import { BotIcon, HistoryIcon, PlusIcon } from './icons';
@@ -64,40 +64,44 @@ export function ChatHeader({
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
               {loading ? 'Digitando...' : 'Online'}
             </Typography>
-            <Chip
-              label={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} chat`}
-              size="small"
-              title="Mensagens nesta conversa"
-              sx={{
-                height: 18,
-                fontSize: '0.625rem',
-                fontWeight: 700,
-                bgcolor: messageCount >= 20 ? 'warning.light' : 'grey.200',
-                color: messageCount >= 20 ? 'warning.contrastText' : 'text.secondary',
-                fontFamily: 'ui-monospace, monospace',
-              }}
-            />
-            <Chip
-              label={`${dailyCount}/${dailyLimit} hoje`}
-              size="small"
-              title="Mensagens enviadas hoje em todas as conversas"
-              sx={{
-                height: 18,
-                fontSize: '0.625rem',
-                fontWeight: 700,
-                bgcolor: isDailyLimitReached
-                  ? 'error.light'
-                  : dailyCount >= 40
-                  ? 'warning.light'
-                  : 'grey.200',
-                color: isDailyLimitReached
-                  ? 'error.contrastText'
-                  : dailyCount >= 40
-                  ? 'warning.contrastText'
-                  : 'text.secondary',
-                fontFamily: 'ui-monospace, monospace',
-              }}
-            />
+            <Tooltip title="Limite da janela de contexto para garantir respostas precisas nesta conversa." arrow>
+              <Chip
+                label={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} chat`}
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  bgcolor: messageCount >= 20 ? 'warning.light' : 'grey.200',
+                  color: messageCount >= 20 ? 'warning.contrastText' : 'text.secondary',
+                  fontFamily: 'ui-monospace, monospace',
+                  cursor: 'help',
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="Limite diário de interações por conta. Renova automaticamente à meia-noite (00:00)." arrow>
+              <Chip
+                label={`${dailyCount}/${dailyLimit} hoje`}
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  bgcolor: isDailyLimitReached
+                    ? 'error.light'
+                    : dailyCount >= 40
+                    ? 'warning.light'
+                    : 'grey.200',
+                  color: isDailyLimitReached
+                    ? 'error.contrastText'
+                    : dailyCount >= 40
+                    ? 'warning.contrastText'
+                    : 'text.secondary',
+                  fontFamily: 'ui-monospace, monospace',
+                  cursor: 'help',
+                }}
+              />
+            </Tooltip>
             <Typography
               component="a"
               href="/termos"

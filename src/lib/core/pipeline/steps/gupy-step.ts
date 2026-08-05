@@ -1,5 +1,6 @@
-import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
+import { gupyMcpClient, type GupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
+import { inferRole } from '@/lib/core/matching/infer-role';
 import type { Job } from '@/types';
 
 interface GupyRestJob {
@@ -21,8 +22,17 @@ export interface GupyStepOptions {
   queries?: string[];
 }
 
-export async function runGupyStep(runId: string, options: GupyStepOptions): Promise<Job[]> {
+export interface GupyStepDeps {
+  mcpClient?: Pick<GupyMcpClient, 'searchJobs'>;
+}
+
+export function shouldUseGupyMCP(isLoggedIn: boolean, queries: string[]): boolean {
+  return isLoggedIn && queries.length > 0;
+}
+
+export async function runGupyStep(runId: string, options: GupyStepOptions, deps: GupyStepDeps = {}): Promise<Job[]> {
   const { companies, isLoggedIn, queries = [] } = options;
+  const { mcpClient = gupyMcpClient } = deps;
   const jobs: Job[] = [];
 
   progressEmitter.emit(runId, {
@@ -30,9 +40,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
     message: `Buscando vagas na Gupy...`,
   });
 
-  const hasQueries = queries.length > 0;
-
-  if (isLoggedIn && hasQueries) {
+  if (shouldUseGupyMCP(isLoggedIn, queries)) {
     try {
       for (let i = 0; i < queries.length; i++) {
         progressEmitter.emit(runId, {
@@ -40,7 +48,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
           current: i + 1, total: queries.length,
           message: `Gupy MCP (${i + 1}/${queries.length}): ${queries[i]}`,
         });
-        const result = await gupyMcpClient.searchJobs(queries[i], 500);
+        const result = await mcpClient.searchJobs(queries[i], 500);
         jobs.push(...filterByCompany(result, companies));
       }
       progressEmitter.emit(runId, {
@@ -154,15 +162,3 @@ function filterByCompany(jobs: Job[], companies: string[]): Job[] {
   return jobs.filter(j => normalized.includes(j.company.toLowerCase()));
 }
 
-function inferRole(title: string): string {
-  const t = ' ' + title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
-  const has = (re: RegExp) => re.test(t);
-  if (has(/ revenue operations /) || has(/ revops /)) return 'Revenue Operations / RevOps';
-  if (has(/ growth /)) return 'Growth Analyst / Analista de Growth';
-  if (has(/ analista de insights /) || has(/ insights analyst /)) return 'Analista de Insights';
-  if (has(/ inteligencia de mercado /) || has(/ market intelligence /)) return 'Analista de Inteligência de Mercado';
-  if (has(/ analista de negocios /) || has(/ business analyst /)) return 'Business Analyst / Analista de Negócios';
-  if (has(/ inteligencia de negocios /) || has(/ analista de bi /) || has(/ business intelligence /)) return 'BI / Business Intelligence';
-  if (has(/ analista de dados /) || has(/ data analyst /)) return 'Analista de Dados / Data Analyst';
-  return '';
-}

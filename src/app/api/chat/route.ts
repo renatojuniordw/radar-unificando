@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
   const dbDailyCount = await chatRepository.getDailyUserMessageCount(session.user.id);
 
   if (!dailyLimit.success || dbDailyCount >= 50) {
-    const retryAfterHours = Math.ceil((dailyLimit.msBeforeNext || 3600000) / (1000 * 60 * 60));
     return new Response(
       JSON.stringify({ error: `Limite diário de interações atingido (50 mensagens/dia). O limite será renovado à meia-noite.` }),
       {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Box, IconButton, TextareaAutosize } from '@mui/material';
 import { Send as SendIcon } from '@mui/icons-material';
 
@@ -12,6 +13,15 @@ interface Props {
 }
 
 export function ChatInput({ value, onChange, onSend, disabled, placeholder }: Props) {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!disabled) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [disabled]);
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') {
       e.preventDefault(); // Bloquear envio por Enter se os limites forem atingidos ou estiver enviando
@@ -50,6 +60,7 @@ export function ChatInput({ value, onChange, onSend, disabled, placeholder }: Pr
         }}
       >
         <TextareaAutosize
+          ref={inputRef}
           value={value}
           onChange={e => onChange(e.target.value)}
           onKeyDown={handleKeyDown}

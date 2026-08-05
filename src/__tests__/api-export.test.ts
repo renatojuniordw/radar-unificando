@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/auth', () => ({ auth: vi.fn() }));
+const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
+vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/infrastructure/repositories', () => ({
   jobRepository: { findByUserId: vi.fn() },
 }));
 
-import { auth } from '@/auth';
 import { jobRepository } from '@/lib/infrastructure/repositories';
 import { GET } from '@/app/export/route';
 
@@ -18,7 +18,7 @@ function makeRequest(format?: string): any {
 describe('GET /export', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
   });
 
   it('should_return_csv_with_correct_headers', async () => {
@@ -49,7 +49,7 @@ describe('GET /export', () => {
   });
 
   it('should_return_401_when_not_authenticated', async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     const res = await GET(makeRequest('csv'));
     expect(res.status).toBe(401);
     expect(jobRepository.findByUserId).not.toHaveBeenCalled();

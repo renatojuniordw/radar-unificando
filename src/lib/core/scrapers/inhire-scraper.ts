@@ -1,4 +1,5 @@
 import type { Job } from '@/types';
+import { inferRole } from '@/lib/core/matching/infer-role';
 
 interface ApiJob {
   careerPageId: string;
@@ -85,9 +86,9 @@ export class InHireScraper {
       company: tenantName || slug,
       platform: 'InHire',
       onList: 'Não',
-      roleCategory: this.inferRole(j.displayName),
+      roleCategory: inferRole(j.displayName),
       title: j.displayName.trim(),
-      type: j.workplaceType || '',
+      type: j.workplaceType || j.location || '',
       location: j.location || '',
       link: `https://${slug}.inhire.app/vagas/${j.jobId}/${this.slugify(j.displayName)}`,
       companyNameOnPlatform: tenantName || slug,
@@ -103,19 +104,6 @@ export class InHireScraper {
       .replace(/&/g, ' and ')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '') || 'vaga';
-  }
-
-  private inferRole(title: string): string {
-    const t = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    if (t.includes('revenue') || t.includes('revops')) return 'Revenue Operations / RevOps';
-    if (t.includes('growth')) return 'Growth Analyst / Analista de Growth';
-    if (t.includes('insights')) return 'Analista de Insights';
-    if (t.includes('inteligencia') || t.includes('market intelligence')) return 'Analista de Inteligência de Mercado';
-    if (t.includes('business analyst') || t.includes('analista de negocios')) return 'Business Analyst / Analista de Negocios';
-    if (t.includes('business intelligence') || t.includes('bi ') || t.includes('analista de bi')) return 'BI / Business Intelligence';
-    if (t.includes('data analyst') || t.includes('analista de dados')) return 'Analista de Dados / Data Analyst';
-    if (t.includes('dados')) return 'Analista de Dados / Data Analyst';
-    return '';
   }
 }
 

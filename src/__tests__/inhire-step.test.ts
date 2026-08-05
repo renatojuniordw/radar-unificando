@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { runInHireStep } from '@/lib/core/pipeline/steps/inhire-step';
-
-vi.mock('@/lib/core/scrapers/inhire-scraper', () => ({
-  inhireScraper: {
-    searchJobs: vi.fn(),
-  },
-}));
+import type { Job } from '@/types';
 
 vi.mock('@/lib/core/pipeline/progress-emitter', () => ({
   progressEmitter: {
@@ -13,7 +8,19 @@ vi.mock('@/lib/core/pipeline/progress-emitter', () => ({
   },
 }));
 
-import { inhireScraper } from '@/lib/core/scrapers/inhire-scraper';
+const makeJob = (company: string): Job => ({
+  company,
+  platform: 'InHire',
+  onList: 'Não',
+  roleCategory: 'Analyst',
+  title: 'Data Analyst',
+  type: 'Remoto',
+  location: 'Remote',
+  link: 'https://a.com',
+  companyNameOnPlatform: company,
+  postedAt: '',
+  alert: '',
+});
 
 describe('InHireStep', () => {
   beforeEach(() => {
@@ -21,31 +28,27 @@ describe('InHireStep', () => {
   });
 
   it('should_return_labeled_jobs_on_success', async () => {
-    vi.mocked(inhireScraper.searchJobs).mockResolvedValue([
-      { company: 'CorpA', platform: 'InHire', onList: 'Não', roleCategory: 'Analyst', title: 'Data Analyst', type: 'Remoto', location: 'Remote', link: 'https://a.com', companyNameOnPlatform: 'CorpA', postedAt: '', alert: '' } as any,
-    ]);
-    const result = await runInHireStep('run-1', { companies: ['CorpA', 'CorpB'] });
+    const scraper = { searchJobs: vi.fn().mockResolvedValue([makeJob('CorpA')]) };
+    const result = await runInHireStep('run-1', { companies: ['CorpA', 'CorpB'] }, { scraper });
     expect(result).toHaveLength(1);
     expect(result[0].onList).toBe('Sim');
   });
 
   it('should_label_jobs_as_nao_when_company_not_in_list', async () => {
-    vi.mocked(inhireScraper.searchJobs).mockResolvedValue([
-      { company: 'UnknownCorp', platform: 'InHire', onList: 'Não', roleCategory: 'Analyst', title: 'Data Analyst', type: 'Remoto', location: 'Remote', link: 'https://a.com', companyNameOnPlatform: 'UnknownCorp', postedAt: '', alert: '' } as any,
-    ]);
-    const result = await runInHireStep('run-1', { companies: ['ListedCorp'] });
+    const scraper = { searchJobs: vi.fn().mockResolvedValue([makeJob('UnknownCorp')]) };
+    const result = await runInHireStep('run-1', { companies: ['ListedCorp'] }, { scraper });
     expect(result[0].onList).toBe('Não');
   });
 
   it('should_return_empty_array_on_scraper_error', async () => {
-    vi.mocked(inhireScraper.searchJobs).mockRejectedValue(new Error('API error'));
-    const result = await runInHireStep('run-1', { companies: ['CorpA'] });
+    const scraper = { searchJobs: vi.fn().mockRejectedValue(new Error('API error')) };
+    const result = await runInHireStep('run-1', { companies: ['CorpA'] }, { scraper });
     expect(result).toEqual([]);
   });
 
   it('should_pass_companies_to_scraper', async () => {
-    vi.mocked(inhireScraper.searchJobs).mockResolvedValue([]);
-    await runInHireStep('run-1', { companies: ['CorpA', 'CorpB'] });
-    expect(inhireScraper.searchJobs).toHaveBeenCalledWith(['CorpA', 'CorpB']);
+    const scraper = { searchJobs: vi.fn().mockResolvedValue([]) };
+    await runInHireStep('run-1', { companies: ['CorpA', 'CorpB'] }, { scraper });
+    expect(scraper.searchJobs).toHaveBeenCalledWith(['CorpA', 'CorpB']);
   });
 });

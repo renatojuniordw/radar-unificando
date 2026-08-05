@@ -26,9 +26,9 @@ vi.mock('next/server', () => ({
     public headers: Map<string, string>;
     public nextUrl: URL;
     public method: string;
-    constructor(url: string, method = 'GET') {
+    constructor(url: string, init: RequestInit = {}) {
       this.nextUrl = new URL(url);
-      this.method = method;
+      this.method = (init.method as string) || 'GET';
       this.headers = new Map();
     }
   },
@@ -73,7 +73,7 @@ describe('Middleware', () => {
   });
 
   it('should_handle_options_preflight_requests', () => {
-    const request = new NextRequest('http://localhost/api/health', 'OPTIONS');
+    const request = new NextRequest('http://localhost/api/health', { method: 'OPTIONS' });
     expect(request.method).toBe('OPTIONS');
   });
 });
