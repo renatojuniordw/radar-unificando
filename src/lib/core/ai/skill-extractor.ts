@@ -34,7 +34,7 @@ export async function extractSkillsFromResume(
     const object = await generate(
       resumeExtractionSchema,
       EXTRACT_PROMPT + '\n\n' + markdownText.slice(0, MAX_RESUME_CHARS),
-      { maxOutputTokens: 4000 },
+      { maxOutputTokens: 2500 },
     );
 
     const latency = (performance.now() - start).toFixed(0);

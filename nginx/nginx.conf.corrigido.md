@@ -1,5 +1,9 @@
 # Configuração de Segurança Nginx para VPS + Next.js em Docker
 # Localização recomendada na VPS: /etc/nginx/sites-available/radar-unificando
+# ----------------------------------------------------------------------
+# CORRIGIDO: adicionado proxy_read_timeout/proxy_send_timeout 300s no
+# location / para evitar 504 Gateway Timeout no upload de currículo
+# (a extração de skills via LLM pode levar ~1-2min em modelos de raciocínio).
 
 # ----------------------------------------------------------------------
 # 1. ZONAS DE RATE LIMITING (Camada 1 de Proteção na VPS)
@@ -20,6 +24,16 @@ upstream nextjs_app {
 
 # Redirecionamento HTTP -> HTTPS
 server {
+    if ($host = www.radar.unificando.com.br) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = radar.unificando.com.br) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
     listen 80;
     listen [::]:80;
     server_name radar.unificando.com.br www.radar.unificando.com.br;
@@ -49,6 +63,7 @@ server {
     # ------------------------------------------------------------------
     # 2. CERTIFICADOS SSL / TLS (Gerado via Certbot / Let's Encrypt)
     # ------------------------------------------------------------------
+    # Descomente as linhas abaixo após gerar os certificados com Certbot
     # ssl_certificate /etc/letsencrypt/live/radar.unificando.com.br/fullchain.pem;
     # ssl_certificate_key /etc/letsencrypt/live/radar.unificando.com.br/privkey.pem;
     # ssl_dhparam /etc/nginx/dhparam.pem;
@@ -70,7 +85,7 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
-    
+
     # CSP básico (Ajuste conforme suas necessidades de scripts externos)
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;" always;
 
@@ -112,7 +127,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Desativar buffer para respostas de streaming da IA
         proxy_buffering off;
         proxy_read_timeout 300s;
@@ -149,15 +164,17 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
 
         # Suporte a WebSockets se necessário
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        # Upload de currículo faz chamada síncrona à LLM (pode levar até ~2min em modelos
-        # de raciocínio). Sem isso o default de 60s do Nginx derruba a conexão com 504 antes da resposta chegar.
+        # Upload de currículo faz chamada síncrona à LLM (pode levar ~1-2min em modelos
+        # de raciocínio). Sem isso o default de 60s derruba a conexão com 504 antes da resposta chegar.
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
     }
+
+    ssl_certificate /etc/letsencrypt/live/radar.unificando.com.br/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/radar.unificando.com.br/privkey.pem; # managed by Certbot
 }
