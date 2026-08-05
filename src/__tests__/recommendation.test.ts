@@ -61,22 +61,22 @@ describe('buildProfileTokens', () => {
 describe('rankJobsByProfile', () => {
   const mockJobs = [
     {
-      tituloVaga: 'Engenheiro de Dados Senior',
-      nomeNaPlataforma: 'Nubank',
-      cargoCategoria: 'Dados',
-      empresa: 'Nubank',
+      title: 'Engenheiro de Dados Senior',
+      companyNameOnPlatform: 'Nubank',
+      roleCategory: 'Dados',
+      company: 'Nubank',
     },
     {
-      tituloVaga: 'Analista de Marketing',
-      nomeNaPlataforma: 'Ambev',
-      cargoCategoria: 'Marketing',
-      empresa: 'Ambev',
+      title: 'Analista de Marketing',
+      companyNameOnPlatform: 'Ambev',
+      roleCategory: 'Marketing',
+      company: 'Ambev',
     },
     {
-      tituloVaga: 'Desenvolvedor Full Stack',
-      nomeNaPlataforma: 'iFood',
-      cargoCategoria: 'Engenharia',
-      empresa: 'iFood',
+      title: 'Desenvolvedor Full Stack',
+      companyNameOnPlatform: 'iFood',
+      roleCategory: 'Engenharia',
+      company: 'iFood',
     },
   ];
 
@@ -103,10 +103,10 @@ describe('rankJobsByProfile', () => {
   it('lida com campos nulos', () => {
     const jobsWithNulls = [
       {
-        tituloVaga: null,
-        nomeNaPlataforma: null,
-        cargoCategoria: 'Dados',
-        empresa: 'Teste',
+        title: null,
+        companyNameOnPlatform: null,
+        roleCategory: 'Dados',
+        company: 'Teste',
       },
     ];
     const tokens = ['dados'];

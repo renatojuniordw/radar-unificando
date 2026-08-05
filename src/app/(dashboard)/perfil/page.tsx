@@ -10,7 +10,7 @@ import { ProfileCompletionCard } from '@/components/profile/profile-completion-c
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
 
-export default function PerfilPage() {
+export default function ProfilePage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { show: showSnackbar } = useSnackbar();

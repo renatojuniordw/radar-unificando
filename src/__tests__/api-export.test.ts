@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/auth', () => ({ auth: vi.fn() }));
+const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
+vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/infrastructure/repositories', () => ({
   jobRepository: { findByUserId: vi.fn() },
 }));
 
-import { auth } from '@/auth';
 import { jobRepository } from '@/lib/infrastructure/repositories';
 import { GET } from '@/app/export/route';
 
@@ -18,7 +18,7 @@ function makeRequest(format?: string): any {
 describe('GET /export', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
   });
 
   it('should_return_csv_with_correct_headers', async () => {
@@ -31,16 +31,16 @@ describe('GET /export', () => {
   });
 
   it('should_return_json_when_requested', async () => {
-    vi.mocked(jobRepository.findByUserId).mockResolvedValue([{ id: '1', empresa: 'Corp' }] as any);
+    vi.mocked(jobRepository.findByUserId).mockResolvedValue([{ id: '1', company: 'Corp' }] as any);
     const res = await GET(makeRequest('json'));
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
-    expect(body[0].empresa).toBe('Corp');
+    expect(body[0].company).toBe('Corp');
   });
 
   it('should_escape_csv_values_with_commas', async () => {
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([
-      { empresa: 'Corp, Inc.', tituloVaga: 'Data "Analyst"', cargoCategoria: 'Analytics', plataforma: 'Gupy', naLista: 'Sim', tipo: 'Remoto', local: 'Remote', link: 'https://a.com', nomeNaPlataforma: 'Corp', publicado: '', alerta: '', detectadoEm: null } as any,
+      { company: 'Corp, Inc.', title: 'Data "Analyst"', roleCategory: 'Analytics', platform: 'Gupy', onList: 'Sim', type: 'Remoto', location: 'Remote', link: 'https://a.com', companyNameOnPlatform: 'Corp', postedAt: '', alert: '', detectedAt: null } as any,
     ]);
     const res = await GET(makeRequest('csv'));
     const text = await res.text();
@@ -49,7 +49,7 @@ describe('GET /export', () => {
   });
 
   it('should_return_401_when_not_authenticated', async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     const res = await GET(makeRequest('csv'));
     expect(res.status).toBe(401);
     expect(jobRepository.findByUserId).not.toHaveBeenCalled();

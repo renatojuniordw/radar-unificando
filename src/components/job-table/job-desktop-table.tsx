@@ -3,21 +3,21 @@
 import { useRef } from 'react';
 import { Box, Tooltip } from '@mui/material';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { formatVagaDate } from '@/lib/date';
+import { formatJobDate } from '@/lib/date';
 import { trackJobApply } from '@/lib/analytics';
-import type { Vaga } from '@/lib/types/vaga';
+import type { Job } from '@/lib/types/job';
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';
 
 interface Props {
-  vagas: Vaga[];
+  jobs: Job[];
 }
 
-export function VagaDesktopTable({ vagas }: Props) {
+export function JobDesktopTable({ jobs }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
-    count: vagas.length,
+    count: jobs.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 54,
     overscan: 8,
@@ -44,7 +44,7 @@ export function VagaDesktopTable({ vagas }: Props) {
       <div ref={parentRef} style={{ height: '60vh', overflowY: 'auto', minWidth: 800 }}>
         <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const vaga = vagas[virtualRow.index];
+            const job = jobs[virtualRow.index];
             return (
               <div
                 key={virtualRow.key}
@@ -67,9 +67,9 @@ export function VagaDesktopTable({ vagas }: Props) {
                 }}
               >
                 <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                  <Tooltip title={vaga.empresa} arrow>
+                  <Tooltip title={job.company} arrow>
                     <span style={{ fontWeight: 800, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {vaga.empresa}
+                      {job.company}
                     </span>
                   </Tooltip>
                 </div>
@@ -77,7 +77,7 @@ export function VagaDesktopTable({ vagas }: Props) {
                 <div style={{ padding: '10px 12px', minWidth: 0 }}>
                   <span style={{
                     border: '2px solid #020617',
-                    backgroundColor: vaga.plataforma === 'Gupy' ? '#ccff00' : '#e2e8f0',
+                    backgroundColor: job.platform === 'Gupy' ? '#ccff00' : '#e2e8f0',
                     color: '#020617',
                     fontWeight: 900,
                     fontSize: '0.55rem',
@@ -86,13 +86,13 @@ export function VagaDesktopTable({ vagas }: Props) {
                     letterSpacing: '0.02em',
                     display: 'inline-block',
                   }}>
-                    {vaga.plataforma}
+                    {job.platform}
                   </span>
                 </div>
 
                 <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace' }}>
                   {(() => {
-                    const dateInfo = formatVagaDate(vaga.publicado, vaga.detectado_em);
+                    const dateInfo = formatJobDate(job.postedAt, job.detectedAt);
                     if (!dateInfo) return '';
                     return (
                       <Tooltip title={`${dateInfo.label} em ${dateInfo.full}`} arrow>
@@ -103,24 +103,24 @@ export function VagaDesktopTable({ vagas }: Props) {
                 </div>
 
                 <div style={{ padding: '10px 12px', fontSize: '0.75rem', fontWeight: 700, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <Tooltip title={vaga.titulo_vaga} arrow>
-                    <span>{vaga.titulo_vaga}</span>
+                  <Tooltip title={job.title} arrow>
+                    <span>{job.title}</span>
                   </Tooltip>
                 </div>
 
                 <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <Tooltip title={vaga.local} arrow>
-                    <span>{vaga.local}</span>
+                  <Tooltip title={job.location} arrow>
+                    <span>{job.location}</span>
                   </Tooltip>
                 </div>
 
                 <div style={{ padding: '10px 12px' }}>
                   <a
-                    href={vaga.link}
+                    href={job.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => trackJobApply({ titulo: vaga.titulo_vaga, empresa: vaga.empresa, plataforma: vaga.plataforma, link: vaga.link })}
-                    aria-label={`Ver vaga ${vaga.titulo_vaga} na ${vaga.empresa}`}
+                    onClick={() => trackJobApply({ title: job.title, company: job.company, platform: job.platform, link: job.link })}
+                    aria-label={`Ver vaga ${job.title} na ${job.company}`}
                     style={{
                       backgroundColor: '#020617',
                       color: '#ccff00',

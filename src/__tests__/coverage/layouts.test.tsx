@@ -2,7 +2,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
-vi.mock('@/auth', () => ({ auth: vi.fn() }));
+const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
+vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('next/navigation', () => ({ redirect: vi.fn() }));
 
 describe('AuthLayout', () => {
@@ -15,17 +16,15 @@ describe('AuthLayout', () => {
 
 describe('DashboardLayout', () => {
   it('should_redirect_when_not_authenticated', async () => {
-    const { auth } = await import('@/auth');
     const { redirect } = await import('next/navigation');
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     const DashboardLayout = (await import('@/app/(dashboard)/layout')).default;
     await DashboardLayout({ children: <div>Protected</div> });
     expect(redirect).toHaveBeenCalledWith('/login');
   });
 
   it('should_render_children_when_authenticated', async () => {
-    const { auth } = await import('@/auth');
-    vi.mocked(auth).mockResolvedValue({ user: { id: '1' } } as any);
+    mockAuth.mockResolvedValue({ user: { id: '1' } } as any);
     const DashboardLayout = (await import('@/app/(dashboard)/layout')).default;
     const result = await DashboardLayout({ children: <div>Protected</div> });
     const { container } = render(<>{result}</>);

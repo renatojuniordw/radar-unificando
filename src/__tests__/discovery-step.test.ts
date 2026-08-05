@@ -22,7 +22,7 @@ describe('DiscoveryStep', () => {
 
   it('should_return_discovered_count_on_success', async () => {
     vi.mocked(companyDiscovery.discover).mockResolvedValue([
-      { nome: 'NewCo', urlCarreiras: 'https://newco.gupy.io', fonte: 'wayback' },
+      { name: 'NewCo', careersUrl: 'https://newco.gupy.io', source: 'wayback' },
     ]);
     const result = await runDiscoveryStep('run-1', { companies: ['ExistingCo'] });
     expect(result).toBe(1);

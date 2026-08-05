@@ -1,6 +1,7 @@
-import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
+import { gupyMcpClient, type GupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import type { JobData } from '@/types';
+import { inferRole } from '@/lib/core/matching/infer-role';
+import type { Job } from '@/types';
 
 interface GupyRestJob {
   careerPageName?: string;
@@ -21,18 +22,25 @@ export interface GupyStepOptions {
   queries?: string[];
 }
 
-export async function runGupyStep(runId: string, options: GupyStepOptions): Promise<JobData[]> {
+export interface GupyStepDeps {
+  mcpClient?: Pick<GupyMcpClient, 'searchJobs'>;
+}
+
+export function shouldUseGupyMCP(isLoggedIn: boolean, queries: string[]): boolean {
+  return isLoggedIn && queries.length > 0;
+}
+
+export async function runGupyStep(runId: string, options: GupyStepOptions, deps: GupyStepDeps = {}): Promise<Job[]> {
   const { companies, isLoggedIn, queries = [] } = options;
-  const jobs: JobData[] = [];
+  const { mcpClient = gupyMcpClient } = deps;
+  const jobs: Job[] = [];
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'Gupy',
     message: `Buscando vagas na Gupy...`,
   });
 
-  const hasQueries = queries.length > 0;
-
-  if (isLoggedIn && hasQueries) {
+  if (shouldUseGupyMCP(isLoggedIn, queries)) {
     try {
       for (let i = 0; i < queries.length; i++) {
         progressEmitter.emit(runId, {
@@ -40,7 +48,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
           current: i + 1, total: queries.length,
           message: `Gupy MCP (${i + 1}/${queries.length}): ${queries[i]}`,
         });
-        const result = await gupyMcpClient.searchJobs(queries[i], 500);
+        const result = await mcpClient.searchJobs(queries[i], 500);
         jobs.push(...filterByCompany(result, companies));
       }
       progressEmitter.emit(runId, {
@@ -63,8 +71,8 @@ export async function runGupyStep(runId: string, options: GupyStepOptions): Prom
   return jobs;
 }
 
-async function scrapeGupyRest(runId: string, companies: string[], queries: string[]): Promise<JobData[]> {
-  const results: JobData[] = [];
+async function scrapeGupyRest(runId: string, companies: string[], queries: string[]): Promise<Job[]> {
+  const results: Job[] = [];
   const API = 'https://employability-portal.gupy.io/api/v1/jobs';
 
   type SearchItem = { jobName?: string; careerPageName?: string };
@@ -123,17 +131,17 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
 
     for (const j of pageResults) {
       results.push({
-        empresa: j.careerPageName || j.companyName || '',
-        plataforma: 'Gupy',
-        na_lista: companies.some(c => c.toLowerCase() === (j.careerPageName || '').toLowerCase()) ? 'Sim' : 'Não',
-        cargo_categoria: inferRole(j.name || ''),
-        titulo_vaga: j.name || '',
-        tipo: j.workplaceType || '',
-        local: [j.city, j.state, j.country].filter(Boolean).join(' / '),
+        company: j.careerPageName || j.companyName || '',
+        platform: 'Gupy',
+        onList: companies.some(c => c.toLowerCase() === (j.careerPageName || '').toLowerCase()) ? 'Sim' : 'Não',
+        roleCategory: inferRole(j.name || ''),
+        title: j.name || '',
+        type: j.workplaceType || '',
+        location: [j.city, j.state, j.country].filter(Boolean).join(' / '),
         link: j.jobUrl || j.careerPageUrl || '',
-        nome_na_plataforma: j.careerPageName || '',
-        publicado: j.publishedDate || '',
-        alerta: '',
+        companyNameOnPlatform: j.careerPageName || '',
+        postedAt: j.publishedDate || '',
+        alert: '',
       });
     }
   }
@@ -148,21 +156,9 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
   return filtered;
 }
 
-function filterByCompany(jobs: JobData[], companies: string[]): JobData[] {
+function filterByCompany(jobs: Job[], companies: string[]): Job[] {
   if (companies.length === 0) return jobs;
   const normalized = companies.map(c => c.toLowerCase());
-  return jobs.filter(j => normalized.includes(j.empresa.toLowerCase()));
+  return jobs.filter(j => normalized.includes(j.company.toLowerCase()));
 }
 
-function inferRole(title: string): string {
-  const t = ' ' + title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
-  const has = (re: RegExp) => re.test(t);
-  if (has(/ revenue operations /) || has(/ revops /)) return 'Revenue Operations / RevOps';
-  if (has(/ growth /)) return 'Growth Analyst / Analista de Growth';
-  if (has(/ analista de insights /) || has(/ insights analyst /)) return 'Analista de Insights';
-  if (has(/ inteligencia de mercado /) || has(/ market intelligence /)) return 'Analista de Inteligência de Mercado';
-  if (has(/ analista de negocios /) || has(/ business analyst /)) return 'Business Analyst / Analista de Negócios';
-  if (has(/ inteligencia de negocios /) || has(/ analista de bi /) || has(/ business intelligence /)) return 'BI / Business Intelligence';
-  if (has(/ analista de dados /) || has(/ data analyst /)) return 'Analista de Dados / Data Analyst';
-  return '';
-}

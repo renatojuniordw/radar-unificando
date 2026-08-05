@@ -1,6 +1,6 @@
 import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import { runGupyStep } from '@/lib/core/pipeline/steps/gupy-step';
+import { runGupyStep, shouldUseGupyMCP } from '@/lib/core/pipeline/steps/gupy-step';
 import { runInHireStep } from '@/lib/core/pipeline/steps/inhire-step';
 import { runSaveStep } from '@/lib/core/pipeline/steps/save-step';
 import { dedupEngine } from '@/lib/core/dedup';
@@ -25,7 +25,7 @@ export async function runPipeline(
     if (isLoggedIn && userId !== ANONYMOUS_USER_ID) {
       await runSaveStep(runId, allJobs, {
         userId,
-        source: isLoggedIn ? 'gupy_mcp' : 'gupy_api',
+        source: shouldUseGupyMCP(isLoggedIn, queries) ? 'gupy_mcp' : 'gupy_api',
       });
     }
 

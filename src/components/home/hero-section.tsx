@@ -4,28 +4,28 @@ import { Container, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { TagInput } from "@/components/tag-input";
 import { RotatingText } from "@/components/home/rotating-text";
-import { SUGGESTED_CARGOS } from "@/lib/constants/home";
+import { SUGGESTED_ROLES } from "@/lib/constants/home";
 
 interface HeroSectionProps {
   isLoggedIn: boolean;
-  perfilCompleto: boolean;
-  empresas: string[];
-  onEmpresasChange: (empresas: string[]) => void;
-  cargosBusca: string[];
-  onCargosBuscaChange: (cargos: string[]) => void;
+  minimalProfile: boolean;
+  companies: string[];
+  onCompaniesChange: (companies: string[]) => void;
+  roleQueries: string[];
+  onRoleQueriesChange: (roles: string[]) => void;
   cooldown: number;
   running: boolean;
   onStart: () => void;
-  onAddSuggestion: (cargo: string) => void;
+  onAddSuggestion: (role: string) => void;
 }
 
 export function HeroSection({
   isLoggedIn,
-  perfilCompleto,
-  empresas,
-  onEmpresasChange,
-  cargosBusca,
-  onCargosBuscaChange,
+  minimalProfile,
+  companies,
+  onCompaniesChange,
+  roleQueries,
+  onRoleQueriesChange,
   cooldown,
   running,
   onStart,
@@ -65,7 +65,7 @@ export function HeroSection({
             GUPY + INHIRE · GRÁTIS
           </Box>
 
-          {isLoggedIn && !perfilCompleto && (
+          {isLoggedIn && !minimalProfile && (
             <Box
               sx={{
                 mb: 3,
@@ -210,8 +210,8 @@ export function HeroSection({
                   label="Empresas (opcional)"
                   helperText="Enter ou vírgula para adicionar. Deixe vazio para buscar todas."
                   placeholder="Ambev, Nubank, BRQ..."
-                  value={empresas}
-                  onChange={onEmpresasChange}
+                  value={companies}
+                  onChange={onCompaniesChange}
                   autoFocus
                   dark
                   compact
@@ -222,8 +222,8 @@ export function HeroSection({
                   label="Cargos (opcional)"
                   helperText="Enter ou vírgula para adicionar. Ex: Analista de Dados, Data Analyst, Growth"
                   placeholder="Analista de Dados, Data Analyst, Growth..."
-                  value={cargosBusca}
-                  onChange={onCargosBuscaChange}
+                  value={roleQueries}
+                  onChange={onRoleQueriesChange}
                   dark
                   compact
                 />
@@ -296,7 +296,7 @@ export function HeroSection({
             >
               Sugestões:
             </Typography>
-            {SUGGESTED_CARGOS.slice(0, 8).map((s) => (
+            {SUGGESTED_ROLES.slice(0, 8).map((s) => (
               <button
                 key={s}
                 onClick={() => onAddSuggestion(s)}

@@ -4,36 +4,36 @@ import { Box, TextField, Button, Select, MenuItem, InputAdornment, Autocomplete 
 import SearchIcon from '@mui/icons-material/Search';
 
 interface Props {
-  filtroPlataforma: string;
-  onPlataformaChange: (value: string) => void;
-  empresas: string[];
-  filtroEmpresa: string;
-  onEmpresaChange: (value: string) => void;
-  modalidades: string[];
-  filtroModalidade: string;
-  onModalidadeChange: (value: string) => void;
-  cargos: string[];
-  filtroCargo: string;
-  onCargoChange: (value: string) => void;
-  filtroBusca: string;
-  onBuscaChange: (value: string) => void;
+  platformFilter: string;
+  onPlatformChange: (value: string) => void;
+  companies: string[];
+  companyFilter: string;
+  onCompanyChange: (value: string) => void;
+  types: string[];
+  typeFilter: string;
+  onTypeChange: (value: string) => void;
+  roles: string[];
+  roleFilter: string;
+  onRoleChange: (value: string) => void;
+  searchFilter: string;
+  onSearchChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
-export function VagaFiltersDesktop({
-  filtroPlataforma,
-  onPlataformaChange,
-  empresas,
-  filtroEmpresa,
-  onEmpresaChange,
-  modalidades,
-  filtroModalidade,
-  onModalidadeChange,
-  cargos,
-  filtroCargo,
-  onCargoChange,
-  filtroBusca,
-  onBuscaChange,
+export function JobFiltersDesktop({
+  platformFilter,
+  onPlatformChange,
+  companies,
+  companyFilter,
+  onCompanyChange,
+  types,
+  typeFilter,
+  onTypeChange,
+  roles,
+  roleFilter,
+  onRoleChange,
+  searchFilter,
+  onSearchChange,
   onSubmit,
 }: Props) {
   return (
@@ -49,8 +49,8 @@ export function VagaFiltersDesktop({
       }}
     >
       <Select
-        value={filtroPlataforma}
-        onChange={e => onPlataformaChange(e.target.value)}
+        value={platformFilter}
+        onChange={e => onPlatformChange(e.target.value)}
         displayEmpty
         size="small"
         sx={{
@@ -68,9 +68,9 @@ export function VagaFiltersDesktop({
       </Select>
 
       <Autocomplete
-        options={empresas}
-        value={filtroEmpresa || null}
-        onChange={(_, v) => onEmpresaChange(v || '')}
+        options={companies}
+        value={companyFilter || null}
+        onChange={(_, v) => onCompanyChange(v || '')}
         renderInput={(params) => (
           <TextField {...params} placeholder="TODAS EMPRESAS" size="small" />
         )}
@@ -80,9 +80,9 @@ export function VagaFiltersDesktop({
       />
 
       <Autocomplete
-        options={modalidades}
-        value={filtroModalidade || null}
-        onChange={(_, v) => onModalidadeChange(v || '')}
+        options={types}
+        value={typeFilter || null}
+        onChange={(_, v) => onTypeChange(v || '')}
         renderInput={(params) => (
           <TextField {...params} placeholder="MODALIDADES" size="small" />
         )}
@@ -92,9 +92,9 @@ export function VagaFiltersDesktop({
       />
 
       <Autocomplete
-        options={cargos}
-        value={filtroCargo || null}
-        onChange={(_, v) => onCargoChange(v || '')}
+        options={roles}
+        value={roleFilter || null}
+        onChange={(_, v) => onRoleChange(v || '')}
         renderInput={(params) => (
           <TextField {...params} placeholder="TODOS CARGOS" size="small" />
         )}
@@ -106,8 +106,8 @@ export function VagaFiltersDesktop({
       <Box sx={{ display: 'flex', gap: 0, width: '100%' }}>
         <TextField
           size="small"
-          value={filtroBusca}
-          onChange={e => onBuscaChange(e.target.value)}
+          value={searchFilter}
+          onChange={e => onSearchChange(e.target.value)}
           placeholder="Buscar por palavra-chave..."
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
           sx={{ flex: 1 }}

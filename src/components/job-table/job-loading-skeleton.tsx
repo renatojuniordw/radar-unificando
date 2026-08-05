@@ -2,7 +2,7 @@
 
 import { Box, Skeleton } from '@mui/material';
 
-export function VagaLoadingSkeleton() {
+export function JobLoadingSkeleton() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {[1, 2, 3, 4].map(i => (

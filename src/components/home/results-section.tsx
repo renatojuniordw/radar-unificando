@@ -2,30 +2,30 @@
 
 import { memo, useCallback } from "react";
 import { Container, Box, Typography, Chip, CircularProgress } from "@mui/material";
-import { VagaTable } from "@/components/vaga-table";
-import type { Vaga } from "@/lib/types/vaga";
+import { JobTable } from "@/components/job-table";
+import type { Job } from "@/lib/types/job";
 
 interface ResultsSectionProps {
-  modoRecomendado: boolean;
-  vagas: Vaga[];
+  recommendedMode: boolean;
+  jobs: Job[];
   loading: boolean;
   autoSyncing?: boolean;
-  cargos: string[];
-  areaOuCargo: string;
+  roleCategories: string[];
+  areaOrRole: string;
   onFilterChange: (filters?: {
-    plataforma?: string;
-    cargo?: string;
+    platform?: string;
+    role?: string;
     search?: string;
   }) => void;
 }
 
 export const ResultsSection = memo(function ResultsSection({
-  modoRecomendado,
-  vagas,
+  recommendedMode,
+  jobs,
   loading,
   autoSyncing,
-  cargos,
-  areaOuCargo,
+  roleCategories,
+  areaOrRole,
   onFilterChange,
 }: ResultsSectionProps) {
   const handleExportCsv = useCallback(() => {
@@ -36,7 +36,7 @@ export const ResultsSection = memo(function ResultsSection({
     <Box className="section-white">
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 }, px: { xs: 2, sm: 3 } }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 2, mb: { xs: 2.5, md: 4 } }}>
-          {modoRecomendado && vagas.length > 0 && (
+          {recommendedMode && jobs.length > 0 && (
             <Box>
               <Typography
                 variant="h3"
@@ -51,16 +51,16 @@ export const ResultsSection = memo(function ResultsSection({
                   wordBreak: "break-word",
                 }}
               >
-                RECOMENDADAS PARA VOCÊ · {areaOuCargo}
+                RECOMENDADAS PARA VOCÊ · {areaOrRole}
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                 <Chip
-                  label={`${vagas.length} vagas encontradas`}
+                  label={`${jobs.length} vagas encontradas`}
                   color="primary"
                   size="small"
                 />
                 <Chip
-                  label={`${new Set(vagas.map((v) => v.empresa)).size} empresas`}
+                  label={`${new Set(jobs.map((j) => j.company)).size} empresas`}
                   color="secondary"
                   size="small"
                 />
@@ -93,10 +93,10 @@ export const ResultsSection = memo(function ResultsSection({
           )}
         </Box>
 
-        <VagaTable
-          vagas={vagas}
+        <JobTable
+          jobs={jobs}
           loading={loading}
-          cargos={cargos}
+          roleCategories={roleCategories}
           onExportCsv={handleExportCsv}
           onFilterChange={onFilterChange}
         />

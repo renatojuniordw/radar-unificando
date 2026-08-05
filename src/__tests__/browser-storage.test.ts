@@ -20,24 +20,24 @@ describe('browserStorage', () => {
 
   it('should_return_defaults_when_window_is_undefined', async () => {
     delete (globalThis as any).window;
-    expect(await browserStorage.getVagas()).toEqual([]);
+    expect(await browserStorage.getJobs()).toEqual([]);
     expect(await browserStorage.getCooldownEnd()).toBeNull();
     expect(await browserStorage.getFilters()).toBeNull();
     expect(await browserStorage.getChatId()).toBeNull();
     expect(await browserStorage.getChatMessages()).toEqual([]);
-    await expect(browserStorage.setVagas([{ empresa: 'A' } as any])).resolves.toBeUndefined();
+    await expect(browserStorage.setJobs([{ company: 'A' } as any])).resolves.toBeUndefined();
   });
 
   // ── Vagas ──
 
   it('should_store_and_retrieve_vagas', async () => {
-    const vagas = [{ empresa: 'CorpA', link: 'https://a.com' }] as any;
-    await browserStorage.setVagas(vagas);
-    expect(await browserStorage.getVagas()).toEqual(vagas);
+    const jobs = [{ company: 'CorpA', link: 'https://a.com' }] as any;
+    await browserStorage.setJobs(jobs);
+    expect(await browserStorage.getJobs()).toEqual(jobs);
   });
 
   it('should_return_empty_array_when_no_vagas', async () => {
-    expect(await browserStorage.getVagas()).toEqual([]);
+    expect(await browserStorage.getJobs()).toEqual([]);
   });
 
   // ── Cooldown ──
@@ -61,7 +61,7 @@ describe('browserStorage', () => {
   // ── Filtros ──
 
   it('should_store_and_retrieve_filters', async () => {
-    const filters = { empresas: ['CorpA'], cargos: ['Analista'] };
+    const filters = { companies: ['CorpA'], roles: ['Analista'] };
     await browserStorage.setFilters(filters);
     expect(await browserStorage.getFilters()).toEqual(filters);
   });
@@ -82,16 +82,16 @@ describe('browserStorage', () => {
   // ── Clear ──
 
   it('should_clear_only_anonymous_data', async () => {
-    await browserStorage.setVagas([{ empresa: 'A' } as any]);
+    await browserStorage.setJobs([{ company: 'A' } as any]);
     await browserStorage.setCooldownEnd(123);
-    await browserStorage.setFilters({ empresas: ['X'], cargos: ['Y'] });
+    await browserStorage.setFilters({ companies: ['X'], roles: ['Y'] });
     await browserStorage.setChatId('chat-1');
 
     await browserStorage.clear();
 
-    expect(await browserStorage.getVagas()).toEqual([]);
+    expect(await browserStorage.getJobs()).toEqual([]);
     expect(await browserStorage.getCooldownEnd()).toBeNull();
-    expect(await browserStorage.getFilters()).toEqual({ empresas: ['X'], cargos: ['Y'] });
+    expect(await browserStorage.getFilters()).toEqual({ companies: ['X'], roles: ['Y'] });
     expect(await browserStorage.getChatId()).toBe('chat-1');
   });
 
@@ -99,11 +99,11 @@ describe('browserStorage', () => {
 
   it('should_migrate_legacy_localstorage_keys', async () => {
     installLocalStorage({
-      ru_anon_vagas: JSON.stringify([{ empresa: 'A', link: 'https://a' }]),
+      ru_anon_vagas: JSON.stringify([{ company: 'A', link: 'https://a' }]),
       ru_cooldown_end: '1234567890',
     });
 
-    expect(await browserStorage.getVagas()).toEqual([{ empresa: 'A', link: 'https://a' }]);
+    expect(await browserStorage.getJobs()).toEqual([{ company: 'A', link: 'https://a' }]);
     expect(await browserStorage.getCooldownEnd()).toBe(1234567890);
   });
 });

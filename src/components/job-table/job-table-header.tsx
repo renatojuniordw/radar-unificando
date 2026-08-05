@@ -4,13 +4,13 @@ import { Box, Typography } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
 interface Props {
-  totalVagas: number;
-  totalFiltradas: number;
+  totalJobs: number;
+  filteredTotal: number;
   exporting: boolean;
   onExport: () => void;
 }
 
-export function VagaTableHeader({ totalVagas, totalFiltradas, exporting, onExport }: Props) {
+export function JobTableHeader({ totalJobs, filteredTotal, exporting, onExport }: Props) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
       <Box>
@@ -23,7 +23,7 @@ export function VagaTableHeader({ totalVagas, totalFiltradas, exporting, onExpor
             color: '#020617',
           }}
         >
-          {totalFiltradas} VAGAS ENCONTRADAS
+          {filteredTotal} VAGAS ENCONTRADAS
         </Typography>
         <Typography
           sx={{
@@ -35,11 +35,11 @@ export function VagaTableHeader({ totalVagas, totalFiltradas, exporting, onExpor
             mt: 0.25,
           }}
         >
-          Atualizado em tempo real · {totalVagas} vagas no banco
+          Atualizado em tempo real · {totalJobs} vagas no banco
         </Typography>
       </Box>
 
-      {totalVagas > 0 && (
+      {totalJobs > 0 && (
         <button
           onClick={onExport}
           disabled={exporting}

@@ -1,4 +1,5 @@
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
+import { inferRole } from '@/lib/core/matching/infer-role';
 
 interface ApiJob {
   careerPageId: string;
@@ -26,10 +27,10 @@ export class InHireScraper {
     'Content-Type': 'application/json',
   };
 
-  async searchJobs(companies?: string[]): Promise<JobData[]> {
+  async searchJobs(companies?: string[]): Promise<Job[]> {
     if (!companies?.length) return [];
 
-    const results: JobData[] = [];
+    const results: Job[] = [];
     for (const company of companies) {
       const jobs = await this.searchCompany(company);
       results.push(...jobs);
@@ -37,7 +38,7 @@ export class InHireScraper {
     return results;
   }
 
-  async searchCompany(name: string): Promise<JobData[]> {
+  async searchCompany(name: string): Promise<Job[]> {
     const slugs = this.slugVariants(name);
 
     for (const slug of slugs) {
@@ -80,19 +81,19 @@ export class InHireScraper {
     return [...new Set(variants.filter(Boolean))];
   }
 
-  private normalize(j: ApiJob, tenantName: string, slug: string): JobData {
+  private normalize(j: ApiJob, tenantName: string, slug: string): Job {
     return {
-      empresa: tenantName || slug,
-      plataforma: 'InHire',
-      na_lista: 'Não',
-      cargo_categoria: this.inferRole(j.displayName),
-      titulo_vaga: j.displayName.trim(),
-      tipo: j.workplaceType || '',
-      local: j.location || '',
+      company: tenantName || slug,
+      platform: 'InHire',
+      onList: 'Não',
+      roleCategory: inferRole(j.displayName),
+      title: j.displayName.trim(),
+      type: j.workplaceType || j.location || '',
+      location: j.location || '',
       link: `https://${slug}.inhire.app/vagas/${j.jobId}/${this.slugify(j.displayName)}`,
-      nome_na_plataforma: tenantName || slug,
-      publicado: '',
-      alerta: '',
+      companyNameOnPlatform: tenantName || slug,
+      postedAt: '',
+      alert: '',
     };
   }
 
@@ -103,19 +104,6 @@ export class InHireScraper {
       .replace(/&/g, ' and ')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '') || 'vaga';
-  }
-
-  private inferRole(title: string): string {
-    const t = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    if (t.includes('revenue') || t.includes('revops')) return 'Revenue Operations / RevOps';
-    if (t.includes('growth')) return 'Growth Analyst / Analista de Growth';
-    if (t.includes('insights')) return 'Analista de Insights';
-    if (t.includes('inteligencia') || t.includes('market intelligence')) return 'Analista de Inteligência de Mercado';
-    if (t.includes('business analyst') || t.includes('analista de negocios')) return 'Business Analyst / Analista de Negocios';
-    if (t.includes('business intelligence') || t.includes('bi ') || t.includes('analista de bi')) return 'BI / Business Intelligence';
-    if (t.includes('data analyst') || t.includes('analista de dados')) return 'Analista de Dados / Data Analyst';
-    if (t.includes('dados')) return 'Analista de Dados / Data Analyst';
-    return '';
   }
 }
 

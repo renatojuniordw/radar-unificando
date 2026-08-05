@@ -67,34 +67,38 @@ export function buildProfileTokens(profile: {
 
 /**
  * Calcula score de overlap entre tokens do perfil e campos da vaga
- * - Campos: tituloVaga, nomeNaPlataforma, cargoCategoria, empresa
+ * - Campos: title, companyNameOnPlatform, roleCategory, company
  * - Retorna score 0-1 (proporção de tokens que matcham)
  */
-export function rankJobsByProfile<T extends { tituloVaga: string | null; nomeNaPlataforma: string | null; cargoCategoria: string | null; empresa: string }>(
+export function rankJobsByProfile<T extends { title: string | null; companyNameOnPlatform: string | null; roleCategory: string | null; company: string }>(
   jobs: T[],
   tokens: string[]
 ): Array<{ job: T; score: number }> {
-  if (tokens.length === 0) return [];
+  // Normaliza os tokens de entrada (lowercase/sem acentos) para ser robusto
+  // a maiúsculas e a frases — buildProfileTokens já retorna normalizado, mas a
+  // função não deve depender disso.
+  const normalizedTokens = tokens.flatMap(token => normalizeText(token).split(/\s+/)).filter(t => t.length > 0);
+  if (normalizedTokens.length === 0) return [];
 
   const ranked = jobs.map(job => {
     const jobText = [
-      job.tituloVaga || '',
-      job.nomeNaPlataforma || '',
-      job.cargoCategoria || '',
-      job.empresa || '',
+      job.title || '',
+      job.companyNameOnPlatform || '',
+      job.roleCategory || '',
+      job.company || '',
     ].join(' ');
 
     const normalizedJob = normalizeText(jobText);
     const jobTokens = new Set(normalizedJob.split(' '));
 
     let matchCount = 0;
-    tokens.forEach(token => {
+    normalizedTokens.forEach(token => {
       if (jobTokens.has(token)) {
         matchCount++;
       }
     });
 
-    const score = matchCount / tokens.length;
+    const score = matchCount / normalizedTokens.length;
     return { job, score };
   });
 

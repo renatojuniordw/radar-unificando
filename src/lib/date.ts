@@ -29,25 +29,25 @@ function relativeLabel(date: Date): string {
   return relativeFormatter.format(diffDays, "day");
 }
 
-export interface VagaDateInfo {
+export interface JobDateInfo {
   label: string;
   relative: string;
   full: string;
 }
 
 /**
- * Prioriza a data de publicação informada pela plataforma de origem (`publicado`);
- * cai para `detectadoEm` (quando o radar encontrou a vaga) se a primeira faltar/for inválida.
+ * Prioriza a data de publicação informada pela plataforma de origem (`postedAt`);
+ * cai para `detectedAt` (quando o radar encontrou a vaga) se a primeira faltar/for inválida.
  */
-export function formatVagaDate(publicado?: string, detectadoEm?: string): VagaDateInfo | null {
-  const publicadoDate = publicado ? parseDate(publicado) : null;
-  if (publicadoDate) {
-    return { label: "Publicada", relative: relativeLabel(publicadoDate), full: fullDateFormatter.format(publicadoDate) };
+export function formatJobDate(postedAt?: string, detectedAt?: string): JobDateInfo | null {
+  const postedAtDate = postedAt ? parseDate(postedAt) : null;
+  if (postedAtDate) {
+    return { label: "Publicada", relative: relativeLabel(postedAtDate), full: fullDateFormatter.format(postedAtDate) };
   }
 
-  const detectadoDate = detectadoEm ? parseDate(detectadoEm) : null;
-  if (detectadoDate) {
-    return { label: "Adicionada", relative: relativeLabel(detectadoDate), full: fullDateFormatter.format(detectadoDate) };
+  const detectedAtDate = detectedAt ? parseDate(detectedAt) : null;
+  if (detectedAtDate) {
+    return { label: "Adicionada", relative: relativeLabel(detectedAtDate), full: fullDateFormatter.format(detectedAtDate) };
   }
 
   return null;

@@ -69,14 +69,14 @@ export function createChatTools(userId: string) {
         console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
         const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 20, 100));
         return jobs.map(j => ({
-          titulo: j.titulo_vaga,
-          empresa: j.empresa,
-          tipo: j.tipo,
-          local: j.local,
+          titulo: j.title,
+          empresa: j.company,
+          tipo: j.type,
+          local: j.location,
           link: j.link,
-          publicado: j.publicado || null,
-          descricao: j.descricao
-            ? `<untrusted_content>\n${j.descricao.slice(0, 1200)}\n</untrusted_content>`
+          publicado: j.postedAt || null,
+          descricao: j.description
+            ? `<untrusted_content>\n${j.description.slice(0, 1200)}\n</untrusted_content>`
             : '',
         }));
       },

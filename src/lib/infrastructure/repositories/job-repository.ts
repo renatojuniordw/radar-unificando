@@ -1,18 +1,18 @@
 import { prisma } from '@/lib/infrastructure/db/prisma-client';
-import type { Job, Prisma } from '@prisma/client';
+import type { Job as PrismaJob, Prisma } from '@prisma/client';
 import { buildProfileTokens, rankJobsByProfile } from '@/lib/core/matching/recommendation';
 
 export interface IJobRepository {
-  findByUserId(userId: string, opts?: { plataforma?: string; cargo?: string; search?: string; take?: number }): Promise<Job[]>;
+  findByUserId(userId: string, opts?: { platform?: string; role?: string; search?: string; take?: number }): Promise<PrismaJob[]>;
   findRecommendedByUserId(
     userId: string,
     profile: { currentRole: string | null; area: string | null; skills: string[] },
     take?: number
-  ): Promise<Array<{ job: Job; score: number }>>;
-  findById(id: string): Promise<Job | null>;
+  ): Promise<Array<{ job: PrismaJob; score: number }>>;
+  findById(id: string): Promise<PrismaJob | null>;
   createMany(data: Prisma.JobCreateManyInput[]): Promise<number>;
   findExistingLinks(userId: string, links: string[]): Promise<Set<string>>;
-  findStaleForRevalidation(limit: number): Promise<Job[]>;
+  findStaleForRevalidation(limit: number): Promise<PrismaJob[]>;
   markStatus(ids: string[], status: string): Promise<void>;
   touchLastChecked(ids: string[]): Promise<void>;
 }
@@ -20,8 +20,8 @@ export interface IJobRepository {
 export const jobRepository: IJobRepository = {
   async findByUserId(userId, opts = {}) {
     const where: Prisma.JobWhereInput = { userId, status: 'active' };
-    if (opts.plataforma) where.plataforma = opts.plataforma;
-    if (opts.cargo) where.cargoCategoria = opts.cargo;
+    if (opts.platform) where.platform = opts.platform;
+    if (opts.role) where.roleCategory = opts.role;
 
     if (opts.search && opts.search.trim()) {
       const STOPWORDS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'no', 'na', 'nos', 'nas', 'a', 'o', 'para', 'com']);
@@ -33,10 +33,10 @@ export const jobRepository: IJobRepository = {
       if (searchTerms.length > 0) {
         where.AND = searchTerms.map(term => ({
           OR: [
-            { empresa: { contains: term, mode: 'insensitive' } },
-            { tituloVaga: { contains: term, mode: 'insensitive' } },
-            { nomeNaPlataforma: { contains: term, mode: 'insensitive' } },
-            { cargoCategoria: { contains: term, mode: 'insensitive' } },
+            { company: { contains: term, mode: 'insensitive' } },
+            { title: { contains: term, mode: 'insensitive' } },
+            { companyNameOnPlatform: { contains: term, mode: 'insensitive' } },
+            { roleCategory: { contains: term, mode: 'insensitive' } },
           ],
         }));
       }
@@ -55,10 +55,10 @@ export const jobRepository: IJobRepository = {
         userId,
         status: 'active',
         OR: tokens.flatMap(token => [
-          { tituloVaga: { contains: token, mode: 'insensitive' } },
-          { nomeNaPlataforma: { contains: token, mode: 'insensitive' } },
-          { cargoCategoria: { contains: token, mode: 'insensitive' } },
-          { empresa: { contains: token, mode: 'insensitive' } },
+          { title: { contains: token, mode: 'insensitive' } },
+          { companyNameOnPlatform: { contains: token, mode: 'insensitive' } },
+          { roleCategory: { contains: token, mode: 'insensitive' } },
+          { company: { contains: token, mode: 'insensitive' } },
         ]),
       },
       take: 100, // Busca mais para rankear

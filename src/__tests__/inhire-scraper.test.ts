@@ -11,13 +11,13 @@ describe('InHireScraper', () => {
   it('should_return_normalized_jobs_on_successful_fetch', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ([{ id: 1, titulo: 'Data Analyst', empresa: 'CorpA', local: 'Remoto', dataPublicacao: '2024-01-01', url: 'https://a.com', descricao: '' }]),
+      json: async () => ({ tenantName: 'CorpA', jobsPage: [{ displayName: 'Data Analyst', status: 'published', workplaceType: 'Remoto', location: 'Remote', jobId: '1' }] }),
     }) as any;
     const result = await scraper.searchJobs(['CorpA']);
     expect(result).toHaveLength(1);
-    expect(result[0].plataforma).toBe('InHire');
-    expect(result[0].empresa).toBe('CorpA');
-    expect(result[0].tipo).toBe('Remoto');
+    expect(result[0].platform).toBe('InHire');
+    expect(result[0].company).toBe('CorpA');
+    expect(result[0].type).toBe('Remoto');
   });
 
   it('should_return_empty_array_when_fetch_fails', async () => {
@@ -35,41 +35,44 @@ describe('InHireScraper', () => {
   it('should_handle_non_array_response_gracefully', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ vagas: [{ id: 1, titulo: 'Data Analyst', empresa: 'Corp', local: '', dataPublicacao: '', url: '', descricao: '' }] }),
+      json: async () => ({ tenantName: 'Corp', jobsPage: [{ displayName: 'Data Analyst', status: 'published', workplaceType: '', location: '', jobId: '1' }] }),
     }) as any;
-    const result = await scraper.searchJobs();
+    const result = await scraper.searchJobs(['Corp']);
     expect(result).toHaveLength(1);
   });
 
   it('should_detect_remote_from_location_field', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ([{ id: 1, titulo: 'Analyst', empresa: 'Corp', local: 'Trabalho Remoto', dataPublicacao: '', url: '', descricao: '' }]),
+      json: async () => ({ tenantName: 'Corp', jobsPage: [{ displayName: 'Analyst', status: 'published', workplaceType: 'Remoto', location: 'Trabalho Remoto', jobId: '1' }] }),
     }) as any;
     const result = await scraper.searchJobs(['Corp']);
-    expect(result[0].tipo).toBe('Remoto');
+    expect(result[0].type).toBe('Remoto');
   });
 
   it('should_mark_non_remote_jobs_with_location_type', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ([{ id: 1, titulo: 'Analyst', empresa: 'Corp', local: 'São Paulo - SP', dataPublicacao: '', url: '', descricao: '' }]),
+      json: async () => ({ tenantName: 'Corp', jobsPage: [{ displayName: 'Analyst', status: 'published', workplaceType: '', location: 'São Paulo - SP', jobId: '1' }] }),
     }) as any;
     const result = await scraper.searchJobs(['Corp']);
-    expect(result[0].tipo).toBe('São Paulo - SP');
+    expect(result[0].type).toBe('São Paulo - SP');
   });
 
   it('should_infer_role_from_title', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ([
-        { id: 1, titulo: 'Revenue Operations Analyst', empresa: 'Corp', local: '', dataPublicacao: '', url: '', descricao: '' },
-        { id: 2, titulo: 'Data Analyst', empresa: 'Corp', local: '', dataPublicacao: '', url: '', descricao: '' },
-      ]),
+      json: async () => ({
+        tenantName: 'Corp',
+        jobsPage: [
+          { displayName: 'Revenue Operations Analyst', status: 'published', workplaceType: '', location: '', jobId: '1' },
+          { displayName: 'Data Analyst', status: 'published', workplaceType: '', location: '', jobId: '2' },
+        ],
+      }),
     }) as any;
     const result = await scraper.searchJobs(['Corp']);
-    expect(result[0].cargo_categoria).toContain('Revenue');
-    expect(result[1].cargo_categoria).toContain('Data Analyst');
+    expect(result[0].roleCategory).toContain('Revenue');
+    expect(result[1].roleCategory).toContain('Data Analyst');
   });
 
   it('should_return_empty_when_no_companies_provided_and_fetch_fails', async () => {
@@ -81,10 +84,10 @@ describe('InHireScraper', () => {
   it('should_search_single_company_via_search_company', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ([{ id: 1, titulo: 'Analyst', empresa: 'SingleCorp', local: '', dataPublicacao: '', url: '', descricao: '' }]),
+      json: async () => ({ tenantName: 'SingleCorp', jobsPage: [{ displayName: 'Analyst', status: 'published', workplaceType: '', location: '', jobId: '1' }] }),
     }) as any;
     const result = await scraper.searchCompany('SingleCorp');
     expect(result).toHaveLength(1);
-    expect(result[0].empresa).toBe('SingleCorp');
+    expect(result[0].company).toBe('SingleCorp');
   });
 });

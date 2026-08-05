@@ -14,6 +14,7 @@ import { ChatHeader } from '@/components/chat-assistant/chat-header';
 import { ChatMessageList } from '@/components/chat-assistant/chat-message-list';
 import { ChatQuickActions } from '@/components/chat-assistant/chat-quick-actions';
 import { ChatInput } from '@/components/chat-assistant/chat-input';
+import { ChatSuggestedReplies } from '@/components/chat-assistant/chat-suggested-replies';
 import { SyncErrorBanner, ThreadLimitBanner, DailyLimitBanner } from '@/components/chat-assistant/chat-limit-banner';
 
 export function ChatAssistantUI() {
@@ -31,7 +32,8 @@ export function ChatAssistantUI() {
     loading,
     syncError,
     conversations,
-    endRef,
+    dailyUsage,
+    reload,
     selectConversation,
     startNewConversation,
     clearHistory,
@@ -52,7 +54,7 @@ export function ChatAssistantUI() {
 
   // Detecção dos limites de conversa (25 mensagens) e limite diário (50 mensagens)
   const lastMessageText = messages.length > 0 ? getMessageText(messages[messages.length - 1]) : '';
-  const isDailyLimitReached = lastMessageText.includes('Limite diário de interações atingido');
+  const isDailyLimitReached = dailyUsage.isDailyLimitReached || lastMessageText.includes('Limite diário de interações atingido');
   const isThreadLimitReached = !isDailyLimitReached && (
     messages.length >= CHAT_THREAD_MESSAGE_LIMIT || lastMessageText.includes('limite de 25 mensagens')
   );
@@ -75,6 +77,7 @@ export function ChatAssistantUI() {
   }
 
   function handleNewConversation() {
+    if (isDailyLimitReached) return;
     startNewConversation();
     setSidebarOpen(false);
   }
@@ -136,6 +139,8 @@ export function ChatAssistantUI() {
         <ChatHeader
           loading={loading}
           messageCount={messages.length}
+          dailyCount={dailyUsage.count}
+          dailyLimit={dailyUsage.limit}
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
           onNewChat={() => setConfirmOpen(true)}
@@ -161,7 +166,7 @@ export function ChatAssistantUI() {
               loading={loading}
               hasUserMessage={hasUserMessage}
               onSelectSuggestion={setInput}
-              endRef={endRef}
+              onRetry={reload}
             />
 
             {!hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (
@@ -173,6 +178,14 @@ export function ChatAssistantUI() {
             )}
 
             {isDailyLimitReached && <DailyLimitBanner />}
+
+            {hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (
+              <ChatSuggestedReplies
+                lastMessageText={lastMessageText}
+                loading={loading}
+                onSelect={(prompt) => sendMessage({ text: prompt })}
+              />
+            )}
 
             <ChatInput
               value={input}

@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import type { Job } from '@prisma/client';
+import type { Job as PrismaJob } from '@prisma/client';
 import { jobRepository, profileRepository } from '@/lib/infrastructure/repositories';
 
-function mapJobToApi(j: Job, score?: number) {
+function mapJobToApi(j: PrismaJob, score?: number) {
   return {
     id: j.id,
-    empresa: j.empresa,
-    plataforma: j.plataforma,
-    na_lista: j.naLista || 'Não',
-    cargo_categoria: j.cargoCategoria,
-    titulo_vaga: j.tituloVaga,
-    tipo: j.tipo,
-    local: j.local,
+    company: j.company,
+    platform: j.platform,
+    onList: j.onList || 'Não',
+    roleCategory: j.roleCategory,
+    title: j.title,
+    type: j.type,
+    location: j.location,
     link: j.link,
-    nome_na_plataforma: j.nomeNaPlataforma,
-    publicado: j.publicado,
-    alerta: j.alerta || '',
-    detectado_em: j.detectadoEm || '',
+    companyNameOnPlatform: j.companyNameOnPlatform,
+    postedAt: j.postedAt,
+    alert: j.alert || '',
+    detectedAt: j.detectedAt || '',
     ...(score !== undefined ? { _score: score } : {}),
   };
 }
@@ -27,10 +27,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const session = await auth();
     const userId = session?.user?.id;
-    const recomendado = searchParams.get('recomendado') === '1';
+    const recommended = searchParams.get('recommended') === '1';
 
     // Modo recomendado
-    if (recomendado) {
+    if (recommended) {
       if (!userId) {
         return NextResponse.json([]); // Anônimo → vazio
       }
@@ -40,14 +40,14 @@ export async function GET(req: NextRequest) {
         return NextResponse.json([]); // Sem perfil → vazio
       }
 
-      const recommended = await jobRepository.findRecommendedByUserId(userId, {
+      const recommendedJobs = await jobRepository.findRecommendedByUserId(userId, {
         currentRole: profile.currentRole,
         area: profile.area,
         skills: (profile.skills as string[]) || [],
       });
 
       // Mapeia para o formato da API
-      const mapped = recommended.map(({ job: j, score }) => mapJobToApi(j, score));
+      const mapped = recommendedJobs.map(({ job: j, score }) => mapJobToApi(j, score));
 
       return NextResponse.json(mapped);
     }
@@ -55,8 +55,8 @@ export async function GET(req: NextRequest) {
     // Modo normal (fluxo existente)
     const normalUserId = userId || '00000000-0000-0000-0000-000000000000';
     const result = await jobRepository.findByUserId(normalUserId, {
-      plataforma: searchParams.get('plataforma') || undefined,
-      cargo: searchParams.get('cargo') || undefined,
+      platform: searchParams.get('platform') || undefined,
+      role: searchParams.get('role') || undefined,
       search: searchParams.get('search') || undefined,
     });
 

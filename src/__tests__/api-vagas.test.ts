@@ -1,16 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
-vi.mock('@/auth', () => ({
-  auth: vi.fn(),
-}));
+const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
+vi.mock('@/auth', () => ({ auth: mockAuth }));
 
 vi.mock('@/lib/infrastructure/repositories', () => ({
   jobRepository: { findByUserId: vi.fn(), findRecommendedByUserId: vi.fn() },
   profileRepository: { findByUserId: vi.fn() },
 }));
 
-import { auth } from '@/auth';
 import { jobRepository, profileRepository } from '@/lib/infrastructure/repositories';
 import { GET } from '@/app/api/vagas/route';
 
@@ -23,32 +21,32 @@ function makeRequest(searchParams: Record<string, string> = {}): NextRequest {
 describe('GET /api/vagas', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth).mockResolvedValue({ user: { id: 'user-1' } } as any);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
   });
 
   it('should_return_mapped_jobs', async () => {
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([
-      { id: '1', empresa: 'CorpA', plataforma: 'Gupy', tituloVaga: 'Analyst', cargoCategoria: 'Analytics', tipo: 'Remoto', local: 'Remote', link: 'https://a.com', nomeNaPlataforma: 'corp', publicado: '', naLista: 'Sim', alerta: '', detectadoEm: null } as any,
+      { id: '1', company: 'CorpA', platform: 'Gupy', title: 'Analyst', roleCategory: 'Analytics', type: 'Remoto', location: 'Remote', link: 'https://a.com', companyNameOnPlatform: 'corp', postedAt: '', onList: 'Sim', alert: '', detectedAt: null } as any,
     ]);
     const res = await GET(makeRequest());
     const body = await res.json();
     expect(body).toHaveLength(1);
-    expect(body[0].empresa).toBe('CorpA');
-    expect(body[0].cargo_categoria).toBe('Analytics');
+    expect(body[0].company).toBe('CorpA');
+    expect(body[0].roleCategory).toBe('Analytics');
   });
 
   it('should_pass_filters_to_repository', async () => {
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([]);
-    await GET(makeRequest({ plataforma: 'Gupy', cargo: 'Analytics', search: 'test' }));
+    await GET(makeRequest({ platform: 'Gupy', role: 'Analytics', search: 'test' }));
     expect(jobRepository.findByUserId).toHaveBeenCalledWith('user-1', {
-      plataforma: 'Gupy',
-      cargo: 'Analytics',
+      platform: 'Gupy',
+      role: 'Analytics',
       search: 'test',
     });
   });
 
   it('should_return_anonymous_user_id_when_not_authenticated', async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    mockAuth.mockResolvedValue(null);
     vi.mocked(jobRepository.findByUserId).mockResolvedValue([]);
     await GET(makeRequest());
     expect(jobRepository.findByUserId).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000', expect.any(Object));
@@ -60,10 +58,10 @@ describe('GET /api/vagas', () => {
     expect(res.status).toBe(500);
   });
 
-  describe('recomendado=1', () => {
+  describe('recommended=1', () => {
     it('should_return_empty_when_not_authenticated', async () => {
-      vi.mocked(auth).mockResolvedValue(null);
-      const res = await GET(makeRequest({ recomendado: '1' }));
+      mockAuth.mockResolvedValue(null);
+      const res = await GET(makeRequest({ recommended: '1' }));
       const body = await res.json();
       expect(body).toEqual([]);
       expect(profileRepository.findByUserId).not.toHaveBeenCalled();
@@ -71,7 +69,7 @@ describe('GET /api/vagas', () => {
 
     it('should_return_empty_when_profile_not_found', async () => {
       vi.mocked(profileRepository.findByUserId).mockResolvedValue(null);
-      const res = await GET(makeRequest({ recomendado: '1' }));
+      const res = await GET(makeRequest({ recommended: '1' }));
       const body = await res.json();
       expect(body).toEqual([]);
       expect(jobRepository.findRecommendedByUserId).not.toHaveBeenCalled();
@@ -85,12 +83,12 @@ describe('GET /api/vagas', () => {
       } as any);
       vi.mocked(jobRepository.findRecommendedByUserId).mockResolvedValue([
         {
-          job: { id: '1', empresa: 'CorpA', plataforma: 'Gupy', tituloVaga: 'Analista de Dados', cargoCategoria: 'Dados', tipo: 'Remoto', local: 'Remote', link: 'https://a.com', nomeNaPlataforma: 'corp', publicado: '', naLista: 'Sim', alerta: '', detectadoEm: null },
+          job: { id: '1', company: 'CorpA', platform: 'Gupy', title: 'Analista de Dados', roleCategory: 'Dados', type: 'Remoto', location: 'Remote', link: 'https://a.com', companyNameOnPlatform: 'corp', postedAt: '', onList: 'Sim', alert: '', detectedAt: null },
           score: 5,
         } as any,
       ]);
 
-      const res = await GET(makeRequest({ recomendado: '1' }));
+      const res = await GET(makeRequest({ recommended: '1' }));
       const body = await res.json();
 
       expect(jobRepository.findRecommendedByUserId).toHaveBeenCalledWith('user-1', {
@@ -99,7 +97,7 @@ describe('GET /api/vagas', () => {
         skills: ['Python', 'SQL'],
       });
       expect(body).toHaveLength(1);
-      expect(body[0].empresa).toBe('CorpA');
+      expect(body[0].company).toBe('CorpA');
       expect(body[0]._score).toBe(5);
     });
   });

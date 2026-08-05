@@ -46,6 +46,18 @@ vi.mock('@/auth.config', () => ({
   authConfig: { pages: { signIn: '/login' }, callbacks: {}, session: { strategy: 'jwt' } },
 }));
 
+type MockCredentialsProvider = {
+  id: string;
+  name: string;
+  type: 'credentials';
+  authorize: (credentials?: any, request?: any) => Promise<any>;
+};
+
+async function getProvider(): Promise<MockCredentialsProvider> {
+  const CredentialsProvider = (await import('next-auth/providers/credentials')).default;
+  return CredentialsProvider({} as any) as unknown as MockCredentialsProvider;
+}
+
 describe('Auth', () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -62,23 +74,20 @@ describe('Auth', () => {
   });
 
   it('should_return_null_when_credentials_are_missing', async () => {
-    const CredentialsProvider = (await import('next-auth/providers/credentials')).default;
-    const provider = CredentialsProvider({} as any);
+    const provider = await getProvider();
     const result = await provider.authorize({});
     expect(result).toBeNull();
   });
 
   it('should_return_null_when_email_not_found', async () => {
-    const CredentialsProvider = (await import('next-auth/providers/credentials')).default;
-    const provider = CredentialsProvider({} as any);
+    const provider = await getProvider();
     mockFindByEmail.mockResolvedValue(null);
     const result = await provider.authorize({ email: 'test@test.com', password: '123456' });
     expect(result).toBeNull();
   });
 
   it('should_return_null_when_password_is_invalid', async () => {
-    const CredentialsProvider = (await import('next-auth/providers/credentials')).default;
-    const provider = CredentialsProvider({} as any);
+    const provider = await getProvider();
     mockFindByEmail.mockResolvedValue({ id: '1', email: 'test@test.com', passwordHash: 'hash' });
     mockCompare.mockResolvedValue(false);
     const result = await provider.authorize({ email: 'test@test.com', password: 'wrong' });
@@ -86,8 +95,7 @@ describe('Auth', () => {
   });
 
   it('should_return_user_when_credentials_are_valid', async () => {
-    const CredentialsProvider = (await import('next-auth/providers/credentials')).default;
-    const provider = CredentialsProvider({} as any);
+    const provider = await getProvider();
     mockFindByEmail.mockResolvedValue({ id: '1', email: 'test@test.com', passwordHash: 'hash', name: 'User' });
     mockCompare.mockResolvedValue(true);
     const result = await provider.authorize({ email: 'test@test.com', password: 'correct' });
@@ -95,8 +103,7 @@ describe('Auth', () => {
   });
 
   it('should_return_null_on_database_error', async () => {
-    const CredentialsProvider = (await import('next-auth/providers/credentials')).default;
-    const provider = CredentialsProvider({} as any);
+    const provider = await getProvider();
     mockFindByEmail.mockRejectedValue(new Error('DB down'));
     const result = await provider.authorize({ email: 'test@test.com', password: '123456' });
     expect(result).toBeNull();

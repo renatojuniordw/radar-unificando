@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, IconButton, Typography, Chip } from '@mui/material';
+import { Box, IconButton, Typography, Chip, Tooltip } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/chat';
 import { BotIcon, HistoryIcon, PlusIcon } from './icons';
@@ -8,6 +8,8 @@ import { BotIcon, HistoryIcon, PlusIcon } from './icons';
 interface Props {
   loading: boolean;
   messageCount: number;
+  dailyCount?: number;
+  dailyLimit?: number;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   onNewChat: () => void;
@@ -15,7 +17,17 @@ interface Props {
   onClose: () => void;
 }
 
-export function ChatHeader({ loading, messageCount, sidebarOpen, onToggleSidebar, onNewChat, isDailyLimitReached, onClose }: Props) {
+export function ChatHeader({
+  loading,
+  messageCount,
+  dailyCount = 0,
+  dailyLimit = 50,
+  sidebarOpen,
+  onToggleSidebar,
+  onNewChat,
+  isDailyLimitReached,
+  onClose,
+}: Props) {
   return (
     <Box
       sx={{
@@ -48,22 +60,48 @@ export function ChatHeader({ loading, messageCount, sidebarOpen, onToggleSidebar
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
             Assistente de Vagas
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25, flexWrap: 'wrap' }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
               {loading ? 'Digitando...' : 'Online'}
             </Typography>
-            <Chip
-              label={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} msgs`}
-              size="small"
-              sx={{
-                height: 18,
-                fontSize: '0.625rem',
-                fontWeight: 700,
-                bgcolor: messageCount >= 20 ? 'warning.light' : 'grey.200',
-                color: messageCount >= 20 ? 'warning.contrastText' : 'text.secondary',
-                fontFamily: 'ui-monospace, monospace',
-              }}
-            />
+            <Tooltip title="Limite da janela de contexto para garantir respostas precisas nesta conversa." arrow>
+              <Chip
+                label={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} chat`}
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  bgcolor: messageCount >= 20 ? 'warning.light' : 'grey.200',
+                  color: messageCount >= 20 ? 'warning.contrastText' : 'text.secondary',
+                  fontFamily: 'ui-monospace, monospace',
+                  cursor: 'help',
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="Limite diário de interações por conta. Renova automaticamente à meia-noite (00:00)." arrow>
+              <Chip
+                label={`${dailyCount}/${dailyLimit} hoje`}
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  bgcolor: isDailyLimitReached
+                    ? 'error.light'
+                    : dailyCount >= 40
+                    ? 'warning.light'
+                    : 'grey.200',
+                  color: isDailyLimitReached
+                    ? 'error.contrastText'
+                    : dailyCount >= 40
+                    ? 'warning.contrastText'
+                    : 'text.secondary',
+                  fontFamily: 'ui-monospace, monospace',
+                  cursor: 'help',
+                }}
+              />
+            </Tooltip>
             <Typography
               component="a"
               href="/termos"

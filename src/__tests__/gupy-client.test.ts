@@ -11,6 +11,7 @@ describe('GupyMcpClient', () => {
   it('should_return_normalized_jobs_on_successful_response', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({
         jsonrpc: '2.0',
         id: '1',
@@ -21,8 +22,8 @@ describe('GupyMcpClient', () => {
     }) as any;
     const result = await client.searchJobs('Data Analyst', 10);
     expect(result).toHaveLength(1);
-    expect(result[0].plataforma).toBe('Gupy');
-    expect(result[0].empresa).toBe('CorpA');
+    expect(result[0].platform).toBe('Gupy');
+    expect(result[0].company).toBe('CorpA');
   });
 
   it('should_return_empty_array_when_http_fails', async () => {
@@ -33,6 +34,7 @@ describe('GupyMcpClient', () => {
   it('should_throw_on_mcp_error_response', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({ jsonrpc: '2.0', id: '1', error: { code: -32000, message: 'Internal error' } }),
     }) as any;
     await expect(client.searchJobs('test', 10)).rejects.toThrow('MCP error: Internal error');
@@ -41,6 +43,7 @@ describe('GupyMcpClient', () => {
   it('should_return_empty_array_when_no_text_content', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({ jsonrpc: '2.0', id: '1', result: { content: [{ type: 'image', text: '' }] } }),
     }) as any;
     const result = await client.searchJobs('test', 10);
@@ -50,6 +53,7 @@ describe('GupyMcpClient', () => {
   it('should_return_empty_array_on_json_parse_failure', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({ jsonrpc: '2.0', id: '1', result: { content: [{ type: 'text', text: 'invalid json' }] } }),
     }) as any;
     const result = await client.searchJobs('test', 10);
@@ -59,25 +63,27 @@ describe('GupyMcpClient', () => {
   it('should_infer_role_from_title', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({
         jsonrpc: '2.0', id: '1',
         result: { content: [{ type: 'text', text: JSON.stringify({ jobs: [{ title: 'Business Analyst', company: 'Corp', jobUrl: '' }] }) }] },
       }),
     }) as any;
     const result = await client.searchJobs('Business Analyst', 10);
-    expect(result[0].cargo_categoria).toContain('Business Analyst');
+    expect(result[0].roleCategory).toContain('Business Analyst');
   });
 
   it('should_handle_missing_fields_with_fallbacks', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({
         jsonrpc: '2.0', id: '1',
         result: { content: [{ type: 'text', text: JSON.stringify([{ name: 'Dev', empresa: 'Startup' }]) }] },
       }),
     }) as any;
     const result = await client.searchJobs('Dev', 10);
-    expect(result[0].empresa).toBe('Startup');
-    expect(result[0].titulo_vaga).toBe('Dev');
+    expect(result[0].company).toBe('Startup');
+    expect(result[0].title).toBe('Dev');
   });
 });

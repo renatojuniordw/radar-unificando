@@ -2,7 +2,7 @@ import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { dedupEngine } from '@/lib/core/dedup';
 import { jobRepository } from '@/lib/infrastructure/repositories';
 import { isLinkDead, mapWithConcurrency } from '@/lib/core/pipeline/link-check';
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
 import type { Prisma } from '@prisma/client';
 
 export interface SaveStepOptions {
@@ -10,10 +10,15 @@ export interface SaveStepOptions {
   source: string;
 }
 
+export interface SaveStepDeps {
+  jobRepository?: Pick<typeof jobRepository, 'findExistingLinks' | 'createMany'>;
+}
+
 const LINK_CHECK_CONCURRENCY = 10;
 
-export async function runSaveStep(runId: string, jobs: JobData[], options: SaveStepOptions): Promise<number> {
+export async function runSaveStep(runId: string, jobs: Job[], options: SaveStepOptions, deps: SaveStepDeps = {}): Promise<number> {
   const { userId, source } = options;
+  const { jobRepository: repo = jobRepository } = deps;
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'Merge',
@@ -25,7 +30,7 @@ export async function runSaveStep(runId: string, jobs: JobData[], options: SaveS
   // Only check links Gupy/InHire returned for jobs we haven't stored yet —
   // already-saved jobs are periodically re-checked by the revalidation job,
   // so re-validating them here would just slow down every pipeline run.
-  const existingLinks = await jobRepository.findExistingLinks(userId, deduped.map(j => j.link));
+  const existingLinks = await repo.findExistingLinks(userId, deduped.map(j => j.link));
   const candidates = deduped.filter(job => !existingLinks.has(job.link));
   const aliveFlags = await mapWithConcurrency(candidates, LINK_CHECK_CONCURRENCY, async job => !(await isLinkDead(job.link)));
   const deadLinks = new Set(candidates.filter((_, i) => !aliveFlags[i]).map(j => j.link));
@@ -41,22 +46,22 @@ export async function runSaveStep(runId: string, jobs: JobData[], options: SaveS
   const data: Prisma.JobCreateManyInput[] = alive.map(job => ({
     userId,
     source,
-    empresa: job.empresa || 'Desconhecida',
-    plataforma: job.plataforma,
-    naLista: job.na_lista || 'Não',
-    cargoCategoria: job.cargo_categoria,
-    tituloVaga: job.titulo_vaga,
-    tipo: job.tipo,
-    local: job.local,
+    company: job.company || 'Desconhecida',
+    platform: job.platform,
+    onList: job.onList || 'Não',
+    roleCategory: job.roleCategory,
+    title: job.title,
+    type: job.type,
+    location: job.location,
     link: job.link,
-    nomeNaPlataforma: job.nome_na_plataforma,
-    publicado: job.publicado,
-    alerta: job.alerta || '',
-    detectadoEm: new Date().toISOString(),
+    companyNameOnPlatform: job.companyNameOnPlatform,
+    postedAt: job.postedAt,
+    alert: job.alert || '',
+    detectedAt: new Date().toISOString(),
     lastCheckedAt: new Date(),
   }));
 
-  const inserted = await jobRepository.createMany(data);
+  const inserted = await repo.createMany(data);
 
   progressEmitter.emit(runId, {
     type: 'step_complete', step: 'Merge',

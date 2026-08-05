@@ -1,14 +1,19 @@
-import { inhireScraper } from '@/lib/core/scrapers/inhire-scraper';
+import { inhireScraper, type InHireScraper } from '@/lib/core/scrapers/inhire-scraper';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
 
 export interface InHireStepOptions {
   companies: string[];
   queries?: string[];
 }
 
-export async function runInHireStep(runId: string, options: InHireStepOptions): Promise<JobData[]> {
+export interface InHireStepDeps {
+  scraper?: Pick<InHireScraper, 'searchJobs'>;
+}
+
+export async function runInHireStep(runId: string, options: InHireStepOptions, deps: InHireStepDeps = {}): Promise<Job[]> {
   const { companies, queries } = options;
+  const { scraper = inhireScraper } = deps;
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'InHire',
@@ -16,20 +21,20 @@ export async function runInHireStep(runId: string, options: InHireStepOptions): 
   });
 
   try {
-    let jobs = await inhireScraper.searchJobs(companies.length > 0 ? companies : undefined);
+    let jobs = await scraper.searchJobs(companies.length > 0 ? companies : undefined);
 
     if (queries?.length) {
       const queryTerms = queries.map(q => q.toLowerCase().trim());
       jobs = jobs.filter(j => {
-        const titulo = j.titulo_vaga.toLowerCase();
-        return queryTerms.some(q => titulo.includes(q));
+        const title = j.title.toLowerCase();
+        return queryTerms.some(q => title.includes(q));
       });
     }
 
     const normalized = companies.map(c => c.toLowerCase().trim());
     const labeled = jobs.map(j => ({
       ...j,
-      na_lista: normalized.some(c => j.empresa.toLowerCase().includes(c)) ? 'Sim' as const : 'Não' as const,
+      onList: normalized.some(c => j.company.toLowerCase().includes(c)) ? 'Sim' as const : 'Não' as const,
     }));
 
     progressEmitter.emit(runId, {

@@ -1,4 +1,5 @@
-import type { JobData } from '@/types';
+import type { Job } from '@/types';
+import { inferRole } from '@/lib/core/matching/infer-role';
 
 interface RawGupyJob {
   careerPageName?: string;
@@ -33,7 +34,7 @@ interface McpResponse {
 export class GupyMcpClient {
   private url = 'https://candidates.mcp.api.gupy.io/mcp';
 
-  async searchJobs(query: string, limit = 50): Promise<JobData[]> {
+  async searchJobs(query: string, limit = 50): Promise<Job[]> {
     const res = await fetch(this.url, {
       method: 'POST',
       headers: {
@@ -98,33 +99,21 @@ export class GupyMcpClient {
     return res.json();
   }
 
-  private normalizeJobs(raw: RawGupyJob[]): JobData[] {
+  private normalizeJobs(raw: RawGupyJob[]): Job[] {
     return (raw || []).map((j) => ({
-      empresa: j.careerPageName || j.company || j.empresa || '',
-      plataforma: 'Gupy' as const,
-      na_lista: 'Não' as const,
-      cargo_categoria: this.inferRole(j.title || j.name || ''),
-      titulo_vaga: j.title || j.name || '',
-      tipo: j.workplaceType || j.work_type || '',
-      local: [j.city, j.state, j.country].filter(Boolean).join(' / ') || j.location || '',
+      company: j.careerPageName || j.company || j.empresa || '',
+      platform: 'Gupy' as const,
+      onList: 'Não' as const,
+      roleCategory: inferRole(j.title || j.name || ''),
+      title: j.title || j.name || '',
+      type: j.workplaceType || j.work_type || '',
+      location: [j.city, j.state, j.country].filter(Boolean).join(' / ') || j.location || '',
       link: j.jobUrl || j.url || j.link || '',
-      nome_na_plataforma: j.careerPageName || j.company || '',
-      publicado: j.publishedDate || j.created_at || '',
-      alerta: '',
-      descricao: j.description ? String(j.description).slice(0, 3000) : undefined,
+      companyNameOnPlatform: j.careerPageName || j.company || '',
+      postedAt: j.publishedDate || j.created_at || '',
+      alert: '',
+      description: j.description ? String(j.description).slice(0, 3000) : undefined,
     }));
-  }
-
-  private inferRole(title: string): string {
-    const t = title.toLowerCase();
-    if (t.includes('revenue') || t.includes('revops')) return 'Revenue Operations / RevOps';
-    if (t.includes('growth')) return 'Growth Analyst / Analista de Growth';
-    if (t.includes('insights')) return 'Analista de Insights';
-    if (t.includes('inteligência') || t.includes('market intelligence')) return 'Analista de Inteligência de Mercado';
-    if (t.includes('business analyst') || t.includes('analista de negócios')) return 'Business Analyst / Analista de Negócios';
-    if (t.includes('business intelligence') || t.includes('bi ') || t.includes('analista de bi')) return 'BI / Business Intelligence';
-    if (t.includes('data analyst') || t.includes('analista de dados')) return 'Analista de Dados / Data Analyst';
-    return '';
   }
 }
 
