@@ -32,7 +32,6 @@ export function ChatAssistantUI() {
     syncError,
     conversations,
     dailyUsage,
-    endRef,
     selectConversation,
     startNewConversation,
     clearHistory,
@@ -165,7 +164,6 @@ export function ChatAssistantUI() {
               loading={loading}
               hasUserMessage={hasUserMessage}
               onSelectSuggestion={setInput}
-              endRef={endRef}
             />
 
             {!hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (

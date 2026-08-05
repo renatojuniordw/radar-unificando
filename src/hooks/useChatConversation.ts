@@ -34,7 +34,6 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     remaining: 50,
     isDailyLimitReached: false,
   });
-  const endRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status: chatStatus, setMessages } = useChat({
     throttle: 100,
@@ -90,10 +89,6 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
       cancelled = true;
     };
   }, [chatId, setMessages, userName]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
 
   // Persiste as mensagens localmente e sincroniza com o servidor
   useEffect(() => {
@@ -175,7 +170,6 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     conversations,
     dailyUsage,
     refreshDailyUsage: fetchDailyUsage,
-    endRef,
     selectConversation,
     startNewConversation,
     clearHistory,

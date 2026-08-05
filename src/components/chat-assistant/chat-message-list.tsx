@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { ChatSuggestions } from './chat-suggestions';
 import { ChatMessageBubble } from './chat-message-bubble';
@@ -17,15 +17,28 @@ interface Props {
   loading: boolean;
   hasUserMessage: boolean;
   onSelectSuggestion: (suggestion: string) => void;
-  endRef: RefObject<HTMLDivElement | null>;
 }
 
-export function ChatMessageList({ messages, loading, hasUserMessage, onSelectSuggestion, endRef }: Props) {
+export function ChatMessageList({ messages, loading, hasUserMessage, onSelectSuggestion }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading, scrollToBottom]);
+
   return (
     <Box
+      ref={containerRef}
       sx={{
         flex: 1,
-        overflow: 'auto',
+        overflowY: 'auto',
+        overscrollBehavior: 'contain',
         px: 2,
         py: 2.5,
         display: 'flex',
@@ -41,8 +54,6 @@ export function ChatMessageList({ messages, loading, hasUserMessage, onSelectSug
       ))}
 
       {loading && <ChatTypingIndicator />}
-
-      <div ref={endRef} />
     </Box>
   );
 }
