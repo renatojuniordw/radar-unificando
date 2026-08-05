@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useChat, type UIMessage } from '@ai-sdk/react';
 import {
   type Conversation,
@@ -10,6 +10,13 @@ import {
   saveMessagesToServer,
 } from '@/lib/chat';
 import { browserStorage } from '@/lib/infrastructure/storage/browser-storage';
+
+export interface DailyUsage {
+  count: number;
+  limit: number;
+  remaining: number;
+  isDailyLimitReached: boolean;
+}
 
 interface UseChatConversationParams {
   userName?: string | null;
@@ -21,6 +28,12 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
   const [isLoaded, setIsLoaded] = useState(false);
   const [syncError, setSyncError] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [dailyUsage, setDailyUsage] = useState<DailyUsage>({
+    count: 0,
+    limit: 50,
+    remaining: 50,
+    isDailyLimitReached: false,
+  });
   const endRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status: chatStatus, setMessages } = useChat({
@@ -28,6 +41,18 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
   });
 
   const loading = chatStatus === 'submitted' || chatStatus === 'streaming';
+
+  const fetchDailyUsage = useCallback(async () => {
+    try {
+      const res = await fetch('/api/chat/usage');
+      if (res.ok) {
+        const data = await res.json();
+        setDailyUsage(data);
+      }
+    } catch {
+      // Ignorar erros de rede em background
+    }
+  }, []);
 
   // Carrega ou cria o chat id persistido (IndexedDB)
   useEffect(() => {
@@ -100,8 +125,17 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
   }
 
   useEffect(() => {
-    if (active) loadConversations();
-  }, [active]);
+    if (active) {
+      void loadConversations();
+      void fetchDailyUsage();
+    }
+  }, [active, fetchDailyUsage]);
+
+  useEffect(() => {
+    if (!loading) {
+      void fetchDailyUsage();
+    }
+  }, [loading, fetchDailyUsage]);
 
   function selectConversation(id: string) {
     if (id === chatId) return false;
@@ -139,6 +173,8 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     loading,
     syncError,
     conversations,
+    dailyUsage,
+    refreshDailyUsage: fetchDailyUsage,
     endRef,
     selectConversation,
     startNewConversation,

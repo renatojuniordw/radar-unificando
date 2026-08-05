@@ -42,15 +42,17 @@ export async function POST(req: NextRequest) {
 
   // Rate limiting diário por usuário (50 mensagens por dia)
   const dailyLimit = await checkRateLimit(session.user.id, 'chat_daily');
-  if (!dailyLimit.success) {
-    const retryAfterHours = Math.ceil(dailyLimit.msBeforeNext / (1000 * 60 * 60));
+  const dbDailyCount = await chatRepository.getDailyUserMessageCount(session.user.id);
+
+  if (!dailyLimit.success || dbDailyCount >= 50) {
+    const retryAfterHours = Math.ceil((dailyLimit.msBeforeNext || 3600000) / (1000 * 60 * 60));
     return new Response(
-      JSON.stringify({ error: `Limite diário de interações atingido (50 mensagens/dia). O limite será renovado em aproximadamente ${retryAfterHours} horas.` }),
+      JSON.stringify({ error: `Limite diário de interações atingido (50 mensagens/dia). O limite será renovado à meia-noite.` }),
       {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
-          'Retry-After': String(Math.ceil(dailyLimit.msBeforeNext / 1000)),
+          'Retry-After': String(Math.ceil((dailyLimit.msBeforeNext || 3600000) / 1000)),
         },
       }
     );

@@ -31,6 +31,7 @@ export function ChatAssistantUI() {
     loading,
     syncError,
     conversations,
+    dailyUsage,
     endRef,
     selectConversation,
     startNewConversation,
@@ -52,7 +53,7 @@ export function ChatAssistantUI() {
 
   // Detecção dos limites de conversa (25 mensagens) e limite diário (50 mensagens)
   const lastMessageText = messages.length > 0 ? getMessageText(messages[messages.length - 1]) : '';
-  const isDailyLimitReached = lastMessageText.includes('Limite diário de interações atingido');
+  const isDailyLimitReached = dailyUsage.isDailyLimitReached || lastMessageText.includes('Limite diário de interações atingido');
   const isThreadLimitReached = !isDailyLimitReached && (
     messages.length >= CHAT_THREAD_MESSAGE_LIMIT || lastMessageText.includes('limite de 25 mensagens')
   );
@@ -75,6 +76,7 @@ export function ChatAssistantUI() {
   }
 
   function handleNewConversation() {
+    if (isDailyLimitReached) return;
     startNewConversation();
     setSidebarOpen(false);
   }
@@ -136,6 +138,8 @@ export function ChatAssistantUI() {
         <ChatHeader
           loading={loading}
           messageCount={messages.length}
+          dailyCount={dailyUsage.count}
+          dailyLimit={dailyUsage.limit}
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
           onNewChat={() => setConfirmOpen(true)}

@@ -18,6 +18,7 @@ export interface IChatRepository {
   replaceMessages(userId: string, externalId: string, messages: ChatMessageData[]): Promise<void>;
   deleteChat(userId: string, externalId: string): Promise<void>;
   listChats(userId: string): Promise<ChatSummary[]>;
+  getDailyUserMessageCount(userId: string): Promise<number>;
 }
 
 function extractText(content: unknown): string {
@@ -80,5 +81,18 @@ export const chatRepository: IChatRepository = {
           createdAt: chat.createdAt,
         };
       });
+  },
+
+  async getDailyUserMessageCount(userId) {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    return prisma.chatMessage.count({
+      where: {
+        chat: { userId },
+        role: 'user',
+        createdAt: { gte: startOfDay },
+      },
+    });
   },
 };
