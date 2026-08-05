@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    exclude: ['e2e/**', 'node_modules/**', '.agents/**'],
+    exclude: ['e2e/**', 'node_modules/**', '.agents/**', 'src/__tests__/coverage/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],

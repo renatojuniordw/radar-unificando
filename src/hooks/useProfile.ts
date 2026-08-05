@@ -21,6 +21,12 @@ export interface ProfileData {
   fieldOverrides: Set<string>;
 }
 
+interface UploadJobResponse {
+  status: 'processing' | 'completed' | 'failed';
+  result?: UploadResponse;
+  error?: string;
+}
+
 interface UploadResponse {
   skills: string[];
   experience: number | null;
@@ -180,6 +186,43 @@ export function useProfile() {
     }
   }
 
+  /**
+   * Faz polling do status do job de upload até completar ou falhar.
+   * Retorna o resultado (UploadResponse) quando completo, ou null se o
+   * job falhou/timeout. Lança erro com a mensagem do servidor quando falha.
+   */
+  async function pollUploadJob(jobId: string): Promise<UploadResponse | null> {
+    const POLL_INTERVAL_MS = 2000;
+    const MAX_ATTEMPTS = 75; // ~150s máximo, cobre extrações lentas da LLM
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+
+      let statusRes: Response;
+      try {
+        statusRes = await fetch(`/api/upload/${jobId}`, { cache: 'no-store' });
+      } catch {
+        continue; // erro de rede transitório — tenta de novo
+      }
+
+      if (!statusRes.ok) {
+        const err = await statusRes.json().catch(() => null);
+        throw new Error(err?.error || 'Erro ao consultar o processamento');
+      }
+
+      const job: UploadJobResponse = await statusRes.json();
+      if (job.status === 'completed' && job.result) {
+        return job.result;
+      }
+      if (job.status === 'failed') {
+        throw new Error(job.error || 'Falha ao extrair skills via IA');
+      }
+      // status === 'processing' → continua o loop
+    }
+
+    return null;
+  }
+
   async function extractFromResume(input: File | string) {
     setExtracting(true);
     try {
@@ -193,31 +236,54 @@ export function useProfile() {
         formData.append('text', input);
       }
 
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      if (res.ok) {
-        const data: UploadResponse = await res.json();
-        setState(prev => {
-          const overrides = prev.fieldOverrides;
-          return {
-            ...prev,
-            skills: overrides.has('skills') ? prev.skills : data.skills || prev.skills,
-            seniority: overrides.has('seniority') ? prev.seniority : (data.seniority || prev.seniority),
-            experienceYears: overrides.has('experienceYears') ? prev.experienceYears : (data.experience || prev.experienceYears),
-            currentRole: overrides.has('currentRole') ? prev.currentRole : (data.currentRole || prev.currentRole),
-            area: overrides.has('area') ? prev.area : (data.area || prev.area),
-            education: overrides.has('education') ? prev.education : (data.education || prev.education),
-            resumeMarkdown: data.markdown || prev.resumeMarkdown,
-            resumeText: data.resumeText || prev.resumeText,
-            profileSource: 'linkedin',
-          };
-        });
-        const label = input instanceof File ? 'Currículo processado' : 'Skills extraídas do texto';
-        return { success: true, message: `${label}! ${data.count} skills encontradas` };
-      } else {
+      // Timeout explícito: a extração via LLM pode levar ~30-90s. Sem isso o usuário
+      // ficaria esperando para sempre se o servidor travar ou o nginx cortar a conexão.
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 120_000);
+
+      let res: Response;
+      try {
+        res = await fetch('/api/upload', { method: 'POST', body: formData, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+
+      if (!res.ok) {
         const err = await res.json();
         return { success: false, error: err.error || 'Erro ao processar' };
       }
-    } catch {
+
+      // Fluxo assíncrono: o POST retorna o jobId na hora e a extração roda em
+      // background. Fazemos polling do status até completar ou falhar.
+      const { jobId } = await res.json() as { jobId: string };
+
+      const data = await pollUploadJob(jobId);
+      if (!data) {
+        return { success: false, error: 'O processamento demorou demais. Tente novamente.' };
+      }
+
+      setState(prev => {
+        const overrides = prev.fieldOverrides;
+        return {
+          ...prev,
+          skills: overrides.has('skills') ? prev.skills : data.skills || prev.skills,
+          seniority: overrides.has('seniority') ? prev.seniority : (data.seniority || prev.seniority),
+          experienceYears: overrides.has('experienceYears') ? prev.experienceYears : (data.experience || prev.experienceYears),
+          currentRole: overrides.has('currentRole') ? prev.currentRole : (data.currentRole || prev.currentRole),
+          area: overrides.has('area') ? prev.area : (data.area || prev.area),
+          education: overrides.has('education') ? prev.education : (data.education || prev.education),
+          resumeMarkdown: data.markdown || prev.resumeMarkdown,
+          resumeText: data.resumeText || prev.resumeText,
+          profileSource: 'linkedin',
+        };
+      });
+      const label = input instanceof File ? 'Currículo processado' : 'Skills extraídas do texto';
+      return { success: true, message: `${label}! ${data.count} skills encontradas` };
+    } catch (err) {
+      const isTimeout = err instanceof DOMException && err.name === 'AbortError';
+      const knownError = err instanceof Error && err.message !== 'Failed to fetch';
+      if (isTimeout) return { success: false, error: 'O processamento demorou demais. Tente novamente.' };
+      if (knownError && err.message !== 'Erro de conexão') return { success: false, error: err.message };
       return { success: false, error: 'Erro de conexão' };
     } finally {
       setExtracting(false);

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
-import { profileRepository } from '@/lib/infrastructure/repositories';
 import { uploadLimiter } from '@/lib/infrastructure/security/rate-limiter';
-import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
 import { pdfToMarkdown, textToMarkdown } from '@/lib/core/parsing/pdf-to-markdown';
+import { uploadJobStore } from '@/lib/core/upload/upload-job-store';
+import { processUploadJob } from '@/lib/core/upload/upload-processor';
 
 export async function POST(req: NextRequest) {
   const { session, response } = await requireAuth();
@@ -35,6 +35,16 @@ export async function POST(req: NextRequest) {
       const buffer = Buffer.from(await file.arrayBuffer());
 
       if (file.name.endsWith('.pdf')) {
+        // Magic bytes: PDFs reais começam com "%PDF-" (5 bytes). Um arquivo apenas
+        // renomeado para .pdf falha aqui com mensagem clara em vez de erro confuso no parse.
+        const header = buffer.subarray(0, 5).toString('latin1');
+        if (header !== '%PDF-') {
+          return NextResponse.json(
+            { error: 'Arquivo inválido: não é um PDF válido. Formato aceito: PDF do LinkedIn.' },
+            { status: 400 }
+          );
+        }
+
         try {
           const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
           const data = new Uint8Array(buffer);
@@ -68,39 +78,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Texto muito curto. Cole o conteúdo do currículo.' }, { status: 400 });
     }
 
-    let extracted;
-    try {
-      extracted = await extractSkillsFromResume(markdown, traceId);
-    } catch (extractError) {
-      console.error('[upload] AI extraction failed:', extractError);
-      const msg = extractError instanceof Error ? extractError.message : 'Falha ao extrair skills via IA';
-      return NextResponse.json({ error: msg }, { status: 422 });
-    }
+    // Fluxo assíncrono: cria o job, dispara o processamento em background e
+    // responde na hora com o jobId. O cliente faz polling em GET /api/upload/[jobId].
+    // Isso elimina o 504 do nginx (a resposta não fica mais presa na chamada LLM).
+    const jobId = crypto.randomUUID();
+    uploadJobStore.create(jobId, session.user.id);
+    void processUploadJob(jobId, session.user.id, { rawText, markdown, traceId });
 
-    await profileRepository.upsert(session.user.id, {
-      resumeText: rawText,
-      resumeMarkdown: markdown,
-      skills: extracted.skills,
-      seniority: extracted.seniority || undefined,
-      experienceYears: extracted.experienceYears,
-      currentRole: extracted.currentRole || undefined,
-      area: extracted.area || undefined,
-      education: extracted.education,
-      profileSource: 'linkedin',
-      parsedData: { extractedAt: new Date().toISOString() },
-    });
-
-    return NextResponse.json({
-      skills: extracted.skills,
-      experience: extracted.experienceYears,
-      seniority: extracted.seniority,
-      currentRole: extracted.currentRole,
-      area: extracted.area,
-      education: extracted.education,
-      markdown,
-      resumeText: rawText,
-      count: extracted.skills.length,
-    });
+    return NextResponse.json({ jobId });
   } catch (error) {
     console.error('[upload] Error:', error);
     const message = error instanceof Error ? error.message : 'Erro ao processar upload';

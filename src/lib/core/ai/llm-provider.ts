@@ -29,10 +29,14 @@ export async function generate<T extends z.ZodType>(
   try {
     return await callLlm(schema, prompt, opts);
   } catch (err) {
-    // Some models (esp. reasoning models routed transparently) burn the whole
-    // token budget on hidden chain-of-thought and never reach the JSON answer.
-    // Retry once with more room and a stronger nudge before giving up.
-    if (err instanceof Error && err.message === 'JSON não encontrado na resposta') {
+    // Alguns modelos (esp. reasoning models roteados transparentemente) queimam
+    // todo o orçamento de tokens em chain-of-thought oculto e nunca chegam ao JSON.
+    // Retry uma vez com mais espaço e um nudge mais forte antes de desistir.
+    // Também retenta em timeout (AbortError) — provedores lentos podem estourar
+    // o AbortSignal.timeout em picos de carga, e um único retry costuma passar.
+    const isTimeout = err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError');
+    const isMissingJson = err instanceof Error && err.message === 'JSON não encontrado na resposta';
+    if (isMissingJson || isTimeout) {
       return await callLlm(
         schema,
         prompt +
