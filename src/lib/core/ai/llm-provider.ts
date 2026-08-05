@@ -37,7 +37,7 @@ export async function generate<T extends z.ZodType>(
         schema,
         prompt +
           '\n\nIMPORTANTE: não pense em voz alta nem explique seu raciocínio. Responda IMEDIATAMENTE apenas com o JSON, sem nenhum texto antes.',
-        { maxOutputTokens: (opts?.maxOutputTokens ?? 1500) * 2 },
+        { maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 3, 6000) },
       );
     }
     throw err;
