@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export function Footer() {
   return (
     <footer
@@ -131,30 +133,30 @@ export function Footer() {
           <nav aria-label="Rodapé">
             <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0, flexWrap: 'wrap' }}>
               <li>
-                <a
+                <Link
                   href="/doar"
                   style={{ color: '#ccff00', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                 >
                   APOIAR
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="/sobre"
                   style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
                   onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; }}
                 >
                   SOBRE
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="/termos"
                   style={{ color: '#ccff00', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                 >
                   TERMOS & PRIVACIDADE
-                </a>
+                </Link>
               </li>
             </ul>
           </nav>
