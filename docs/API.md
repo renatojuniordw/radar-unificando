@@ -71,7 +71,24 @@ curl -X POST http://localhost:11010/api/chat \
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/upload` | ✅ | Multipart `file` (PDF ≤ 5MB, ≤ 20 páginas) ou `text` (colado). Extrai skills e faz upsert do perfil. Rate limit: 10/hora |
+| POST | `/api/upload` | ✅ | Multipart `file` (PDF ≤ 5MB, ≤ 20 páginas) ou `text` (colado). Valida magic bytes `%PDF-` (rejeita arquivo renomeado). **Assíncrono**: retorna `{jobId}` na hora; a extração roda em background. Rate limit: 10/hora |
+| GET | `/api/upload/:jobId` | ✅ | Status do job de upload: `processing` / `completed` (com `result`) / `failed` (com `error`). 404 se não existir ou pertencer a outro usuário |
+
+**Fluxo assíncrono do upload:** o POST valida o arquivo, faz o parsing do PDF (rápido, ~3s) e responde imediatamente com `{jobId}`. A extração de skills via LLM roda em background e o cliente faz polling em `GET /api/upload/:jobId` a cada 2s até `completed`/`failed`. Isso elimina o 504 do nginx — a resposta HTTP não fica mais presa na chamada LLM (que pode levar 30-90s).
+
+**Cache por hash:** o mesmo currículo (mesmo conteúdo) não re-chama a LLM dentro de 1h — o resultado é servido do cache in-memory (`resume-extraction-cache.ts`).
+
+```bash
+# 1. Enviar o currículo (retorna jobId na hora)
+curl -X POST http://localhost:11010/api/upload \
+  -H 'Cookie: next-auth.session-token=<token>' \
+  -F 'file=@Profile.pdf'
+
+# 2. Polling do status
+curl http://localhost:11010/api/upload/<jobId> \
+  -H 'Cookie: next-auth.session-token=<token>'
+# → {"status":"completed","result":{"skills":[...],"count":22,...}}
+```
 
 ### Export
 

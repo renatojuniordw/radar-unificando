@@ -12,13 +12,15 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
         |
 API Layer (Route Handlers)
   ├── /api/pipeline (+ /stream, /:runId)
-  ├── /api/vagas · /api/profile · /api/upload
+  ├── /api/vagas · /api/profile · /api/upload (+ /:jobId)
   ├── /api/chat (+ /history, /conversations) · /api/auth/register · /api/health
   ├── /export (CSV/JSON)
   └── Auth.js v5 (NextAuth, credentials)
         |
 Application/Core Layer
   ├── core/pipeline/        → steps gupy/inhire/save/discovery + progress-emitter
+  ├── core/upload/          → upload-job-store (in-memory) + upload-processor (background)
+  ├── core/parsing/         → pdf-to-markdown + resume-extraction-cache (hash, TTL 1h)
   ├── core/matching/        → recommendation.ts (token overlap)
   ├── core/ai/              → skill-extractor, chat-tools, job-analyzer, cover-letter,
   │                           interview-questions, pii-redactor, llm-provider
@@ -57,6 +59,14 @@ Infrastructure Layer
 5. Resultados deduplicados (por link), cap 200, salvos no PostgreSQL
 6. Usuário visualiza vagas na tabela com filtros e export CSV/JSON
 7. Chat assistente analisa perfil vs vagas via ferramentas IA
+
+**Upload de currículo (assíncrono):**
+1. `POST /api/upload` valida (tamanho, magic bytes `%PDF-`) e faz o parsing do PDF
+2. Cria job in-memory (`upload-job-store`) e responde `{jobId}` imediatamente
+3. `upload-processor` roda em background: cache por hash → LLM extrai skills → upsert no profile
+4. Cliente faz polling em `GET /api/upload/:jobId` (2s) até `completed`/`failed`
+
+> Jobs de upload são in-memory (TTL 10min) — adequado ao app em container único, mesmo padrão do `ProgressEmitter` do pipeline.
 
 ## Persistência no Navegador
 

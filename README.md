@@ -46,6 +46,8 @@ docker compose up
 
 Abra [http://localhost:11010](http://localhost:11010)
 
+> **Portas locais (Docker):** app `11010`, PostgreSQL `11011`, Redis `11012` — configuradas para não conflitar com outros projetos na máquina (ex: medicamentos usa a 5432). Ajuste `DATABASE_URL` no `.env` conforme a porta do postgres.
+
 ## Desenvolvimento
 
 ```bash
@@ -53,12 +55,18 @@ npm install
 npm run dev
 ```
 
+> **Atenção:** `next build` e `next dev` compartilham o diretório `.next` por padrão — rodar um build enquanto o dev está ativo corrompe o cache do dev (500 em tudo). Para validar um build sem derrubar o dev, use um diretório separado:
+> ```bash
+> NEXT_DIST_DIR=.next-check npm run build
+> ```
+
 ## Scripts
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run dev` | Dev server |
+| `npm run dev` | Dev server (porta 11010) |
 | `npm run build` | Build produção |
+| `NEXT_DIST_DIR=.next-check npm run build` | Build de validação (não toca no `.next` do dev) |
 | `npm run lint` | Lint |
 | `npm run test` | Testes Vitest |
 | `npm run test:coverage` | Testes com cobertura |
@@ -85,7 +93,7 @@ src/
   contexts/        → Chat assistant context
   hooks/           → Custom hooks (useJobSearch, useProfile)
   lib/
-    core/          → Domínio (matching, pipeline, scrapers, AI)
+    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI)
     infrastructure/ → Infra (db, repositories, storage, security, ui)
 ```
 

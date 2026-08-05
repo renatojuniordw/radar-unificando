@@ -2,6 +2,8 @@
 
 ## PostgreSQL + Prisma ORM
 
+> **Porta local (Docker):** PostgreSQL exposto em `127.0.0.1:11011` (Redis em `11012`, app em `11010`) — escolhidas para não conflitar com outros projetos na máquina. Ajuste `DATABASE_URL` no `.env` conforme a porta.
+
 ### Schema (12 models)
 
 | Model | Tabela | Descrição |

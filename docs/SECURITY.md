@@ -11,6 +11,7 @@
 | Auth | Auth.js v5 com JWT + bcrypt (cost=12) |
 | Docker | `no-new-privileges`, resource limits, non-root user |
 | SQL Injection | Prevenido pelo Prisma ORM (queries parametrizadas) |
+| Validação de Upload | `api/upload/route.ts` — magic bytes `%PDF-` (rejeita arquivo renomeado), tamanho ≤ 5MB, arquivo vazio |
 | Prompt Injection | `api/chat/route.ts` — sanitização de input + detecção de padrões + hardening do prompt |
 | Validação de Tools | `chat-tools.ts` — Zod schema com limites de tamanho e regex |
 

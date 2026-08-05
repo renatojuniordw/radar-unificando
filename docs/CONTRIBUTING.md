@@ -22,6 +22,9 @@ npx prisma db seed
 npm run dev
 ```
 
+> **Portas locais (Docker):** app `11010`, PostgreSQL `11011`, Redis `11012` — ajuste `DATABASE_URL` no `.env` conforme a porta do postgres.
+> **Build sem derrubar o dev:** `NEXT_DIST_DIR=.next-check npm run build` (o `next build` padrão compartilha o `.next` com o dev e corrompe o cache).
+
 ## Branch Strategy
 
 ```

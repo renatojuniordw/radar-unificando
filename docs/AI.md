@@ -15,13 +15,24 @@
 
 ```
 Upload PDF (LinkedIn export) ou texto colado
+  → valida magic bytes %PDF- (rejeita arquivo renomeado)
   → pdfjs-dist extrai texto raw (ou texto direto)
-  → LLM extrai: skills, experienceYears, seniority, education, currentRole, area
-  → Salva no Profile: resumeText, resumeMarkdown, skills, seniority,
+  → cria job de upload (assíncrono) → responde {jobId} na hora
+  → background: LLM extrai skills, experienceYears, seniority, education, currentRole, area
+  → cache por hash (1h) evita re-chamar a LLM para o mesmo currículo
+  → salva no Profile: resumeText, resumeMarkdown, skills, seniority,
     experienceYears, currentRole, area, education, profileSource=linkedin
+  → cliente faz polling em GET /api/upload/:jobId até completed/failed
 ```
 
 Limite de input: `MAX_RESUME_CHARS = 12000`.
+`maxOutputTokens` da extração: **2500** (orçamento menor força o modelo a responder antes de narrar raciocínio, reduzindo a latência).
+
+### Robustez do LLM (`llm-provider.ts`)
+
+- **Retry automático** em `JSON não encontrado na resposta` **e** em timeout (`AbortError`/`TimeoutError`): uma segunda chamada com mais tokens (`*2`, mín. 4000) e um nudge mais forte ("responda IMEDIATAMENTE apenas com o JSON").
+- **Timeout**: `LLM_TIMEOUT_MS = 120_000` via `AbortSignal.timeout`.
+- **Cache**: `resume-extraction-cache.ts` — SHA-256 do markdown, TTL 1h, máx. 200 entradas in-memory.
 
 ### Campos Extraídos do Currículo
 
