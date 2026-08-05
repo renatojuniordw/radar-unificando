@@ -84,7 +84,9 @@ services:
     networks:
       - internal
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:11010/api/health"]
+      # Usa $HOSTNAME (IP do container) em vez de localhost: o Next.js standalone
+      # faz bind apenas no IP do container quando HOSTNAME está setada no Docker.
+      test: ["CMD-SHELL", "wget -qO- http://$$HOSTNAME:11010/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
