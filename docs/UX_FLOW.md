@@ -99,3 +99,15 @@ Estado completo:
 | Chat assistente | "Digitando..." | Mensagem streaming | Chips de sugestão | Snackbar |
 | Export CSV | Btn desabilitado | Download arquivo | — | Snackbar |
 | Upload currículo | "Extraindo skills..." | Dados extraídos | — | "Não foi possível ler" |
+
+## Limites do Chat (UX)
+
+- **Header do chat** mostra três indicadores em tokens (formato `4,2k/16k`):
+  - **Contexto** — tokens enviados à IA na conversa (janela real). Aviso (warning) em 80% do teto; dica para iniciar novo chat.
+  - **Hoje** — consumo diário (renova à meia-noite). Tooltip também mostra interações (`X/50`).
+  - **Mês** — consumo mensal (renova dia 1º).
+- **Estados de bloqueio** (input desabilitado + placeholder + banner):
+  - Thread de 25 mensagens → `ThreadLimitBanner` ("Inicie um novo chat").
+  - 50 interações/dia → `DailyLimitBanner` (renova à meia-noite).
+  - Teto de tokens (429 `TOKEN_LIMIT_REACHED`) → `TokenLimitBanner` (renova meia-noite/dia 1º, link para /termos).
+- **429 "resposta em andamento"**: lock de concorrência — mensagem clara para aguardar o término da resposta atual.

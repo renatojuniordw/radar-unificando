@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
+import { computeResumeHash } from '@/lib/core/upload/resume-hash';
 
 export async function GET() {
   const { session, response } = await requireAuth();
@@ -16,6 +17,8 @@ export async function PUT(req: NextRequest) {
 
   try {
     const data = await req.json();
+    const resumeText = data.resumeText || null;
+    const resumeMarkdown = data.resumeMarkdown || null;
     await profileRepository.upsert(session.user.id, {
       skills: data.skills || [],
       experienceYears: data.experienceYears || null,
@@ -23,8 +26,9 @@ export async function PUT(req: NextRequest) {
       currentRole: data.currentRole || null,
       area: data.area || null,
       education: data.education || [],
-      resumeText: data.resumeText || null,
-      resumeMarkdown: data.resumeMarkdown || null,
+      resumeText,
+      resumeMarkdown,
+      resumeHash: computeResumeHash(resumeText, resumeMarkdown),
       profileSource: data.profileSource || undefined,
     });
 

@@ -3,7 +3,7 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 const baseURL = process.env.AI_BASE_URL || 'https://api.openai.com/v1';
 const apiKey = process.env.AI_API_KEY || '';
-const modelName = process.env.AI_MODEL || 'deepseek-v4-flash';
+const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
 
 export const LLM_TIMEOUT_MS = 120_000;
 

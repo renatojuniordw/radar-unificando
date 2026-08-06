@@ -80,7 +80,28 @@ export function DailyLimitBanner() {
       }}
     >
       <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.dark' }}>
-        Limite diário de interações atingido (50 mensagens/dia). O limite será renovado em breve.
+        Limite diário de interações atingido (50 mensagens/dia). O limite será renovado à meia-noite.
+      </Typography>
+    </Box>
+  );
+}
+
+export function TokenLimitBanner() {
+  return (
+    <Box
+      sx={{
+        p: 2,
+        bgcolor: 'error.50',
+        borderTop: '1px solid',
+        borderColor: 'error.light',
+        textAlign: 'center',
+      }}
+    >
+      <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.dark' }}>
+        Limite diário de consumo de IA atingido. Os limites renovam à meia-noite (diário) e no dia 1º do mês (mensal).{' '}
+        <a href="/termos" style={{ color: 'inherit' }}>
+          Saiba mais
+        </a>
       </Typography>
     </Box>
   );

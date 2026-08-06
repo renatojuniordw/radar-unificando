@@ -1,9 +1,11 @@
 import { NextRequest } from 'next/server';
+import { createHash } from 'node:crypto';
 import { streamText, stepCountIs, convertToModelMessages, type UIMessage } from 'ai';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { chatLlm } from '@/lib/core/ai/llm-provider';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
-import { chatRepository } from '@/lib/infrastructure/repositories';
+import { chatRepository, profileRepository } from '@/lib/infrastructure/repositories';
+import { acquireChatLock, releaseChatLock } from '@/lib/infrastructure/redis/chat-lock';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -22,6 +24,7 @@ export async function POST(req: NextRequest) {
   
   // Rate limiting por minuto (10 requisições/min por usuário+IP)
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+  const ipHash = createHash('sha256').update(ip).digest('hex');
   const rateLimitKey = `${session.user.id}:${ip.split(',')[0].trim()}`;
   const { success, msBeforeNext, remainingPoints } = await checkRateLimit(rateLimitKey, 'chat');
   
@@ -54,6 +57,48 @@ export async function POST(req: NextRequest) {
           'Retry-After': String(Math.ceil((dailyLimit.msBeforeNext || 3600000) / 1000)),
         },
       }
+    );
+  }
+
+  // Concorrência: apenas 1 resposta em andamento por usuário
+  const lockAcquired = await acquireChatLock(session.user.id);
+  if (!lockAcquired) {
+    return new Response(
+      JSON.stringify({ error: 'Você já tem uma resposta em andamento. Aguarde ela terminar.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Tetos de tokens (diário + mensal) — soma do usuário + contas com o mesmo currículo (anti multi-conta) + teto por IP
+  const profile = await profileRepository.findByUserId(session.user.id);
+  const usageGroup = await profileRepository.findUserIdsByResumeHash(profile?.resumeHash ?? null, session.user.id);
+
+  const startDay = new Date();
+  startDay.setHours(0, 0, 0, 0);
+  const startMonth = new Date(startDay.getFullYear(), startDay.getMonth(), 1);
+
+  const [todayTokens, monthTokens, ipTokens] = await Promise.all([
+    chatRepository.sumTokensSince(usageGroup, startDay),
+    chatRepository.sumTokensSince(usageGroup, startMonth),
+    chatRepository.sumTokensSinceByIp(ipHash, startDay),
+  ]);
+
+  const DAILY_TOKEN_LIMIT = Number(process.env.DAILY_TOKEN_LIMIT ?? 100000);
+  const MONTHLY_TOKEN_LIMIT = Number(process.env.MONTHLY_TOKEN_LIMIT ?? 2000000);
+  const IP_DAILY_TOKEN_LIMIT = Number(process.env.IP_DAILY_TOKEN_LIMIT ?? 300000);
+
+  if (
+    todayTokens.totalTokens >= DAILY_TOKEN_LIMIT ||
+    monthTokens.totalTokens >= MONTHLY_TOKEN_LIMIT ||
+    ipTokens.totalTokens >= IP_DAILY_TOKEN_LIMIT
+  ) {
+    await releaseChatLock(session.user.id);
+    return new Response(
+      JSON.stringify({
+        error: 'Limite diário de consumo de IA atingido. Os limites renovam à meia-noite (diário) e no dia 1º do mês (mensal).',
+        code: 'TOKEN_LIMIT_REACHED',
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
@@ -109,19 +154,49 @@ export async function POST(req: NextRequest) {
       tools: createChatTools(session.user.id),
       stopWhen: stepCountIs(10),
       system: CHAT_SYSTEM_PROMPT,
+      maxOutputTokens: Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2000),
       onFinish: async (event: {
         text?: string;
         finishReason: unknown;
         steps?: { toolCalls?: { toolName: string }[] }[];
+        usage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number };
       }) => {
+        const usage = {
+          promptTokens: event.usage?.promptTokens ?? 0,
+          completionTokens: event.usage?.completionTokens ?? 0,
+          totalTokens: event.usage?.totalTokens ?? 0,
+        };
+
+        // Custo estimado (preços gpt-4o-mini em USD por 1M tokens; ajustáveis por env)
+        const INPUT_PRICE_PER_1M = Number(process.env.AI_INPUT_PRICE_PER_1M ?? 0.15);
+        const OUTPUT_PRICE_PER_1M = Number(process.env.AI_OUTPUT_PRICE_PER_1M ?? 0.6);
+        const costUsd =
+          (usage.promptTokens / 1_000_000) * INPUT_PRICE_PER_1M +
+          (usage.completionTokens / 1_000_000) * OUTPUT_PRICE_PER_1M;
+
         logAiEvent('chat_interaction', {
           traceId,
           messageCount: messages.length,
           textLength: event.text?.length || 0,
           finishReason: event.finishReason,
           toolCalls: event.steps?.flatMap((s) => s.toolCalls?.map((t) => t.toolName) || []),
+          promptTokens: usage.promptTokens,
+          completionTokens: usage.completionTokens,
+          totalTokens: usage.totalTokens,
+          estimatedCostUsd: Number(costUsd.toFixed(5)),
           success: true,
         });
+
+        // Persistência do uso (fire-and-forget; nunca derruba o stream)
+        try {
+          await chatRepository.recordUsage(session.user.id, {
+            promptTokens: usage.promptTokens,
+            completionTokens: usage.completionTokens,
+            ipHash,
+          });
+        } catch (err) {
+          console.error('[chat] Erro ao registrar usage:', err);
+        }
 
         // Persistência assíncrona do histórico se a IA gerou texto
         if (event.text && Array.isArray(messages)) {
@@ -135,9 +210,12 @@ export async function POST(req: NextRequest) {
             console.error('[chat] Erro ao auto-salvar histórico:', err);
           }
         }
+
+        await releaseChatLock(session.user.id);
       },
       onError: ({ error }: { error: unknown }) => {
         console.error('[chat] streamText onError:', error);
+        void releaseChatLock(session.user.id);
       },
     });
 
@@ -156,6 +234,7 @@ export async function POST(req: NextRequest) {
       error: message,
     });
     console.error('[chat] Error:', error);
+    await releaseChatLock(session.user.id);
     return new Response(JSON.stringify({ error: 'Erro ao processar sua solicitação.' }), { status: 500 });
   }
 }

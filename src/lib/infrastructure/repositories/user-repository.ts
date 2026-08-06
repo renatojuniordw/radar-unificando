@@ -25,6 +25,7 @@ type ProfileUpsertData = Omit<Prisma.ProfileUncheckedCreateInput, 'userId'>;
 export interface IProfileRepository {
   findByUserId(userId: string): Promise<Profile | null>;
   upsert(userId: string, data: ProfileUpsertData): Promise<void>;
+  findUserIdsByResumeHash(resumeHash: string | null, excludeUserId: string): Promise<string[]>;
 }
 
 export const profileRepository: IProfileRepository = {
@@ -37,5 +38,14 @@ export const profileRepository: IProfileRepository = {
       create: { userId, ...data },
       update: data,
     });
+  },
+  async findUserIdsByResumeHash(resumeHash, excludeUserId) {
+    if (!resumeHash) return [excludeUserId];
+    const profiles = await prisma.profile.findMany({
+      where: { resumeHash },
+      select: { userId: true },
+    });
+    const ids = profiles.map((p) => p.userId);
+    return ids.length > 0 ? ids : [excludeUserId];
   },
 };

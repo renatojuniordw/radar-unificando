@@ -10,6 +10,34 @@ import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
 
+const MAX_SEARCHES_PER_MESSAGE = 2;
+const JOB_DESCRIPTION_LIMIT = 800;
+
+export interface JobLike {
+  title: string;
+  company: string;
+  type: string;
+  location: string;
+  link: string;
+  postedAt?: string | null;
+  description?: string | null;
+}
+
+/** Transforma uma vaga em resultado de tool: trunca a descrição e embrulha em conteúdo não confiável. */
+export function formatJobResult(j: JobLike) {
+  return {
+    titulo: j.title,
+    empresa: j.company,
+    tipo: j.type,
+    local: j.location,
+    link: j.link,
+    publicado: j.postedAt || null,
+    descricao: j.description
+      ? `<untrusted_content>\n${j.description.slice(0, JOB_DESCRIPTION_LIMIT)}\n</untrusted_content>`
+      : '',
+  };
+}
+
 async function analyzeWithCache(
   userId: string,
   profile: Profile,
@@ -54,6 +82,8 @@ async function analyzeWithCache(
 }
 
 export function createChatTools(userId: string) {
+  let searchCount = 0;
+
   return {
     search_jobs: tool({
       description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição e a data de publicação de cada vaga (quando disponível) — use a descrição diretamente em analyze_job_fit, sem precisar de outra busca, e mencione/priorize vagas mais recentes quando isso for relevante para a pergunta do usuário.',
@@ -63,22 +93,16 @@ export function createChatTools(userId: string) {
           .max(200, 'Query muito longa')
           .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Caracteres não permitidos na query')
           .describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
-        limit: z.number().min(1).max(100).optional().default(20).describe('Máximo de resultados'),
+        limit: z.number().min(1).max(20).optional().default(10).describe('Máximo de resultados (até 20)'),
       }),
       execute: async ({ query, limit }: { query: string; limit?: number }) => {
+        searchCount++;
+        if (searchCount > MAX_SEARCHES_PER_MESSAGE) {
+          return { error: 'Limite de 2 buscas por mensagem atingido. Reformule o pedido.' };
+        }
         console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
-        const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 20, 100));
-        return jobs.map(j => ({
-          titulo: j.title,
-          empresa: j.company,
-          tipo: j.type,
-          local: j.location,
-          link: j.link,
-          publicado: j.postedAt || null,
-          descricao: j.description
-            ? `<untrusted_content>\n${j.description.slice(0, 1200)}\n</untrusted_content>`
-            : '',
-        }));
+        const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 10, 20));
+        return jobs.map(formatJobResult);
       },
     }),
 

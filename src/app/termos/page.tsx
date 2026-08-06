@@ -202,17 +202,29 @@ export default function TermosPage() {
                 fontFamily: 'ui-monospace, monospace',
               }}
             >
-              3. Limites de Uso do Assistente de IA
+              3. Limites de Uso do Assistente de IA (uso justo)
             </h2>
             <p>
-              Para assegurar a disponibilidade, performance e equidade entre os usuários:
+              Para assegurar a disponibilidade, performance e equidade entre os usuários — e para que o serviço continue gratuito e aberto:
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>
                 <strong>Limite por Conversa:</strong> Cada sessão de chat pode acumular no máximo <strong>25 mensagens</strong>. Ao atingir o limite, a conversa é congelada e o usuário deve iniciar um novo tópico para manter a resposta rápida e objetiva.
               </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Cota de Interações:</strong> Cada usuário possui um limite de <strong>50 mensagens a cada 24 horas</strong>, renovado à meia-noite.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Cota de Tokens de IA:</strong> O consumo de inteligência artificial é medido em tokens (a unidade de processamento do modelo). Cada conta possui um teto diário de <strong>100 mil tokens</strong> (renova à meia-noite) e um teto mensal de <strong>2 milhões de tokens</strong> (renova no dia 1º de cada mês). O header do chat mostra o consumo em tempo real.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Limites por Pessoa, não por Conta:</strong> Os limites acima valem por pessoa. Contas que carregam o mesmo currículo são tratadas como uma única pessoa e <strong>compartilham o mesmo teto</strong>. Também há um teto diário por endereço de IP (3x o individual) e um limite de <strong>3 cadastros por IP a cada 24 horas</strong>, para coibir a criação em massa de contas.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Taxa de Mensagens:</strong> Para evitar sobrecarga, há um limite de <strong>10 mensagens por minuto</strong> por usuário.
+              </li>
               <li style={{ marginBottom: 0 }}>
-                <strong>Cota Diária:</strong> Cada usuário possui um limite de <strong>50 mensagens a cada 24 horas</strong>.
+                <strong>Uso Responsável:</strong> Tentativas de burlar os limites (múltiplas contas, automação, abuso de prompts) podem levar à suspensão do acesso, preservando o serviço para todos.
               </li>
             </ul>
           </section>

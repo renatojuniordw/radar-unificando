@@ -27,7 +27,12 @@ Dois sistemas:
 | Upload currículo (`/api/upload`) | 1 hora | 10 | in-memory | user_id / IP |
 | Chat (`/api/chat`) | 1 min | 10 | Redis | user_id + IP |
 | Chat diário (`/api/chat`) | 24 h | 50 | Redis | user_id + IP |
+| Chat tokens/dia (`/api/chat`) | 24 h | 100k tokens | banco (`chat_usage`) | user_id + grupo por `resume_hash` |
+| Chat tokens/mês (`/api/chat`) | mês calendário | 2M tokens | banco (`chat_usage`) | user_id + grupo por `resume_hash` |
+| Chat tokens/IP/dia (`/api/chat`) | 24 h | 300k tokens | banco (`chat_usage.ip_hash`) | hash do IP |
+| Chat concorrência (`/api/chat`) | — | 1 resposta ativa | Redis (`chat_lock`) | user_id |
 | Registro (`/api/auth/register`) | 1 min | 5 | Redis | IP |
+| Registro (`/api/auth/register`) | 24 h | 3 cadastros | Redis | IP |
 
 > `loginLimiter`, `apiLimiter` e `exportLimiter` estão definidos em `rate-limiter.ts`
 > mas **não são usados** na produção hoje.
@@ -36,6 +41,13 @@ Dois sistemas:
 
 - **Thread**: máximo de 25 mensagens (`MAX_THREAD_MESSAGES`) → 400 `THREAD_LIMIT_REACHED`.
 - **Contexto**: janela deslizante de 15 mensagens (`MAX_CONTEXT_MESSAGES`) enviadas ao LLM.
+- **Tokens**: o `usage` real do provider é persistido em `chat_usage` e os tetos acima são verificados antes de cada chamada (429 `TOKEN_LIMIT_REACHED`). O header mostra Contexto/Hoje/Mês em tokens.
+
+## Anti multi-conta
+
+- **Limite de criação**: 3 cadastros por IP/dia (`register_daily`).
+- **Hash de currículo**: `Profile.resume_hash` (SHA-256 do texto do currículo) — contas com o mesmo currículo **compartilham o teto de tokens** (a soma do grupo vale para todas).
+- **Teto por IP**: 3x o individual (300k/dia) via `chat_usage.ip_hash` (hash do IP, LGPD-safe).
 
 ## Redação de PII (LGPD)
 
@@ -48,12 +60,14 @@ copiar da UI. O chat exibe badge "🔒 LGPD Sanitizado".
 Aplicada no `POST /api/chat` (`src/app/api/chat/route.ts`):
 
 1. **Sanitização de input**: mensagens truncadas em 2000 chars, tags HTML (`<>`) removidas
-2. **Detecção de padrões suspeitos**: regex para tentativas de jailbreak (`ignore instructions`, `system prompt`, `reveal instructions`, `bypass rules`). Gera log `[AI_LOG] suspicious_activity`
+2. **Detecção de padrões suspeitos**: regex para tentativas de jailbreak em PT e EN (`ignore instructions`, `system prompt`, `you are now`, `act as`, `developer mode`, etc. — `src/lib/core/ai/chat-guard.ts`). Gera log `[AI_LOG] suspicious_activity`
 3. **Hardening do system prompt**: seção `SEGURANÇA E LIMITES` que proíbe revelar instruções internas, executar bypass e desviar do foco
 4. **Validação de inputs das tools** via Zod (`src/lib/core/ai/chat-tools.ts`):
    - `search_jobs.query`: 2-200 chars, regex `[a-zA-Z0-9\s\-_.]`
+   - `search_jobs`: máx 2 chamadas por mensagem (enforcement no closure do `createChatTools`)
    - `analyze_job_fit.jobTitle`: 1-200 chars
    - `analyze_job_fit.jobDescription`: 10-5000 chars
+5. **Dados externos como dados**: descrições de vaga são truncadas em 800 chars e embrulhadas em `<untrusted_content>...</untrusted_content>` — o system prompt instrui tratá-las como conteúdo, nunca como comando.
 
 ## Variáveis de Ambiente Obrigatórias
 

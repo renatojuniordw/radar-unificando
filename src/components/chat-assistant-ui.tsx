@@ -15,7 +15,7 @@ import { ChatMessageList } from '@/components/chat-assistant/chat-message-list';
 import { ChatQuickActions } from '@/components/chat-assistant/chat-quick-actions';
 import { ChatInput } from '@/components/chat-assistant/chat-input';
 import { ChatSuggestedReplies } from '@/components/chat-assistant/chat-suggested-replies';
-import { SyncErrorBanner, ThreadLimitBanner, DailyLimitBanner } from '@/components/chat-assistant/chat-limit-banner';
+import { SyncErrorBanner, ThreadLimitBanner, DailyLimitBanner, TokenLimitBanner } from '@/components/chat-assistant/chat-limit-banner';
 
 export function ChatAssistantUI() {
   const { data: session, status } = useSession();
@@ -52,13 +52,17 @@ export function ChatAssistantUI() {
   // Sem sessão → não renderiza FAB nem drawer
   if (!session) return null;
 
-  // Detecção dos limites de conversa (25 mensagens) e limite diário (50 mensagens)
+  // Detecção dos limites de conversa (25 mensagens), limite diário (50 mensagens) e teto de tokens
   const lastMessageText = messages.length > 0 ? getMessageText(messages[messages.length - 1]) : '';
   const isDailyLimitReached = dailyUsage.isDailyLimitReached || lastMessageText.includes('Limite diário de interações atingido');
-  const isThreadLimitReached = !isDailyLimitReached && (
+  const isTokenLimitReached =
+    dailyUsage.isTokenLimitReached ||
+    lastMessageText.includes('Limite diário de consumo de IA atingido') ||
+    lastMessageText.includes('TOKEN_LIMIT_REACHED');
+  const isThreadLimitReached = !isDailyLimitReached && !isTokenLimitReached && (
     messages.length >= CHAT_THREAD_MESSAGE_LIMIT || lastMessageText.includes('limite de 25 mensagens')
   );
-  const inputDisabled = loading || isThreadLimitReached || isDailyLimitReached;
+  const inputDisabled = loading || isThreadLimitReached || isDailyLimitReached || isTokenLimitReached;
   const hasUserMessage = messages.some((m) => m.role === 'user');
 
   function handleSend() {
@@ -87,7 +91,9 @@ export function ChatAssistantUI() {
     await clearHistory();
   }
 
-  const inputPlaceholder = isDailyLimitReached
+  const inputPlaceholder = isTokenLimitReached
+    ? 'Limite diário de consumo atingido...'
+    : isDailyLimitReached
     ? 'Limite diário atingido...'
     : isThreadLimitReached
     ? 'Limite desta conversa atingido. Inicie um novo chat.'
@@ -143,6 +149,12 @@ export function ChatAssistantUI() {
           messageCount={messages.length}
           dailyCount={dailyUsage.count}
           dailyLimit={dailyUsage.limit}
+          contextTokens={dailyUsage.contextTokens ?? 0}
+          dailyTokens={dailyUsage.dailyTokens}
+          dailyTokenLimit={dailyUsage.dailyTokenLimit}
+          monthlyTokens={dailyUsage.monthlyTokens}
+          monthlyTokenLimit={dailyUsage.monthlyTokenLimit}
+          isTokenLimitReached={dailyUsage.isTokenLimitReached}
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
           onNewChat={() => setConfirmOpen(true)}
@@ -171,7 +183,7 @@ export function ChatAssistantUI() {
               onRetry={reload}
             />
 
-            {!hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (
+            {!hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && !isTokenLimitReached && (
               <ChatQuickActions loading={loading} onSelect={(prompt) => sendMessage({ text: prompt })} />
             )}
 
@@ -180,8 +192,9 @@ export function ChatAssistantUI() {
             )}
 
             {isDailyLimitReached && <DailyLimitBanner />}
+            {isTokenLimitReached && !isDailyLimitReached && <TokenLimitBanner />}
 
-            {hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && (
+            {hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && !isTokenLimitReached && (
               <ChatSuggestedReplies
                 lastMessageText={lastMessageText}
                 loading={loading}
