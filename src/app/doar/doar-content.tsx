@@ -141,6 +141,19 @@ export default function DoarContent() {
             {copied ? "Código copiado!" : "Copiar código PIX"}
           </Button>
         </Box>
+
+        <Typography variant="body2" sx={{ color: "#64748b", textAlign: "center", mt: 5 }}>
+          Custos transparentes? Veja o{" "}
+          <a
+            href="https://github.com/renatobezerra/radar-unificando/blob/main/COSTS.md"
+            style={{ color: "#ccff00" }}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            COSTS.md
+          </a>
+          .
+        </Typography>
       </Container>
     </Box>
   );
