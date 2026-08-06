@@ -60,9 +60,15 @@ describe('Middleware', () => {
   });
 
   it('should_allow_public_routes_without_authentication', async () => {
-    const publicPaths = ['/', '/login', '/register', '/api/auth/session'];
+    const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/api/auth/session'];
     for (const path of publicPaths) {
-      const isPublic = path === '/' || path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth');
+      const isPublic =
+        path === '/' ||
+        path.startsWith('/login') ||
+        path.startsWith('/register') ||
+        path.startsWith('/forgot-password') ||
+        path.startsWith('/reset-password') ||
+        path.startsWith('/api/auth');
       expect(isPublic).toBe(true);
     }
   });

@@ -18,6 +18,8 @@ Base URL local: `http://localhost:11010`.
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
 | POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limit: 5/min (Redis). 409 em e-mail duplicado |
+| POST | `/api/auth/forgot-password` | ❌ | Solicitar link de recuperação (`{email}`). Sempre `{success:true}` (anti-enumeração). Envia e-mail via SMTP ou loga no console em dev. Rate limit: 5/min |
+| POST | `/api/auth/reset-password` | ❌ | Redefinir senha (`{token, password}`). 400 se link inválido/expirado. Rate limit: 5/min |
 | POST | `/api/auth/callback/credentials` | ❌ | Login (email, password) — rota do NextAuth |
 | GET | `/api/auth/session` | ❌ | Obter sessão atual — rota do NextAuth |
 | GET/POST | `/api/auth/[...nextauth]` | ❌ | Handlers do NextAuth |

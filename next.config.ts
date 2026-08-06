@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   // do dev (routes-manifest.json some -> 500 em tudo). Para validar builds sem
   // derrubar o dev: NEXT_DIST_DIR=.next-check npm run build
   distDir: process.env.NEXT_DIST_DIR || '.next',
-  serverExternalPackages: ['@prisma/client', 'pdfjs-dist', 'pg', '@prisma/adapter-pg'],
+  serverExternalPackages: ['@prisma/client', 'pdfjs-dist', 'pg', '@prisma/adapter-pg', 'nodemailer'],
   experimental: {
     optimizePackageImports: [
       '@mui/material',

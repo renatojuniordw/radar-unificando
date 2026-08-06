@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { passwordSchema } from '@/lib/core/auth/password-schema';
-
 import { checkRateLimit } from '@/lib/rate-limit';
+import { generatePasswordResetToken } from '@/lib/core/auth/password-reset-token';
+import { sendPasswordResetEmail } from '@/lib/infrastructure/email/email-service';
 
-const registerSchema = z.object({
-  name: z.string().trim().max(80).optional().or(z.literal('')),
+const forgotPasswordSchema = z.object({
   email: z.string({ message: 'Email é obrigatório' }).trim().email('Email inválido'),
-  password: passwordSchema,
 });
 
 export async function POST(req: NextRequest) {
@@ -19,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!success) {
     const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
     return NextResponse.json(
-      { error: `Muitas tentativas de cadastro. Aguarde ${retryAfterSeconds} segundos.` },
+      { error: `Muitas tentativas. Aguarde ${retryAfterSeconds} segundos.` },
       {
         status: 429,
         headers: {
@@ -30,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const parsed = registerSchema.safeParse(await req.json());
+    const parsed = forgotPasswordSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
@@ -38,26 +35,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, password } = parsed.data;
+    const { email } = parsed.data;
+    const user = await userRepository.findByEmail(email);
 
-    const existing = await userRepository.findByEmail(email);
-    if (existing) {
-      return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 });
+    // Anti-enumeração: resposta idêntica independentemente de a conta existir.
+    if (user) {
+      const { token, hash, expiresAt } = generatePasswordResetToken();
+      await userRepository.setResetToken(user.id, hash, expiresAt);
+
+      const base = process.env.AUTH_URL || new URL(req.url).origin;
+      await sendPasswordResetEmail(user.email, `${base}/reset-password?token=${token}`);
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    await userRepository.create({
-      email,
-      passwordHash,
-      name: name || null,
-    });
-
-    return NextResponse.json({ success: true }, { status: 201 });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[register] Error:', error);
+    console.error('[forgot-password] Error:', error);
     return NextResponse.json(
-      { error: 'Erro ao criar conta' },
+      { error: 'Erro ao processar a solicitação' },
       { status: 500 }
     );
   }

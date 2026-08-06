@@ -93,7 +93,9 @@ Drawer lateral direito com FAB. Regras aplicadas:
 | Sombras | Derivadas de `rgba(2, 6, 23, …)` (primary), nunca azul |
 | Espaçamento mensagens | `mb: 2` entre bolhas |
 | Input | `TextareaAutosize` (auto-grow, máx. 6 linhas, Shift+Enter = quebra) |
-| Ações header | "+ Nova Conversa" (confirma via `ConfirmDialog`), "Fechar" |
+| Header (identidade) | Avatar + nome + status (ponto verde; "Digitando..." ao carregar) |
+| Header (cotas) | 2ª linha discreta: `Contexto x/25` (ícone bolha) e `Hoje x/50` (ícone calendário), com cor de alerta perto do limite |
+| Header (ações) | Barra de ações à direita (Histórico, "+ Nova Conversa" via `ConfirmDialog`, "Fechar"), separada por divisor vertical |
 | Limpar chat | Limpa estado + IndexedDB + servidor, **sem reload** |
 | Empty state | Chips de sugestão clicáveis que preenchem o input |
 

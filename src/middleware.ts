@@ -79,7 +79,14 @@ export default auth((req) => {
   }
 
   // Public routes that don't require auth
-  if (path === '/' || path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth')) {
+  if (
+    path === '/' ||
+    path.startsWith('/login') ||
+    path.startsWith('/register') ||
+    path.startsWith('/forgot-password') ||
+    path.startsWith('/reset-password') ||
+    path.startsWith('/api/auth')
+  ) {
     return response;
   }
 
