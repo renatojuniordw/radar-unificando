@@ -1,11 +1,14 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import type { Components } from 'react-markdown';
 import { ExternalLinkIcon } from './icons';
+import { parseJobCards } from './job-card-parser';
+import { JobCard } from './job-card';
 
 function tablesToCards(text: string): string {
   return text.replace(
@@ -121,9 +124,23 @@ const markdownComponents: Components = {
 };
 
 export const MarkdownContent = memo(function MarkdownContent({ text }: { text: string }) {
+  const segments = useMemo(() => parseJobCards(tablesToCards(text)), [text]);
+
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-      {normalizeText(text)}
-    </ReactMarkdown>
+    <>
+      {segments.map((segment, index) =>
+        segment.type === 'job' ? (
+          <JobCard key={index} job={segment.job} />
+        ) : (
+          <ReactMarkdown
+            key={index}
+            remarkPlugins={[remarkGfm, remarkBreaks]}
+            components={markdownComponents}
+          >
+            {normalizeText(segment.text)}
+          </ReactMarkdown>
+        ),
+      )}
+    </>
   );
 });

@@ -1,8 +1,13 @@
 'use client';
 
-import { Box, IconButton, Typography, Chip, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import type { ReactNode } from 'react';
+import { Box, IconButton, Typography, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Close as CloseIcon } from '@mui/icons-material';
+import {
+  Close as CloseIcon,
+  ChatBubbleOutline as ContextIcon,
+  CalendarMonthOutlined as CalendarIcon,
+} from '@mui/icons-material';
 import { CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/chat';
 import { BotIcon, HistoryIcon, PlusIcon } from './icons';
 
@@ -16,6 +21,52 @@ interface Props {
   onNewChat: () => void;
   isDailyLimitReached: boolean;
   onClose: () => void;
+}
+
+type Tone = 'normal' | 'warning' | 'error';
+
+function toneColor(tone: Tone): string {
+  switch (tone) {
+    case 'warning':
+      return 'warning.main';
+    case 'error':
+      return 'error.main';
+    default:
+      return 'text.secondary';
+  }
+}
+
+function UsageItem({
+  icon,
+  label,
+  value,
+  tone,
+  title,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  tone: Tone;
+  title?: string;
+}) {
+  return (
+    <Tooltip title={title} arrow>
+      <Box
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+          color: toneColor(tone),
+          cursor: title ? 'help' : 'default',
+        }}
+      >
+        {icon}
+        <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, lineHeight: 1, whiteSpace: 'nowrap' }}>
+          {label} {value}
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
 }
 
 export function ChatHeader({
@@ -32,6 +83,9 @@ export function ChatHeader({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const contextTone: Tone = messageCount >= 20 ? 'warning' : 'normal';
+  const dailyTone: Tone = isDailyLimitReached ? 'error' : dailyCount >= 40 ? 'warning' : 'normal';
+
   return (
     <Box
       sx={{
@@ -39,12 +93,13 @@ export function ChatHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
         px: 2,
-        py: 1.5,
+        py: 1.25,
         borderBottom: '1px solid',
         borderColor: 'divider',
         bgcolor: 'background.paper',
       }}
     >
+      {/* Identidade + métricas de uso */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1 }}>
         <Box
           sx={{
@@ -61,62 +116,58 @@ export function ChatHeader({
         >
           <BotIcon />
         </Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography
-            variant="subtitle2"
+        <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* Linha primária: nome + status */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 600,
+                color: 'text.primary',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              Assistente de Vagas
+            </Typography>
+            {loading ? (
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                Digitando...
+              </Typography>
+            ) : (
+              <Box
+                aria-label="Online"
+                sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main', flexShrink: 0 }}
+              />
+            )}
+          </Box>
+
+          {/* Linha secundária: cotas de uso */}
+          <Box
             sx={{
-              fontWeight: 600,
-              color: 'text.primary',
-              lineHeight: 1.2,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              mt: 0.5,
+              flexWrap: isMobile ? 'nowrap' : 'wrap',
             }}
           >
-            Assistente de Vagas
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25, flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-              {loading ? 'Digitando...' : 'Online'}
-            </Typography>
-            <Tooltip title="Limite da janela de contexto para garantir respostas precisas nesta conversa." arrow>
-              <Chip
-                label={isMobile ? `${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT}` : `${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT} chat`}
-                size="small"
-                sx={{
-                  height: 18,
-                  fontSize: '0.625rem',
-                  fontWeight: 700,
-                  bgcolor: messageCount >= 20 ? 'warning.light' : 'grey.200',
-                  color: messageCount >= 20 ? 'warning.contrastText' : 'text.secondary',
-                  fontFamily: 'ui-monospace, monospace',
-                  cursor: 'help',
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="Limite diário de interações por conta. Renova automaticamente à meia-noite (00:00)." arrow>
-              <Chip
-                label={isMobile ? `${dailyCount}/${dailyLimit}` : `${dailyCount}/${dailyLimit} hoje`}
-                size="small"
-                sx={{
-                  height: 18,
-                  fontSize: '0.625rem',
-                  fontWeight: 700,
-                  bgcolor: isDailyLimitReached
-                    ? 'error.light'
-                    : dailyCount >= 40
-                    ? 'warning.light'
-                    : 'grey.200',
-                  color: isDailyLimitReached
-                    ? 'error.contrastText'
-                    : dailyCount >= 40
-                    ? 'warning.contrastText'
-                    : 'text.secondary',
-                  fontFamily: 'ui-monospace, monospace',
-                  cursor: 'help',
-                }}
-              />
-            </Tooltip>
+            <UsageItem
+              icon={<ContextIcon sx={{ fontSize: 14 }} />}
+              label="Contexto"
+              value={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT}`}
+              tone={contextTone}
+              title="Limite da janela de contexto para garantir respostas precisas nesta conversa."
+            />
+            <UsageItem
+              icon={<CalendarIcon sx={{ fontSize: 14 }} />}
+              label="Hoje"
+              value={`${dailyCount}/${dailyLimit}`}
+              tone={dailyTone}
+              title="Limite diário de interações por conta. Renova automaticamente à meia-noite (00:00)."
+            />
             {!isMobile && (
               <Typography
                 component="a"
@@ -143,7 +194,19 @@ export function ChatHeader({
           </Box>
         </Box>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+
+      {/* Barra de ações */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          borderLeft: '1px solid',
+          borderColor: 'divider',
+          pl: 1,
+          ml: 1,
+        }}
+      >
         <IconButton
           onClick={onToggleSidebar}
           aria-label="Histórico de conversas"

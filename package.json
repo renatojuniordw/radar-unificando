@@ -49,6 +49,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
+    "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "use-debounce": "^10.1.1",
     "zod": "^4.4.3"
