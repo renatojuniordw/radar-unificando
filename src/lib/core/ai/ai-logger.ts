@@ -6,7 +6,8 @@ export type AiEvent =
   | 'suspicious_activity'
   | 'cover_letter_generation'
   | 'interview_questions_generation'
-  | 'ats_analysis';
+  | 'ats_analysis'
+  | 'ats_rewrite';
 
 export function logAiEvent(
   event: AiEvent,
