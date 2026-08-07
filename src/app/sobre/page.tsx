@@ -8,11 +8,11 @@ import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2 } from "lucide
 import { SupportSection } from "@/components/shared/support-section";
 
 export const metadata: Metadata = {
-  title: "Sobre | Radar Unificando",
+  title: "Sobre",
   description:
     "Conheça o Radar Unificando: a ferramenta que unifica vagas de tecnologia de Gupy e InHire em um só lugar, com busca inteligente e recomendações personalizadas.",
   openGraph: {
-    title: "Sobre | Radar Unificando",
+    title: "Sobre",
     description:
       "Conheça o Radar Unificando: a ferramenta que unifica vagas de tecnologia de Gupy e InHire em um só lugar.",
   },

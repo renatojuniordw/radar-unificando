@@ -38,7 +38,11 @@ export default function LoginPage() {
     try {
       const res = await signIn('credentials', { email, password, redirect: false });
       if (res?.error) {
-        setApiError('Email ou senha inválidos');
+        setApiError(
+          res.error === 'RATE_LIMITED'
+            ? 'Muitas tentativas de login. Aguarde 1 minuto e tente novamente.'
+            : 'Email ou senha inválidos'
+        );
       } else {
         router.push('/');
         router.refresh();

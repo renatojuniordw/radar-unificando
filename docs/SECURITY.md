@@ -34,9 +34,6 @@ Dois sistemas:
 | Registro (`/api/auth/register`) | 1 min | 5 | Redis | IP |
 | Registro (`/api/auth/register`) | 24 h | 3 cadastros | Redis | IP |
 
-> `loginLimiter`, `apiLimiter` e `exportLimiter` estão definidos em `rate-limiter.ts`
-> mas **não são usados** na produção hoje.
-
 ## Limites de Conversa (Chat)
 
 - **Thread**: máximo de 25 mensagens (`MAX_THREAD_MESSAGES`) → 400 `THREAD_LIMIT_REACHED`.

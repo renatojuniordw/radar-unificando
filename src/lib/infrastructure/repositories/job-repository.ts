@@ -10,6 +10,9 @@ export interface IJobRepository {
     take?: number
   ): Promise<Array<{ job: PrismaJob; score: number }>>;
   findById(id: string): Promise<PrismaJob | null>;
+  findPublicJobs(take?: number): Promise<PrismaJob[]>;
+  findRoleCategories(): Promise<Array<{ roleCategory: string; count: number }>>;
+  findByRoleCategory(roleCategory: string, take?: number): Promise<PrismaJob[]>;
   createMany(data: Prisma.JobCreateManyInput[]): Promise<number>;
   findExistingLinks(userId: string, links: string[]): Promise<Set<string>>;
   findStaleForRevalidation(limit: number): Promise<PrismaJob[]>;
@@ -73,6 +76,34 @@ export const jobRepository: IJobRepository = {
 
   async findById(id) {
     return prisma.job.findUnique({ where: { id } });
+  },
+
+  async findPublicJobs(take = 200) {
+    return prisma.job.findMany({
+      where: { status: 'active' },
+      orderBy: { createdAt: 'desc' },
+      take,
+    });
+  },
+
+  async findRoleCategories() {
+    const groups = await prisma.job.groupBy({
+      by: ['roleCategory'],
+      where: { status: 'active', roleCategory: { not: null } },
+      _count: { _all: true },
+      orderBy: { _count: { roleCategory: 'desc' } },
+    });
+    return groups
+      .filter((g) => g.roleCategory && g.roleCategory.trim().length > 0)
+      .map((g) => ({ roleCategory: g.roleCategory as string, count: g._count._all }));
+  },
+
+  async findByRoleCategory(roleCategory, take = 100) {
+    return prisma.job.findMany({
+      where: { status: 'active', roleCategory },
+      orderBy: { createdAt: 'desc' },
+      take,
+    });
   },
 
   async createMany(data) {

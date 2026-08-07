@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso e Privacidade | Radar Unificando',
+  title: 'Termos de Uso e Privacidade',
   description: 'Política de privacidade, conformidade com a LGPD e termos de uso do Radar Unificando.',
 };
 
