@@ -54,6 +54,7 @@ Base URL local: `http://localhost:11010`.
 | GET | `/api/chat/conversations` | ✅ | Listar conversas (id, título, última mensagem, data) |
 | GET | `/api/chat/usage` | ✅ | Uso do usuário: interações do dia + tokens do dia/mês e tetos (`dailyTokens`, `monthlyTokens`, `isTokenLimitReached`, etc.) |
 | GET | `/api/chat/context?chatId=` | ✅ | Tokens de contexto da última chamada (`{ contextTokens }`) — tamanho real da janela enviada |
+| POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo |
 
 **Exemplo de resposta do GET `/api/chat/usage`:**
 ```json

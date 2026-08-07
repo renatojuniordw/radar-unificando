@@ -121,7 +121,8 @@ O `POST /api/chat` aplica três camadas de proteção:
 | Tool | Campo | Validação |
 |------|-------|-----------|
 | `search_jobs` | query | 2-200 chars, regex `[a-zA-Z0-9\s\-_.]` |
-| `search_jobs` | limit | 1-20 (default 10) — descrição truncada em 800 chars e embrulhada em `<untrusted_content>` |
+| `search_jobs` | limit | 1-20 (default 10) — descrição truncada em 800 chars e embrulhada em `<untrusted_content>`; links mortos (404/410) são filtrados via `job-link-filter` |
+| `analyze_ats_score` | jobDescription | opcional, máx 8000 chars — usa o currículo do perfil (cache por versão) |
 | `analyze_job_fit` | jobTitle | 1-200 chars, trim |
 | `analyze_job_fit` | jobDescription | 10-5000 chars, trim |
 

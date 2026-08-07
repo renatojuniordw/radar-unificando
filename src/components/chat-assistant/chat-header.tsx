@@ -87,7 +87,6 @@ function UsageItem({
 
 export function ChatHeader({
   loading,
-  messageCount,
   dailyCount = 0,
   dailyLimit = 50,
   contextTokens = 0,

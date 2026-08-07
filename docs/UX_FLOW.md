@@ -111,3 +111,10 @@ Estado completo:
   - 50 interações/dia → `DailyLimitBanner` (renova à meia-noite).
   - Teto de tokens (429 `TOKEN_LIMIT_REACHED`) → `TokenLimitBanner` (renova meia-noite/dia 1º, link para /termos).
 - **429 "resposta em andamento"**: lock de concorrência — mensagem clara para aguardar o término da resposta atual.
+
+## Análise ATS (perfil)
+
+- **Seção "Análise ATS do currículo"** na página /perfil (visível apenas com currículo importado).
+- Estados: sem currículo (orientação para importar) → botão "Analisar compatibilidade ATS" (+ campo opcional "descrição da vaga") → loading (`aria-busy`) → resultado (score com cor + rótulo, checklist de heurísticas, keywords faltando, recomendações) → erro com retry.
+- Nota de transparência sempre visível: "Avaliação baseada em boas práticas de ATS — não é garantia de passar em nenhum sistema específico."
+- No chat, o assistente chama a tool `analyze_ats_score` quando o usuário pergunta sobre filtros automáticos/otimização de CV.

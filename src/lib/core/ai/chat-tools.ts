@@ -7,6 +7,8 @@ import { analyzeJobFit, JOB_ANALYZER_PROMPT_VERSION, type JobAnalysis } from '@/
 import { generateCoverLetter, COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/cover-letter-generator';
 import { generateInterviewQuestions, INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/interview-questions';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
+import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
 
@@ -101,8 +103,9 @@ export function createChatTools(userId: string) {
           return { error: 'Limite de 2 buscas por mensagem atingido. Reformule o pedido.' };
         }
         console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
-        const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 10, 20));
-        return jobs.map(formatJobResult);
+        const jobs = await gupyMcpClient.searchJobs(query, Math.min((limit || 10) * 2, 40));
+        const aliveJobs = await jobLinkFilter.filterAlive(jobs, { concurrency: 5 });
+        return aliveJobs.slice(0, limit || 10).map(formatJobResult);
       },
     }),
 
@@ -122,6 +125,39 @@ export function createChatTools(userId: string) {
           education: profile.education || [],
           profileSource: profile.profileSource || 'manual',
           resumeMarkdown: profile.resumeMarkdown?.slice(0, 3000) || null,
+        };
+      },
+    }),
+
+    analyze_ats_score: tool({
+      description:
+        'Analisar a compatibilidade do currículo do usuário com sistemas ATS (Applicant Tracking System — filtros automáticos de currículo). Retorna score 0-100, pontos fortes, palavras-chave faltando, problemas de formatação e recomendações. Use quando o usuário perguntar se o currículo passa em filtros automáticos, como otimizar o CV para uma vaga, ou pedir "análise ATS". Se uma descrição de vaga for fornecida, o score considera o keyword match com a vaga.',
+      inputSchema: z.object({
+        jobDescription: z
+          .string()
+          .max(8000)
+          .optional()
+          .describe('Descrição da vaga alvo (opcional). Se fornecida, o score considera o keyword match com a vaga.'),
+      }),
+      execute: async ({ jobDescription }: { jobDescription?: string }) => {
+        console.log('[chat-tools] analyze_ats_score chamado');
+        const profile = await profileRepository.findByUserId(userId);
+        const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
+        if (!resumeText || resumeText.length < 30) {
+          return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
+        }
+        const result = await analyzeAtsWithCache(userId, resumeText, {
+          jobDescription,
+          traceId: crypto.randomUUID(),
+        });
+        return {
+          score: result.analysis.score,
+          summary: result.analysis.summary,
+          strengths: result.analysis.strengths,
+          missingKeywords: result.analysis.missingKeywords,
+          formattingIssues: result.analysis.formattingIssues,
+          recommendations: result.analysis.recommendations,
+          heuristicChecks: result.heuristics.checks,
         };
       },
     }),

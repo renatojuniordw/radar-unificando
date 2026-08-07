@@ -9,6 +9,7 @@ import { useProfile, type ProfileField, type ProfileData } from '@/hooks/useProf
 import { ProfileCompletionCard } from '@/components/profile/profile-completion-card';
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
+import { AtsAnalysisSection } from '@/components/profile/ats-analysis-section';
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -170,6 +171,8 @@ export default function ProfilePage() {
               onExtract={handleExtract}
             />
           )}
+
+          {hasResume && <AtsAnalysisSection />}
 
           {hasChanges && (
             <button

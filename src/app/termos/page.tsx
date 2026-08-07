@@ -223,6 +223,9 @@ export default function TermosPage() {
               <li style={{ marginBottom: 8 }}>
                 <strong>Taxa de Mensagens:</strong> Para evitar sobrecarga, há um limite de <strong>10 mensagens por minuto</strong> por usuário.
               </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Ferramentas de IA:</strong> A análise ATS de currículo, o chat e as demais ferramentas de IA consomem os mesmos tetos diário e mensal de tokens descritos acima.
+              </li>
               <li style={{ marginBottom: 0 }}>
                 <strong>Uso Responsável:</strong> Tentativas de burlar os limites (múltiplas contas, automação, abuso de prompts) podem levar à suspensão do acesso, preservando o serviço para todos.
               </li>
