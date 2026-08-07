@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import Container from '@mui/material/Container';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { createExtensionToken } from '@/lib/core/extension/extension-token';
@@ -32,27 +34,68 @@ export default async function ConectarExtensaoPage({
 
   // Fallback manual: mostra o token para copiar e colar na extensão.
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto' }}>
-      <h1 style={{ fontWeight: 900, fontSize: '1.8rem', textTransform: 'uppercase', color: '#020617' }}>
-        Conectar extensão
-      </h1>
-      <p style={{ color: '#475569', fontFamily: 'ui-monospace, monospace', fontSize: '0.8rem' }}>
-        Copie o token abaixo e cole na extensão para conectar sua conta.
-      </p>
-      <div
+    <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Link
+        href="/extensao"
         style={{
-          border: '2px solid #020617',
-          backgroundColor: '#f8fafc',
-          padding: 16,
-          margin: '16px 0',
-          wordBreak: 'break-all',
+          color: '#64748b',
+          fontSize: '0.75rem',
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          textDecoration: 'none',
           fontFamily: 'ui-monospace, monospace',
-          fontSize: '0.8rem',
         }}
       >
-        {rawToken}
+        ← VOLTAR À EXTENSÃO
+      </Link>
+
+      <div className="badge-neon" style={{ margin: '24px 0 16px', display: 'inline-block' }}>
+        CONEXÃO
       </div>
+      <h1
+        style={{
+          fontWeight: 900,
+          fontSize: 'clamp(1.8rem, 4vw, 2.6rem)',
+          textTransform: 'uppercase',
+          color: '#020617',
+          marginBottom: '12px',
+          lineHeight: 0.95,
+        }}
+      >
+        Conectar extensão
+      </h1>
+      <p style={{ color: '#475569', fontSize: '0.9rem', maxWidth: '560px', marginBottom: '24px' }}>
+        Copie o token abaixo e cole na extensão para conectar sua conta. O token
+        é gerado na hora e fica salvo no seu navegador.
+      </p>
+
+      <div className="card-brutalist" style={{ padding: '20px', marginBottom: '20px' }}>
+        <div
+          style={{
+            color: '#64748b',
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.7rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            marginBottom: '8px',
+          }}
+        >
+          Seu token de extensão
+        </div>
+        <div
+          style={{
+            wordBreak: 'break-all',
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: '0.8rem',
+            color: '#020617',
+          }}
+        >
+          {rawToken}
+        </div>
+      </div>
+
       <CopyTokenButton token={rawToken} />
-    </div>
+    </Container>
   );
 }
