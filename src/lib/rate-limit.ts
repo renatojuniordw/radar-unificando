@@ -1,52 +1,19 @@
-import Redis from 'ioredis';
 import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
-
-const redisHost = process.env.REDIS_HOST || 'localhost';
-const redisPort = Number(process.env.REDIS_PORT) || 6379;
-const redisPassword = process.env.REDIS_PASSWORD || undefined;
-
-let redisClient: Redis | null = null;
-let redisConnected = false;
-
-// Tenta conectar ao Redis se estiver configurado
-try {
-  redisClient = new Redis({
-    host: redisHost,
-    port: redisPort,
-    password: redisPassword,
-    enableOfflineQueue: false, // Evita enfileiramento infinito em caso de queda do Redis
-    maxRetriesPerRequest: 1,
-    connectTimeout: 3000,
-    lazyConnect: true,
-  });
-
-  redisClient.connect().then(() => {
-    redisConnected = true;
-    console.log('[RateLimit] Conectado ao Redis com sucesso.');
-  }).catch((err) => {
-    redisConnected = false;
-    console.warn('[RateLimit] Redis indisponível, utilizando fallback em memória:', err.message);
-  });
-
-  redisClient.on('error', (err) => {
-    redisConnected = false;
-    console.warn('[RateLimit] Erro no Redis client:', err.message);
-  });
-} catch (error) {
-  console.warn('[RateLimit] Falha ao inicializar o cliente Redis:', error);
-}
+import { redisClient, isRedisReady } from '@/lib/infrastructure/redis/client';
 
 // Fallback em memória para garantia de funcionamento (Fail-safe)
 const memoryLimiterChat = new RateLimiterMemory({ points: 10, duration: 60 });
 const memoryLimiterChatDaily = new RateLimiterMemory({ points: 50, duration: 86400 });
 const memoryLimiterAuth = new RateLimiterMemory({ points: 5, duration: 60 });
 const memoryLimiterGeneral = new RateLimiterMemory({ points: 60, duration: 60 });
+const memoryLimiterRegisterDaily = new RateLimiterMemory({ points: 3, duration: 86400 });
 
 // Rate Limiters no Redis
 let redisLimiterChat: RateLimiterRedis | null = null;
 let redisLimiterChatDaily: RateLimiterRedis | null = null;
 let redisLimiterAuth: RateLimiterRedis | null = null;
 let redisLimiterGeneral: RateLimiterRedis | null = null;
+let redisLimiterRegisterDaily: RateLimiterRedis | null = null;
 
 if (redisClient) {
   redisLimiterChat = new RateLimiterRedis({
@@ -76,9 +43,16 @@ if (redisClient) {
     points: 60, // 60 requisições
     duration: 60, // por 60 segundos
   });
+
+  redisLimiterRegisterDaily = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_register_daily',
+    points: 3, // 3 cadastros por IP por dia
+    duration: 86400, // por 24 horas
+  });
 }
 
-export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general';
+export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily';
 
 export interface RateLimitResult {
   success: boolean;
@@ -102,16 +76,18 @@ export async function checkRateLimit(
 
   let limiterToUse: RateLimiterRedis | RateLimiterMemory;
 
-  if (redisConnected && redisClient) {
+  if (isRedisReady() && redisClient) {
     if (profile === 'chat') limiterToUse = redisLimiterChat!;
     else if (profile === 'chat_daily') limiterToUse = redisLimiterChatDaily!;
     else if (profile === 'auth') limiterToUse = redisLimiterAuth!;
+    else if (profile === 'register_daily') limiterToUse = redisLimiterRegisterDaily!;
     else limiterToUse = redisLimiterGeneral!;
   } else {
     // Usar fallback em memória
     if (profile === 'chat') limiterToUse = memoryLimiterChat;
     else if (profile === 'chat_daily') limiterToUse = memoryLimiterChatDaily;
     else if (profile === 'auth') limiterToUse = memoryLimiterAuth;
+    else if (profile === 'register_daily') limiterToUse = memoryLimiterRegisterDaily;
     else limiterToUse = memoryLimiterGeneral;
   }
 

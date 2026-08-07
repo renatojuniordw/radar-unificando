@@ -35,6 +35,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Limite diário de criação de contas por IP (anti multi-conta)
+  const { success: registerDailyOk } = await checkRateLimit(ip, 'register_daily');
+  if (!registerDailyOk) {
+    return NextResponse.json(
+      { error: 'Limite de cadastros por IP atingido. Tente novamente amanhã.' },
+      { status: 429 }
+    );
+  }
+
   try {
     const parsed = registerSchema.safeParse(await req.json());
     if (!parsed.success) {

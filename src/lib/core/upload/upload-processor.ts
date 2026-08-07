@@ -1,4 +1,5 @@
 import { profileRepository } from '@/lib/infrastructure/repositories';
+import { computeResumeHash } from '@/lib/core/upload/resume-hash';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
 import { uploadJobStore, type UploadJobResult } from '@/lib/core/upload/upload-job-store';
 import {
@@ -41,6 +42,7 @@ export async function processUploadJob(
     await profileRepository.upsert(userId, {
       resumeText: input.rawText,
       resumeMarkdown: input.markdown,
+      resumeHash: computeResumeHash(input.rawText, input.markdown),
       skills: extracted.skills,
       seniority: extracted.seniority || undefined,
       experienceYears: extracted.experienceYears,

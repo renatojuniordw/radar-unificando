@@ -7,8 +7,38 @@ import { analyzeJobFit, JOB_ANALYZER_PROMPT_VERSION, type JobAnalysis } from '@/
 import { generateCoverLetter, COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/cover-letter-generator';
 import { generateInterviewQuestions, INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/interview-questions';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
+import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
+
+const MAX_SEARCHES_PER_MESSAGE = 2;
+const JOB_DESCRIPTION_LIMIT = 800;
+
+export interface JobLike {
+  title: string;
+  company: string;
+  type: string;
+  location: string;
+  link: string;
+  postedAt?: string | null;
+  description?: string | null;
+}
+
+/** Transforma uma vaga em resultado de tool: trunca a descrição e embrulha em conteúdo não confiável. */
+export function formatJobResult(j: JobLike) {
+  return {
+    titulo: j.title,
+    empresa: j.company,
+    tipo: j.type,
+    local: j.location,
+    link: j.link,
+    publicado: j.postedAt || null,
+    descricao: j.description
+      ? `<untrusted_content>\n${j.description.slice(0, JOB_DESCRIPTION_LIMIT)}\n</untrusted_content>`
+      : '',
+  };
+}
 
 async function analyzeWithCache(
   userId: string,
@@ -54,6 +84,8 @@ async function analyzeWithCache(
 }
 
 export function createChatTools(userId: string) {
+  let searchCount = 0;
+
   return {
     search_jobs: tool({
       description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição e a data de publicação de cada vaga (quando disponível) — use a descrição diretamente em analyze_job_fit, sem precisar de outra busca, e mencione/priorize vagas mais recentes quando isso for relevante para a pergunta do usuário.',
@@ -63,22 +95,17 @@ export function createChatTools(userId: string) {
           .max(200, 'Query muito longa')
           .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Caracteres não permitidos na query')
           .describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
-        limit: z.number().min(1).max(100).optional().default(20).describe('Máximo de resultados'),
+        limit: z.number().min(1).max(20).optional().default(10).describe('Máximo de resultados (até 20)'),
       }),
       execute: async ({ query, limit }: { query: string; limit?: number }) => {
+        searchCount++;
+        if (searchCount > MAX_SEARCHES_PER_MESSAGE) {
+          return { error: 'Limite de 2 buscas por mensagem atingido. Reformule o pedido.' };
+        }
         console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
-        const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 20, 100));
-        return jobs.map(j => ({
-          titulo: j.title,
-          empresa: j.company,
-          tipo: j.type,
-          local: j.location,
-          link: j.link,
-          publicado: j.postedAt || null,
-          descricao: j.description
-            ? `<untrusted_content>\n${j.description.slice(0, 1200)}\n</untrusted_content>`
-            : '',
-        }));
+        const jobs = await gupyMcpClient.searchJobs(query, Math.min((limit || 10) * 2, 40));
+        const aliveJobs = await jobLinkFilter.filterAlive(jobs, { concurrency: 5 });
+        return aliveJobs.slice(0, limit || 10).map(formatJobResult);
       },
     }),
 
@@ -98,6 +125,39 @@ export function createChatTools(userId: string) {
           education: profile.education || [],
           profileSource: profile.profileSource || 'manual',
           resumeMarkdown: profile.resumeMarkdown?.slice(0, 3000) || null,
+        };
+      },
+    }),
+
+    analyze_ats_score: tool({
+      description:
+        'Analisar a compatibilidade do currículo do usuário com sistemas ATS (Applicant Tracking System — filtros automáticos de currículo). Retorna score 0-100, pontos fortes, palavras-chave faltando, problemas de formatação e recomendações. Use quando o usuário perguntar se o currículo passa em filtros automáticos, como otimizar o CV para uma vaga, ou pedir "análise ATS". Se uma descrição de vaga for fornecida, o score considera o keyword match com a vaga.',
+      inputSchema: z.object({
+        jobDescription: z
+          .string()
+          .max(8000)
+          .optional()
+          .describe('Descrição da vaga alvo (opcional). Se fornecida, o score considera o keyword match com a vaga.'),
+      }),
+      execute: async ({ jobDescription }: { jobDescription?: string }) => {
+        console.log('[chat-tools] analyze_ats_score chamado');
+        const profile = await profileRepository.findByUserId(userId);
+        const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
+        if (!resumeText || resumeText.length < 30) {
+          return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
+        }
+        const result = await analyzeAtsWithCache(userId, resumeText, {
+          jobDescription,
+          traceId: crypto.randomUUID(),
+        });
+        return {
+          score: result.analysis.score,
+          summary: result.analysis.summary,
+          strengths: result.analysis.strengths,
+          missingKeywords: result.analysis.missingKeywords,
+          formattingIssues: result.analysis.formattingIssues,
+          recommendations: result.analysis.recommendations,
+          heuristicChecks: result.heuristics.checks,
         };
       },
     }),

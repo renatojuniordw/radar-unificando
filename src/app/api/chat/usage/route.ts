@@ -2,7 +2,20 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { chatRepository } from '@/lib/infrastructure/repositories';
 
-const DAILY_LIMIT = 50;
+const DAILY_INTERACTION_LIMIT = 50;
+const DAILY_TOKEN_LIMIT = Number(process.env.DAILY_TOKEN_LIMIT ?? 100000);
+const MONTHLY_TOKEN_LIMIT = Number(process.env.MONTHLY_TOKEN_LIMIT ?? 2000000);
+
+function startOfDay(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function startOfMonth(): Date {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
 
 export async function GET() {
   const { session, response } = await requireAuth();
@@ -10,17 +23,27 @@ export async function GET() {
 
   try {
     const count = await chatRepository.getDailyUserMessageCount(session.user.id);
-    const remaining = Math.max(0, DAILY_LIMIT - count);
-    const isDailyLimitReached = count >= DAILY_LIMIT;
+    const today = await chatRepository.sumTokensSince([session.user.id], startOfDay());
+    const month = await chatRepository.sumTokensSince([session.user.id], startOfMonth());
+
+    const isTokenLimitReached =
+      today.totalTokens >= DAILY_TOKEN_LIMIT || month.totalTokens >= MONTHLY_TOKEN_LIMIT;
 
     return NextResponse.json({
       count,
-      limit: DAILY_LIMIT,
-      remaining,
-      isDailyLimitReached,
+      limit: DAILY_INTERACTION_LIMIT,
+      remaining: Math.max(0, DAILY_INTERACTION_LIMIT - count),
+      isDailyLimitReached: count >= DAILY_INTERACTION_LIMIT,
+      dailyTokens: today.totalTokens,
+      dailyTokenLimit: DAILY_TOKEN_LIMIT,
+      dailyTokenRemaining: Math.max(0, DAILY_TOKEN_LIMIT - today.totalTokens),
+      monthlyTokens: month.totalTokens,
+      monthlyTokenLimit: MONTHLY_TOKEN_LIMIT,
+      monthlyTokenRemaining: Math.max(0, MONTHLY_TOKEN_LIMIT - month.totalTokens),
+      isTokenLimitReached,
     });
   } catch (error) {
-    console.error('[chat-usage] Erro ao buscar contagem diária:', error);
-    return NextResponse.json({ error: 'Erro ao verificar uso diário' }, { status: 500 });
+    console.error('[chat-usage] Erro ao buscar uso:', error);
+    return NextResponse.json({ error: 'Erro ao verificar uso' }, { status: 500 });
   }
 }

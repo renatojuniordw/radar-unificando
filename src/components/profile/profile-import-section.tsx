@@ -5,13 +5,14 @@ import { LinearProgress } from '@mui/material';
 import { BaseCard } from '@/components/base-card';
 
 interface Props {
+  title?: string;
   extracting: boolean;
   dragOver: boolean;
   onDragOver: (v: boolean) => void;
   onExtract: (input: File | string) => void;
 }
 
-export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtract }: Props) {
+export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting, dragOver, onDragOver, onExtract }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,7 +38,7 @@ export function ProfileImportSection({ extracting, dragOver, onDragOver, onExtra
   }
 
   return (
-    <BaseCard title="IMPORTAR CURRÍCULO">
+    <BaseCard title={title}>
       {extracting && <LinearProgress sx={{ mb: 2, height: 4, bgcolor: '#e2e8f0', '& .MuiLinearProgress-bar': { bgcolor: '#020617' } }} />}
 
       <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 16, lineHeight: 1.6 }}>

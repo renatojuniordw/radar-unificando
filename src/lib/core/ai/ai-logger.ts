@@ -5,7 +5,8 @@ export type AiEvent =
   | 'chat_interaction'
   | 'suspicious_activity'
   | 'cover_letter_generation'
-  | 'interview_questions_generation';
+  | 'interview_questions_generation'
+  | 'ats_analysis';
 
 export function logAiEvent(
   event: AiEvent,

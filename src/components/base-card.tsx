@@ -23,7 +23,7 @@ export function BaseCard({ title, children, variant = 'default' }: Props) {
         ...variantStyles[variant]
       }}
     >
-      <h3 style={{ 
+      <h2 style={{ 
         fontWeight: 900, 
         textTransform: 'uppercase', 
         letterSpacing: '-0.01em', 
@@ -31,7 +31,7 @@ export function BaseCard({ title, children, variant = 'default' }: Props) {
         margin: '0 0 16px' 
       }}>
         {title}
-      </h3>
+      </h2>
       {children}
     </div>
   );

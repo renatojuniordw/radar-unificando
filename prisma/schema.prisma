@@ -21,6 +21,7 @@ model User {
   companyPresence       CompanyPresence[]
   generatedContentCache GeneratedContentCache[]
   chats                 Chat[]
+  chatUsage             ChatUsage[]
 
   @@map("users")
 }
@@ -48,9 +49,11 @@ model Profile {
   resumeMarkdown  String?  @map("resume_markdown") @db.Text
   parsedData      Json?    @map("parsed_data")
   profileSource   String?  @default("manual") @map("profile_source") @db.VarChar(20)
+  resumeHash      String?  @map("resume_hash") @db.VarChar(64)
   createdAt       DateTime @default(now()) @map("created_at")
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([resumeHash])
   @@map("profiles")
 }
 
@@ -94,6 +97,7 @@ model Chat {
   updatedAt  DateTime      @updatedAt @map("updated_at")
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages   ChatMessage[]
+  usage      ChatUsage[]
 
   @@unique([userId, externalId])
   @@index([userId, updatedAt])
@@ -111,6 +115,23 @@ model ChatMessage {
 
   @@unique([chatId, position])
   @@map("chat_messages")
+}
+
+model ChatUsage {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  chatId           String?  @map("chat_id") @db.Uuid
+  promptTokens     Int      @map("prompt_tokens")
+  completionTokens Int      @map("completion_tokens")
+  totalTokens      Int      @map("total_tokens")
+  ipHash           String?  @map("ip_hash") @db.VarChar(64)
+  createdAt        DateTime @default(now()) @map("created_at")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat             Chat?    @relation(fields: [chatId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([ipHash, createdAt])
+  @@map("chat_usage")
 }
 
 model GeneratedContentCache {

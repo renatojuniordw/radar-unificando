@@ -47,14 +47,29 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE). Rate limit: 10/min + 50/dia (Redis). Thread: 25 mensagens (400 `THREAD_LIMIT_REACHED`) |
+| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE). Rate limits: 10/min + 50/dia (Redis) + tetos de tokens diário/mensal/IP (banco `chat_usage`, 429 `TOKEN_LIMIT_REACHED`) + lock de concorrência (1 resposta ativa). Thread: 25 mensagens (400 `THREAD_LIMIT_REACHED`) |
 | GET | `/api/chat/history?chatId=` | ✅ | Carregar histórico de uma conversa |
 | POST | `/api/chat/history` | ✅ | Salvar histórico (body: `{ chatId, messages }`, PII sanitizado) |
 | DELETE | `/api/chat/history?chatId=` | ✅ | Apagar histórico de uma conversa |
 | GET | `/api/chat/conversations` | ✅ | Listar conversas (id, título, última mensagem, data) |
+| GET | `/api/chat/usage` | ✅ | Uso do usuário: interações do dia + tokens do dia/mês e tetos (`dailyTokens`, `monthlyTokens`, `isTokenLimitReached`, etc.) |
+| GET | `/api/chat/context?chatId=` | ✅ | Tokens de contexto da última chamada (`{ contextTokens }`) — tamanho real da janela enviada |
+| POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo |
+
+**Exemplo de resposta do GET `/api/chat/usage`:**
+```json
+{
+  "count": 8, "limit": 50, "remaining": 42, "isDailyLimitReached": false,
+  "dailyTokens": 12480, "dailyTokenLimit": 100000, "dailyTokenRemaining": 87520,
+  "monthlyTokens": 312000, "monthlyTokenLimit": 2000000, "monthlyTokenRemaining": 1688000,
+  "isTokenLimitReached": false
+}
+```
 
 **Segurança do chat:**
 - Rate limits: 10 mensagens/min + 50/dia por usuário (retorna `429` ao exceder)
+- Tetos de tokens: 100k/dia, 2M/mês, 300k/IP/dia — verificados antes da chamada (429 `TOKEN_LIMIT_REACHED`); soma considera contas com o mesmo `resume_hash`
+- Lock de concorrência: 1 resposta em andamento por usuário (429)
 - Input sanitizado (truncado em 2000 chars, tags HTML removidas)
 - Redação de PII (CPF, CNPJ, RG, telefone, cartão) → `[CPF REDIGIDO]`
 - Tentativas de prompt injection geram log `[AI_LOG] suspicious_activity` (400)

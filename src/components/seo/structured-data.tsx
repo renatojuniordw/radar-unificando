@@ -8,6 +8,14 @@ export function StructuredData() {
     description:
       "Busca automática de vagas em Gupy e InHire em tempo real para cargos de TI, Dados, Marketing e Vendas.",
     inLanguage: "pt-BR",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://radar.unificando.com.br/?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 
   const organizationSchema = {

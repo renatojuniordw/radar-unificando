@@ -6,6 +6,19 @@ export interface ChatMessageData {
   [key: string]: unknown;
 }
 
+export interface UsageRecord {
+  chatId?: string;
+  promptTokens: number;
+  completionTokens: number;
+  ipHash?: string;
+}
+
+export interface TokenTotals {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
 export interface ChatSummary {
   id: string;
   title: string;
@@ -19,6 +32,10 @@ export interface IChatRepository {
   deleteChat(userId: string, externalId: string): Promise<void>;
   listChats(userId: string): Promise<ChatSummary[]>;
   getDailyUserMessageCount(userId: string): Promise<number>;
+  recordUsage(userId: string, data: UsageRecord): Promise<void>;
+  sumTokensSince(userIds: string[], since: Date): Promise<TokenTotals>;
+  sumTokensSinceByIp(ipHash: string, since: Date): Promise<TokenTotals>;
+  getLastContextTokens(userId: string, chatId?: string | null): Promise<number | null>;
 }
 
 function extractText(content: unknown): string {
@@ -104,5 +121,51 @@ export const chatRepository: IChatRepository = {
         createdAt: { gte: startOfDay },
       },
     });
+  },
+
+  async recordUsage(userId, data) {
+    await prisma.chatUsage.create({
+      data: {
+        userId,
+        chatId: data.chatId,
+        promptTokens: data.promptTokens,
+        completionTokens: data.completionTokens,
+        totalTokens: data.promptTokens + data.completionTokens,
+        ipHash: data.ipHash,
+      },
+    });
+  },
+
+  async sumTokensSince(userIds, since) {
+    const agg = await prisma.chatUsage.aggregate({
+      where: { userId: { in: userIds }, createdAt: { gte: since } },
+      _sum: { promptTokens: true, completionTokens: true, totalTokens: true },
+    });
+    return {
+      promptTokens: agg._sum.promptTokens ?? 0,
+      completionTokens: agg._sum.completionTokens ?? 0,
+      totalTokens: agg._sum.totalTokens ?? 0,
+    };
+  },
+
+  async sumTokensSinceByIp(ipHash, since) {
+    const agg = await prisma.chatUsage.aggregate({
+      where: { ipHash, createdAt: { gte: since } },
+      _sum: { promptTokens: true, completionTokens: true, totalTokens: true },
+    });
+    return {
+      promptTokens: agg._sum.promptTokens ?? 0,
+      completionTokens: agg._sum.completionTokens ?? 0,
+      totalTokens: agg._sum.totalTokens ?? 0,
+    };
+  },
+
+  async getLastContextTokens(userId, chatId?: string | null) {
+    const last = await prisma.chatUsage.findFirst({
+      where: { userId, ...(chatId ? { chatId } : {}) },
+      orderBy: { createdAt: 'desc' },
+      select: { promptTokens: true },
+    });
+    return last?.promptTokens ?? null;
   },
 };

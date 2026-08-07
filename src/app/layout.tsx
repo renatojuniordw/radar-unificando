@@ -9,6 +9,7 @@ import { QueryProvider } from "@/lib/infrastructure/ui/query-provider";
 import { ChatAssistantProvider } from "@/contexts/chat-assistant-context";
 import { ChatAssistantMount } from "@/components/chat-assistant-mount";
 import { Header, Footer } from "@/components/layout";
+import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
 const inter = Inter({
@@ -134,6 +135,7 @@ export default function RootLayout({
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
+        <PwaRegister />
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92"} />
       </body>
     </html>

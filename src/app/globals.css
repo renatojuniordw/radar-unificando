@@ -35,6 +35,18 @@
   color: var(--color-brutalist-black);
 }
 
+/* Foco visível para navegação por teclado (WCAG 2.4.7) */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--color-neon-yellow);
+  outline-offset: 2px;
+}
+
 html {
   scroll-behavior: smooth;
 }

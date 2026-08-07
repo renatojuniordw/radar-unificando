@@ -1,27 +1,32 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Container, Typography } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useRef } from 'react';
+import Link from 'next/link';
+import { Container } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useProfile, type ProfileField, type ProfileData } from '@/hooks/useProfile';
 import { ProfileCompletionCard } from '@/components/profile/profile-completion-card';
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
+import { AtsAnalysisSection } from '@/components/profile/ats-analysis-section';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+
+function getInitial(name?: string | null, email?: string | null): string {
+  const source = name?.trim() || email?.trim() || 'U';
+  return source[0]?.toUpperCase() || 'U';
+}
 
 export default function ProfilePage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
   const [showManualForm, setShowManualForm] = useState(false);
+  const importRef = useRef<HTMLDivElement>(null);
 
   const hasResume = !!(profile.resumeText || profile.resumeMarkdown);
   const hasData = hasResume || profile.skills.length > 0;
   const isSetup = !hasData && !showManualForm;
-
-  const hasChanges = profile.fieldOverrides.size > 0 || (!profile.saving && hasData);
 
   const { setField } = profile;
 
@@ -32,15 +37,7 @@ export default function ProfilePage() {
   async function handleSave() {
     const result = await profile.handleSave();
     if (result.success) {
-      const parts = [
-        `${profile.skills.length} skills`,
-        profile.seniority && 'Senioridade',
-        profile.experienceYears > 0 && `${profile.experienceYears}anos`,
-        profile.currentRole && 'Cargo',
-        profile.area && 'Área',
-      ].filter(Boolean);
-      showSnackbar(`Perfil salvo! (${parts.join(' · ')})`, 'success');
-      router.push('/');
+      showSnackbar('Perfil salvo com sucesso!', 'success');
     } else {
       showSnackbar(result.error || 'Erro ao salvar', 'error');
     }
@@ -55,17 +52,74 @@ export default function ProfilePage() {
     }
   }
 
+  function handleStartImport() {
+    setShowManualForm(true);
+    // Revela o formulário e rola até a área de importação de currículo
+    requestAnimationFrame(() => {
+      importRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function handleStartManual() {
+    setShowManualForm(true);
+  }
+
+  const checks = [
+    { label: 'Skills (mín. 3)', done: profile.skills.length >= 3 },
+    { label: 'Senioridade', done: !!profile.seniority },
+    { label: 'Experiência', done: profile.experienceYears > 0 },
+    { label: 'Cargo atual', done: !!profile.currentRole },
+    { label: 'Área', done: !!profile.area },
+    { label: 'Currículo importado', done: (profile.resumeText?.length || 0) > 50 },
+  ];
+
+  const displayName = session?.user?.name?.trim() || session?.user?.email || 'Usuário';
+  const initial = getInitial(session?.user?.name, session?.user?.email);
+
+  // Estado de carregamento: skeleton evita o flash do estado vazio
+  if (profile.loading) {
+    return (
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <div className="animate-pulse space-y-4" aria-busy="true" aria-label="Carregando perfil">
+          <div className="h-12 w-12 rounded-full bg-slate-200" />
+          <div className="h-8 w-48 bg-slate-200" />
+          <div className="h-4 w-64 bg-slate-200" />
+          <div className="h-24 bg-slate-200" />
+          <div className="h-40 bg-slate-200" />
+          <div className="h-40 bg-slate-200" />
+        </div>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h1" sx={{ fontWeight: 900, mb: 0.5, textTransform: 'uppercase', letterSpacing: '-0.02em', fontSize: '2rem' }}>
-        MEU PERFIL
-      </Typography>
-      <Typography sx={{ mb: 3, color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-        {session?.user?.email}
-      </Typography>
+    <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      {/* Link de voltar */}
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 font-mono text-[0.7rem] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 no-underline mb-4 transition-colors"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Voltar para vagas
+      </Link>
+
+      {/* Cabeçalho da página */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 shrink-0 rounded-full bg-[#ccff00] border-4 border-[#020617] flex items-center justify-center text-[#020617] font-black text-lg shadow-[3px_3px_0px_#000]">
+          {initial}
+        </div>
+        <div className="min-w-0">
+          <h1 className="font-black uppercase tracking-tight text-2xl leading-none m-0">
+            Meu Perfil
+          </h1>
+          <p className="m-0 font-mono text-[0.7rem] uppercase tracking-wider text-slate-500 truncate">
+            {displayName}
+          </p>
+        </div>
+      </div>
 
       {profile.loadError && (
-        <div className="card-brutalist" style={{ padding: 16, marginBottom: 24, borderColor: '#dc2626', background: '#fef2f2' }}>
+        <div className="card-brutalist" style={{ padding: 16, marginBottom: 24, borderColor: '#dc2626', background: '#fef2f2' }} role="alert">
           <p style={{ color: '#dc2626', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', margin: 0 }}>
             {profile.loadError}
           </p>
@@ -103,7 +157,7 @@ export default function ProfilePage() {
             Importe seu currículo do LinkedIn para extrair automaticamente skills, experiência e formação.
           </p>
           <button
-            onClick={() => setShowManualForm(true)}
+            onClick={handleStartImport}
             style={{
               backgroundColor: '#020617', color: '#ccff00', fontWeight: 900,
               padding: '12px 32px', border: '4px solid #020617',
@@ -113,10 +167,10 @@ export default function ProfilePage() {
               width: '100%', maxWidth: 320, margin: '0 auto 12px',
             }}
           >
-            COMEÇAR
+            IMPORTAR CURRÍCULO
           </button>
           <button
-            onClick={() => setShowManualForm(true)}
+            onClick={handleStartManual}
             style={{
               background: 'none', border: '2px solid #020617', color: '#020617',
               fontWeight: 700, padding: '10px 24px', cursor: 'pointer',
@@ -136,17 +190,19 @@ export default function ProfilePage() {
             percent={profile.completionPercent}
             completedCount={profile.completionScore}
             totalCount={6}
-            skills={profile.skills}
+            checks={checks}
           />
 
           {/* Upload de currículo (se não tem ou quer re-importar) */}
           {!hasResume && (
-            <ProfileImportSection
-              extracting={profile.extracting}
-              dragOver={profile.dragOver}
-              onDragOver={profile.setDragOver}
-              onExtract={handleExtract}
-            />
+            <div ref={importRef}>
+              <ProfileImportSection
+                extracting={profile.extracting}
+                dragOver={profile.dragOver}
+                onDragOver={profile.setDragOver}
+                onExtract={handleExtract}
+              />
+            </div>
           )}
 
           <ProfileReviewSection
@@ -163,24 +219,38 @@ export default function ProfilePage() {
           />
 
           {hasResume && (
-            <ProfileImportSection
-              extracting={profile.extracting}
-              dragOver={profile.dragOver}
-              onDragOver={profile.setDragOver}
-              onExtract={handleExtract}
-            />
+            <div ref={importRef}>
+              <ProfileImportSection
+                title="ATUALIZAR CURRÍCULO"
+                extracting={profile.extracting}
+                dragOver={profile.dragOver}
+                onDragOver={profile.setDragOver}
+                onExtract={handleExtract}
+              />
+            </div>
           )}
 
-          {hasChanges && (
+          {hasResume && <AtsAnalysisSection />}
+
+          {/* Barra de salvamento */}
+          <div className="sticky bottom-4 z-10" aria-live="polite">
             <button
               onClick={handleSave}
               disabled={profile.saving}
+              aria-busy={profile.saving}
               className="btn-neon"
               style={{ padding: '14px 48px', fontSize: '0.8rem', width: '100%' }}
             >
-              {profile.saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
+              {profile.saving ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  SALVANDO...
+                </span>
+              ) : (
+                'SALVAR PERFIL'
+              )}
             </button>
-          )}
+          </div>
         </>
       )}
     </Container>

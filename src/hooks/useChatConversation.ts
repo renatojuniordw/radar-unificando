@@ -16,6 +16,14 @@ export interface DailyUsage {
   limit: number;
   remaining: number;
   isDailyLimitReached: boolean;
+  dailyTokens: number;
+  dailyTokenLimit: number;
+  dailyTokenRemaining: number;
+  monthlyTokens: number;
+  monthlyTokenLimit: number;
+  monthlyTokenRemaining: number;
+  isTokenLimitReached: boolean;
+  contextTokens?: number;
 }
 
 interface UseChatConversationParams {
@@ -33,6 +41,14 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     limit: 50,
     remaining: 50,
     isDailyLimitReached: false,
+    dailyTokens: 0,
+    dailyTokenLimit: 100000,
+    dailyTokenRemaining: 100000,
+    monthlyTokens: 0,
+    monthlyTokenLimit: 2000000,
+    monthlyTokenRemaining: 2000000,
+    isTokenLimitReached: false,
+    contextTokens: 0,
   });
 
   const { messages, sendMessage, status: chatStatus, setMessages, regenerate } = useChat({
@@ -62,6 +78,18 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
       if (res.ok) {
         const data = await res.json();
         setDailyUsage(data);
+      }
+    } catch {
+      // Ignorar erros de rede em background
+    }
+  }, []);
+
+  const fetchContextTokens = useCallback(async () => {
+    try {
+      const res = await fetch('/api/chat/context');
+      if (res.ok) {
+        const data = await res.json();
+        setDailyUsage((prev) => ({ ...prev, contextTokens: data.contextTokens ?? 0 }));
       }
     } catch {
       // Ignorar erros de rede em background
@@ -159,6 +187,7 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     const syncUsage = async () => {
       if (isMounted) {
         await fetchDailyUsage();
+        await fetchContextTokens();
       }
     };
 
@@ -167,7 +196,7 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     return () => {
       isMounted = false;
     };
-  }, [loading, fetchDailyUsage]);
+  }, [loading, fetchDailyUsage, fetchContextTokens]);
 
   function selectConversation(id: string) {
     if (id === chatId) return false;

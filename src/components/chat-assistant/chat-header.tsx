@@ -8,7 +8,6 @@ import {
   ChatBubbleOutline as ContextIcon,
   CalendarMonthOutlined as CalendarIcon,
 } from '@mui/icons-material';
-import { CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/chat';
 import { BotIcon, HistoryIcon, PlusIcon } from './icons';
 
 interface Props {
@@ -16,6 +15,13 @@ interface Props {
   messageCount: number;
   dailyCount?: number;
   dailyLimit?: number;
+  contextTokens?: number;
+  contextTokenLimit?: number;
+  dailyTokens?: number;
+  dailyTokenLimit?: number;
+  monthlyTokens?: number;
+  monthlyTokenLimit?: number;
+  isTokenLimitReached?: boolean;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   onNewChat: () => void;
@@ -34,6 +40,16 @@ function toneColor(tone: Tone): string {
     default:
       return 'text.secondary';
   }
+}
+
+function formatTokens(n: number): string {
+  const fmt = (v: number) => {
+    const s = v.toFixed(1).replace('.', ',');
+    return s.endsWith(',0') ? s.slice(0, -2) : s;
+  };
+  if (n >= 1_000_000) return `${fmt(n / 1_000_000)}M`;
+  if (n >= 1000) return `${fmt(n / 1000)}k`;
+  return String(n);
 }
 
 function UsageItem({
@@ -71,9 +87,15 @@ function UsageItem({
 
 export function ChatHeader({
   loading,
-  messageCount,
   dailyCount = 0,
   dailyLimit = 50,
+  contextTokens = 0,
+  contextTokenLimit = 16000,
+  dailyTokens = 0,
+  dailyTokenLimit = 100000,
+  monthlyTokens = 0,
+  monthlyTokenLimit = 2000000,
+  isTokenLimitReached = false,
   sidebarOpen,
   onToggleSidebar,
   onNewChat,
@@ -83,8 +105,9 @@ export function ChatHeader({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const contextTone: Tone = messageCount >= 20 ? 'warning' : 'normal';
-  const dailyTone: Tone = isDailyLimitReached ? 'error' : dailyCount >= 40 ? 'warning' : 'normal';
+  const contextTone: Tone = contextTokens >= contextTokenLimit * 0.8 ? 'warning' : 'normal';
+  const dailyTone: Tone = isTokenLimitReached ? 'error' : dailyTokens >= dailyTokenLimit * 0.8 ? 'warning' : 'normal';
+  const monthlyTone: Tone = monthlyTokens >= monthlyTokenLimit * 0.8 ? 'warning' : 'normal';
 
   return (
     <Box
@@ -157,16 +180,23 @@ export function ChatHeader({
             <UsageItem
               icon={<ContextIcon sx={{ fontSize: 14 }} />}
               label="Contexto"
-              value={`${messageCount}/${CHAT_THREAD_MESSAGE_LIMIT}`}
+              value={`${formatTokens(contextTokens)}/${formatTokens(contextTokenLimit)}`}
               tone={contextTone}
-              title="Limite da janela de contexto para garantir respostas precisas nesta conversa."
+              title="Tokens enviados à IA nesta conversa (histórico completo). Dica: inicie um novo chat quando o indicador ficar alto."
             />
             <UsageItem
               icon={<CalendarIcon sx={{ fontSize: 14 }} />}
               label="Hoje"
-              value={`${dailyCount}/${dailyLimit}`}
+              value={`${formatTokens(dailyTokens)}/${formatTokens(dailyTokenLimit)}`}
               tone={dailyTone}
-              title="Limite diário de interações por conta. Renova automaticamente à meia-noite (00:00)."
+              title={`Tokens de IA consumidos hoje (renovam à meia-noite). Interações: ${dailyCount}/${dailyLimit}.`}
+            />
+            <UsageItem
+              icon={<CalendarIcon sx={{ fontSize: 14 }} />}
+              label="Mês"
+              value={`${formatTokens(monthlyTokens)}/${formatTokens(monthlyTokenLimit)}`}
+              tone={monthlyTone}
+              title="Tokens de IA consumidos no mês (renovam no dia 1º)."
             />
             {!isMobile && (
               <Typography

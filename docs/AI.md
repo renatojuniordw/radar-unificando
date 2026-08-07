@@ -76,9 +76,20 @@ Chat UI (MUI + @ai-sdk/react) → POST /api/chat (streaming)
 
 Regras do sistema:
 - Persona: consultor sênior de carreira (RH) em PT-BR
-- `search_jobs`: no máximo 2 usos por pergunta do usuário
+- `search_jobs`: no máximo 2 usos por pergunta do usuário (enforcement no código)
 - Modo simulação de entrevista
 - Limites de conversa: **25 mensagens por thread** e **50 interações/dia** (retorno 429/400)
+
+### Métricas e Tetos de Tokens
+
+O custo de IA é medido em tokens reais, capturados do `usage` que o provider devolve no `onFinish` do `streamText` (`promptTokens`/`completionTokens`/`totalTokens`) e persistidos na tabela **`chat_usage`** (por usuário, com hash do IP). Isso alimenta:
+
+- **Header do chat**: Contexto (tokens da última chamada — janela enviada), Hoje e Mês (consumo acumulado), com aviso visual em 80% do teto.
+- **Tetos verificados no início do POST /api/chat** (429 `TOKEN_LIMIT_REACHED`): diário **100k tokens** (`DAILY_TOKEN_LIMIT`), mensal **2M tokens** (`MONTHLY_TOKEN_LIMIT`), por IP **300k/dia** (`IP_DAILY_TOKEN_LIMIT`). A soma considera o grupo de contas com o mesmo `resume_hash` (anti multi-conta).
+- **Custo estimado por chamada** no log `[AI_LOG]` (`estimatedCostUsd`), usando preços do gpt-4o-mini (env `AI_INPUT_PRICE_PER_1M`/`AI_OUTPUT_PRICE_PER_1M`).
+- **Concorrência**: lock no Redis (`chat_lock:{userId}`, TTL 120s) garante 1 resposta em andamento por usuário — evita a race de 2 chamadas passarem o teto juntas.
+
+Janela deslizante: apenas as **15 mensagens mais recentes** (`MAX_CONTEXT_MESSAGES`) são enviadas ao modelo.
 
 ### Formatação das Vagas
 
@@ -110,7 +121,8 @@ O `POST /api/chat` aplica três camadas de proteção:
 | Tool | Campo | Validação |
 |------|-------|-----------|
 | `search_jobs` | query | 2-200 chars, regex `[a-zA-Z0-9\s\-_.]` |
-| `search_jobs` | limit | 1-100 (default 20) |
+| `search_jobs` | limit | 1-20 (default 10) — descrição truncada em 800 chars e embrulhada em `<untrusted_content>`; links mortos (404/410) são filtrados via `job-link-filter` |
+| `analyze_ats_score` | jobDescription | opcional, máx 8000 chars — usa o currículo do perfil (cache por versão) |
 | `analyze_job_fit` | jobTitle | 1-200 chars, trim |
 | `analyze_job_fit` | jobDescription | 10-5000 chars, trim |
 
