@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Chat — limites e métricas (com autenticação)', () => {
   test('registro → login → abre o chat com métricas de tokens', async ({ page }) => {
     const email = `e2e-${Date.now()}@example.com`;
-    const password = 'SenhaForte123!';
+    // Senha gerada por execução (não é um segredo): conta efêmera de teste.
+    // Satisfaz a validação do registro (8+ chars, maiúscula, minúscula, número e especial).
+    const password = `E2e${Date.now()}!Aa`;
 
     // Registro
     await page.goto('/register');
