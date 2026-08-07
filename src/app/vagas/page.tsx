@@ -37,9 +37,11 @@ function toJobPosting(job: {
 }
 
 export default async function VagasPage() {
+  // Banco pode estar indisponível durante o build (ex.: build de imagem Docker sem
+  // acesso à rede do Postgres). Falha aberta para não quebrar o build estático.
   const [jobs, categories] = await Promise.all([
-    jobRepository.findPublicJobs(200),
-    jobRepository.findRoleCategories(),
+    jobRepository.findPublicJobs(200).catch(() => []),
+    jobRepository.findRoleCategories().catch(() => []),
   ]);
 
   const schemaJobs = jobs.slice(0, 10).map(toJobPosting);

@@ -11,8 +11,15 @@ import { slugify } from '@/lib/core/vagas/slug';
 export const revalidate = 3600; // ISR: regenera a cada 1h
 
 export async function generateStaticParams() {
-  const categories = await jobRepository.findRoleCategories();
-  return categories.map((c) => ({ cargo: slugify(c.roleCategory) }));
+  try {
+    const categories = await jobRepository.findRoleCategories();
+    return categories.map((c) => ({ cargo: slugify(c.roleCategory) }));
+  } catch {
+    // Banco pode estar indisponível durante o build (ex.: build de imagem Docker sem
+    // acesso à rede do Postgres). dynamicParams permanece true, então essas páginas
+    // são geradas sob demanda na primeira requisição.
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ cargo: string }> }): Promise<Metadata> {
