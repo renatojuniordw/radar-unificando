@@ -33,6 +33,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error('[ats] Erro na análise:', error);
-    return NextResponse.json({ error: 'Erro ao analisar o currículo.' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Erro desconhecido';
+    // Mensagem segura para diagnóstico (não expõe headers/chaves — vem do zod/llm-provider)
+    return NextResponse.json(
+      { error: `Erro ao analisar o currículo: ${message.slice(0, 300)}` },
+      { status: 500 }
+    );
   }
 }
