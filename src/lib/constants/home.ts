@@ -51,6 +51,33 @@ export const WHY_USE_ITEMS = [
   },
 ];
 
+export const EXTENSION_FEATURES = [
+  {
+    title: "ANÁLISE NA HORA",
+    desc: "Abre um painel lateral com o score ATS da vaga que você está vendo, sem sair do site.",
+  },
+  {
+    title: "RE-ANÁLISE AUTOMÁTICA",
+    desc: "Troque de vaga e o painel acompanha — re-analisa sozinho quando a página muda.",
+  },
+  {
+    title: "SCORE POR SKILL",
+    desc: "Veja a aderência do seu currículo a cada tecnologia exigida, com sugestões de ajuste.",
+  },
+  {
+    title: "COPIE AS DICAS",
+    desc: "Exporte o resultado como texto formatado para aplicar as mudanças no currículo.",
+  },
+  {
+    title: "BADGE NO ÍCONE",
+    desc: "O score aparece direto no ícone da extensão, em verde, amarelo ou vermelho.",
+  },
+  {
+    title: "HISTÓRICO LOCAL",
+    desc: "Suas análises ficam salvas no navegador, com cache para evitar repetir chamadas.",
+  },
+];
+
 export const FAQ_ITEMS = [
   {
     q: "COMO FUNCIONA O RADAR DE VAGAS?",
@@ -87,5 +114,9 @@ export const FAQ_ITEMS = [
   {
     q: "COMO EXPORTAR AS VAGAS?",
     a: "Clique no botão 'Exportar' na tabela de resultados para baixar uma planilha completa com as vagas encontradas, contendo links diretos, empresas e descrições.",
+  },
+  {
+    q: "TEM EXTENSÃO DO CHROME?",
+    a: "Sim! A extensão Radar Unificando abre um painel lateral que analisa a vaga aberta na página e mostra o score ATS do seu currículo, com dicas para passar em triagens automatizadas. Ela re-analisa automaticamente quando você troca de vaga.",
   },
 ];
