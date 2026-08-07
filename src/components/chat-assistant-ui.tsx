@@ -15,7 +15,14 @@ import { ChatMessageList } from '@/components/chat-assistant/chat-message-list';
 import { ChatQuickActions } from '@/components/chat-assistant/chat-quick-actions';
 import { ChatInput } from '@/components/chat-assistant/chat-input';
 import { ChatSuggestedReplies } from '@/components/chat-assistant/chat-suggested-replies';
-import { SyncErrorBanner, ThreadLimitBanner, DailyLimitBanner, TokenLimitBanner } from '@/components/chat-assistant/chat-limit-banner';
+import {
+  SyncErrorBanner,
+  ThreadLimitBanner,
+  DailyLimitBanner,
+  TokenLimitBanner,
+  GlobalBudgetWarningBanner,
+  GlobalBudgetExhaustedBanner,
+} from '@/components/chat-assistant/chat-limit-banner';
 
 export function ChatAssistantUI() {
   const { data: session, status } = useSession();
@@ -62,7 +69,11 @@ export function ChatAssistantUI() {
   const isThreadLimitReached = !isDailyLimitReached && !isTokenLimitReached && (
     messages.length >= CHAT_THREAD_MESSAGE_LIMIT || lastMessageText.includes('limite de 25 mensagens')
   );
-  const inputDisabled = loading || isThreadLimitReached || isDailyLimitReached || isTokenLimitReached;
+  const isGlobalBudgetExhausted =
+    dailyUsage.globalBudget?.exhausted || lastMessageText.includes('orçamento diário do projeto foi atingido');
+  const isGlobalBudgetDegraded = dailyUsage.globalBudget?.degraded ?? false;
+  const inputDisabled =
+    loading || isThreadLimitReached || isDailyLimitReached || isTokenLimitReached || isGlobalBudgetExhausted;
   const hasUserMessage = messages.some((m) => m.role === 'user');
 
   function handleSend() {
@@ -97,6 +108,8 @@ export function ChatAssistantUI() {
     ? 'Limite diário atingido...'
     : isThreadLimitReached
     ? 'Limite desta conversa atingido. Inicie um novo chat.'
+    : isGlobalBudgetExhausted
+    ? 'Orçamento diário do projeto atingido...'
     : 'Digite sua mensagem...';
 
   return (
@@ -183,9 +196,13 @@ export function ChatAssistantUI() {
               onRetry={reload}
             />
 
-            {!hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && !isTokenLimitReached && (
-              <ChatQuickActions loading={loading} onSelect={(prompt) => sendMessage({ text: prompt })} />
-            )}
+            {!hasUserMessage &&
+              !isThreadLimitReached &&
+              !isDailyLimitReached &&
+              !isTokenLimitReached &&
+              !isGlobalBudgetExhausted && (
+                <ChatQuickActions loading={loading} onSelect={(prompt) => sendMessage({ text: prompt })} />
+              )}
 
             {isThreadLimitReached && (
               <ThreadLimitBanner onNewConversation={handleNewConversation} isDailyLimitReached={isDailyLimitReached} />
@@ -193,14 +210,22 @@ export function ChatAssistantUI() {
 
             {isDailyLimitReached && <DailyLimitBanner />}
             {isTokenLimitReached && !isDailyLimitReached && <TokenLimitBanner />}
-
-            {hasUserMessage && !isThreadLimitReached && !isDailyLimitReached && !isTokenLimitReached && (
-              <ChatSuggestedReplies
-                lastMessageText={lastMessageText}
-                loading={loading}
-                onSelect={(prompt) => sendMessage({ text: prompt })}
-              />
+            {isGlobalBudgetExhausted && !isDailyLimitReached && !isTokenLimitReached && <GlobalBudgetExhaustedBanner />}
+            {isGlobalBudgetDegraded && !isGlobalBudgetExhausted && !isDailyLimitReached && !isTokenLimitReached && (
+              <GlobalBudgetWarningBanner />
             )}
+
+            {hasUserMessage &&
+              !isThreadLimitReached &&
+              !isDailyLimitReached &&
+              !isTokenLimitReached &&
+              !isGlobalBudgetExhausted && (
+                <ChatSuggestedReplies
+                  lastMessageText={lastMessageText}
+                  loading={loading}
+                  onSelect={(prompt) => sendMessage({ text: prompt })}
+                />
+              )}
 
             <ChatInput
               value={input}

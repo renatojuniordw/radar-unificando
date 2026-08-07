@@ -6,6 +6,7 @@ import { chatLlm } from '@/lib/core/ai/llm-provider';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
 import { chatRepository, profileRepository } from '@/lib/infrastructure/repositories';
 import { acquireChatLock, releaseChatLock } from '@/lib/infrastructure/redis/chat-lock';
+import { getGlobalBudgetStatus, addGlobalBudgetCost } from '@/lib/infrastructure/redis/global-budget';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -92,10 +93,11 @@ export async function POST(req: NextRequest) {
   startDay.setHours(0, 0, 0, 0);
   const startMonth = new Date(startDay.getFullYear(), startDay.getMonth(), 1);
 
-  const [todayTokens, monthTokens, ipTokens] = await Promise.all([
+  const [todayTokens, monthTokens, ipTokens, globalBudget] = await Promise.all([
     chatRepository.sumTokensSince(usageGroup, startDay),
     chatRepository.sumTokensSince(usageGroup, startMonth),
     chatRepository.sumTokensSinceByIp(ipHash, startDay),
+    getGlobalBudgetStatus(),
   ]);
 
   const DAILY_TOKEN_LIMIT = Number(process.env.DAILY_TOKEN_LIMIT ?? 100000);
@@ -117,6 +119,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Orçamento diário global (soma do custo de todos os usuários) — protege contra pico de custo agregado.
+  if (globalBudget.exhausted) {
+    await releaseChatLock(session.user.id);
+    return new Response(
+      JSON.stringify({
+        error: 'O orçamento diário do projeto foi atingido. O chat volta a funcionar após a meia-noite.',
+        code: 'GLOBAL_BUDGET_REACHED',
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   try {
     const { messages } = await req.json();
@@ -169,7 +182,10 @@ export async function POST(req: NextRequest) {
       tools: createChatTools(session.user.id),
       stopWhen: stepCountIs(10),
       system: CHAT_SYSTEM_PROMPT,
-      maxOutputTokens: Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2000),
+      // Orçamento global perto do limite: respostas mais curtas em vez de bloquear todo mundo.
+      maxOutputTokens: globalBudget.degraded
+        ? Math.ceil(Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2000) / 2)
+        : Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2000),
       onFinish: async (event: {
         text?: string;
         finishReason: unknown;
@@ -232,6 +248,13 @@ export async function POST(req: NextRequest) {
           });
         } catch (err) {
           console.error('[chat] Erro ao registrar usage:', err);
+        }
+
+        // Soma o custo desta interação no orçamento diário global (fire-and-forget)
+        try {
+          await addGlobalBudgetCost(costUsd);
+        } catch (err) {
+          console.error('[chat] Erro ao registrar orçamento global:', err);
         }
 
         // Persistência assíncrona do histórico se a IA gerou texto

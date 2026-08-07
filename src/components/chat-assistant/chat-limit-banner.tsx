@@ -5,6 +5,8 @@ import { Box, IconButton, Typography } from '@mui/material';
 export function SyncErrorBanner() {
   return (
     <Box
+      role="status"
+      aria-live="polite"
       sx={{
         px: 2,
         py: 0.75,
@@ -22,6 +24,8 @@ export function SyncErrorBanner() {
 export function ThreadLimitBanner({ onNewConversation, isDailyLimitReached }: { onNewConversation: () => void; isDailyLimitReached: boolean }) {
   return (
     <Box
+      role="status"
+      aria-live="polite"
       sx={{
         p: 2,
         bgcolor: 'grey.100',
@@ -71,6 +75,8 @@ export function ThreadLimitBanner({ onNewConversation, isDailyLimitReached }: { 
 export function DailyLimitBanner() {
   return (
     <Box
+      role="status"
+      aria-live="polite"
       sx={{
         p: 2,
         bgcolor: 'error.50',
@@ -89,6 +95,8 @@ export function DailyLimitBanner() {
 export function TokenLimitBanner() {
   return (
     <Box
+      role="status"
+      aria-live="polite"
       sx={{
         p: 2,
         bgcolor: 'error.50',
@@ -102,6 +110,45 @@ export function TokenLimitBanner() {
         <a href="/termos" style={{ color: 'inherit' }}>
           Saiba mais
         </a>
+      </Typography>
+    </Box>
+  );
+}
+
+export function GlobalBudgetWarningBanner() {
+  return (
+    <Box
+      role="status"
+      aria-live="polite"
+      sx={{
+        px: 2,
+        py: 0.75,
+        bgcolor: 'warning.light',
+        color: 'warning.contrastText',
+        fontSize: '0.75rem',
+        textAlign: 'center',
+      }}
+    >
+      O orçamento diário do projeto está quase no limite. As respostas podem ficar mais curtas até a meia-noite.
+    </Box>
+  );
+}
+
+export function GlobalBudgetExhaustedBanner() {
+  return (
+    <Box
+      role="status"
+      aria-live="polite"
+      sx={{
+        p: 2,
+        bgcolor: 'error.50',
+        borderTop: '1px solid',
+        borderColor: 'error.light',
+        textAlign: 'center',
+      }}
+    >
+      <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.dark' }}>
+        O orçamento diário do projeto foi atingido. O chat volta a funcionar após a meia-noite.
       </Typography>
     </Box>
   );

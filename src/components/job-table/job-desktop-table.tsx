@@ -16,6 +16,9 @@ interface Props {
 export function JobDesktopTable({ jobs }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // TanStack Virtual retorna funções que não podem ser memoizadas com segurança
+  // (API incompatível com o React Compiler). Desabilitado por linha.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: jobs.length,
     getScrollElement: () => parentRef.current,

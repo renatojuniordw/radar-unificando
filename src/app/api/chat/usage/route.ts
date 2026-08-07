@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { chatRepository } from '@/lib/infrastructure/repositories';
+import { getGlobalBudgetStatus } from '@/lib/infrastructure/redis/global-budget';
 
 const DAILY_INTERACTION_LIMIT = 50;
 const DAILY_TOKEN_LIMIT = Number(process.env.DAILY_TOKEN_LIMIT ?? 100000);
@@ -22,9 +23,12 @@ export async function GET() {
   if (response) return response;
 
   try {
-    const count = await chatRepository.getDailyUserMessageCount(session.user.id);
-    const today = await chatRepository.sumTokensSince([session.user.id], startOfDay());
-    const month = await chatRepository.sumTokensSince([session.user.id], startOfMonth());
+    const [count, today, month, globalBudget] = await Promise.all([
+      chatRepository.getDailyUserMessageCount(session.user.id),
+      chatRepository.sumTokensSince([session.user.id], startOfDay()),
+      chatRepository.sumTokensSince([session.user.id], startOfMonth()),
+      getGlobalBudgetStatus(),
+    ]);
 
     const isTokenLimitReached =
       today.totalTokens >= DAILY_TOKEN_LIMIT || month.totalTokens >= MONTHLY_TOKEN_LIMIT;
@@ -41,6 +45,13 @@ export async function GET() {
       monthlyTokenLimit: MONTHLY_TOKEN_LIMIT,
       monthlyTokenRemaining: Math.max(0, MONTHLY_TOKEN_LIMIT - month.totalTokens),
       isTokenLimitReached,
+      globalBudget: {
+        usedUsd: globalBudget.usedUsd,
+        limitUsd: globalBudget.limitUsd,
+        ratio: globalBudget.ratio,
+        degraded: globalBudget.degraded,
+        exhausted: globalBudget.exhausted,
+      },
     });
   } catch (error) {
     console.error('[chat-usage] Erro ao buscar uso:', error);

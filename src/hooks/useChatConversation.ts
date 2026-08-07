@@ -11,6 +11,14 @@ import {
 } from '@/lib/chat';
 import { browserStorage } from '@/lib/infrastructure/storage/browser-storage';
 
+export interface GlobalBudgetUsage {
+  usedUsd: number;
+  limitUsd: number;
+  ratio: number;
+  degraded: boolean;
+  exhausted: boolean;
+}
+
 export interface DailyUsage {
   count: number;
   limit: number;
@@ -24,6 +32,7 @@ export interface DailyUsage {
   monthlyTokenRemaining: number;
   isTokenLimitReached: boolean;
   contextTokens?: number;
+  globalBudget?: GlobalBudgetUsage;
 }
 
 interface UseChatConversationParams {
@@ -49,6 +58,7 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     monthlyTokenRemaining: 2000000,
     isTokenLimitReached: false,
     contextTokens: 0,
+    globalBudget: { usedUsd: 0, limitUsd: 0.95, ratio: 0, degraded: false, exhausted: false },
   });
 
   const { messages, sendMessage, status: chatStatus, setMessages, regenerate } = useChat({
