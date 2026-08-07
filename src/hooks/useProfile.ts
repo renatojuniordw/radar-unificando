@@ -56,6 +56,7 @@ export function useProfile() {
   const [state, setState] = useState<ProfileData>(INITIAL_STATE);
   const [saving, setSaving] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -93,6 +94,8 @@ export function useProfile() {
       }
     } catch {
       setLoadError('Erro de conexão. Verifique sua internet.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -312,6 +315,7 @@ export function useProfile() {
     setManualMode,
     saving,
     extracting,
+    loading,
     loadError,
     dragOver,
     setDragOver,

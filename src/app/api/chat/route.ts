@@ -14,7 +14,22 @@ import {
   MAX_CONTEXT_MESSAGES,
   sanitizeChatMessages,
   isPromptInjection,
+  type ChatMessageInput,
 } from '@/lib/core/ai/chat-guard';
+
+/** Estimativa determinística de tokens (~4 caracteres/token, padrão para texto em pt-BR). */
+function estimateTokens(text: string): number {
+  if (!text) return 0;
+  return Math.max(1, Math.ceil(text.length / 4));
+}
+
+/** Extrai apenas os textos das mensagens para estimar o prompt. */
+function messagesToText(messages: ChatMessageInput[]): string {
+  return messages
+    .map((m) => (typeof m.content === 'string' ? m.content : ''))
+    .filter(Boolean)
+    .join(' ');
+}
 
 export async function POST(req: NextRequest) {
   const { session, response } = await requireAuth();
@@ -159,13 +174,34 @@ export async function POST(req: NextRequest) {
         text?: string;
         finishReason: unknown;
         steps?: { toolCalls?: { toolName: string }[] }[];
-        usage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number };
-      }) => {
-        const usage = {
-          promptTokens: event.usage?.promptTokens ?? 0,
-          completionTokens: event.usage?.completionTokens ?? 0,
-          totalTokens: event.usage?.totalTokens ?? 0,
+        usage?: {
+          inputTokens?: number;
+          outputTokens?: number;
+          totalTokens?: number;
+          promptTokens?: number;
+          completionTokens?: number;
         };
+      }) => {
+        // Uso reportado pelo provider (stream_options.include_usage).
+        // Atenção: no AI SDK v7 os campos são inputTokens/outputTokens
+        // (promptTokens/completionTokens são do v6). Nem todo provedor
+        // OpenAI-compatível devolve o chunk final de usage — quando
+        // ausente/zerado, estimamos por caracteres para o medidor nunca
+        // ficar travado em 0.
+        const reported = event.usage;
+        const hasRealUsage = !!reported && (reported.totalTokens ?? 0) > 0;
+
+        const usage = hasRealUsage
+          ? {
+              promptTokens: reported.inputTokens ?? reported.promptTokens ?? 0,
+              completionTokens: reported.outputTokens ?? reported.completionTokens ?? 0,
+              totalTokens: reported.totalTokens ?? 0,
+            }
+          : (() => {
+              const promptTokens = estimateTokens(`${CHAT_SYSTEM_PROMPT} ${messagesToText(sanitizedMessages)}`);
+              const completionTokens = estimateTokens(event.text ?? '');
+              return { promptTokens, completionTokens, totalTokens: promptTokens + completionTokens };
+            })();
 
         // Custo estimado (preços gpt-4o-mini em USD por 1M tokens; ajustáveis por env)
         const INPUT_PRICE_PER_1M = Number(process.env.AI_INPUT_PRICE_PER_1M ?? 0.15);

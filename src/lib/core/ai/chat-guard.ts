@@ -36,7 +36,7 @@ const SUSPICIOUS_PATTERNS = [
   /override (your|all) (instructions|rules)/i,
 ];
 
-interface ChatMessageInput {
+export interface ChatMessageInput {
   role?: string;
   content?: string;
 }

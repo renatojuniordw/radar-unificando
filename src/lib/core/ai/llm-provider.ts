@@ -11,6 +11,10 @@ const provider = createOpenAICompatible({
   name: 'llm',
   baseURL,
   apiKey,
+  // Exige o chunk final de usage no streaming (stream_options.include_usage).
+  // Sem isso, provedores OpenAI-compatíveis não reportam tokens e o medidor
+  // de consumo do chat fica travado em 0.
+  includeUsage: true,
 });
 
 export const chatLlm = provider.chatModel(modelName);
