@@ -16,6 +16,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Análise de match** — compara perfil × vaga com skills casadas/faltantes e fit geral
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
+- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra dicas de ATS, com re-análise automática ao trocar de vaga (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`)
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
 ## Stack
