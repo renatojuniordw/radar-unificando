@@ -92,9 +92,10 @@ npm run dev
 src/
   app/
     (auth)/        → Login e registro
-    (dashboard)/   → Perfil do usuário
-    api/           → API routes (pipeline, chat, empresas, profile, vagas, upload…)
+    (dashboard)/   → Perfil do usuário, conexão da extensão (/extensao/conectar)
+    api/           → API routes (pipeline, chat, profile, vagas, upload, ats, extension…)
     export/        → Export CSV/JSON
+    extensao/      → Página pública da extensão (marketing)
     termos/        → Termos LGPD
   components/
     home/          → Hero, WhyUse, FAQ, Results, Loading
@@ -104,8 +105,8 @@ src/
   contexts/        → Chat assistant context
   hooks/           → Custom hooks (useJobSearch, useProfile)
   lib/
-    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI)
-    infrastructure/ → Infra (db, repositories, storage, security, ui)
+    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI, extension, ats)
+    infrastructure/ → Infra (db, repositories, redis, storage, security, ui)
 ```
 
 ## Documentação

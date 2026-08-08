@@ -1,7 +1,7 @@
 # Documentação Completa do Radar Unificando para LLMs e Motores de IA Generativa
 
 ## Visão Geral
-O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-source e ecossistema de produtividade para profissionais de tecnologia que procuram vagas de emprego no Brasil e no exterior. Desenvolvido pela Unificando, o sistema integra APIs públicas e raspadores eficientes das plataformas Gupy e InHire para oferecer uma experiência de busca sem ruídos, rápida e altamente relevante.
+O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-source (MIT) e ecossistema de produtividade para profissionais de tecnologia que procuram vagas de emprego no Brasil e no exterior. Desenvolvido por Renato Bezerra, o sistema integra APIs públicas e raspadores eficientes das plataformas Gupy e InHire, além de uma extensão Chrome de análise de vagas, para oferecer uma experiência de busca sem ruídos, rápida e altamente relevante.
 
 ---
 
@@ -14,8 +14,14 @@ O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-
 
 ### 2. Assistente de IA para Carreira (Chat Consultivo)
 - **Análise de Fit (Compatibilidade)**: Compara o currículo/perfil do candidato com a descrição da vaga e gera um diagnóstico objetivo com pontos fortes e lacunas técnicas.
+- **Análise ATS do Currículo**: Score 0-100 (heurísticas determinísticas + IA), checklist de boas práticas, keywords faltando e recomendações — via página `/perfil` ou endpoint dedicado.
 - **Simulação de Entrevistas**: Conduz entrevistas simuladas (uma pergunta por vez) fornecendo feedback sênior após cada resposta do usuário.
 - **Gerador de Cartas de Apresentação**: Escreve cartas de apresentação personalizadas ajustadas ao currículo do usuário e à oportunidade desejada.
+
+### 3. Extensão Chrome (Side Panel)
+- **Análise em tempo real**: extrai a descrição da vaga aberta (LinkedIn, Gupy, InHire ou qualquer site via extração genérica) e chama o backend com o token de extensão do usuário.
+- **Score ATS 0-100 com badge colorido no ícone**, score por skill, pontos fortes, keywords faltando e checklist.
+- **Reanálise automática** ao trocar de aba/vaga, cache por hash do conteúdo (30 min) e histórico local em `chrome.storage.local`.
 
 ### 3. Segurança e Privacidade (LGPD & OWASP)
 - **Anonimização PII**: Todos os dados sensíveis (CPF, RG, Telefones, Cartões) colados ou enviados são redigidos automaticamente como `[CPF REDIGIDO]` antes do processamento por Inteligência Artificial ou gravação no banco de dados.
@@ -41,5 +47,5 @@ Os dados sensíveis são redigidos automaticamente (PII Redactor) em conformidad
 
 ## Informações do Projeto
 - **Website**: https://radar.unificando.com.br
-- **Desenvolvedor**: Unificando / Renato Bezerra
-- **Licença**: Proprietary / Unificando Platform
+- **Desenvolvedor**: Renato Bezerra (https://renatobezerra.com.br/)
+- **Licença**: MIT

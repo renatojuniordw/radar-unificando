@@ -97,6 +97,18 @@ Drawer lateral direito com FAB. Regras aplicadas:
 | Limpar chat | Limpa estado + IndexedDB + servidor, **sem reload** |
 | Empty state | Chips de sugestão clicáveis que preenchem o input |
 
+## Página de Conexão da Extensão (`/extensao/conectar`)
+
+Brutalist escuro (mesma paleta do hero da home):
+
+| Elemento | Aplicação |
+|----------|-----------|
+| Fundo | `#020617` com animação `hero-radar` (efeito radar cônico em loop) |
+| Card token | `TokenBox` — borda grossa, sombra dura, labels mono maiúsculas |
+| Ações | Copiar (ícone + atalho teclado `C` + beep Web Audio), mostrar/ocultar token |
+| Status | Dot verde "Extensão conectada" via polling `/api/extensao/status` (4s) |
+| Passos | 3 cards de onboarding (instalar, copiar token, colar na extensão) com ícones lucide |
+
 ## Referência
 
 Design tokens completos: `DESIGN.md` (arquivo raiz)

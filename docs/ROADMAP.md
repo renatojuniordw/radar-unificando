@@ -5,29 +5,32 @@
 - Brutalist UI
 - Docker single service
 
-## v2 (branch `v2/redesign` — em desenvolvimento)
+## v2 (desenvolvimento atual — branches `feat/*` a partir de `main`)
 - ✅ PostgreSQL + Prisma ORM
-- ✅ Auth.js v5 (credentials + JWT)
-- ✅ MUI 7 (tema claro fixo; visual dark via estilos brutalistas — sem toggle)
-- ✅ Gupy MCP + REST fallback
-- ✅ Páginas: home unificada, perfil, login/register, termos
-- ✅ Chat assistente IA (MUI + `@ai-sdk/react`, com PII redaction e proteção anti prompt injection)
+- ✅ Auth.js v5 (credentials + JWT, bcrypt cost=12)
+- ✅ MUI 7 + Tailwind v4 (tema claro fixo; visual dark via estilos brutalistas — sem toggle)
+- ✅ Gupy MCP + REST fallback + scraper InHire
+- ✅ Páginas: home unificada, perfil, login/register, termos, sobre, doar, guia-ats, vagas públicas (ISR + JSON-LD)
+- ✅ Chat assistente IA (MUI + `@ai-sdk/react`, PII redaction, proteção anti prompt injection)
 - ✅ Upload PDF + extração IA (skills, cargo, área, senioridade, formação)
-- ✅ Análise de fit perfil × vaga (via chat) + recomendação por perfil (ranked jobs)
+- ✅ Análise ATS dedicada (`POST /api/ats/analyze`) + análise de fit perfil × vaga via chat
+- ✅ **Extensão Chrome** (MV3, side panel): análise de vaga em tempo real, score ATS, tokens por hash SHA-256, `/api/extension/analyze`, `/api/extension/feedback`, página `/extensao/conectar`
+- ✅ Controle de orçamento diário global (USD) + tetos de tokens (100k/dia, 2M/mês, 300k/IP)
 - ✅ Export CSV/JSON
 - ✅ Design system Neo-Brutalism
 - ✅ Documentação (docs/)
-- ✅ Segurança: rate limiting (Redis + in-memory), prompt injection protection, env validation
+- ✅ Segurança: rate limiting (Redis + in-memory), prompt injection protection, env validation, validação de origem da extensão (`EXTENSION_ORIGIN`)
 - ✅ Persistência anônima em IndexedDB (com auto-sync de 15 min)
-- ✅ Suíte Vitest (45 arquivos · 232 testes) — 30 falhas pré-existentes em arquivos com trabalho não commitado
-- ⏳ E2E Playwright (spec desatualizado — referência textos antigos da UI)
-- ⏳ Corrigir falhas pré-existentes dos testes
+- ✅ PWA instalável (service worker em produção; offline completo ainda não)
+- ✅ Suíte Vitest (47 arquivos · 253 testes passando) + e2e Playwright em `e2e/`
 - ⏳ Performance audit
 - ⏳ Acessibilidade audit
+
+> Histórico: a API de **reescrita de currículos** (resume adaptation) foi implementada e depois **removida** (commit `0465180`) — o tipo `resume_adaptation` permanece no `ai-logger` apenas como vestígio.
 
 ## v3 (Futuro)
 - Notificações em tempo real
 - Integração com LinkedIn API
-- Pipeline Discovery avançado (mais fontes)
+- Pipeline Discovery avançado (mais fontes — código já existe, `discoveryEnabled: false`)
 - App mobile (React Native)
-- Modo offline (PWA)
+- Modo offline completo (PWA)

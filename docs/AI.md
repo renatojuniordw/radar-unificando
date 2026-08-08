@@ -8,7 +8,7 @@
 | SDK | Vercel AI SDK (`ai` + `@ai-sdk/openai-compatible`) |
 | Validação | Zod schemas |
 | Logging | JSON estruturado no stdout (`[AI_LOG]`) |
-| Modelo | `AI_MODEL` (default `deepseek-v4-flash`) |
+| Modelo | `AI_MODEL` (default `gpt-4o-mini`) |
 | Cache | `GeneratedContentCache` (TTL 30 dias, chave SHA-256) |
 
 ## Extração de Currículo
@@ -133,7 +133,7 @@ O `POST /api/chat` aplica três camadas de proteção:
 AI_BASE_URL=https://code.verboo.ai/router   # Verboo
 # AI_BASE_URL=https://api.openai.com/v1     # OpenAI
 AI_API_KEY=sk-xxx
-AI_MODEL=deepseek-v4-flash
+AI_MODEL=gpt-4o-mini
 ```
 
 > Nota: `.env.example` atual usa `https://code.verboo.ai/router/v1` (com `/v1`).
