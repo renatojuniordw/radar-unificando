@@ -42,3 +42,17 @@ export async function findUserIdByExtensionToken(raw: string): Promise<string | 
 
   return token.userId;
 }
+
+/**
+ * Retorna o status de conexão da extensão para o usuário (se já usou o token).
+ */
+export async function getExtensionStatusForUser(userId: string): Promise<{ connected: boolean; lastUsedAt: Date | null }> {
+  const token = await prisma.extensionToken.findFirst({
+    where: { userId, revokedAt: null, lastUsedAt: { not: null } },
+    orderBy: { lastUsedAt: 'desc' },
+  });
+  if (!token || !token.lastUsedAt) {
+    return { connected: false, lastUsedAt: null };
+  }
+  return { connected: true, lastUsedAt: token.lastUsedAt };
+}
