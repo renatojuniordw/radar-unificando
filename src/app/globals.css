@@ -85,24 +85,52 @@ body {
 /* ===== Card Patterns ===== */
 
 .card-brutalist {
-  border: 2px solid #334155;
-  background-color: #0f172a;
-  color: #f8fafc;
+  border: 4px solid #020617;
+  background-color: #ffffff;
+  color: #020617;
   box-shadow: 6px 6px 0px #000;
   transition: all 0.2s ease-in-out;
 }
 
 .card-brutalist:hover {
-  border-color: #ccff00;
+  border-color: #020617;
   transform: translateY(-2px);
   box-shadow: 8px 8px 0px #000;
 }
 
+.card-brutalist h1,
+.card-brutalist h2,
+.card-brutalist h3,
+.card-brutalist h4,
+.card-brutalist h5,
+.card-brutalist h6 {
+  color: #020617 !important;
+}
+
+.card-brutalist p,
+.card-brutalist span,
+.card-brutalist li {
+  color: #334155;
+}
+
 .card-dark {
-  border: 2px solid #ccff00;
+  border: 3px solid #ccff00;
   background-color: #0f172a;
   color: #f8fafc;
   box-shadow: 6px 6px 0px #ccff00;
+}
+
+.card-dark h1,
+.card-dark h2,
+.card-dark h3,
+.card-dark h4 {
+  color: #ffffff;
+}
+
+.card-dark p,
+.card-dark span,
+.card-dark li {
+  color: #cbd5e1;
 }
 
 /* ===== Badge Patterns ===== */

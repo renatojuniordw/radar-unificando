@@ -5,7 +5,7 @@ const ICONS = [Zap, ShieldCheck, Clock, Sparkles, Target, Bot];
 
 export function WhyUseSection() {
   return (
-    <section className="section-white" style={{ py: "64px" }}>
+    <section className="section-white" style={{ paddingTop: "64px", paddingBottom: "64px" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "48px 16px" }}>
         <div className="badge-dark" style={{ marginBottom: "20px", display: "inline-block" }}>
           POR QUE USAR O RADAR
@@ -15,7 +15,7 @@ export function WhyUseSection() {
             fontWeight: 900,
             textTransform: "uppercase",
             letterSpacing: "-0.02em",
-            color: "#f8fafc",
+            color: "#ffffff",
             fontSize: "clamp(1.75rem, 4vw, 3rem)",
             marginBottom: "36px",
             lineHeight: 0.95,
@@ -60,7 +60,7 @@ export function WhyUseSection() {
                       justifyContent: "center",
                       marginBottom: "20px",
                       color: "#ccff00",
-                      boxShadow: "3px 3px 0px #ccff00",
+                      boxShadow: "3px 3px 0px #020617",
                     }}
                   >
                     <IconComponent size={22} strokeWidth={2.5} />
@@ -72,17 +72,18 @@ export function WhyUseSection() {
                       letterSpacing: "-0.01em",
                       fontSize: "1.1rem",
                       marginBottom: "12px",
-                      color: "#f8fafc",
+                      color: "#020617",
                     }}
                   >
                     {item.title}
                   </h3>
                   <p
                     style={{
-                      color: "#94a3b8",
+                      color: "#334155",
                       fontSize: "0.875rem",
                       lineHeight: 1.6,
                       margin: 0,
+                      fontWeight: 500,
                     }}
                   >
                     {item.desc}
@@ -96,4 +97,3 @@ export function WhyUseSection() {
     </section>
   );
 }
-

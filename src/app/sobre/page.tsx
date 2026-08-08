@@ -44,7 +44,7 @@ export default function SobrePage() {
             position: 'absolute',
             inset: -200,
             background: 'conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)',
-            opacity: 0.03,
+            opacity: 0.05,
             pointerEvents: 'none',
           }}
         />
@@ -74,12 +74,13 @@ export default function SobrePage() {
 
           <p
             style={{
-              color: '#cbd5e1',
+              color: '#f8fafc',
               fontFamily: 'var(--font-family-inter)',
               fontSize: '1.05rem',
               maxWidth: '720px',
               margin: '0 auto',
               lineHeight: 1.65,
+              fontWeight: 500,
             }}
           >
             O Radar Unificando é uma plataforma inteligente que consolida vagas de emprego de grandes portais (como Gupy e InHire) em tempo real, cobrindo todas as áreas profissionais com análise de aderência e assistente de IA.
@@ -88,13 +89,16 @@ export default function SobrePage() {
       </section>
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px' }}>
-        {/* Section 1: A Missão */}
+        {/* Section 1: A Missão (Cartão Branco de Alto Contraste) */}
         <section style={{ marginTop: '48px', marginBottom: '48px' }}>
           <div
             className="card-brutalist"
             style={{
               padding: '36px 28px',
               position: 'relative',
+              backgroundColor: '#ffffff',
+              border: '4px solid #020617',
+              boxShadow: '8px 8px 0px #000',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -102,7 +106,7 @@ export default function SobrePage() {
                 style={{
                   padding: '8px',
                   backgroundColor: '#020617',
-                  border: '1px solid #ccff00',
+                  border: '2px solid #020617',
                   color: '#ccff00',
                   display: 'flex',
                   alignItems: 'center',
@@ -114,10 +118,10 @@ export default function SobrePage() {
               <h2
                 style={{
                   fontWeight: 900,
-                  fontSize: '1.4rem',
+                  fontSize: '1.3rem',
                   textTransform: 'uppercase',
                   letterSpacing: '-0.01em',
-                  color: '#ccff00',
+                  color: '#020617',
                   margin: 0,
                 }}
               >
@@ -126,23 +130,25 @@ export default function SobrePage() {
             </div>
             <p
               style={{
-                color: '#cbd5e1',
+                color: '#334155',
                 fontSize: '0.95rem',
                 lineHeight: 1.7,
                 marginBottom: '16px',
+                fontWeight: 500,
               }}
             >
               Procurar emprego costuma ser uma tarefa exaustiva: dezenas de abas abertas, cadastros repetitivos e falta de clareza sobre quais vagas realmente combinam com seu perfil.
             </p>
             <p
               style={{
-                color: '#cbd5e1',
+                color: '#334155',
                 fontSize: '0.95rem',
                 lineHeight: 1.7,
                 margin: 0,
+                fontWeight: 500,
               }}
             >
-              O Radar Unificando foi criado para resolver isso. Ele centraliza a pesquisa, analisa requisitos com Inteligência Artificial e ajuda profissionais de <strong style={{ color: '#f8fafc' }}>qualquer segmento</strong> — Marketing, RH, Vendas, Tecnologia, Finanças, Saúde, Design e Operações — a encontrarem oportunidades alinhadas às suas habilidades.
+              O Radar Unificando foi criado para resolver isso. Ele centraliza a pesquisa, analisa requisitos com Inteligência Artificial e ajuda profissionais de <strong style={{ color: '#020617', fontWeight: 900 }}>qualquer segmento</strong> — Marketing, RH, Vendas, Tecnologia, Finanças, Saúde, Design e Operações — a encontrarem oportunidades alinhadas às suas habilidades.
             </p>
           </div>
         </section>
@@ -155,6 +161,9 @@ export default function SobrePage() {
               padding: '40px 28px',
               position: 'relative',
               overflow: 'hidden',
+              backgroundColor: '#0f172a',
+              border: '3px solid #ccff00',
+              boxShadow: '8px 8px 0px #ccff00',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
@@ -210,7 +219,7 @@ export default function SobrePage() {
                     fontSize: '0.725rem',
                     fontWeight: 700,
                     color: '#ccff00',
-                    backgroundColor: 'rgba(204, 255, 0, 0.08)',
+                    backgroundColor: 'rgba(204, 255, 0, 0.12)',
                     border: '1px solid #ccff00',
                     padding: '3px 10px',
                     textTransform: 'uppercase',
@@ -223,21 +232,23 @@ export default function SobrePage() {
 
             <p
               style={{
-                color: '#cbd5e1',
+                color: '#f8fafc',
                 fontSize: '0.95rem',
                 lineHeight: 1.7,
                 marginBottom: '16px',
+                fontWeight: 500,
               }}
             >
-              Olá! Sou o <strong style={{ color: '#ffffff' }}>Renato Bezerra</strong>, Engenheiro de Software com ampla experiência em desenvolvimento web, arquitetura de sistemas e soluções em Inteligência Artificial Generativa.
+              Olá! Sou o <strong style={{ color: '#ccff00' }}>Renato Bezerra</strong>, Engenheiro de Software com ampla experiência em desenvolvimento web, arquitetura de sistemas e soluções em Inteligência Artificial Generativa.
             </p>
 
             <p
               style={{
-                color: '#cbd5e1',
+                color: '#f8fafc',
                 fontSize: '0.95rem',
                 lineHeight: 1.7,
                 marginBottom: '32px',
+                fontWeight: 500,
               }}
             >
               Desenvolvi o Radar Unificando para colocar a tecnologia a serviço do profissional brasileiro. A plataforma une automação em tempo real, segurança avançada de dados (LGPD) e inteligência artificial para que você passe menos tempo procurando vagas e mais tempo conquistando a oportunidade certa.
@@ -318,6 +329,9 @@ export default function SobrePage() {
               className="card-brutalist"
               style={{
                 padding: '28px 24px',
+                backgroundColor: '#ffffff',
+                border: '4px solid #020617',
+                boxShadow: '6px 6px 0px #000',
               }}
             >
               <div
@@ -325,7 +339,7 @@ export default function SobrePage() {
                   width: '40px',
                   height: '40px',
                   backgroundColor: '#020617',
-                  border: '2px solid #ccff00',
+                  border: '2px solid #020617',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -335,10 +349,10 @@ export default function SobrePage() {
               >
                 <UserCheck size={22} />
               </div>
-              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#f8fafc' }}>
+              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
                 TODAS AS PROFISSÕES
               </h3>
-              <p style={{ color: '#cbd5e1', fontSize: '0.875rem', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                 Vagas para qualquer área do mercado: Marketing, Vendas, RH, Financeiro, Tecnologia, Design, Operações e muito mais.
               </p>
             </div>
@@ -347,6 +361,9 @@ export default function SobrePage() {
               className="card-brutalist"
               style={{
                 padding: '28px 24px',
+                backgroundColor: '#ffffff',
+                border: '4px solid #020617',
+                boxShadow: '6px 6px 0px #000',
               }}
             >
               <div
@@ -354,7 +371,7 @@ export default function SobrePage() {
                   width: '40px',
                   height: '40px',
                   backgroundColor: '#020617',
-                  border: '2px solid #ccff00',
+                  border: '2px solid #020617',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -364,10 +381,10 @@ export default function SobrePage() {
               >
                 <Zap size={22} />
               </div>
-              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#f8fafc' }}>
+              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
                 TEMPO REAL & MATCH IA
               </h3>
-              <p style={{ color: '#cbd5e1', fontSize: '0.875rem', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                 Consultas diretas nos portais de vagas no momento da busca, com cálculo de compatibilidade de perfil e resumo de requisitos.
               </p>
             </div>
@@ -376,6 +393,9 @@ export default function SobrePage() {
               className="card-brutalist"
               style={{
                 padding: '28px 24px',
+                backgroundColor: '#ffffff',
+                border: '4px solid #020617',
+                boxShadow: '6px 6px 0px #000',
               }}
             >
               <div
@@ -383,7 +403,7 @@ export default function SobrePage() {
                   width: '40px',
                   height: '40px',
                   backgroundColor: '#020617',
-                  border: '2px solid #ccff00',
+                  border: '2px solid #020617',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -393,10 +413,10 @@ export default function SobrePage() {
               >
                 <ShieldCheck size={22} />
               </div>
-              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#f8fafc' }}>
+              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
                 PRIVACIDADE TOTAL (LGPD)
               </h3>
-              <p style={{ color: '#cbd5e1', fontSize: '0.875rem', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                 Dados criptografados, anonimização automática de dados sensíveis e navegação livre sem rastreamento abusivo.
               </p>
             </div>
@@ -410,8 +430,8 @@ export default function SobrePage() {
               textAlign: 'center',
               backgroundColor: '#0f172a',
               padding: '44px 24px',
-              border: '2px solid #ccff00',
-              boxShadow: '8px 8px 0px #000000',
+              border: '3px solid #ccff00',
+              boxShadow: '8px 8px 0px #ccff00',
             }}
           >
             <h2
@@ -427,7 +447,7 @@ export default function SobrePage() {
             </h2>
             <p
               style={{
-                color: '#94a3b8',
+                color: '#cbd5e1',
                 fontFamily: 'ui-monospace, monospace',
                 fontSize: '0.95rem',
                 marginBottom: '28px',
@@ -456,4 +476,3 @@ export default function SobrePage() {
     </main>
   );
 }
-

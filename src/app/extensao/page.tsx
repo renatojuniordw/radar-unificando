@@ -479,17 +479,18 @@ export default function ExtensaoPage() {
                         letterSpacing: "-0.01em",
                         fontSize: "1.1rem",
                         marginBottom: "12px",
-                        color: "#f8fafc",
+                        color: "#020617",
                       }}
                     >
                       {item.title}
                     </h3>
                     <p
                       style={{
-                        color: "#cbd5e1",
+                        color: "#334155",
                         fontSize: "0.875rem",
                         lineHeight: 1.6,
                         margin: 0,
+                        fontWeight: 500,
                       }}
                     >
                       {item.desc}

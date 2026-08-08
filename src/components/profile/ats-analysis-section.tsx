@@ -65,9 +65,9 @@ export function AtsAnalysisSection() {
         mt: 3,
         mb: 3,
         p: 3,
-        border: "2px solid #ccff00",
+        border: "4px solid #ccff00",
         boxShadow: "6px 6px 0px #ccff00",
-        bgcolor: "#0f172a",
+        bgcolor: "#020617",
       }}
     >
       <Typography
@@ -77,11 +77,12 @@ export function AtsAnalysisSection() {
           textTransform: "uppercase",
           color: "#ccff00",
           mb: 1,
+          fontFamily: "ui-monospace, monospace",
         }}
       >
-        Análise ATS do currículo
+        ANÁLISE ATS DO CURRÍCULO
       </Typography>
-      <Typography sx={{ color: "#94a3b8", fontSize: "0.8rem", mb: 2 }}>
+      <Typography sx={{ color: "#cbd5e1", fontSize: "0.8rem", mb: 2, fontFamily: "ui-monospace, monospace" }}>
         Descubra se seu currículo passa nos filtros automáticos (ATS) usados
         pelas empresas. Opcional: cole a descrição da vaga para checar as
         palavras-chave que faltam.
@@ -99,8 +100,9 @@ export function AtsAnalysisSection() {
         placeholder="Cole aqui a descrição da vaga alvo..."
         sx={{
           mb: 2,
-          "& .MuiInputBase-root": { color: "#fff" },
-          "& .MuiInputLabel-root": { color: "#94a3b8" },
+          "& .MuiInputBase-root": { color: "#fff", fontFamily: "ui-monospace, monospace", fontSize: "0.8rem" },
+          "& .MuiInputLabel-root": { color: "#94a3b8", fontFamily: "ui-monospace, monospace" },
+          "& .MuiOutlinedInput-notchedOutline": { borderColor: "#334155" },
         }}
       />
 
@@ -118,11 +120,13 @@ export function AtsAnalysisSection() {
           fontWeight: 900,
           textTransform: "uppercase",
           fontSize: "0.75rem",
+          fontFamily: "ui-monospace, monospace",
+          border: "2px solid #020617",
           "&:hover": { bgcolor: "#b8e600" },
           "&.Mui-disabled": { bgcolor: "grey.600", color: "grey.400" },
         }}
       >
-        {loading ? "Analisando..." : "Analisar compatibilidade ATS"}
+        {loading ? "Analisando..." : "ANALISAR COMPATIBILIDADE ATS"}
       </Button>
 
       {error && (

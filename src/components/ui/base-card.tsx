@@ -28,6 +28,7 @@ export function BaseCard({ title, children, variant = 'default' }: Props) {
         textTransform: 'uppercase', 
         letterSpacing: '-0.01em', 
         fontSize: '0.9rem', 
+        color: '#020617',
         margin: '0 0 16px' 
       }}>
         {title}
