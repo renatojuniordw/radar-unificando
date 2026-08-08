@@ -19,9 +19,45 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Extensão Chrome — Radar Unificando',
+  title: 'Extensão Chrome Radar Unificando — Análise de Vagas e Score ATS Grátis',
   description:
-    'Analise a vaga aberta na página e veja o score ATS do seu currículo, com dicas para passar em triagens automatizadas, direto de um painel lateral no Chrome.',
+    'Analise vagas de emprego no Gupy, LinkedIn e InHire em tempo real. Veja seu score ATS, palavras-chave de IA faltando no seu currículo e dicas de otimização direto no painel lateral do Chrome.',
+  keywords: [
+    'Extensão Chrome',
+    'Score ATS',
+    'Análise de Currículo',
+    'Vagas Gupy',
+    'Vagas LinkedIn',
+    'InHire',
+    'Inteligência Artificial Vagas',
+    'Otimização de Currículo',
+    'Radar Unificando',
+  ],
+  openGraph: {
+    title: 'Extensão Chrome Radar Unificando — Score ATS e Dicas de Vagas',
+    description:
+      'Descubra sua compatibilidade com vagas no Gupy, LinkedIn e InHire. Receba dicas imediatas de IA para ajustar seu currículo e passar em triagens automatizadas.',
+    type: 'website',
+  },
+};
+
+const JSON_LD_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Radar Unificando Chrome Extension',
+  operatingSystem: 'Chrome',
+  applicationCategory: 'BusinessApplication',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'BRL',
+  },
+  description:
+    'Extensão Chrome oficial do Radar Unificando. Analisa a vaga aberta na página (Gupy, LinkedIn, InHire) e mostra o score ATS e dicas de currículo em um painel lateral.',
+  author: {
+    '@type': 'Person',
+    name: 'Renato Bezerra',
+  },
 };
 
 const HOW_IT_WORKS = [
@@ -50,6 +86,10 @@ const FEATURE_ICONS = [Gauge, RefreshCw, BarChart3, Copy, ShieldCheck, History];
 export default function ExtensaoPage() {
   return (
     <main style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD_SCHEMA) }}
+      />
       {/* Hero Section */}
       <section className="section-hero" style={{ padding: '64px 16px', position: 'relative', overflow: 'hidden' }}>
         <div
