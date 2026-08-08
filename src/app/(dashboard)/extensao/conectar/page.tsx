@@ -21,9 +21,15 @@ export default async function ConectarExtensaoPage({
   searchParams: Promise<{ redirect_uri?: string }>;
 }) {
   const session = await auth();
-  if (!session?.user?.id) redirect('/login');
-
   const { redirect_uri } = await searchParams;
+
+  if (!session?.user?.id) {
+    const back = redirect_uri
+      ? `/extensao/conectar?redirect_uri=${encodeURIComponent(redirect_uri)}`
+      : '/extensao/conectar';
+    redirect(`/login?callbackUrl=${encodeURIComponent(back)}`);
+  }
+
   const rawToken = await createExtensionToken(session.user.id);
 
   // Fluxo automático via launchWebAuthFlow: entrega o token no redirect da extensão.
