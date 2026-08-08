@@ -87,7 +87,7 @@ export default function DoarContent() {
             position: "absolute",
             inset: -200,
             background: "conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)",
-            opacity: 0.03,
+            opacity: 0.05,
             pointerEvents: "none",
           }}
         />
@@ -117,14 +117,15 @@ export default function DoarContent() {
 
           <p
             style={{
-              color: "#cbd5e1",
+              color: "#f8fafc",
               fontSize: "1.05rem",
               lineHeight: 1.65,
               maxWidth: "680px",
               margin: "0 auto",
+              fontWeight: 500,
             }}
           >
-            Sabia que o Radar é mantido por um único desenvolvedor? O site é <strong style={{ color: "#f8fafc" }}>100% gratuito</strong>, mas cada busca, análise e conversa com a IA consome tokens e servidores. Se a ferramenta te ajudou hoje, apoie o projeto com um PIX de qualquer valor.
+            Sabia que o Radar é mantido por um único desenvolvedor? O site é <strong style={{ color: "#ccff00" }}>100% gratuito</strong>, mas cada busca, análise e conversa com a IA consome tokens e servidores. Se a ferramenta te ajudou hoje, apoie o projeto com um PIX de qualquer valor.
           </p>
         </div>
       </section>
@@ -138,6 +139,9 @@ export default function DoarContent() {
               padding: "40px 24px",
               textAlign: "center",
               position: "relative",
+              backgroundColor: "#0f172a",
+              border: "3px solid #ccff00",
+              boxShadow: "8px 8px 0px #ccff00",
             }}
           >
             <div
@@ -180,7 +184,7 @@ export default function DoarContent() {
             <div
               style={{
                 backgroundColor: "#020617",
-                border: "1px solid #334155",
+                border: "2px solid #334155",
                 padding: "12px 16px",
                 maxWidth: "480px",
                 margin: "0 auto 24px",
@@ -195,8 +199,9 @@ export default function DoarContent() {
                 style={{
                   fontFamily: "ui-monospace, monospace",
                   fontSize: "0.75rem",
-                  color: "#94a3b8",
+                  color: "#cbd5e1",
                   textTransform: "uppercase",
+                  fontWeight: 700,
                 }}
               >
                 Chave PIX (Aleatória):
@@ -225,6 +230,8 @@ export default function DoarContent() {
                 gap: "10px",
                 backgroundColor: copied ? "#00ff66" : "#ccff00",
                 color: "#020617",
+                border: "4px solid #020617",
+                boxShadow: "6px 6px 0px #000",
                 transition: "all 0.2s ease-in-out",
               }}
             >
@@ -279,6 +286,9 @@ export default function DoarContent() {
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
+                    backgroundColor: "#ffffff",
+                    border: "4px solid #020617",
+                    boxShadow: "6px 6px 0px #000",
                   }}
                 >
                   <div>
@@ -295,7 +305,7 @@ export default function DoarContent() {
                           width: "36px",
                           height: "36px",
                           backgroundColor: "#020617",
-                          border: "1px solid #ccff00",
+                          border: "2px solid #020617",
                           color: "#ccff00",
                           display: "flex",
                           alignItems: "center",
@@ -308,11 +318,11 @@ export default function DoarContent() {
                         style={{
                           fontFamily: "ui-monospace, monospace",
                           fontWeight: 900,
-                          fontSize: "1rem",
-                          color: "#ccff00",
-                          backgroundColor: "#020617",
-                          padding: "2px 8px",
-                          border: "1px solid #ccff00",
+                          fontSize: "0.9rem",
+                          color: "#020617",
+                          backgroundColor: "#ccff00",
+                          padding: "3px 10px",
+                          border: "2px solid #020617",
                         }}
                       >
                         {item.label}
@@ -323,13 +333,13 @@ export default function DoarContent() {
                         fontWeight: 900,
                         fontSize: "0.95rem",
                         textTransform: "uppercase",
-                        color: "#f8fafc",
+                        color: "#020617",
                         marginBottom: "8px",
                       }}
                     >
                       {item.title}
                     </h3>
-                    <p style={{ color: "#cbd5e1", fontSize: "0.8rem", lineHeight: 1.5, margin: 0 }}>
+                    <p style={{ color: "#334155", fontSize: "0.825rem", lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
                       {item.desc}
                     </p>
                   </div>
@@ -372,6 +382,9 @@ export default function DoarContent() {
                   className="card-brutalist"
                   style={{
                     padding: "28px 24px",
+                    backgroundColor: "#ffffff",
+                    border: "4px solid #020617",
+                    boxShadow: "6px 6px 0px #000",
                   }}
                 >
                   <div
@@ -379,7 +392,7 @@ export default function DoarContent() {
                       width: "40px",
                       height: "40px",
                       backgroundColor: "#020617",
-                      border: "2px solid #ccff00",
+                      border: "2px solid #020617",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -389,10 +402,10 @@ export default function DoarContent() {
                   >
                     <ItemIcon size={20} />
                   </div>
-                  <h3 style={{ fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", marginBottom: "12px", color: "#f8fafc" }}>
+                  <h3 style={{ fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", marginBottom: "12px", color: "#020617" }}>
                     {item.title}
                   </h3>
-                  <p style={{ color: "#cbd5e1", fontSize: "0.85rem", lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ color: "#334155", fontSize: "0.85rem", lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                     {item.desc}
                   </p>
                 </div>
@@ -403,7 +416,7 @@ export default function DoarContent() {
 
         {/* Transparency Link Footer */}
         <div style={{ textAlign: "center", marginTop: "40px" }}>
-          <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: 0 }}>
+          <p style={{ color: "#cbd5e1", fontSize: "0.9rem", margin: 0 }}>
             Quer conferir os custos detalhados do projeto? Veja o nosso{" "}
             <a
               href="https://github.com/renatobezerra/radar-unificando/blob/main/COSTS.md"
@@ -426,4 +439,3 @@ export default function DoarContent() {
     </main>
   );
 }
-
