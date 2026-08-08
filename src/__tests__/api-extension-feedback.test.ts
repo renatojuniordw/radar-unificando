@@ -10,12 +10,12 @@ vi.mock('@/lib/core/extension/extension-token', () => ({
 vi.mock('@/lib/core/extension/extension-feedback', () => ({
   recordFeedback: vi.fn(),
 }));
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn(),
 }));
 
 import { recordFeedback } from '@/lib/core/extension/extension-feedback';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { POST } from '@/app/api/extension/feedback/route';
 
 function makeRequest(auth?: string, body: unknown = {}) {

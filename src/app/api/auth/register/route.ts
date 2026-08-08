@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
 
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 const registerSchema = z.object({
   name: z.string().trim().max(80).optional().or(z.literal('')),

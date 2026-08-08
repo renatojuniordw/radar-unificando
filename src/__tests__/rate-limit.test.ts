@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 describe('Rate Limiter Module', () => {
   it('deve permitir a primeira requisição dentro do limite', async () => {

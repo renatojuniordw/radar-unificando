@@ -3,18 +3,18 @@
 import { useState, useEffect } from 'react';
 import { Box, Fab, Drawer } from '@mui/material';
 import { useSession } from 'next-auth/react';
-import { ConfirmDialog } from '@/components/confirm-dialog';
-import { ChatSidebar } from '@/components/chat-sidebar';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { useChatAssistant } from '@/contexts/chat-assistant-context';
 import { useChatConversation } from '@/hooks/useChatConversation';
-import { getMessageText, CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/chat';
-import { trackAiChat } from '@/lib/analytics';
-import { ChatIcon } from '@/components/chat-assistant/icons';
-import { ChatHeader } from '@/components/chat-assistant/chat-header';
-import { ChatMessageList } from '@/components/chat-assistant/chat-message-list';
-import { ChatQuickActions } from '@/components/chat-assistant/chat-quick-actions';
-import { ChatInput } from '@/components/chat-assistant/chat-input';
-import { ChatSuggestedReplies } from '@/components/chat-assistant/chat-suggested-replies';
+import { getMessageText, CHAT_THREAD_MESSAGE_LIMIT } from '@/lib/utils/chat';
+import { trackAiChat } from '@/lib/utils/analytics';
+import { ChatIcon } from '@/components/chat/icons';
+import { ChatHeader } from '@/components/chat/chat-header';
+import { ChatMessageList } from '@/components/chat/chat-message-list';
+import { ChatQuickActions } from '@/components/chat/chat-quick-actions';
+import { ChatInput } from '@/components/chat/chat-input';
+import { ChatSuggestedReplies } from '@/components/chat/chat-suggested-replies';
 import {
   SyncErrorBanner,
   ThreadLimitBanner,
@@ -22,7 +22,7 @@ import {
   TokenLimitBanner,
   GlobalBudgetWarningBanner,
   GlobalBudgetExhaustedBanner,
-} from '@/components/chat-assistant/chat-limit-banner';
+} from '@/components/chat/chat-limit-banner';
 
 export function ChatAssistantUI() {
   const { data: session, status } = useSession();

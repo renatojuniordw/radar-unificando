@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Chip } from '@mui/material';
-import { CHAT_SUGGESTIONS } from '@/lib/chat';
+import { CHAT_SUGGESTIONS } from '@/lib/utils/chat';
 
 interface Props {
   onSelect: (suggestion: string) => void;

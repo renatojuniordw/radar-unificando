@@ -2,7 +2,7 @@
 
 import { Container, Box, Typography } from "@mui/material";
 import Link from "next/link";
-import { TagInput } from "@/components/tag-input";
+import { TagInput } from "@/components/ui/tag-input";
 import { RotatingText } from "@/components/home/rotating-text";
 import { SUGGESTED_ROLES } from "@/lib/constants/home";
 

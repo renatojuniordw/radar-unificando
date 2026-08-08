@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/material';
-import { BaseCard } from '@/components/base-card';
+import { BaseCard } from '@/components/ui/base-card';
 import { SkillInput } from '@/components/profile/skill-input';
 import type { ProfileField, ProfileData } from '@/hooks/useProfile';
 

@@ -8,7 +8,7 @@ import {
   TokenLimitBanner,
   GlobalBudgetWarningBanner,
   GlobalBudgetExhaustedBanner,
-} from '@/components/chat-assistant/chat-limit-banner';
+} from '@/components/chat/chat-limit-banner';
 
 describe('Banners de limite/orçamento — acessibilidade', () => {
   it('todos os banners devem anunciar mudanças para leitores de tela (role=status + aria-live=polite)', () => {

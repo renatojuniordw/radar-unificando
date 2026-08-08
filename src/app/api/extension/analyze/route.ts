@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
 import { findUserIdByExtensionToken } from '@/lib/core/extension/extension-token';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 const MAX_JOB_DESCRIPTION = 8000;
 

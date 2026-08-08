@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { LinearProgress } from '@mui/material';
-import { BaseCard } from '@/components/base-card';
+import { BaseCard } from '@/components/ui/base-card';
 
 interface Props {
   title?: string;

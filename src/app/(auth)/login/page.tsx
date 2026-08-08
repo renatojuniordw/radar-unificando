@@ -5,8 +5,8 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
-import { FormField } from '@/components/form-field';
-import { zodFieldErrors } from '@/lib/form-errors';
+import { FormField } from '@/components/ui/form-field';
+import { zodFieldErrors } from '@/lib/utils/form-errors';
 import { Eye, EyeOff, LogIn, UserPlus, ArrowRight } from 'lucide-react';
 
 const loginSchema = z.object({

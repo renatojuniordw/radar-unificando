@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useJobFilters } from '@/hooks/useJobFilters';
-import { uniqueValues } from '@/lib/array';
-import { normalizeJobType } from '@/lib/job';
+import { uniqueValues } from '@/lib/utils/array';
+import { normalizeJobType } from '@/lib/utils/job';
 import { JobPostingSchema } from '@/components/seo/job-posting-schema';
-import { trackExportCsv } from '@/lib/analytics';
+import { trackExportCsv } from '@/lib/utils/analytics';
 import type { Job } from '@/lib/types/job';
 import { JobTableHeader } from '@/components/job-table/job-table-header';
 import { JobFiltersMobile } from '@/components/job-table/job-filters-mobile';

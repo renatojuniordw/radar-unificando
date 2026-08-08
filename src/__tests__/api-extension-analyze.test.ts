@@ -13,13 +13,13 @@ vi.mock('@/lib/infrastructure/repositories', () => ({
 vi.mock('@/lib/ats/ats-service', () => ({
   analyzeAtsWithCache: vi.fn(),
 }));
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn(),
 }));
 
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { POST } from '@/app/api/extension/analyze/route';
 
 function makeRequest(auth?: string, body: unknown = {}) {

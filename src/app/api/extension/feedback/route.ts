@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordFeedback } from '@/lib/core/extension/extension-feedback';
 import { findUserIdByExtensionToken } from '@/lib/core/extension/extension-token';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 function extractBearerToken(req: NextRequest): string | null {
   const header = req.headers.get('authorization');

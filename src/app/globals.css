@@ -53,54 +53,56 @@ html {
 
 body {
   font-family: var(--font-family-inter);
-  background-color: var(--color-white);
-  color: var(--color-brutalist-black);
+  background-color: #020617;
+  color: #f8fafc;
 }
 
-/* ===== Section Patterns (PDF Unificando style) ===== */
+/* ===== Section Patterns (Neo-Brutalist Dark) ===== */
 
 .section-hero {
   background-color: #020617;
-  border-bottom: 8px solid #ccff00;
+  border-bottom: 4px solid #1e293b;
 }
 
 .section-white {
-  background-color: #ffffff;
-  color: #020617;
-  border-top: 8px solid #020617;
+  background-color: #020617;
+  color: #f8fafc;
+  border-top: 1px solid #1e293b;
 }
 
 .section-faq {
-  background-color: #f8fafc;
-  color: #020617;
-  border-top: 8px solid #020617;
+  background-color: #020617;
+  color: #f8fafc;
+  border-top: 1px solid #1e293b;
 }
 
 .section-dark-eco {
-  background-color: #020617;
-  border-top: 8px solid #ccff00;
-  border-bottom: 8px solid #ccff00;
+  background-color: #0b1120;
+  border-top: 1px solid #1e293b;
+  border-bottom: 1px solid #1e293b;
 }
 
 /* ===== Card Patterns ===== */
 
 .card-brutalist {
-  border: 4px solid #020617;
-  background-color: #ffffff;
-  color: #020617;
-  box-shadow: 8px 8px 0px #000;
-  transition: all 0.2s;
+  border: 2px solid #334155;
+  background-color: #0f172a;
+  color: #f8fafc;
+  box-shadow: 6px 6px 0px #000;
+  transition: all 0.2s ease-in-out;
 }
 
 .card-brutalist:hover {
-  transform: translateY(-4px);
-  box-shadow: 12px 12px 0px #000;
+  border-color: #ccff00;
+  transform: translateY(-2px);
+  box-shadow: 8px 8px 0px #000;
 }
 
 .card-dark {
-  border: 4px solid #ccff00;
+  border: 2px solid #ccff00;
   background-color: #0f172a;
-  box-shadow: 12px 12px 0px #ccff00;
+  color: #f8fafc;
+  box-shadow: 6px 6px 0px #ccff00;
 }
 
 /* ===== Badge Patterns ===== */
@@ -120,14 +122,14 @@ body {
 
 .badge-dark {
   display: inline-block;
-  background-color: #020617;
+  background-color: #0f172a;
   color: #ccff00;
   font-weight: 900;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.3em;
   padding: 4px 12px;
-  border: 2px solid #020617;
+  border: 2px solid #334155;
   box-shadow: 4px 4px 0px #ccff00;
 }
 
@@ -182,13 +184,20 @@ body {
 /* ===== FAQ ===== */
 
 .faq-item {
-  border: 4px solid #020617;
-  background-color: #ffffff;
-  transition: all 0.2s;
+  border: 2px solid #334155;
+  background-color: #0f172a;
+  color: #f8fafc;
+  transition: all 0.2s ease-in-out;
+}
+
+.faq-item:hover {
+  border-color: #ccff00;
 }
 
 .faq-item[open] {
-  background-color: #ccff00;
+  border-color: #ccff00;
+  background-color: #0f172a;
+  box-shadow: 4px 4px 0px #ccff00;
 }
 
 .faq-item summary {
@@ -199,7 +208,13 @@ body {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  padding: 16px 20px;
+  padding: 18px 20px;
+  color: #f8fafc;
+}
+
+.faq-item[open] summary {
+  color: #ccff00;
+  border-bottom: 1px solid #1e293b;
 }
 
 .faq-item summary::-webkit-details-marker {
@@ -208,6 +223,7 @@ body {
 
 .faq-item .faq-arrow {
   transition: transform 0.2s;
+  color: #ccff00;
 }
 
 .faq-item[open] .faq-arrow {
@@ -215,10 +231,11 @@ body {
 }
 
 .faq-item .faq-content {
-  padding: 0 20px 16px 20px;
+  padding: 16px 20px;
   font-family: var(--font-family-mono);
-  font-size: 0.8rem;
-  color: #334155;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.6;
 }
 
 /* ===== Animations ===== */

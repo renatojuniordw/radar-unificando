@@ -9,7 +9,7 @@ import { acquireChatLock, releaseChatLock } from '@/lib/infrastructure/redis/cha
 import { getGlobalBudgetStatus, addGlobalBudgetCost } from '@/lib/infrastructure/redis/global-budget';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import {
   MAX_THREAD_MESSAGES,
   MAX_CONTEXT_MESSAGES,

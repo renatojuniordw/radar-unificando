@@ -8,7 +8,7 @@ import {
   generateChatId,
   loadMessagesFromServer,
   saveMessagesToServer,
-} from '@/lib/chat';
+} from '@/lib/utils/chat';
 import { browserStorage } from '@/lib/infrastructure/storage/browser-storage';
 
 export interface GlobalBudgetUsage {

@@ -2,7 +2,7 @@
 
 import { Box, Typography, Button } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import { getMessageText } from '@/lib/chat';
+import { getMessageText } from '@/lib/utils/chat';
 import { BotIcon, UserIcon } from './icons';
 import { MarkdownContent } from './markdown-content';
 import { CopyMessageButton } from './copy-message-button';

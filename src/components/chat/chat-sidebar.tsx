@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, List, ListItemButton, ListItemText, Button, Typography } from '@mui/material';
-import type { Conversation } from '@/lib/chat';
+import type { Conversation } from '@/lib/utils/chat';
 
 interface Props {
   conversations: Conversation[];

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseJobCards } from '@/components/chat-assistant/job-card-parser';
+import { parseJobCards } from '@/components/chat/job-card-parser';
 
 describe('parseJobCards', () => {
   it('deve_parsear_formato_documentado_com_blank_entre_vagas_preservando_prosa', () => {
