@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MarkdownContent } from '@/components/chat-assistant/markdown-content';
+import { MarkdownContent } from '@/components/chat/markdown-content';
 
 describe('MarkdownContent', () => {
   it('deve_renderizar_card_de_vaga_com_botao_ver_vaga_ancorado', () => {

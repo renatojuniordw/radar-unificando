@@ -9,7 +9,7 @@ import { acquireChatLock, releaseChatLock } from '@/lib/infrastructure/redis/cha
 import { getGlobalBudgetStatus, addGlobalBudgetCost } from '@/lib/infrastructure/redis/global-budget';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/core/ai/chat-system-prompt';
 import { logAiEvent } from '@/lib/core/ai/ai-logger';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import {
   MAX_THREAD_MESSAGES,
   MAX_CONTEXT_MESSAGES,
@@ -136,6 +136,7 @@ export async function POST(req: NextRequest) {
     
     // Validar limite de 25 mensagens por conversa e avisar o usuário
     if (Array.isArray(messages) && messages.length >= MAX_THREAD_MESSAGES) {
+      await releaseChatLock(session.user.id);
       return new Response(
         JSON.stringify({
           error: 'Esta conversa atingiu o limite de 25 mensagens. Por favor, inicie um novo chat para continuar.',
@@ -167,6 +168,7 @@ export async function POST(req: NextRequest) {
         success: false,
       });
 
+      await releaseChatLock(session.user.id);
       return new Response(
         JSON.stringify({ error: 'Sua mensagem contém termos ou padrões não permitidos. Por favor, reformule sua pergunta.' }),
         {

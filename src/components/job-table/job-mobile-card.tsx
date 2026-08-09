@@ -1,8 +1,8 @@
 'use client';
 
 import { Box, Typography, Tooltip } from '@mui/material';
-import { formatJobDate } from '@/lib/date';
-import { trackJobApply } from '@/lib/analytics';
+import { formatJobDate } from '@/lib/utils/date';
+import { trackJobApply } from '@/lib/utils/analytics';
 import type { Job } from '@/lib/types/job';
 
 interface Props {

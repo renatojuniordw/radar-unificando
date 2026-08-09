@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
-import { FormField } from '@/components/form-field';
-import { PasswordStrengthMeter } from '@/components/password-strength-meter';
-import { zodFieldErrors } from '@/lib/form-errors';
+import { FormField } from '@/components/ui/form-field';
+import { PasswordStrengthMeter } from '@/components/ui/password-strength-meter';
+import { zodFieldErrors } from '@/lib/utils/form-errors';
 import { Eye, EyeOff, UserPlus, ArrowRight } from 'lucide-react';
 
 const registerSchema = z

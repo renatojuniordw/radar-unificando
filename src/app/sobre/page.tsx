@@ -1,397 +1,478 @@
-import type { Metadata } from "next";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Link from "next/link";
-import { Sparkles, ShieldCheck, Zap, UserCheck, ArrowRight, Code2 } from "lucide-react";
-import { SupportSection } from "@/components/shared/support-section";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import {
+  Sparkles,
+  ShieldCheck,
+  Zap,
+  UserCheck,
+  ArrowRight,
+  Code2,
+  ExternalLink,
+  Target,
+  Rocket,
+} from 'lucide-react';
+import { SupportSection } from '@/components/shared/support-section';
 
 export const metadata: Metadata = {
-  title: "Sobre",
+  title: 'Sobre — Radar Unificando',
   description:
-    "Conheça o Radar Unificando: a ferramenta que unifica vagas de tecnologia de Gupy e InHire em um só lugar, com busca inteligente e recomendações personalizadas.",
+    'Conheça o Radar Unificando: a ferramenta inteligente que consolida vagas de emprego de grandes portais (como Gupy e InHire) em tempo real.',
   openGraph: {
-    title: "Sobre",
+    title: 'Sobre — Radar Unificando',
     description:
-      "Conheça o Radar Unificando: a ferramenta que unifica vagas de tecnologia de Gupy e InHire em um só lugar.",
+      'Conheça o Radar Unificando: a ferramenta inteligente que consolida vagas de emprego de grandes portais em tempo real.',
   },
 };
 
+const TECH_STACK = [
+  'IA Generativa & LLMs',
+  'Next.js 15',
+  'TypeScript',
+  'React 19',
+  'Prisma ORM',
+  'Tailwind CSS v4',
+];
+
 export default function SobrePage() {
   return (
-    <Box sx={{ bgcolor: "#020617", color: "#ffffff", minHeight: "100vh", py: { xs: 6, md: 10 } }}>
-      <Container maxWidth="lg">
-        {/* Header Badge & Title */}
-        <Box sx={{ textAlign: "center", mb: { xs: 6, md: 10 } }}>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1,
-              bgcolor: "#ccff00",
-              color: "#020617",
-              px: 2,
-              py: 0.75,
-              fontWeight: 900,
-              fontSize: "0.75rem",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              border: "2px solid #020617",
-              boxShadow: "4px 4px 0px #ffffff",
-              mb: 3,
-            }}
-          >
-            <Sparkles size={14} />
-            SOBRE O RADAR UNIFICANDO
-          </Box>
+    <main style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', paddingBottom: '64px' }}>
+      {/* Header Section */}
+      <section className="section-hero" style={{ padding: '64px 16px', position: 'relative', overflow: 'hidden' }}>
+        <div
+          className="hero-radar"
+          style={{
+            position: 'absolute',
+            inset: -200,
+            background: 'conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)',
+            opacity: 0.05,
+            pointerEvents: 'none',
+          }}
+        />
 
-          <Typography
-            variant="h1"
-            sx={{
+        <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          <div className="badge-neon" style={{ marginBottom: '20px', display: 'inline-block' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Sparkles size={14} /> SOBRE O RADAR UNIFICANDO
+            </span>
+          </div>
+
+          <h1
+            style={{
               fontWeight: 900,
-              fontSize: { xs: "2.25rem", sm: "3.5rem", md: "4.5rem" },
-              letterSpacing: "-0.03em",
+              fontSize: 'clamp(2.2rem, 5vw, 4.25rem)',
+              letterSpacing: '-0.02em',
               lineHeight: 0.95,
-              textTransform: "uppercase",
-              mb: 3,
-              color: "#ffffff",
+              textTransform: 'uppercase',
+              marginBottom: '24px',
+              color: '#ffffff',
             }}
           >
-            CONECTANDO VOCÊ ÀS <br />
-            <Box component="span" sx={{ color: "#ccff00" }}>
-              MELHORES VAGAS DO BRASIL
-            </Box>
-          </Typography>
+            CONECTANDO VOCÊ ÀS
+            <br />
+            <span style={{ color: '#ccff00' }}>MELHORES VAGAS DO BRASIL</span>
+          </h1>
 
-          <Typography
-            sx={{
-              color: "#94a3b8",
-              fontFamily: "ui-monospace, monospace",
-              fontSize: { xs: "0.95rem", sm: "1.1rem" },
-              maxWidth: 720,
-              mx: "auto",
-              lineHeight: 1.6,
+          <p
+            style={{
+              color: '#f8fafc',
+              fontFamily: 'var(--font-family-inter)',
+              fontSize: '1.05rem',
+              maxWidth: '720px',
+              margin: '0 auto',
+              lineHeight: 1.65,
+              fontWeight: 500,
             }}
           >
             O Radar Unificando é uma plataforma inteligente que consolida vagas de emprego de grandes portais (como Gupy e InHire) em tempo real, cobrindo todas as áreas profissionais com análise de aderência e assistente de IA.
-          </Typography>
-        </Box>
+          </p>
+        </div>
+      </section>
 
-        {/* Section 1: A Missão */}
-        <Box
-          sx={{
-            bgcolor: "#0f172a",
-            border: "4px solid #1e293b",
-            boxShadow: "8px 8px 0px #000000",
-            p: { xs: 3, sm: 5, md: 6 },
-            mb: { xs: 6, md: 8 },
-          }}
-        >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 900,
-              fontSize: { xs: "1.5rem", sm: "2rem" },
-              textTransform: "uppercase",
-              letterSpacing: "-0.01em",
-              mb: 2,
-              color: "#ccff00",
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px' }}>
+        {/* Section 1: A Missão (Cartão Branco de Alto Contraste) */}
+        <section style={{ marginTop: '48px', marginBottom: '48px' }}>
+          <div
+            className="card-brutalist"
+            style={{
+              padding: '36px 28px',
+              position: 'relative',
+              backgroundColor: '#ffffff',
+              border: '4px solid #020617',
+              boxShadow: '8px 8px 0px #000',
             }}
           >
-            NOSSA MISSÃO: BUSCA DE VAGAS SEM COMPLICAÇÃO
-          </Typography>
-          <Typography
-            sx={{
-              color: "#cbd5e1",
-              fontSize: { xs: "0.95rem", sm: "1.05rem" },
-              lineHeight: 1.7,
-              mb: 2,
-            }}
-          >
-            Procurar emprego costuma ser uma tarefa exaustiva: dezenas de abas abertas, cadastros repetitivos e falta de clareza sobre quais vagas realmente combinam com seu perfil.
-          </Typography>
-          <Typography
-            sx={{
-              color: "#cbd5e1",
-              fontSize: { xs: "0.95rem", sm: "1.05rem" },
-              lineHeight: 1.7,
-            }}
-          >
-            O Radar Unificando foi criado para resolver isso. Ele centraliza a pesquisa, analisa requisitos com Inteligência Artificial e ajuda profissionais de <strong>qualquer segmento</strong> — Marketing, RH, Vendas, Tecnologia, Finanças, Saúde, Design e Operações — a encontrarem oportunidades alinhadas às suas habilidades.
-          </Typography>
-        </Box>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div
+                style={{
+                  padding: '8px',
+                  backgroundColor: '#020617',
+                  border: '2px solid #020617',
+                  color: '#ccff00',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Target size={22} />
+              </div>
+              <h2
+                style={{
+                  fontWeight: 900,
+                  fontSize: '1.3rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '-0.01em',
+                  color: '#020617',
+                  margin: 0,
+                }}
+              >
+                NOSSA MISSÃO: BUSCA DE VAGAS SEM COMPLICAÇÃO
+              </h2>
+            </div>
+            <p
+              style={{
+                color: '#334155',
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                marginBottom: '16px',
+                fontWeight: 500,
+              }}
+            >
+              Procurar emprego costuma ser uma tarefa exaustiva: dezenas de abas abertas, cadastros repetitivos e falta de clareza sobre quais vagas realmente combinam com seu perfil.
+            </p>
+            <p
+              style={{
+                color: '#334155',
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                margin: 0,
+                fontWeight: 500,
+              }}
+            >
+              O Radar Unificando foi criado para resolver isso. Ele centraliza a pesquisa, analisa requisitos com Inteligência Artificial e ajuda profissionais de <strong style={{ color: '#020617', fontWeight: 900 }}>qualquer segmento</strong> — Marketing, RH, Vendas, Tecnologia, Finanças, Saúde, Design e Operações — a encontrarem oportunidades alinhadas às suas habilidades.
+            </p>
+          </div>
+        </section>
 
         {/* Section 2: O Criador (Renato Bezerra) */}
-        <Box
-          sx={{
-            bgcolor: "#0f172a",
-            border: "4px solid #ccff00",
-            boxShadow: "8px 8px 0px #ccff00",
-            p: { xs: 3, sm: 5, md: 6 },
-            mb: { xs: 6, md: 8 },
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
-            <Box
-              sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
-                p: 1.5,
-                border: "2px solid #020617",
-              }}
-            >
-              <Code2 size={28} />
-            </Box>
-            <Box>
-              <Typography
-                variant="h2"
-                sx={{
-                  fontWeight: 900,
-                  fontSize: { xs: "1.5rem", sm: "2rem" },
-                  textTransform: "uppercase",
-                  letterSpacing: "-0.01em",
-                  color: "#ffffff",
-                  lineHeight: 1.1,
-                }}
-              >
-                QUEM DESENVOLVEU
-              </Typography>
-              <Typography
-                sx={{
-                  color: "#ccff00",
-                  fontFamily: "ui-monospace, monospace",
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                }}
-              >
-                RENATO BEZERRA · CRIADOR & ENGENHEIRO DE SOFTWARE
-              </Typography>
-            </Box>
-          </Box>
-
-          <Typography
-            sx={{
-              color: "#cbd5e1",
-              fontSize: { xs: "0.95rem", sm: "1.05rem" },
-              lineHeight: 1.7,
-              mb: 3,
+        <section style={{ marginBottom: '48px' }}>
+          <div
+            className="card-dark"
+            style={{
+              padding: '40px 28px',
+              position: 'relative',
+              overflow: 'hidden',
+              backgroundColor: '#0f172a',
+              border: '3px solid #ccff00',
+              boxShadow: '8px 8px 0px #ccff00',
             }}
           >
-            Olá! Sou o <strong>Renato Bezerra</strong>, Engenheiro de Software com ampla experiência em desenvolvimento, arquitetura de sistemas e soluções em Inteligência Artificial Generativa.
-          </Typography>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  backgroundColor: '#ccff00',
+                  color: '#020617',
+                  padding: '12px',
+                  border: '2px solid #020617',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Code2 size={28} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h2
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '1.5rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '-0.01em',
+                    color: '#ffffff',
+                    lineHeight: 1.1,
+                    margin: 0,
+                  }}
+                >
+                  QUEM DESENVOLVEU
+                </h2>
+                <div
+                  style={{
+                    color: '#ccff00',
+                    fontFamily: 'ui-monospace, monospace',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    marginTop: '4px',
+                  }}
+                >
+                  RENATO BEZERRA · CRIADOR & ENGENHEIRO DE SOFTWARE
+                </div>
+              </div>
+            </div>
 
-          <Typography
-            sx={{
-              color: "#cbd5e1",
-              fontSize: { xs: "0.95rem", sm: "1.05rem" },
-              lineHeight: 1.7,
-              mb: 4,
-            }}
-          >
-            Desenvolvi o Radar Unificando para colocar a tecnologia a serviço do profissional brasileiro. A plataforma une automação em tempo real, segurança avançada de dados (LGPD) e inteligência artificial para que você passe menos tempo procurando vagas e mais tempo conquistando a oportunidade certa.
-          </Typography>
+            {/* Stack Tags */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+              {TECH_STACK.map((tech) => (
+                <span
+                  key={tech}
+                  style={{
+                    fontFamily: 'ui-monospace, monospace',
+                    fontSize: '0.725rem',
+                    fontWeight: 700,
+                    color: '#ccff00',
+                    backgroundColor: 'rgba(204, 255, 0, 0.12)',
+                    border: '1px solid #ccff00',
+                    padding: '3px 10px',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
 
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Button
-              component="a"
-              href="https://renatobezerra.com.br/"
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="contained"
-              sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
-                fontWeight: 900,
-                fontSize: "0.85rem",
-                borderRadius: 0,
-                border: "2px solid #020617",
-                boxShadow: "4px 4px 0px #ffffff",
-                px: 3,
-                py: 1.2,
-                textTransform: "uppercase",
-                "&:hover": {
-                  bgcolor: "#ffffff",
-                  color: "#020617",
-                  boxShadow: "none",
-                },
+            <p
+              style={{
+                color: '#f8fafc',
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                marginBottom: '16px',
+                fontWeight: 500,
               }}
             >
-              CONHEÇA MEU PORTFÓLIO
-            </Button>
+              Olá! Sou o <strong style={{ color: '#ccff00' }}>Renato Bezerra</strong>, Engenheiro de Software com ampla experiência em desenvolvimento web, arquitetura de sistemas e soluções em Inteligência Artificial Generativa.
+            </p>
 
-            <Button
-              component="a"
-              href="https://unificando.com.br/"
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="outlined"
-              sx={{
-                borderColor: "#ccff00",
-                color: "#ccff00",
-                fontWeight: 900,
-                fontSize: "0.85rem",
-                borderRadius: 0,
-                px: 3,
-                py: 1.2,
-                textTransform: "uppercase",
-                "&:hover": {
-                  bgcolor: "rgba(204, 255, 0, 0.1)",
-                  borderColor: "#ccff00",
-                },
+            <p
+              style={{
+                color: '#f8fafc',
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                marginBottom: '32px',
+                fontWeight: 500,
               }}
             >
-              CONSULTORIA EM IA
-            </Button>
-          </Box>
-        </Box>
+              Desenvolvi o Radar Unificando para colocar a tecnologia a serviço do profissional brasileiro. A plataforma une automação em tempo real, segurança avançada de dados (LGPD) e inteligência artificial para que você passe menos tempo procurando vagas e mais tempo conquistando a oportunidade certa.
+            </p>
 
-        {/* Section: Apoie o projeto */}
-        <Box sx={{ mb: { xs: 6, md: 8 } }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <a
+                href="https://renatobezerra.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-neon"
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '14px 24px',
+                  fontSize: '0.875rem',
+                }}
+              >
+                CONHEÇA MEU PORTFÓLIO <ExternalLink size={16} />
+              </a>
+
+              <a
+                href="https://unificando.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-dark"
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '14px 24px',
+                  fontSize: '0.875rem',
+                  backgroundColor: '#0f172a',
+                  color: '#ccff00',
+                  border: '2px solid #ccff00',
+                }}
+              >
+                <Rocket size={16} /> CONSULTORIA EM IA
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Apoie o projeto */}
+        <section style={{ marginBottom: '48px' }}>
           <SupportSection />
-        </Box>
+        </section>
 
-        {/* Section 3: Pilares */}
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 900,
-            fontSize: { xs: "1.5rem", sm: "2.25rem" },
-            textTransform: "uppercase",
-            letterSpacing: "-0.01em",
-            textAlign: "center",
-            mb: 5,
-            color: "#ffffff",
-          }}
-        >
-          POR QUE O RADAR É DIFERENTE?
-        </Typography>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-            gap: 3,
-            mb: { xs: 6, md: 10 },
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: "#0f172a",
-              border: "3px solid #1e293b",
-              p: 3,
-              boxShadow: "4px 4px 0px #000000",
+        {/* Section 4: Pilares */}
+        <section style={{ marginBottom: '48px' }}>
+          <div className="badge-dark" style={{ marginBottom: '16px', display: 'inline-block' }}>
+            DIFERENCIAIS DA PLATAFORMA
+          </div>
+          <h2
+            style={{
+              fontWeight: 900,
+              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+              textTransform: 'uppercase',
+              letterSpacing: '-0.02em',
+              marginBottom: '32px',
+              color: '#ffffff',
             }}
           >
-            <UserCheck size={32} style={{ color: "#ccff00", marginBottom: 16 }} />
-            <Typography variant="h3" sx={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase", mb: 1.5, color: "#ffffff" }}>
-              TODAS AS PROFISSÕES
-            </Typography>
-            <Typography sx={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: 1.6 }}>
-              Vagas para qualquer área do mercado: Marketing, Vendas, RH, Financeiro, Tecnologia, Design, Operações e mais.
-            </Typography>
-          </Box>
+            POR QUE O RADAR É <span style={{ color: '#ccff00' }}>DIFERENTE?</span>
+          </h2>
 
-          <Box
-            sx={{
-              bgcolor: "#0f172a",
-              border: "3px solid #1e293b",
-              p: 3,
-              boxShadow: "4px 4px 0px #000000",
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '24px',
             }}
           >
-            <Zap size={32} style={{ color: "#ccff00", marginBottom: 16 }} />
-            <Typography variant="h3" sx={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase", mb: 1.5, color: "#ffffff" }}>
-              TEMPO REAL & MATCH IA
-            </Typography>
-            <Typography sx={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: 1.6 }}>
-              Consultas diretas nos portais de vagas no momento da busca, com cálculo de compatibilidade de perfil.
-            </Typography>
-          </Box>
+            <div
+              className="card-brutalist"
+              style={{
+                padding: '28px 24px',
+                backgroundColor: '#ffffff',
+                border: '4px solid #020617',
+                boxShadow: '6px 6px 0px #000',
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  backgroundColor: '#020617',
+                  border: '2px solid #020617',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: '#ccff00',
+                }}
+              >
+                <UserCheck size={22} />
+              </div>
+              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
+                TODAS AS PROFISSÕES
+              </h3>
+              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
+                Vagas para qualquer área do mercado: Marketing, Vendas, RH, Financeiro, Tecnologia, Design, Operações e muito mais.
+              </p>
+            </div>
 
-          <Box
-            sx={{
-              bgcolor: "#0f172a",
-              border: "3px solid #1e293b",
-              p: 3,
-              boxShadow: "4px 4px 0px #000000",
-            }}
-          >
-            <ShieldCheck size={32} style={{ color: "#ccff00", marginBottom: 16 }} />
-            <Typography variant="h3" sx={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase", mb: 1.5, color: "#ffffff" }}>
-              PRIVACIDADE TOTAL (LGPD)
-            </Typography>
-            <Typography sx={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: 1.6 }}>
-              Dados criptografados, anonimização automática de dados sensíveis e navegação livre sem rastreamento abusivo.
-            </Typography>
-          </Box>
-        </Box>
+            <div
+              className="card-brutalist"
+              style={{
+                padding: '28px 24px',
+                backgroundColor: '#ffffff',
+                border: '4px solid #020617',
+                boxShadow: '6px 6px 0px #000',
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  backgroundColor: '#020617',
+                  border: '2px solid #020617',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: '#ccff00',
+                }}
+              >
+                <Zap size={22} />
+              </div>
+              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
+                TEMPO REAL & MATCH IA
+              </h3>
+              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
+                Consultas diretas nos portais de vagas no momento da busca, com cálculo de compatibilidade de perfil e resumo de requisitos.
+              </p>
+            </div>
+
+            <div
+              className="card-brutalist"
+              style={{
+                padding: '28px 24px',
+                backgroundColor: '#ffffff',
+                border: '4px solid #020617',
+                boxShadow: '6px 6px 0px #000',
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  backgroundColor: '#020617',
+                  border: '2px solid #020617',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                  color: '#ccff00',
+                }}
+              >
+                <ShieldCheck size={22} />
+              </div>
+              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
+                PRIVACIDADE TOTAL (LGPD)
+              </h3>
+              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
+                Dados criptografados, anonimização automática de dados sensíveis e navegação livre sem rastreamento abusivo.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Final Action Box */}
-        <Box
-          sx={{
-            textAlign: "center",
-            bgcolor: "#1e293b",
-            p: { xs: 4, sm: 6 },
-            border: "4px solid #ccff00",
-            boxShadow: "8px 8px 0px #000000",
-          }}
-        >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 900,
-              fontSize: { xs: "1.5rem", sm: "2.25rem" },
-              textTransform: "uppercase",
-              mb: 2,
-              color: "#ffffff",
+        <section style={{ marginTop: '56px' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              backgroundColor: '#0f172a',
+              padding: '44px 24px',
+              border: '3px solid #ccff00',
+              boxShadow: '8px 8px 0px #ccff00',
             }}
           >
-            PRONTO PARA ENCONTRAR SUA PRÓXIMA VAGA?
-          </Typography>
-          <Typography
-            sx={{
-              color: "#94a3b8",
-              fontFamily: "ui-monospace, monospace",
-              fontSize: "0.95rem",
-              mb: 4,
-            }}
-          >
-            100% gratuito. Comece sua pesquisa em segundos.
-          </Typography>
-
-          <Link href="/" passHref style={{ textDecoration: "none" }}>
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
+            <h2
+              style={{
                 fontWeight: 900,
-                fontSize: "1rem",
-                borderRadius: 0,
-                border: "2px solid #020617",
-                boxShadow: "4px 4px 0px #ffffff",
-                px: 4,
-                py: 1.5,
-                textTransform: "uppercase",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 1,
-                "&:hover": {
-                  bgcolor: "#ffffff",
-                  color: "#020617",
-                  boxShadow: "none",
-                },
+                fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+                textTransform: 'uppercase',
+                marginBottom: '12px',
+                color: '#ffffff',
               }}
             >
-              IR PARA O MOTOR DE BUSCA <ArrowRight size={20} />
-            </Button>
-          </Link>
-        </Box>
-      </Container>
-    </Box>
+              PRONTO PARA ENCONTRAR SUA PRÓXIMA VAGA?
+            </h2>
+            <p
+              style={{
+                color: '#cbd5e1',
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: '0.95rem',
+                marginBottom: '28px',
+              }}
+            >
+              100% gratuito. Comece sua pesquisa em segundos.
+            </p>
+
+            <Link
+              href="/"
+              className="btn-neon"
+              style={{
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '16px 36px',
+                fontSize: '1rem',
+              }}
+            >
+              IR PARA O MOTOR DE BUSCA <ArrowRight size={20} strokeWidth={3} />
+            </Link>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

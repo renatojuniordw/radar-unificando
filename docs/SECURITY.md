@@ -14,12 +14,14 @@
 | Validação de Upload | `api/upload/route.ts` — magic bytes `%PDF-` (rejeita arquivo renomeado), tamanho ≤ 5MB, arquivo vazio |
 | Prompt Injection | `api/chat/route.ts` — sanitização de input + detecção de padrões + hardening do prompt |
 | Validação de Tools | `chat-tools.ts` — Zod schema com limites de tamanho e regex |
+| Token de Extensão | `extension-token.ts` — token 64-hex entregue 1x, apenas SHA-256 armazenado (`ExtensionToken`) |
+| Origem da Extensão | `middleware.ts` — `Origin: chrome-extension://<id>` aceita somente se igual a `EXTENSION_ORIGIN` (nunca refletida) |
 
 ## Rate Limits por Operação
 
 Dois sistemas:
 - `src/lib/infrastructure/security/rate-limiter.ts` — **in-memory** (`pipelineLimiter`, `uploadLimiter`).
-- `src/lib/rate-limit.ts` — **Redis** (`rate-limiter-flexible`) com fallback em memória (`chat`, `chat_daily`, `auth`).
+- `src/lib/infrastructure/rate-limit.ts` — **Redis** (`rate-limiter-flexible`) com fallback em memória (`chat`, `chat_daily`, `auth`, `general`, `register_daily`, `extension`).
 
 | Operação | Janela | Limite | Backend | Chave |
 |----------|--------|--------|---------|-------|
@@ -33,6 +35,7 @@ Dois sistemas:
 | Chat concorrência (`/api/chat`) | — | 1 resposta ativa | Redis (`chat_lock`) | user_id |
 | Registro (`/api/auth/register`) | 1 min | 5 | Redis | IP |
 | Registro (`/api/auth/register`) | 24 h | 3 cadastros | Redis | IP |
+| Extensão (`/api/extension/*`) | 1 min | 20 | Redis | user_id + IP |
 
 ## Limites de Conversa (Chat)
 
@@ -66,9 +69,18 @@ Aplicada no `POST /api/chat` (`src/app/api/chat/route.ts`):
    - `analyze_job_fit.jobDescription`: 10-5000 chars
 5. **Dados externos como dados**: descrições de vaga são truncadas em 800 chars e embrulhadas em `<untrusted_content>...</untrusted_content>` — o system prompt instrui tratá-las como conteúdo, nunca como comando.
 
+## Autenticação da Extensão Chrome
+
+- **Geração**: `/extensao/conectar` cria `randomBytes(32)` (64 hex) e persiste **somente** `sha256(token)` em `ExtensionToken.tokenHash`. O texto puro nunca vai ao banco.
+- **Entrega**: via redirect do `launchWebAuthFlow` (`?token=...`) — o backend valida `redirect_uri` com `isSafeRedirectUri` (somente `https://*.chromiumapp.org`, evita open redirect) — ou manualmente na página.
+- **Uso**: `Authorization: Bearer <token>` em `POST /api/extension/*`. Cada uso válido atualiza `ExtensionToken.lastUsedAt` (é isso que o `GET /api/extensao/status` lê para mostrar "conectado").
+- **Revogação**: campo `revokedAt` no schema (sem UI ainda) — tokens revogados retornam 401.
+- **CORS/origem**: o middleware só adiciona `Access-Control-Allow-Origin` para origens da allowlist (self + `EXTENSION_ORIGIN`). `chrome-extension://<id>` **nunca** é refletida de volta.
+
 ## Variáveis de Ambiente Obrigatórias
 
 ```
 DATABASE_URL=postgresql://...
 AUTH_SECRET=<openssl rand -base64 64>
+EXTENSION_ORIGIN=chrome-extension://<id-da-extensao>   # para a extensão Chrome
 ```

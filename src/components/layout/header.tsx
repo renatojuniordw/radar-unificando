@@ -25,6 +25,13 @@ export function Header() {
               SOBRE
             </Link>
 
+            <Link
+              href="/extensao"
+              className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
+            >
+              EXTENSÃO
+            </Link>
+
             <UserMenu />
           </div>
         </div>

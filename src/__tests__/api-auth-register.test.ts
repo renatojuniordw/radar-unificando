@@ -10,7 +10,7 @@ vi.mock('bcryptjs', () => ({
   hash: vi.fn().mockResolvedValue('hashed-password'),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true, msBeforeNext: 0 }),
 }));
 

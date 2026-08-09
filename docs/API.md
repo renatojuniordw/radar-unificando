@@ -17,7 +17,7 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limit: 5/min (Redis). 409 em e-mail duplicado |
+| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limits: 5/min + 3/dia por IP (Redis). 409 em e-mail duplicado |
 | POST | `/api/auth/callback/credentials` | ❌ | Login (email, password) — rota do NextAuth |
 | GET | `/api/auth/session` | ❌ | Obter sessão atual — rota do NextAuth |
 | GET/POST | `/api/auth/[...nextauth]` | ❌ | Handlers do NextAuth |
@@ -81,6 +81,26 @@ curl -X POST http://localhost:11010/api/chat \
   -H 'Cookie: next-auth.session-token=<token>' \
   -d '{"messages":[{"role":"user","content":"Busque vagas de Data Analyst"}]}'
 ```
+
+### Extensão Chrome
+
+A extensão se autentica com um **token de extensão** (Bearer) — não usa cookie de sessão. O token é gerado na página `/extensao/conectar`, entregue via `launchWebAuthFlow` ou copiado manualmente, e armazenado pela extensão em `chrome.storage.local`. O backend guarda apenas o hash SHA-256 do token. Rate limit compartilhado do perfil `extension`: **20 req/min** por usuário+IP.
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/extension/analyze` | Bearer token | Análise ATS da vaga aberta na extensão. Body: `{ jobDescription }` (truncado em 8000 chars). Retorna `{ heuristics, analysis, cached }`. 401 token inválido/revogado, 400 sem currículo importado, 429 rate limit |
+| POST | `/api/extension/feedback` | Bearer token | Feedback de utilidade. Body: `{ rating: boolean, comment? }` (comentário truncado em 1000 chars). Retorna `{ ok: true }` |
+| GET | `/api/extensao/status` | Sessão (cookie) | Status de conexão da extensão para o usuário logado: `{ connected: boolean, lastUsedAt: Date \| null }` — usado pelo polling da página `/extensao/conectar` |
+
+**Exemplo (análise pela extensão):**
+```bash
+curl -X POST http://localhost:11010/api/extension/analyze \
+  -H 'Authorization: Bearer <token-da-extensao>' \
+  -H 'Content-Type: application/json' \
+  -d '{"jobDescription":"Vaga de Desenvolvedor(a) Full Stack..."}'
+```
+
+> Nota: as chamadas da extensão vêm de `Origin: chrome-extension://<id>`. O `middleware.ts` só aceita a origem se estiver configurada em `EXTENSION_ORIGIN` (nunca refletida).
 
 ### Upload de currículo
 

@@ -16,6 +16,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Análise de match** — compara perfil × vaga com skills casadas/faltantes e fit geral
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
+- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra dicas de ATS, com re-análise automática ao trocar de vaga (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`)
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
 ## Stack
@@ -91,9 +92,10 @@ npm run dev
 src/
   app/
     (auth)/        → Login e registro
-    (dashboard)/   → Perfil do usuário
-    api/           → API routes (pipeline, chat, empresas, profile, vagas, upload…)
+    (dashboard)/   → Perfil do usuário, conexão da extensão (/extensao/conectar)
+    api/           → API routes (pipeline, chat, profile, vagas, upload, ats, extension…)
     export/        → Export CSV/JSON
+    extensao/      → Página pública da extensão (marketing)
     termos/        → Termos LGPD
   components/
     home/          → Hero, WhyUse, FAQ, Results, Loading
@@ -103,8 +105,8 @@ src/
   contexts/        → Chat assistant context
   hooks/           → Custom hooks (useJobSearch, useProfile)
   lib/
-    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI)
-    infrastructure/ → Infra (db, repositories, storage, security, ui)
+    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI, extension, ats)
+    infrastructure/ → Infra (db, repositories, redis, storage, security, ui)
 ```
 
 ## Documentação

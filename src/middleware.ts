@@ -48,6 +48,10 @@ export default auth((req) => {
     if (process.env.NEXTAUTH_URL) {
       try { allowedOrigins.add(new URL(process.env.NEXTAUTH_URL).origin); } catch {}
     }
+    // Origem fixa da extensão Chrome (ex.: chrome-extension://<id>). Nunca refletida.
+    if (process.env.EXTENSION_ORIGIN) {
+      allowedOrigins.add(process.env.EXTENSION_ORIGIN);
+    }
 
     const sameOrigin = requestOrigin ? allowedOrigins.has(requestOrigin) : true;
 

@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/material';
-import { BaseCard } from '@/components/base-card';
+import { BaseCard } from '@/components/ui/base-card';
 import { SkillInput } from '@/components/profile/skill-input';
 import type { ProfileField, ProfileData } from '@/hooks/useProfile';
 
@@ -40,9 +40,14 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
   return (
     <>
       {/* SKILLS */}
-      <BaseCard title={<>SKILLS {skills.length > 0 && (
-        <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.6rem', marginLeft: 8 }}>{skills.length}</span>
-      )}</>}>
+      <BaseCard title={<span className="flex items-center gap-2">
+        <span>SKILLS</span>
+        {skills.length > 0 && (
+          <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.65rem', fontWeight: 900, backgroundColor: '#ffffff' }}>
+            {skills.length}
+          </span>
+        )}
+      </span>}>
         <SkillInput
           skills={skills}
           allSuggestions={ALL_SUGGESTED_SKILLS}
@@ -53,7 +58,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
         />
 
         {/* Categorias rápidas */}
-        <div style={{ display: 'flex', gap: 4, marginTop: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
           {Object.keys(SKILLS_BY_AREA).map(cat => (
             <button
               key={cat}
@@ -62,13 +67,14 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
                 if (missing.length > 0) onAddSkills(missing);
               }}
               style={{
-                border: '1px solid #334155', background: 'transparent',
-                fontWeight: 700, fontSize: '0.55rem', textTransform: 'uppercase',
+                border: '2px solid #020617', background: '#f8fafc',
+                fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase',
                 letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace',
-                padding: '2px 8px', cursor: 'pointer', color: '#64748b',
+                padding: '3px 10px', cursor: 'pointer', color: '#020617',
+                transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#ccff00'; e.currentTarget.style.color = '#ccff00'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#334155'; e.currentTarget.style.color = '#64748b'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#ccff00'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f8fafc'; }}
             >
               + {cat}
             </button>
@@ -78,10 +84,9 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
 
       {/* DADOS PROFISSIONAIS */}
       <BaseCard title="DADOS PROFISSIONAIS">
-
         <div style={{ marginBottom: 16 }}>
-          <label htmlFor="current-role" style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6 }}>
-            Cargo atual
+          <label htmlFor="current-role" style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6, color: '#020617' }}>
+            Cargo Atual
           </label>
           <input
             id="current-role"
@@ -93,24 +98,33 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
               width: '100%', boxSizing: 'border-box',
               border: '4px solid #020617', padding: '10px 12px',
               fontSize: '0.85rem', fontFamily: 'inherit',
-              boxShadow: '2px 2px 0px #000',
+              color: '#020617', backgroundColor: '#ffffff',
+              boxShadow: '2px 2px 0px #000', fontWeight: 700,
             }}
           />
         </div>
 
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
           <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: 1 }} size="small">
-            <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, textTransform: 'uppercase' }}>
+            <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 900, textTransform: 'uppercase', color: '#020617' }}>
               Senioridade
             </InputLabel>
             <Select
               value={seniority}
               label="Senioridade"
               onChange={e => onFieldChange('seniority', e.target.value)}
-              sx={{ '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 2 } }}
+              sx={{
+                color: '#020617',
+                fontWeight: 700,
+                bgcolor: '#ffffff',
+                fontFamily: 'ui-monospace, monospace',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 4 },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
+              }}
             >
               {SENIORITY_LEVELS.map(level => (
-                <MenuItem key={level} value={level}>
+                <MenuItem key={level} value={level} sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: '#020617' }}>
                   {level.charAt(0).toUpperCase() + level.slice(1)}
                 </MenuItem>
               ))}
@@ -118,24 +132,34 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
           </FormControl>
 
           <FormControl sx={{ minWidth: { xs: '100%', sm: 160 }, flex: 1 }} size="small">
-            <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, textTransform: 'uppercase' }}>
+            <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 900, textTransform: 'uppercase', color: '#020617' }}>
               Área
             </InputLabel>
             <Select
               value={area}
               label="Área"
               onChange={e => onFieldChange('area', e.target.value)}
-              sx={{ '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 2 } }}
+              sx={{
+                color: '#020617',
+                fontWeight: 700,
+                bgcolor: '#ffffff',
+                fontFamily: 'ui-monospace, monospace',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 4 },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
+              }}
             >
               {AREA_OPTIONS.map(opt => (
-                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                <MenuItem key={opt} value={opt} sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: '#020617' }}>
+                  {opt}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
         </div>
 
         <div style={{ marginBottom: education.length > 0 ? 16 : 0 }}>
-          <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }} id="years-label">
+          <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', color: '#020617', marginBottom: 8 }} id="years-label">
             Experiência: {experienceYears} {experienceYears === 1 ? 'ano' : 'anos'}
           </p>
           <Slider
@@ -147,17 +171,41 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
             marks
             valueLabelDisplay="auto"
             aria-labelledby="years-label"
+            sx={{
+              color: '#020617',
+              '& .MuiSlider-thumb': {
+                width: 20,
+                height: 20,
+                bgcolor: '#020617',
+                border: '2px solid #020617',
+              },
+              '& .MuiSlider-track': { bgcolor: '#020617', height: 6 },
+              '& .MuiSlider-rail': { bgcolor: '#cbd5e1', height: 6 },
+            }}
           />
         </div>
 
         {education.length > 0 && (
-          <div>
-            <p style={{ fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', marginBottom: 6 }}>
+          <div style={{ marginTop: 16 }}>
+            <p style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', marginBottom: 6, color: '#020617' }}>
               Formação
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {education.map((edu, i) => (
-                <Chip key={i} label={edu} size="small" sx={{ fontWeight: 700, fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem' }} />
+                <Chip
+                  key={i}
+                  label={edu}
+                  size="small"
+                  sx={{
+                    fontWeight: 700,
+                    fontFamily: 'ui-monospace, monospace',
+                    fontSize: '0.65rem',
+                    bgcolor: '#f1f5f9',
+                    color: '#020617',
+                    border: '2px solid #020617',
+                    borderRadius: 0,
+                  }}
+                />
               ))}
             </div>
           </div>

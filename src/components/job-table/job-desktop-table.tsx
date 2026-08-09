@@ -3,8 +3,8 @@
 import { useRef } from 'react';
 import { Box, Tooltip } from '@mui/material';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { formatJobDate } from '@/lib/date';
-import { trackJobApply } from '@/lib/analytics';
+import { formatJobDate } from '@/lib/utils/date';
+import { trackJobApply } from '@/lib/utils/analytics';
 import type { Job } from '@/lib/types/job';
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';

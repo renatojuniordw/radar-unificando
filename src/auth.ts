@@ -2,7 +2,7 @@ import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { authConfig } from './auth.config';
 
 class RateLimitedError extends CredentialsSignin {

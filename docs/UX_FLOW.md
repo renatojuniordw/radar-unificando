@@ -88,6 +88,26 @@ Estado completo:
   └── Link: "Ver vagas recomendadas →"
 ```
 
+### Extensão Chrome (`/extensao/conectar`) — requer login
+```
+Onboarding em 3 passos:
+  ├── 1. Instalar a extensão (link + instruções)
+  ├── 2. Copiar o token de conexão (TokenBox)
+  └── 3. Colar o token na extensão → side panel mostra "Conectado"
+
+TokenBox:
+  ├── Token de 64 caracteres hex (máscara: mostrado/oculto via ícone olho)
+  ├── Botão copiar + atalho de teclado "C" (feedback de áudio via Web Audio API)
+  └── Status ao vivo: polling GET /api/extensao/status a cada 4s
+      ("Extensão conectada" + último uso quando a extensão usar o token)
+
+Fluxo automático (launchWebAuthFlow):
+  ├── Backend recebe ?redirect_uri= (somente https://*.chromiumapp.org)
+  └── Redireciona com ?token=... — a extensão guarda e re-analisa
+
+FAQ: como funciona, segurança do token, revogação
+```
+
 ## Feedback Matrix
 
 | Operação | Loading | Success | Empty | Error |

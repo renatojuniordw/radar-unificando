@@ -22,8 +22,35 @@ model User {
   generatedContentCache GeneratedContentCache[]
   chats                 Chat[]
   chatUsage             ChatUsage[]
+  extensionTokens       ExtensionToken[]
+  extensionFeedback     ExtensionFeedback[]
 
   @@map("users")
+}
+
+model ExtensionToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  tokenHash  String    @map("token_hash") @db.VarChar(64)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("extension_tokens")
+}
+
+model ExtensionFeedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  rating    Boolean  @map("rating") // true = útil, false = não útil
+  comment   String?  @db.VarChar(1000)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("extension_feedback")
 }
 
 model Session {

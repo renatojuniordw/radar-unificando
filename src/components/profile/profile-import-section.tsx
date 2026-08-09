@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { LinearProgress } from '@mui/material';
-import { BaseCard } from '@/components/base-card';
+import { BaseCard } from '@/components/ui/base-card';
 
 interface Props {
   title?: string;
@@ -39,10 +39,20 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
 
   return (
     <BaseCard title={title}>
-      {extracting && <LinearProgress sx={{ mb: 2, height: 4, bgcolor: '#e2e8f0', '& .MuiLinearProgress-bar': { bgcolor: '#020617' } }} />}
+      {extracting && (
+        <LinearProgress
+          sx={{
+            mb: 2,
+            height: 6,
+            bgcolor: '#e2e8f0',
+            border: '2px solid #020617',
+            '& .MuiLinearProgress-bar': { bgcolor: '#ccff00' },
+          }}
+        />
+      )}
 
-      <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 16, lineHeight: 1.6 }}>
-        Upload do PDF do LinkedIn ou cole o texto do currículo. A IA extrai skills, experiência e formação automaticamente.
+      <p style={{ color: '#334155', fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', marginBottom: 16, lineHeight: 1.6, fontWeight: 700 }}>
+        Faça upload do seu currículo em PDF do LinkedIn ou cole o texto. A IA extrai automaticamente suas habilidades, cargos e formação.
       </p>
 
       {/* Upload PDF */}
@@ -61,12 +71,14 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         style={{
-          border: `3px dashed ${dragOver ? '#ccff00' : '#020617'}`,
-          backgroundColor: dragOver ? 'rgba(204, 255, 0, 0.05)' : '#f8fafc',
+          border: '3px dashed #020617',
+          backgroundColor: dragOver ? '#ccff00' : '#f8fafc',
           padding: 24,
           textAlign: 'center',
           cursor: 'pointer',
-          marginBottom: 16,
+          marginBottom: 20,
+          boxShadow: '3px 3px 0px #000',
+          transition: 'background-color 0.2s',
         }}
       >
         <input
@@ -76,40 +88,42 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
-        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.75rem', color: dragOver ? '#ccff00' : '#020617' }}>
-          {dragOver ? 'Solte o arquivo aqui' : 'Arraste ou clique para selecionar PDF'}
+        <p style={{ margin: 0, fontWeight: 900, fontSize: '0.8rem', color: '#020617', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace' }}>
+          {dragOver ? '⚡ Solte o arquivo PDF aqui' : '📄 Arraste ou clique para selecionar PDF'}
         </p>
-        <p style={{ margin: '4px 0 0', fontFamily: 'ui-monospace, monospace', fontSize: '0.6rem', color: '#64748b' }}>
-          Formato aceito: PDF do LinkedIn
+        <p style={{ margin: '4px 0 0', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', color: '#475569', fontWeight: 700 }}>
+          Formato aceito: PDF gerado pelo LinkedIn
         </p>
       </div>
 
       {/* Textarea */}
       <div>
-        <p style={{ fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', marginBottom: 6, color: '#64748b' }}>
-          Ou cole o texto do currículo
+        <p style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', marginBottom: 6, color: '#020617' }}>
+          Ou cole o texto completo do currículo
         </p>
         <textarea
           ref={textareaRef}
           rows={4}
-          placeholder="Cole aqui o conteúdo do seu currículo..."
+          placeholder="Cole aqui o conteúdo textual do seu currículo..."
           style={{
             width: '100%', boxSizing: 'border-box',
             border: '3px solid #020617', padding: 12,
             fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem',
-            resize: 'vertical',
+            color: '#020617', backgroundColor: '#ffffff',
+            resize: 'vertical', boxShadow: '3px 3px 0px #000',
+            fontWeight: 600,
           }}
         />
         <button
           onClick={handleTextExtract}
           disabled={extracting}
+          className="btn-dark"
           style={{
-            marginTop: 8, border: '2px solid #020617', background: 'transparent',
-            fontWeight: 700, padding: '6px 16px', cursor: 'pointer',
-            fontSize: '0.65rem', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace',
+            marginTop: 12, padding: '10px 24px',
+            fontSize: '0.7rem', border: '3px solid #020617',
           }}
         >
-          {extracting ? 'Extraindo...' : 'Extrair do texto'}
+          {extracting ? 'EXTRAINDO...' : 'EXTRAIR DO TEXTO'}
         </button>
       </div>
     </BaseCard>

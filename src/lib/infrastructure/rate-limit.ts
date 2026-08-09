@@ -7,6 +7,7 @@ const memoryLimiterChatDaily = new RateLimiterMemory({ points: 50, duration: 864
 const memoryLimiterAuth = new RateLimiterMemory({ points: 5, duration: 60 });
 const memoryLimiterGeneral = new RateLimiterMemory({ points: 60, duration: 60 });
 const memoryLimiterRegisterDaily = new RateLimiterMemory({ points: 3, duration: 86400 });
+const memoryLimiterExtension = new RateLimiterMemory({ points: 20, duration: 60 });
 
 // Rate Limiters no Redis
 let redisLimiterChat: RateLimiterRedis | null = null;
@@ -14,6 +15,7 @@ let redisLimiterChatDaily: RateLimiterRedis | null = null;
 let redisLimiterAuth: RateLimiterRedis | null = null;
 let redisLimiterGeneral: RateLimiterRedis | null = null;
 let redisLimiterRegisterDaily: RateLimiterRedis | null = null;
+let redisLimiterExtension: RateLimiterRedis | null = null;
 
 if (redisClient) {
   redisLimiterChat = new RateLimiterRedis({
@@ -50,9 +52,16 @@ if (redisClient) {
     points: 3, // 3 cadastros por IP por dia
     duration: 86400, // por 24 horas
   });
+
+  redisLimiterExtension = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_extension',
+    points: 20, // 20 análises
+    duration: 60, // por 60 segundos
+  });
 }
 
-export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily';
+export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily' | 'extension';
 
 export interface RateLimitResult {
   success: boolean;
@@ -81,6 +90,7 @@ export async function checkRateLimit(
     else if (profile === 'chat_daily') limiterToUse = redisLimiterChatDaily!;
     else if (profile === 'auth') limiterToUse = redisLimiterAuth!;
     else if (profile === 'register_daily') limiterToUse = redisLimiterRegisterDaily!;
+    else if (profile === 'extension') limiterToUse = redisLimiterExtension!;
     else limiterToUse = redisLimiterGeneral!;
   } else {
     // Usar fallback em memória
@@ -88,6 +98,7 @@ export async function checkRateLimit(
     else if (profile === 'chat_daily') limiterToUse = memoryLimiterChatDaily;
     else if (profile === 'auth') limiterToUse = memoryLimiterAuth;
     else if (profile === 'register_daily') limiterToUse = memoryLimiterRegisterDaily;
+    else if (profile === 'extension') limiterToUse = memoryLimiterExtension;
     else limiterToUse = memoryLimiterGeneral;
   }
 

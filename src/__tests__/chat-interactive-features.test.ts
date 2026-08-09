@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDynamicSuggestions } from '@/components/chat-assistant/chat-suggested-replies';
+import { getDynamicSuggestions } from '@/components/chat/chat-suggested-replies';
 
 describe('Chat Interactive Features', () => {
   it('deve gerar sugestões contextuais para listagem de vagas', () => {

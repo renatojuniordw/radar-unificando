@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
-import { PasswordStrengthMeter } from '@/components/password-strength-meter';
+import { PasswordStrengthMeter } from '@/components/ui/password-strength-meter';
 
 describe('PasswordStrengthMeter', () => {
   it('should_render_default_prompt_when_empty', () => {
