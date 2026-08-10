@@ -8,8 +8,11 @@ export function ExtensionSection() {
   return (
     <section className="section-dark-eco">
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "64px 16px" }}>
-        <div className="badge-neon" style={{ marginBottom: "20px", display: "inline-block" }}>
-          EXTENSÃO CHROME
+        <div className="badge-neon" style={{ marginBottom: "20px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+          <span>EXTENSÃO CHROME</span>
+          <span style={{ backgroundColor: "#020617", color: "#ccff00", padding: "2px 6px", fontSize: "0.7rem", border: "1px solid #ccff00" }}>
+            EM BREVE
+          </span>
         </div>
         <h2
           style={{

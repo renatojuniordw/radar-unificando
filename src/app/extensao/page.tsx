@@ -16,6 +16,7 @@ import {
   Zap,
   ArrowLeft,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -138,9 +139,31 @@ export default function ExtensaoPage() {
             <div>
               <div
                 className="badge-neon"
-                style={{ marginBottom: "20px", display: "inline-block" }}
+                style={{ marginBottom: "20px", display: "inline-flex", alignItems: "center", gap: "8px" }}
               >
-                ⚡ EXTENSÃO CHROME ATS
+                <span>⚡ EXTENSÃO CHROME ATS</span>
+                <span style={{ backgroundColor: "#020617", color: "#ccff00", padding: "2px 6px", fontSize: "0.7rem", border: "1px solid #ccff00" }}>
+                  EM BREVE
+                </span>
+              </div>
+
+              {/* Banner de Status de Homologação */}
+              <div
+                style={{
+                  backgroundColor: "rgba(204, 255, 0, 0.08)",
+                  border: "2px solid #ccff00",
+                  padding: "12px 16px",
+                  marginBottom: "24px",
+                  maxWidth: "560px",
+                  boxShadow: "4px 4px 0px #000",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "1.2rem" }}>📌</span>
+                  <p style={{ color: "#f8fafc", fontSize: "0.85rem", fontWeight: 700, margin: 0, lineHeight: 1.4 }}>
+                    <strong style={{ color: "#ccff00", textTransform: "uppercase" }}>Em Homologação:</strong> A extensão está em processo de aprovação final pelo Google Chrome Web Store. Em breve estará pronta para download!
+                  </p>
+                </div>
               </div>
               <h1
                 style={{
@@ -181,20 +204,27 @@ export default function ExtensaoPage() {
                   alignItems: "center",
                 }}
               >
-                <Link
-                  href="/extensao/conectar"
-                  className="btn-neon"
+                <button
+                  disabled
+                  title="Extensão em processo de homologação na Chrome Web Store"
                   style={{
-                    textDecoration: "none",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "10px",
                     padding: "16px 28px",
                     fontSize: "0.95rem",
+                    fontWeight: 900,
+                    textTransform: "uppercase",
+                    backgroundColor: "#1e293b",
+                    color: "#64748b",
+                    border: "2px solid #334155",
+                    boxShadow: "4px 4px 0px #000",
+                    cursor: "not-allowed",
+                    opacity: 0.8,
                   }}
                 >
-                  CONECTAR EXTENSÃO <ArrowRight size={18} strokeWidth={3} />
-                </Link>
+                  <Clock size={18} /> CONECTAR EXTENSÃO (EM BREVE)
+                </button>
                 <Link
                   href="/"
                   className="btn-dark"
@@ -642,20 +672,27 @@ export default function ExtensaoPage() {
               Conecte sua conta do Radar Unificando à extensão e comece a
               analisar vagas agora mesmo.
             </p>
-            <Link
-              href="/extensao/conectar"
-              className="btn-neon"
+            <button
+              disabled
+              title="Extensão em processo de homologação na Chrome Web Store"
               style={{
-                textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "10px",
                 padding: "16px 36px",
                 fontSize: "1rem",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                backgroundColor: "#1e293b",
+                color: "#64748b",
+                border: "2px solid #334155",
+                boxShadow: "4px 4px 0px #000",
+                cursor: "not-allowed",
+                opacity: 0.8,
               }}
             >
-              CONECTAR MINHA CONTA <ArrowRight size={20} strokeWidth={3} />
-            </Link>
+              <Clock size={20} /> CONECTAR MINHA CONTA (EM BREVE)
+            </button>
           </div>
         </div>
       </section>

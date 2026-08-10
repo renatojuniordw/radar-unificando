@@ -100,6 +100,17 @@ export function TokenBox({ token }: TokenBoxProps) {
       {/* Visual Accent Top Bar */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ccff00] via-[#00ff66] to-[#ccff00]" />
 
+      {/* Banner de Status de Homologação */}
+      {!isConnected && (
+        <div className="mb-5 bg-[#ccff00]/10 border-2 border-[#020617] p-3.5 flex items-start gap-3 shadow-[4px_4px_0px_#020617]">
+          <span className="text-base shrink-0">⌛</span>
+          <p className="font-mono text-xs font-bold text-[#020617] leading-relaxed m-0">
+            <strong className="uppercase bg-[#020617] text-[#ccff00] px-1.5 py-0.5 mr-1">EM BREVE:</strong> 
+            A extensão está em fase final de homologação no Google. Você já pode visualizar ou copiar seu token de sincronização abaixo para quando fizer o download!
+          </p>
+        </div>
+      )}
+
       {/* Banner de Conexão Ao Vivo (quando detectado uso na extensão) */}
       {isConnected && (
         <div className="mb-4 bg-emerald-500/10 border-2 border-emerald-500 p-3 flex items-center justify-between gap-3 animate-fade-slide-up">
