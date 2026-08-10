@@ -3,29 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { z } from 'zod';
+import { registerFormSchema } from '@/lib/core/auth/register-schema';
 import { FormField } from '@/components/ui/form-field';
 import { PasswordStrengthMeter } from '@/components/ui/password-strength-meter';
 import { zodFieldErrors } from '@/lib/utils/form-errors';
 import { Eye, EyeOff, UserPlus, ArrowRight } from 'lucide-react';
 
-const registerSchema = z
-  .object({
-    name: z.string().optional(),
-    email: z.string().email('Email inválido'),
-    password: z
-      .string()
-      .min(8, 'Mínimo de 8 caracteres')
-      .regex(/[A-Z]/, 'Precisa ter letra maiúscula (A-Z)')
-      .regex(/[a-z]/, 'Precisa ter letra minúscula (a-z)')
-      .regex(/[0-9]/, 'Precisa ter número (0-9)')
-      .regex(/[^A-Za-z0-9]/, 'Precisa ter caractere especial (!@#$...)'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Senhas não coincidem',
-    path: ['confirmPassword'],
-  });
+const registerSchema = registerFormSchema;
 
 export default function RegisterPage() {
   const router = useRouter();

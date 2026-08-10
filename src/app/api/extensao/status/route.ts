@@ -8,6 +8,14 @@ export async function GET() {
     return NextResponse.json({ connected: false, error: 'Não autenticado' }, { status: 401 });
   }
 
-  const status = await getExtensionStatusForUser(session.user.id);
-  return NextResponse.json(status);
+  try {
+    const status = await getExtensionStatusForUser(session.user.id);
+    return NextResponse.json(status);
+  } catch (error) {
+    console.error('[extensao/status] Erro ao consultar status:', error);
+    return NextResponse.json(
+      { connected: false, error: 'Erro ao consultar o status da extensão' },
+      { status: 500 }
+    );
+  }
 }

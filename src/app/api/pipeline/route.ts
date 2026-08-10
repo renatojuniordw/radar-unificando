@@ -4,6 +4,7 @@ import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { pipelineLimiter, pipelineAutoLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { runPipeline, ANONYMOUS_USER_ID } from '@/lib/core/pipeline/pipeline-runner';
+import { pipelineStartSchema } from '@/lib/core/pipeline/pipeline-schema';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +16,14 @@ export async function POST(req: NextRequest) {
       || 'unknown';
     const rateLimitKey = session?.user?.id ? userId : `anon:${ip}`;
 
-    const { companies, queries, auto } = await req.json();
+    const parsed = pipelineStartSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Parâmetros de busca inválidos' },
+        { status: 400 }
+      );
+    }
+    const { companies, queries, auto } = parsed.data;
 
     // Auto-sync (refresh silencioso) usa limiter próprio e NÃO consome a cota
     // da busca manual — o usuário pode buscar na hora após entrar no site.

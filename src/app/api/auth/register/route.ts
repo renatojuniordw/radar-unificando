@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
 
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
-
-const registerSchema = z.object({
-  name: z.string().trim().max(80).optional().or(z.literal('')),
-  email: z.string({ message: 'Email é obrigatório' }).trim().email('Email inválido'),
-  password: z
-    .string({ message: 'Senha é obrigatória' })
-    .min(8, 'A senha deve ter no mínimo 8 caracteres')
-    .regex(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula (A-Z)')
-    .regex(/[a-z]/, 'A senha deve conter pelo menos uma letra minúscula (a-z)')
-    .regex(/[0-9]/, 'A senha deve conter pelo menos um número (0-9)')
-    .regex(/[^A-Za-z0-9]/, 'A senha deve conter pelo menos um caractere especial (!@#$...)')
-    .max(200),
-});
+import { registerCredentialsSchema } from '@/lib/core/auth/register-schema';
 
 export async function POST(req: NextRequest) {
   const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
@@ -45,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const parsed = registerSchema.safeParse(await req.json());
+    const parsed = registerCredentialsSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
