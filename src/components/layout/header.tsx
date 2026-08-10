@@ -19,6 +19,20 @@ export function Header() {
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <Link
+              href="/busca"
+              className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
+            >
+              BUSCA
+            </Link>
+
+            <Link
+              href="/cursos"
+              className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
+            >
+              CURSOS
+            </Link>
+
+            <Link
               href="/sobre"
               className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
             >

@@ -26,7 +26,7 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/pipeline` | ❌ | Iniciar pipeline (`{companies[], queries[]}`). Rate limit: 1/5min por usuário (ou IP anônimo). Retorna `{runId, cooldownSeconds?}` |
+| POST | `/api/pipeline` | ❌ | Iniciar pipeline (`{companies[], queries[], auto?}`). `auto:true` = auto-sync silencioso: usa limiter próprio (2/5min) e retorna `cooldownSeconds: 0` (não bloqueia a busca manual). Busca manual: rate limit 1/5min por usuário (ou IP anônimo) e retorna `{runId, cooldownSeconds}`. |
 | GET | `/api/pipeline/stream?runId=` | ❌ | SSE — eventos de progresso em tempo real |
 | GET | `/api/pipeline/:runId` | ❌ | Status de uma execução (404 se não existir) |
 
@@ -88,9 +88,15 @@ A extensão se autentica com um **token de extensão** (Bearer) — não usa coo
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/extension/analyze` | Bearer token | Análise ATS da vaga aberta na extensão. Body: `{ jobDescription }` (truncado em 8000 chars). Retorna `{ heuristics, analysis, cached }`. 401 token inválido/revogado, 400 sem currículo importado, 429 rate limit |
+| POST | `/api/extension/analyze` | Bearer token | Análise ATS da vaga aberta na extensão. Body: `{ jobDescription, jobTitle? }` (jobDescription truncado em 8000 chars; jobTitle em 200 — melhora o match dos cursos). Retorna `{ heuristics, analysis, cached, courses }`. `courses` é um array (máx. 3) de `{ titulo, plataforma, skill, preco, url }` com links de afiliado (Alura/Udemy), presente apenas quando há `missingKeywords` (senão `[]`). 401 token inválido/revogado, 400 sem currículo importado, 429 rate limit |
 | POST | `/api/extension/feedback` | Bearer token | Feedback de utilidade. Body: `{ rating: boolean, comment? }` (comentário truncado em 1000 chars). Retorna `{ ok: true }` |
 | GET | `/api/extensao/status` | Sessão (cookie) | Status de conexão da extensão para o usuário logado: `{ connected: boolean, lastUsedAt: Date \| null }` — usado pelo polling da página `/extensao/conectar` |
+
+### Tracking de cursos (afiliado)
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/track/course-click` | ❌ (público, limitado por IP) | Registra clique em link de curso de afiliado. Body: `{ courseId, skill?, platform?, origin, url? }` — `origin` ∈ `web\|chat\|sidebar\|cursos\|extension`. Grava em `CourseClick` (analytics). Rate limit: perfil `general` (60/min por IP). |
 
 **Exemplo (análise pela extensão):**
 ```bash
@@ -98,6 +104,24 @@ curl -X POST http://localhost:11010/api/extension/analyze \
   -H 'Authorization: Bearer <token-da-extensao>' \
   -H 'Content-Type: application/json' \
   -d '{"jobDescription":"Vaga de Desenvolvedor(a) Full Stack..."}'
+```
+
+Resposta (trecho — `courses` só aparece quando há `missingKeywords`):
+```json
+{
+  "heuristics": { "checks": [], "score": 80 },
+  "analysis": { "score": 75, "missingKeywords": ["Kubernetes"], "...": "..." },
+  "cached": false,
+  "courses": [
+    {
+      "titulo": "Formação DevOps",
+      "plataforma": "Alura",
+      "skill": "docker",
+      "preco": "Assinatura a partir de R$ 99/mês",
+      "url": "https://www.alura.com.br/formacao-devops"
+    }
+  ]
+}
 ```
 
 > Nota: as chamadas da extensão vêm de `Origin: chrome-extension://<id>`. O `middleware.ts` só aceita a origem se estiver configurada em `EXTENSION_ORIGIN` (nunca refletida).

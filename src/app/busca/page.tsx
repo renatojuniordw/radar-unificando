@@ -1,12 +1,14 @@
 "use client";
 
-import { Snackbar, Alert } from "@mui/material";
+import { Snackbar, Alert, Box, Container } from "@mui/material";
 import { useJobSearch } from "@/hooks/useJobSearch";
-import { HeroSection } from "@/components/home/hero-section";
+import { BuscaHeader } from "@/components/busca/busca-header";
 import { LoadingOverlay } from "@/components/home/loading-overlay";
 import { ResultsSection } from "@/components/home/results-section";
+import { CourseRecommendationSidebar } from "@/components/busca/course-recommendation-sidebar";
+import { ChatTeaser } from "@/components/shared/chat-teaser";
 
-export function HomeSearchContent() {
+export default function BuscaPage() {
   const {
     session,
     profile,
@@ -23,17 +25,14 @@ export function HomeSearchContent() {
     setSnackbar,
     cooldown,
     recommendedMode,
-    minimalProfile,
     loadJobs,
     addSuggestion,
     handleStart,
   } = useJobSearch();
 
   return (
-    <>
-      <HeroSection
-        isLoggedIn={!!session}
-        minimalProfile={!!minimalProfile}
+    <Box sx={{ minHeight: "100vh", bgcolor: "#020617", pb: 6 }}>
+      <BuscaHeader
         companies={companies}
         onCompaniesChange={setCompanies}
         roleQueries={roleQueries}
@@ -46,15 +45,31 @@ export function HomeSearchContent() {
 
       {running && <LoadingOverlay />}
 
-      <ResultsSection
-        recommendedMode={recommendedMode}
-        jobs={jobs}
-        loading={loading}
-        autoSyncing={autoSyncing}
-        roleCategories={roleCategories}
-        areaOrRole={profile.area || profile.currentRole || ""}
-        onFilterChange={loadJobs}
-      />
+      <Container maxWidth="xl" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 } }}>
+        <Box sx={{ width: "100%", minWidth: 0 }}>
+          <ResultsSection
+            recommendedMode={recommendedMode}
+            jobs={jobs}
+            loading={loading}
+            autoSyncing={autoSyncing}
+            roleCategories={roleCategories}
+            areaOrRole={profile.area || profile.currentRole || ""}
+            onFilterChange={loadJobs}
+          />
+        </Box>
+
+        <Box sx={{ width: "100%" }}>
+          <CourseRecommendationSidebar
+            terms={roleQueries}
+            area={profile.area || profile.currentRole}
+          />
+          {!session && (
+            <Box sx={{ mt: 2 }}>
+              <ChatTeaser />
+            </Box>
+          )}
+        </Box>
+      </Container>
 
       {snackbar && (
         <Snackbar
@@ -68,6 +83,6 @@ export function HomeSearchContent() {
           </Alert>
         </Snackbar>
       )}
-    </>
+    </Box>
   );
 }

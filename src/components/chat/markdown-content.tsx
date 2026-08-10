@@ -9,6 +9,7 @@ import type { Components } from 'react-markdown';
 import { ExternalLinkIcon } from './icons';
 import { parseJobCards } from './job-card-parser';
 import { JobCard } from './job-card';
+import { CourseCard } from './course-card';
 
 function tablesToCards(text: string): string {
   return text.replace(
@@ -131,6 +132,8 @@ export const MarkdownContent = memo(function MarkdownContent({ text }: { text: s
       {segments.map((segment, index) =>
         segment.type === 'job' ? (
           <JobCard key={index} job={segment.job} />
+        ) : segment.type === 'course' ? (
+          <CourseCard key={index} course={segment.course} />
         ) : (
           <ReactMarkdown
             key={index}

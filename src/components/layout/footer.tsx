@@ -142,6 +142,16 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/cursos"
+                  style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; }}
+                >
+                  CURSOS
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/extensao"
                   style={{ color: '#94a3b8', fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textDecoration: 'none', fontFamily: 'ui-monospace, monospace' }}
                   onMouseEnter={e => { e.currentTarget.style.color = '#ccff00'; }}
@@ -171,6 +181,21 @@ export function Footer() {
             </ul>
           </nav>
         </div>
+
+        <p
+          style={{
+            marginTop: 24,
+            color: '#475569',
+            fontSize: '0.6rem',
+            lineHeight: 1.6,
+            fontFamily: 'ui-monospace, monospace',
+            maxWidth: 720,
+          }}
+        >
+          Alguns links desta plataforma são de afiliados (Alura e Udemy) e podem
+          gerar comissão para a manutenção do projeto, sem custo adicional para
+          você.
+        </p>
       </div>
     </footer>
   );

@@ -58,13 +58,16 @@ Infrastructure Layer
 
 ## Fluxo de Dados
 
-1. Usuário submete `companies` e/ou `queries` → `POST /api/pipeline`
+1. Usuário submete `companies` e/ou `queries` → `POST /api/pipeline` (busca manual aplica cooldown de 5 min)
 2. Pipeline roda **Gupy + InHire em paralelo**; logado + queries → MCP Gupy com fallback REST
 3. Eventos SSE emitidos via `ProgressEmitter` (`/api/pipeline/stream`)
 4. Cliente recebe eventos e atualiza UI em tempo real
 5. Resultados deduplicados (por link), cap 200, salvos no PostgreSQL
-6. Usuário visualiza vagas na tabela com filtros e export CSV/JSON
-7. Chat assistente analisa perfil vs vagas via ferramentas IA
+6. **Pool público de vagas** (`PublicJob`, dedup por link, TTL 7 dias): alimentado por **toda** execução do pipeline (logada ou anônima) e lido pelas páginas estáticas de SEO `/vagas` e `/vagas/[cargo]`
+7. Usuário visualiza vagas na tabela com filtros e export CSV/JSON
+8. Chat assistente analisa perfil vs vagas via ferramentas IA
+
+**Auto-sync (refresh silencioso ao entrar no site):** dispara no máximo 1×/15min, só quando há filtros salvos (companies/roles) e cooldown zero. Usa um limiter próprio (`pipelineAutoLimiter`, 2/5min) e **não** consome a cota nem aplica o cooldown da busca manual — o usuário pode buscar na hora. Ver `docs/SECURITY.md`.
 
 **Upload de currículo (assíncrono):**
 1. `POST /api/upload` valida (tamanho, magic bytes `%PDF-`) e faz o parsing do PDF
@@ -87,6 +90,16 @@ A extensão (MV3, side panel) reusa o motor ATS do backend e se autentica por **
 5. A página `/extensao/conectar` faz polling em `GET /api/extensao/status` (4s) para exibir "Extensão conectada" quando `lastUsedAt` é atualizado.
 
 **Origem cruzada:** o middleware de CORS não reflete `Origin` — `EXTENSION_ORIGIN` é a única origem externa permitida nas rotas `/api/*` (ver `docs/SECURITY.md`).
+
+## Cursos de Afiliado (Alura + Udemy)
+
+Monetização via indicação de capacitação. Domínio em `src/lib/core/courses/`:
+
+- **`course-catalog.ts`** — catálogo curado (`COURSES`, ~21 cursos; `POPULAR_SKILLS` para SEO). URLs são placeholders a trocar pelos deep links de afiliado (Awin p/ Alura; Rakuten/Impact p/ Udemy).
+- **`course-provider.ts`** — tipo `Course`, interface `CourseProvider` (extensível para API da Udemy futura), `buildAffiliateUrl` (adiciona `?ref=` via `NEXT_PUBLIC_UDEMY_AFFILIATE_REF`).
+- **`course-matcher.ts`** — matching determinístico `recommendCourses(terms, area, limit)` com sinônimos (`k8s`→`kubernetes`), área tech → Alura primeiro, cap 4/máx 2 por provider; `skillSlug`/`expandTokens`.
+- **`course-skills.ts`** — helper das páginas estáticas `/cursos/[skill]` (SSG, 88 páginas).
+- **Superfícies:** sidebar em `/busca`, hub `/cursos`, chat (tool `recommend_courses` + bloco `📚`), extensão (seção "Cursos Recomendados"). Cliques rastreados em `CourseClick` via `POST /api/track/course-click` + GA4.
 
 ## Persistência no Navegador
 

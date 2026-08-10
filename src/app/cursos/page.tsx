@@ -1,0 +1,240 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Box, Container, Typography, TextField, InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
+import { useProfile } from "@/hooks/useProfile";
+import { getCourseProvider } from "@/lib/core/courses/course-provider";
+import { recommendCourses, skillSlug } from "@/lib/core/courses/course-matcher";
+import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
+import type { Course } from "@/lib/core/courses/course-provider";
+import { CourseCard } from "@/components/cursos/course-card";
+import { ChatTeaser } from "@/components/shared/chat-teaser";
+
+export default function CursosPage() {
+  const { data: session } = useSession();
+  const profile = useProfile();
+  const [query, setQuery] = useState("");
+  const [lastTerms, setLastTerms] = useState<string[]>([]);
+  const [searched, setSearched] = useState<{ query: string; courses: Course[] } | null>(null);
+
+  // Última busca do usuário anônimo (IndexedDB) para personalizar a seção.
+  useEffect(() => {
+    let active = true;
+    browserStorage
+      .getFilters()
+      .then((filters) => {
+        if (active) setLastTerms(filters?.roles ?? []);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Busca por skill no catálogo (local, sem rede). O estado só é gravado no
+  // callback assíncrono; enquanto a busca não resolve, mostra o catálogo.
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) return;
+    let active = true;
+    getCourseProvider()
+      .searchCourses(q)
+      .then((courses) => {
+        if (active) setSearched({ query: q, courses });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [query]);
+
+  const area = session ? profile.area || profile.currentRole : null;
+  const recommended = useMemo(
+    () => recommendCourses(lastTerms, area, 4),
+    [lastTerms, area],
+  );
+
+  const trimmedQuery = query.trim();
+  const visible =
+    searched && searched.query === trimmedQuery ? searched.courses : COURSES;
+  const searching = Boolean(trimmedQuery);
+
+  return (
+    <Box sx={{ bgcolor: "#020617", color: "#ffffff", minHeight: "100vh" }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 }, px: { xs: 2, sm: 3 } }}>
+        <Box sx={{ maxWidth: 720, mb: 4 }}>
+          <Box className="badge-neon" sx={{ mb: 2 }}>
+            ALURA + UDEMY · LINKS DE AFILIADO
+          </Box>
+          <Typography
+            component="h1"
+            sx={{
+              fontWeight: 900,
+              letterSpacing: "-0.03em",
+              color: "#ccff00",
+              fontSize: { xs: "2rem", sm: "3rem" },
+              lineHeight: 1,
+              textTransform: "uppercase",
+              mb: 1.5,
+            }}
+          >
+            CURSOS PARA FECHAR SEUS GAPS
+          </Typography>
+          <Typography sx={{ color: "#94a3b8", fontSize: "0.95rem", lineHeight: 1.6 }}>
+            Identificamos as skills que as vagas mais pedem. Estude exatamente o
+            que falta no seu perfil — cursos avulsos baratos ou trilhas completas.
+          </Typography>
+        </Box>
+
+        <TextField
+          fullWidth
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Busque por skill: Excel, Python, Kubernetes, RH, Power BI…"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: "#ccff00" }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            mb: 5,
+            maxWidth: 640,
+            "& .MuiOutlinedInput-root": {
+              bgcolor: "#0f172a",
+              color: "#ffffff",
+              fontFamily: "ui-monospace, monospace",
+              "& fieldset": { border: "2px solid #334155", borderRadius: 0 },
+              "&:hover fieldset": { borderColor: "#ccff00" },
+              "&.Mui-focused fieldset": { borderColor: "#ccff00" },
+            },
+          }}
+        />
+
+        <Box sx={{ mb: 5 }}>
+          <Typography
+            sx={{
+              fontFamily: "ui-monospace, monospace",
+              fontSize: "0.7rem",
+              color: "#94a3b8",
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              mb: 1.5,
+            }}
+          >
+            Skills mais procuradas
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {POPULAR_SKILLS.map((skill) => (
+              <Link key={skill} href={`/cursos/${skillSlug(skill)}`}>
+                <Box
+                  sx={{
+                    bgcolor: "#0f172a",
+                    border: "2px solid #334155",
+                    color: "#cbd5e1",
+                    px: 1.5,
+                    py: 0.75,
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    fontFamily: "ui-monospace, monospace",
+                    "&:hover": { borderColor: "#ccff00", color: "#ccff00" },
+                  }}
+                >
+                  {skill}
+                </Box>
+              </Link>
+            ))}
+          </Box>
+        </Box>
+
+        {!session && (
+          <Box sx={{ mb: 5, maxWidth: 480 }}>
+            <ChatTeaser />
+          </Box>
+        )}
+
+        {!searching && (
+          <Box sx={{ mb: 5 }}>
+            <Typography
+              sx={{
+                fontFamily: "ui-monospace, monospace",
+                fontSize: "0.7rem",
+                color: "#ccff00",
+                fontWeight: 800,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                mb: 2,
+              }}
+            >
+              {lastTerms.length > 0
+                ? `Com base na sua última busca: ${lastTerms.join(", ")}`
+                : "Cursos em destaque"}
+            </Typography>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr 1fr" },
+                gap: 2.5,
+              }}
+            >
+              {recommended.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        <Box>
+          <Typography
+            sx={{
+              fontFamily: "ui-monospace, monospace",
+              fontSize: "0.7rem",
+              color: "#ccff00",
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              mb: 2,
+            }}
+          >
+            {searching ? `Resultados para "${query}"` : "Catálogo completo"}
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr 1fr" },
+              gap: 2.5,
+            }}
+          >
+            {visible.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </Box>
+        </Box>
+
+        <Typography
+          sx={{
+            mt: 6,
+            pt: 3,
+            borderTop: "1px solid #1e293b",
+            color: "#475569",
+            fontSize: "0.7rem",
+            lineHeight: 1.6,
+            maxWidth: 720,
+          }}
+        >
+          Alguns links desta página são de afiliados (Alura e Udemy) e podem
+          gerar comissão para a manutenção do projeto, sem custo adicional para
+          você. A recomendação é baseada nas skills das vagas que você busca.
+        </Typography>
+      </Container>
+    </Box>
+  );
+}

@@ -9,6 +9,8 @@ import { generateInterviewQuestions, INTERVIEW_QUESTIONS_PROMPT_VERSION } from '
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
 import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
 import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
+import { recommendCourses } from '@/lib/core/courses/course-matcher';
+import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
 
@@ -269,6 +271,32 @@ export function createChatTools(userId: string) {
 
         await saveToCache(userId, 'interview_questions', cacheKey, questions);
         return questions;
+      },
+    }),
+
+    recommend_courses: tool({
+      description: 'Recomendar cursos de capacitação (Alura ou Udemy) para skills específicas que faltam no currículo do usuário. Use quando analyze_job_fit ou analyze_ats_score indicar missingSkills/missingKeywords. Retorna até 4 cursos com link de afiliado. Apresente cada curso no formato de bloco de curso (📚) — no máximo 3 blocos por resposta, apenas quando fizer sentido, nunca em toda resposta.',
+      inputSchema: z.object({
+        skills: z
+          .array(z.string().min(1).max(60).trim())
+          .min(1, 'Informe pelo menos 1 skill')
+          .max(6, 'Informe no máximo 6 skills')
+          .describe('Skills/requisitos faltando no currículo (ex: ["Kubernetes", "Excel Avançado"])'),
+      }),
+      execute: async ({ skills }: { skills: string[] }) => {
+        console.log(`[chat-tools] recommend_courses chamado com skills=${JSON.stringify(skills)}`);
+        const profile = await profileRepository.findByUserId(userId);
+        const area = profile?.area || profile?.currentRole || null;
+        const courses = recommendCourses(skills, area, 4);
+        return {
+          cursos: courses.map((c) => ({
+            titulo: c.title,
+            plataforma: c.provider === 'alura' ? 'Alura' : 'Udemy',
+            skill: c.skillTags[0],
+            preco: c.priceLabel,
+            url: buildAffiliateUrl(c),
+          })),
+        };
       },
     }),
   };

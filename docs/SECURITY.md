@@ -20,12 +20,13 @@
 ## Rate Limits por Operação
 
 Dois sistemas:
-- `src/lib/infrastructure/security/rate-limiter.ts` — **in-memory** (`pipelineLimiter`, `uploadLimiter`).
+- `src/lib/infrastructure/security/rate-limiter.ts` — **in-memory** (`pipelineLimiter`, `pipelineAutoLimiter`, `uploadLimiter`).
 - `src/lib/infrastructure/rate-limit.ts` — **Redis** (`rate-limiter-flexible`) com fallback em memória (`chat`, `chat_daily`, `auth`, `general`, `register_daily`, `extension`).
 
 | Operação | Janela | Limite | Backend | Chave |
 |----------|--------|--------|---------|-------|
 | Pipeline (`/api/pipeline`) | 5 min | 1 | in-memory | user_id / IP |
+| Pipeline auto-sync (`/api/pipeline` com `auto:true`) | 5 min | 2 | in-memory | user_id / IP |
 | Upload currículo (`/api/upload`) | 1 hora | 10 | in-memory | user_id / IP |
 | Chat (`/api/chat`) | 1 min | 10 | Redis | user_id + IP |
 | Chat diário (`/api/chat`) | 24 h | 50 | Redis | user_id + IP |

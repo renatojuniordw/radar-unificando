@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { RateLimiter } from '@/lib/infrastructure/security/rate-limiter';
+import { RateLimiter, pipelineAutoLimiter } from '@/lib/infrastructure/security/rate-limiter';
 
 describe('RateLimiter', () => {
   beforeEach(() => {
@@ -80,5 +80,13 @@ describe('RateLimiter', () => {
     const result = limiter.check('key-1');
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(1);
+  });
+
+  it('pipeline_auto_limiter_permite_2_por_janela_e_bloqueia_3o', () => {
+    const key = `auto-test-${Date.now()}-${Math.random()}`;
+    expect(pipelineAutoLimiter.windowMs).toBe(300_000);
+    expect(pipelineAutoLimiter.check(key).allowed).toBe(true);
+    expect(pipelineAutoLimiter.check(key).allowed).toBe(true);
+    expect(pipelineAutoLimiter.check(key).allowed).toBe(false);
   });
 });

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import { pipelineLimiter } from '@/lib/infrastructure/security/rate-limiter';
+import { pipelineLimiter, pipelineAutoLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { runPipeline, ANONYMOUS_USER_ID } from '@/lib/core/pipeline/pipeline-runner';
 
 export async function POST(req: NextRequest) {
@@ -15,15 +15,18 @@ export async function POST(req: NextRequest) {
       || 'unknown';
     const rateLimitKey = session?.user?.id ? userId : `anon:${ip}`;
 
-    const { allowed, retryAfter } = pipelineLimiter.check(rateLimitKey);
+    const { companies, queries, auto } = await req.json();
+
+    // Auto-sync (refresh silencioso) usa limiter próprio e NÃO consome a cota
+    // da busca manual — o usuário pode buscar na hora após entrar no site.
+    const limiter = auto === true ? pipelineAutoLimiter : pipelineLimiter;
+    const { allowed, retryAfter } = limiter.check(rateLimitKey);
     if (!allowed) {
       return NextResponse.json(
         { error: 'Muitas requisições. Aguarde entre execuções.', retryAfter },
         { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
-
-    const { companies, queries } = await req.json();
 
     const runId = crypto.randomUUID();
     const isLoggedIn = !!session?.user?.id;
@@ -41,7 +44,10 @@ export async function POST(req: NextRequest) {
 
     runPipeline(runId, userId, companies || [], queries || [], isLoggedIn);
 
-    return NextResponse.json({ runId, cooldownSeconds: Math.ceil(pipelineLimiter.windowMs / 1000) });
+    return NextResponse.json({
+      runId,
+      cooldownSeconds: auto === true ? 0 : Math.ceil(pipelineLimiter.windowMs / 1000),
+    });
   } catch (error) {
     console.error('[pipeline] Error:', error);
     return NextResponse.json(

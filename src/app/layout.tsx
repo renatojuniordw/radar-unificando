@@ -5,7 +5,6 @@ import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
 import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
 import { SnackbarProvider } from "@/hooks/useSnackbar";
-import { QueryProvider } from "@/lib/infrastructure/ui/query-provider";
 import { ChatAssistantProvider } from "@/contexts/chat-assistant-context";
 import { ChatAssistantMount } from "@/components/chat/chat-mount";
 import { Header, Footer } from "@/components/layout";
@@ -103,8 +102,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <SnackbarProvider>
-              <QueryProvider>
-                <ChatAssistantProvider>
+              <ChatAssistantProvider>
                   {/* Skip link for keyboard navigation */}
                   <Box
                     component="a"
@@ -135,7 +133,6 @@ export default function RootLayout({
                   <Footer />
                   <ChatAssistantMount />
                 </ChatAssistantProvider>
-              </QueryProvider>
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>

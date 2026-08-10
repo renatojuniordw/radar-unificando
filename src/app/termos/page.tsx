@@ -258,6 +258,46 @@ export default function TermosPage() {
             </p>
           </section>
 
+          {/* Seção 5 - Links de Afiliados */}
+          <section
+            style={{
+              backgroundColor: '#0f172a',
+              border: '2px solid #1e293b',
+              padding: '28px',
+            }}
+          >
+            <h2
+              style={{
+                color: '#ccff00',
+                fontSize: '1.25rem',
+                fontWeight: 800,
+                marginTop: 0,
+                marginBottom: 16,
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              5. Links de Afiliados
+            </h2>
+            <p>
+              Para manter o serviço gratuito e aberto, o Radar Unificando participa de programas de afiliados de capacitação profissional, atualmente com as plataformas <strong>Alura</strong> e <strong>Udemy</strong>. Quando você clica em um link de curso recomendado e realiza uma compra, podemos receber uma comissão da plataforma — <strong>sem nenhum custo adicional para você</strong>.
+            </p>
+            <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Transparência:</strong> As recomendações de curso são exibidas com a identificação de que se trata de indicação (ex: &quot;Recomendação do Radar&quot;) e o preço que você vê é o mesmo que pagaria acessando a plataforma diretamente.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Base da recomendação:</strong> Os cursos são sugeridos com base nas skills exigidas pelas vagas que você busca e nas lacunas identificadas na análise do seu currículo — não por qualquer pagamento de terceiros.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Sem interferência no preço:</strong> A comissão de afiliado não altera o valor cobrado pelas plataformas (Alura e Udemy), nem os termos de compra delas.
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <strong>Dados pessoais:</strong> Nenhum dado pessoal seu é compartilhado com as plataformas de afiliados. A identificação da indicação ocorre apenas por parâmetro técnico no link (ex: <code>?ref=</code>).
+              </li>
+            </ul>
+          </section>
+
           {/* Footer de navegação da página */}
           <div style={{ marginTop: 24, textAlign: 'center' }}>
             <Link

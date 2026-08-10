@@ -3,6 +3,7 @@ import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { runGupyStep, shouldUseGupyMCP } from '@/lib/core/pipeline/steps/gupy-step';
 import { runInHireStep } from '@/lib/core/pipeline/steps/inhire-step';
 import { runSaveStep } from '@/lib/core/pipeline/steps/save-step';
+import { runPublicSaveStep } from '@/lib/core/pipeline/steps/public-save-step';
 import { dedupEngine } from '@/lib/core/dedup';
 
 export const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000';
@@ -21,6 +22,9 @@ export async function runPipeline(
     ]);
 
     const allJobs = dedupEngine.mergeSources(gupyJobs, inhireJobs);
+
+    // Pool público de vagas (SEO): alimentado em toda execução, logada ou anônima.
+    await runPublicSaveStep(allJobs);
 
     if (isLoggedIn && userId !== ANONYMOUS_USER_ID) {
       await runSaveStep(runId, allJobs, {

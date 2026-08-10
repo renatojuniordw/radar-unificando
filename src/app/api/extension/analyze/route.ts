@@ -3,6 +3,8 @@ import { profileRepository } from '@/lib/infrastructure/repositories';
 import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
 import { findUserIdByExtensionToken } from '@/lib/core/extension/extension-token';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
+import { recommendCourses } from '@/lib/core/courses/course-matcher';
+import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
 
 const MAX_JOB_DESCRIPTION = 8000;
 
@@ -60,6 +62,8 @@ export async function POST(req: NextRequest) {
       typeof body?.jobDescription === 'string'
         ? body.jobDescription.slice(0, MAX_JOB_DESCRIPTION)
         : undefined;
+    const jobTitle =
+      typeof body?.jobTitle === 'string' ? body.jobTitle.slice(0, 200).trim() : undefined;
 
     const profile = await profileRepository.findByUserId(userId);
     const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
@@ -75,7 +79,25 @@ export async function POST(req: NextRequest) {
       traceId: crypto.randomUUID(),
     });
 
-    return NextResponse.json(result);
+    // Cursos de afiliado recomendados a partir das skills faltando (máx. 3).
+    // Calculado fora do cache do ATS — determinístico e sem custo extra.
+    // O título da vaga ajuda o matcher a casar a skill do cargo (ex.: "Analista de RH").
+    const missingKeywords = result.analysis.missingKeywords ?? [];
+    const courseTerms = [...missingKeywords, ...(jobTitle ? [jobTitle] : [])];
+    const courses =
+      courseTerms.length > 0
+        ? recommendCourses(courseTerms, profile?.area ?? null, 3).map(
+            (c) => ({
+              titulo: c.title,
+              plataforma: c.provider === 'alura' ? 'Alura' : 'Udemy',
+              skill: c.skillTags[0],
+              preco: c.priceLabel,
+              url: buildAffiliateUrl(c),
+            }),
+          )
+        : [];
+
+    return NextResponse.json({ ...result, courses });
   } catch (error) {
     console.error('[extension] Erro na análise:', error);
     const message = error instanceof Error ? error.message : 'Erro desconhecido';

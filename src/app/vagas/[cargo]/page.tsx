@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { jobRepository } from '@/lib/infrastructure/repositories';
+import { publicJobRepository } from '@/lib/infrastructure/repositories';
 import { JobPostingSchema, type JobPostingData } from '@/components/seo/job-posting-schema';
 import { slugify } from '@/lib/core/vagas/slug';
 
@@ -12,7 +12,7 @@ export const revalidate = 3600; // ISR: regenera a cada 1h
 
 export async function generateStaticParams() {
   try {
-    const categories = await jobRepository.findRoleCategories();
+    const categories = await publicJobRepository.findRoleCategories();
     return categories.map((c) => ({ cargo: slugify(c.roleCategory) }));
   } catch {
     // Banco pode estar indisponível durante o build (ex.: build de imagem Docker sem
@@ -24,7 +24,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ cargo: string }> }): Promise<Metadata> {
   const { cargo } = await params;
-  const categories = await jobRepository.findRoleCategories();
+  const categories = await publicJobRepository.findRoleCategories();
   const match = categories.find((c) => slugify(c.roleCategory) === cargo);
   const name = match?.roleCategory || cargo.replace(/-/g, ' ');
   return {
@@ -56,11 +56,11 @@ function toJobPosting(job: {
 
 export default async function VagasCategoriaPage({ params }: { params: Promise<{ cargo: string }> }) {
   const { cargo } = await params;
-  const categories = await jobRepository.findRoleCategories();
+  const categories = await publicJobRepository.findRoleCategories();
   const match = categories.find((c) => slugify(c.roleCategory) === cargo);
   if (!match) notFound();
 
-  const jobs = await jobRepository.findByRoleCategory(match.roleCategory, 100);
+  const jobs = await publicJobRepository.findByRoleCategory(match.roleCategory, 100);
   const schemaJobs = jobs.slice(0, 10).map(toJobPosting);
 
   return (
@@ -86,7 +86,7 @@ export default async function VagasCategoriaPage({ params }: { params: Promise<{
 
         {jobs.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
-            <Link href="/" style={{ textDecoration: 'none' }}>
+            <Link href="/busca" style={{ textDecoration: 'none' }}>
               <Box
                 sx={{
                   display: 'inline-block',

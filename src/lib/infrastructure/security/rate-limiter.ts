@@ -32,4 +32,8 @@ export class RateLimiter {
 }
 
 export const pipelineLimiter = new RateLimiter(300_000, 1);
+// Auto-sync (refresh silencioso ao entrar no site): limiter próprio, não
+// consome a cota da busca manual. 2/5min nunca trava usuário real (dispara
+// no máx. 1×/15min por cliente), mas segura abuso.
+export const pipelineAutoLimiter = new RateLimiter(300_000, 2);
 export const uploadLimiter = new RateLimiter(3_600_000, 10);
