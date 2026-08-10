@@ -31,7 +31,7 @@ export function useJobSearch() {
 
   // Perfil mínimo: skills >= 3 E (currentRole OU area)
   const minimalProfile = useMemo(() => {
-    return profile.skills.length >= 3 && (profile.currentRole || profile.area);
+    return profile.skills.length >= 3 && Boolean(profile.currentRole || profile.area);
   }, [profile.skills.length, profile.currentRole, profile.area]);
 
   // Modo recomendado é derivado (logado + perfil completo); não é estado.
