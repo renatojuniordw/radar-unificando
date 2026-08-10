@@ -5,9 +5,9 @@ import { Box, Container, Typography, TextField, InputAdornment } from "@mui/mate
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useDebounce } from "use-debounce";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
-import { getCourseProvider } from "@/lib/core/courses/course-provider";
 import { recommendCourses, skillSlug } from "@/lib/core/courses/course-matcher";
 import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import type { Course } from "@/lib/core/courses/course-provider";
@@ -16,12 +16,20 @@ import { CourseGrid } from "@/components/cursos/course-grid";
 import { ChatTeaser } from "@/components/shared/chat-teaser";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 
+interface SearchResult {
+  query: string;
+  courses: Course[];
+  source: "impact" | "curated";
+}
+
 export default function CursosPage() {
   const { data: session } = useSession();
   const profile = useProfile();
   const [query, setQuery] = useState("");
+  const [debouncedQuery] = useDebounce(query, 400);
   const [lastTerms, setLastTerms] = useState<string[]>([]);
-  const [searched, setSearched] = useState<{ query: string; courses: Course[] } | null>(null);
+  const [searched, setSearched] = useState<SearchResult | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Última busca do usuário anônimo (IndexedDB) para personalizar a seção.
   useEffect(() => {
@@ -37,22 +45,45 @@ export default function CursosPage() {
     };
   }, []);
 
-  // Busca por skill no catálogo (local, sem rede). O estado só é gravado no
-  // callback assíncrono; enquanto a busca não resolve, mostra o catálogo.
+  // Busca dinâmica: API Impact (Udemy avulsos) com fallback para o catálogo
+  // curado local. Debounced (400ms) para não disparar a cada tecla.
   useEffect(() => {
-    const q = query.trim();
-    if (!q) return;
+    const q = debouncedQuery.trim();
     let active = true;
-    getCourseProvider()
-      .searchCourses(q)
-      .then((courses) => {
-        if (active) setSearched({ query: q, courses });
-      })
-      .catch(() => undefined);
+    if (!q) return;
+
+    void (async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch("/api/courses/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: q }),
+        });
+        const data = res.ok
+          ? ((await res.json()) as { courses?: Course[]; source?: "impact" | "curated" })
+          : null;
+        if (!active) return;
+        if (data?.courses?.length) {
+          setSearched({
+            query: q,
+            courses: data.courses,
+            source: data.source ?? "curated",
+          });
+        } else {
+          setSearched(null);
+        }
+      } catch {
+        if (active) setSearched(null);
+      } finally {
+        if (active) setSearchLoading(false);
+      }
+    })();
+
     return () => {
       active = false;
     };
-  }, [query]);
+  }, [debouncedQuery]);
 
   const area = session ? profile.area || profile.currentRole : null;
   const recommended = useMemo(
@@ -60,7 +91,7 @@ export default function CursosPage() {
     [lastTerms, area],
   );
 
-  const trimmedQuery = query.trim();
+  const trimmedQuery = debouncedQuery.trim();
   const visible =
     searched && searched.query === trimmedQuery ? searched.courses : COURSES;
   const searching = Boolean(trimmedQuery);
@@ -170,7 +201,13 @@ export default function CursosPage() {
 
         <Box>
           <SectionEyebrow>
-            {searching ? `Resultados para "${query}"` : "Catálogo completo"}
+            {searching
+              ? searchLoading
+                ? "Buscando cursos…"
+                : searched?.source === "impact"
+                  ? `Cursos Udemy para "${trimmedQuery}"`
+                  : `Resultados para "${trimmedQuery}"`
+              : "Catálogo completo"}
           </SectionEyebrow>
           <CourseGrid>
             {visible.map((course) => (

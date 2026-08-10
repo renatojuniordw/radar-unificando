@@ -11,6 +11,7 @@ import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
 import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
 import { recommendCourses } from '@/lib/core/courses/course-matcher';
 import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
+import { searchUdemyCourses } from '@/lib/core/courses/impact-client';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
 
@@ -288,13 +289,40 @@ export function createChatTools(userId: string) {
         const profile = await profileRepository.findByUserId(userId);
         const area = profile?.area || profile?.currentRole || null;
         const courses = recommendCourses(skills, area, 4);
+
+        // Enriquecimento: skill sem match no catálogo curado → busca avulsos
+        // na API Impact (Udemy). Limitado a 2 chamadas para não atrasar o chat.
+        const matchedTags = courses.flatMap((c) => c.skillTags);
+        const unmatched = skills.filter(
+          (s) =>
+            !matchedTags.some(
+              (t) =>
+                t.toLowerCase().includes(s.toLowerCase()) ||
+                s.toLowerCase().includes(t.toLowerCase()),
+            ),
+        );
+
+        const merged = [...courses];
+        if (unmatched.length > 0) {
+          const top = unmatched.slice(0, 2);
+          const apiResults = await Promise.all(
+            top.map((skill) => searchUdemyCourses(skill, 2)),
+          );
+          for (const list of apiResults) {
+            for (const c of list) {
+              if (!merged.some((x) => x.id === c.id)) merged.push(c);
+            }
+          }
+        }
+
         return {
-          cursos: courses.map((c) => ({
+          cursos: merged.slice(0, 4).map((c) => ({
             titulo: c.title,
             plataforma: c.provider === 'alura' ? 'Alura' : 'Udemy',
             skill: c.skillTags[0],
             preco: c.priceLabel,
-            url: buildAffiliateUrl(c),
+            // Cursos da API Impact já são rastreados pelo script do site.
+            url: c.id.startsWith('impact-') ? c.url : buildAffiliateUrl(c),
           })),
         };
       },
