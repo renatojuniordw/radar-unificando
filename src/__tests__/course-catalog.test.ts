@@ -17,6 +17,14 @@ describe('course-catalog', () => {
     }
   });
 
+  it('deve_apontar_cursos_udemy_para_pagina_de_curso_nao_de_busca', () => {
+    const udemy = COURSES.filter((c) => c.provider === 'udemy');
+    expect(udemy.length).toBeGreaterThan(0);
+    for (const course of udemy) {
+      expect(course.url).toMatch(/^https:\/\/www\.udemy\.com\/course\//);
+    }
+  });
+
   it('deve_ter_ambos_providers_representados', () => {
     expect(COURSES.some((c) => c.provider === 'alura')).toBe(true);
     expect(COURSES.some((c) => c.provider === 'udemy')).toBe(true);

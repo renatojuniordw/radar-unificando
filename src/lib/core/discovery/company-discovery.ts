@@ -1,8 +1,12 @@
+import { uniqueBy } from '@/lib/utils/array';
+
 interface DiscoveredCompany {
   name: string;
   careersUrl: string;
   source: 'wayback' | 'urlscan' | 'commoncrawl';
 }
+
+export type { DiscoveredCompany };
 
 export class CompanyDiscovery {
   async discover(knownCompanies: string[]): Promise<DiscoveredCompany[]> {
@@ -110,13 +114,7 @@ export class CompanyDiscovery {
   }
 
   private dedup(results: DiscoveredCompany[]): DiscoveredCompany[] {
-    const seen = new Set<string>();
-    return results.filter(r => {
-      const key = r.name.toLowerCase().trim();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    return uniqueBy(results, (r) => r.name.toLowerCase().trim());
   }
 }
 

@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import { debugLog } from '@/lib/utils/debug';
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = Number(process.env.REDIS_PORT) || 6379;
@@ -24,7 +25,7 @@ redisClient
   .connect()
   .then(() => {
     redisConnected = true;
-    console.log('[Redis] Conectado com sucesso.');
+    debugLog('[Redis] Conectado com sucesso.');
   })
   .catch((err) => {
     redisConnected = false;

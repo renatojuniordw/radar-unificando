@@ -82,5 +82,10 @@ export async function saveMessagesToServer(chatId: string, messages: ChatMessage
 }
 
 export function generateChatId(): string {
+  // crypto.randomUUID só existe em contexto seguro (HTTPS/localhost); fallback
+  // para ambientes HTTP não-seguros (ex.: dev na rede local) sem quebrar.
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `chat-${crypto.randomUUID()}`;
+  }
   return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }

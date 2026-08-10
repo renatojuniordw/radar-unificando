@@ -14,14 +14,15 @@ vi.mock('@/lib/infrastructure/rate-limit', () => ({
 import { searchUdemyCourses } from '@/lib/core/courses/impact-client';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { POST } from '@/app/api/courses/search/route';
+import type { NextRequest } from 'next/server';
 import type { Course } from '@/lib/core/courses/course-provider';
 
-function makeRequest(body: unknown) {
+function makeRequest(body: unknown): NextRequest {
   return new Request('http://localhost:11010/api/courses/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  });
+  }) as NextRequest;
 }
 
 const impactCourse: Course = {

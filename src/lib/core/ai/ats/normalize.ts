@@ -14,13 +14,3 @@ export function normalizeKeyword(s: string): string {
     .trim();
 }
 
-/** Deduplica mantendo a primeira ocorrência, usando a forma normalizada como chave. */
-export function dedupeKeywords(items: string[]): string[] {
-  const seen = new Set<string>();
-  return items.filter((item) => {
-    const key = normalizeKeyword(item);
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}

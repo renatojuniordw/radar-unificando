@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
-import { sanitizeUntrusted } from './shared/sanitize';
+import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
 import { COVER_LETTER_PROMPT } from './prompts/cover-letter';
 
 const LIMITS = {
@@ -61,9 +61,7 @@ export async function generateCoverLetter(
     throw new Error('Não foi possível gerar a carta: dados de entrada inválidos.');
   }
 
-  const safeResume = sanitizeUntrusted(parsedInput.data.resumeText, 'resume');
-  const safeJobDescription = sanitizeUntrusted(parsedInput.data.jobDescription, 'job_description');
-  const safeJobTitle = sanitizeUntrusted(parsedInput.data.jobTitle, 'job_title');
+  const { safeResume, safeJobDescription, safeJobTitle } = sanitizeAnalysisInput(parsedInput.data);
 
   const fullPrompt = `${PROMPT}
 

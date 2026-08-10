@@ -21,6 +21,11 @@ vi.mock('@/lib/core/pipeline/steps/inhire-step', () => ({ runInHireStep: vi.fn()
 vi.mock('@/lib/core/pipeline/steps/discovery-step', () => ({ runDiscoveryStep: vi.fn().mockResolvedValue(0) }));
 vi.mock('@/lib/core/pipeline/steps/save-step', () => ({ runSaveStep: vi.fn().mockResolvedValue(0) }));
 vi.mock('@/lib/core/dedup', () => ({ dedupEngine: { mergeSources: vi.fn().mockReturnValue([]) } }));
+const { runPipeline: mockRunPipeline } = vi.hoisted(() => ({ runPipeline: vi.fn() }));
+vi.mock('@/lib/core/pipeline/pipeline-runner', () => ({
+  runPipeline: mockRunPipeline,
+  ANONYMOUS_USER_ID: '00000000-0000-0000-0000-000000000000',
+}));
 
 import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { pipelineLimiter, pipelineAutoLimiter } from '@/lib/infrastructure/security/rate-limiter';
@@ -76,6 +81,37 @@ describe('Pipeline API', () => {
       const res = await PipelinePOST(makeRequest({ auto: true }));
       expect(res.status).toBe(429);
       expect(pipelineLimiter.check).not.toHaveBeenCalled();
+    });
+
+    it('should_pass_discovery_enabled_to_runner_when_provided', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
+      vi.mocked(pipelineLimiter.check).mockReturnValue({ allowed: true, remaining: 0, resetAt: Date.now() + 300_000, retryAfter: 0 });
+      vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-discovery' } as any);
+      const res = await PipelinePOST(makeRequest({ companies: ['CorpA'], discoveryEnabled: false }));
+      expect(res.status).toBe(200);
+      expect(mockRunPipeline).toHaveBeenCalledWith(
+        expect.any(String),
+        'user-1',
+        ['CorpA'],
+        [],
+        true,
+        { discoveryEnabled: false },
+      );
+    });
+
+    it('should_default_discovery_enabled_when_omitted', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
+      vi.mocked(pipelineLimiter.check).mockReturnValue({ allowed: true, remaining: 0, resetAt: Date.now() + 300_000, retryAfter: 0 });
+      vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-no-flag' } as any);
+      await PipelinePOST(makeRequest({ companies: ['CorpA'] }));
+      expect(mockRunPipeline).toHaveBeenCalledWith(
+        expect.any(String),
+        'user-1',
+        ['CorpA'],
+        [],
+        true,
+        { discoveryEnabled: undefined },
+      );
     });
 
     it('should_apply_manual_cooldown_when_not_auto', async () => {

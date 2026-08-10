@@ -15,6 +15,7 @@ import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
 import { recommendCourses } from '@/lib/core/courses/course-matcher';
 import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
 import { searchUdemyCourses } from '@/lib/core/courses/impact-client';
+import { debugLog } from '@/lib/utils/debug';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
 
@@ -108,7 +109,7 @@ export function createChatTools(userId: string) {
         if (searchCount > MAX_SEARCHES_PER_MESSAGE) {
           return { error: 'Limite de 2 buscas por mensagem atingido. Reformule o pedido.' };
         }
-        console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
+        debugLog(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
         const jobs = await gupyMcpClient.searchJobs(query, Math.min((limit || 10) * 2, 40));
         const aliveJobs = await jobLinkFilter.filterAlive(jobs, { concurrency: 5 });
         return aliveJobs.slice(0, limit || 10).map(formatJobResult);
@@ -119,7 +120,7 @@ export function createChatTools(userId: string) {
       description: 'Obter o perfil do usuário logado (skills, experiência, senioridade, formação).',
       inputSchema: z.object({}),
       execute: async () => {
-        console.log('[chat-tools] get_my_profile chamado');
+        debugLog('[chat-tools] get_my_profile chamado');
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
         return {
@@ -146,7 +147,7 @@ export function createChatTools(userId: string) {
           .describe('Descrição da vaga alvo (opcional). Se fornecida, o score considera o keyword match com a vaga.'),
       }),
       execute: async ({ jobDescription }: { jobDescription?: string }) => {
-        console.log('[chat-tools] analyze_ats_score chamado');
+        debugLog('[chat-tools] analyze_ats_score chamado');
         const profile = await profileRepository.findByUserId(userId);
         const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
         if (!resumeText || resumeText.length < 30) {
@@ -183,7 +184,7 @@ export function createChatTools(userId: string) {
           .describe('Descrição da vaga (campo "descricao" retornado por search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -202,7 +203,7 @@ export function createChatTools(userId: string) {
         ).min(2, 'Informe pelo menos 2 vagas para comparar').max(5, 'Compare no máximo 5 vagas por vez'),
       }),
       execute: async ({ jobs }: { jobs: { jobTitle: string; jobDescription: string }[] }) => {
-        console.log(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
+        debugLog(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -225,7 +226,7 @@ export function createChatTools(userId: string) {
         jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] generate_cover_letter chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] generate_cover_letter chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -251,7 +252,7 @@ export function createChatTools(userId: string) {
         jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] get_interview_questions chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] get_interview_questions chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -288,7 +289,7 @@ export function createChatTools(userId: string) {
           .describe('Skills/requisitos faltando no currículo (ex: ["Kubernetes", "Excel Avançado"])'),
       }),
       execute: async ({ skills }: { skills: string[] }) => {
-        console.log(`[chat-tools] recommend_courses chamado com skills=${JSON.stringify(skills)}`);
+        debugLog(`[chat-tools] recommend_courses chamado com skills=${JSON.stringify(skills)}`);
         const profile = await profileRepository.findByUserId(userId);
         const area = profile?.area || profile?.currentRole || null;
         const courses = recommendCourses(skills, area, 4);

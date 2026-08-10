@@ -6,5 +6,7 @@ export type { IJobRepository } from './job-repository';
 export { publicJobRepository } from './public-job-repository';
 export { pipelineRunRepository } from './pipeline-repository';
 export type { IPipelineRunRepository } from './pipeline-repository';
+export { newCompanyRepository } from './new-company-repository';
+export type { INewCompanyRepository } from './new-company-repository';
 export { chatRepository } from './chat-repository';
 export type { IChatRepository, ChatMessageData } from './chat-repository';

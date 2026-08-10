@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { companies, queries, auto } = parsed.data;
+    const { companies, queries, auto, discoveryEnabled } = parsed.data;
 
     // Auto-sync (refresh silencioso) usa limiter próprio e NÃO consome a cota
     // da busca manual — o usuário pode buscar na hora após entrar no site.
@@ -44,13 +44,13 @@ export async function POST(req: NextRequest) {
         id: runId,
         userId,
         status: 'running',
-        discoveryEnabled: false,
+        discoveryEnabled,
       });
     }
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });
 
-    runPipeline(runId, userId, companies || [], queries || [], isLoggedIn);
+    runPipeline(runId, userId, companies || [], queries || [], isLoggedIn, { discoveryEnabled });
 
     return NextResponse.json({
       runId,
