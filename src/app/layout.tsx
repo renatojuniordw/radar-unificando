@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
@@ -11,6 +10,7 @@ import { ChatAssistantMount } from "@/components/chat/chat-mount";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Header, Footer } from "@/components/layout";
 import { PwaRegister } from "@/components/ui/pwa-register";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 import "./globals.css";
 
 const inter = Inter({
@@ -146,7 +146,7 @@ export default function RootLayout({
           </ThemeProvider>
         </AuthProvider>
         <PwaRegister />
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92"} />
+        <CookieConsent />
         <Script
           id="impact-tracking"
           strategy="afterInteractive"
