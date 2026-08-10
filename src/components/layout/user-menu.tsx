@@ -92,6 +92,9 @@ export function UserMenu() {
             <img
               src={session.user.image}
               alt={firstName}
+              loading="lazy"
+              width={24}
+              height={24}
               className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-[#ccff00]"
             />
           ) : (

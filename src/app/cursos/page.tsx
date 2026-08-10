@@ -12,7 +12,9 @@ import { recommendCourses, skillSlug } from "@/lib/core/courses/course-matcher";
 import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import type { Course } from "@/lib/core/courses/course-provider";
 import { CourseCard } from "@/components/cursos/course-card";
+import { CourseGrid } from "@/components/cursos/course-grid";
 import { ChatTeaser } from "@/components/shared/chat-teaser";
+import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 
 export default function CursosPage() {
   const { data: session } = useSession();
@@ -117,19 +119,9 @@ export default function CursosPage() {
         />
 
         <Box sx={{ mb: 5 }}>
-          <Typography
-            sx={{
-              fontFamily: "ui-monospace, monospace",
-              fontSize: "0.7rem",
-              color: "#94a3b8",
-              fontWeight: 800,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              mb: 1.5,
-            }}
-          >
+          <SectionEyebrow color="#94a3b8" mb={1.5}>
             Skills mais procuradas
-          </Typography>
+          </SectionEyebrow>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {POPULAR_SKILLS.map((skill) => (
               <Link key={skill} href={`/cursos/${skillSlug(skill)}`}>
@@ -163,60 +155,28 @@ export default function CursosPage() {
 
         {!searching && (
           <Box sx={{ mb: 5 }}>
-            <Typography
-              sx={{
-                fontFamily: "ui-monospace, monospace",
-                fontSize: "0.7rem",
-                color: "#ccff00",
-                fontWeight: 800,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                mb: 2,
-              }}
-            >
+            <SectionEyebrow>
               {lastTerms.length > 0
                 ? `Com base na sua última busca: ${lastTerms.join(", ")}`
                 : "Cursos em destaque"}
-            </Typography>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr 1fr" },
-                gap: 2.5,
-              }}
-            >
+            </SectionEyebrow>
+            <CourseGrid>
               {recommended.map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}
-            </Box>
+            </CourseGrid>
           </Box>
         )}
 
         <Box>
-          <Typography
-            sx={{
-              fontFamily: "ui-monospace, monospace",
-              fontSize: "0.7rem",
-              color: "#ccff00",
-              fontWeight: 800,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              mb: 2,
-            }}
-          >
+          <SectionEyebrow>
             {searching ? `Resultados para "${query}"` : "Catálogo completo"}
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr 1fr" },
-              gap: 2.5,
-            }}
-          >
+          </SectionEyebrow>
+          <CourseGrid>
             {visible.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
-          </Box>
+          </CourseGrid>
         </Box>
 
         <Typography

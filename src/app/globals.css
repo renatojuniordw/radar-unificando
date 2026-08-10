@@ -113,6 +113,12 @@ body {
   color: #334155;
 }
 
+.card-panel {
+  background-color: #0f172a;
+  border: 2px solid #334155;
+  box-shadow: 4px 4px 0px #000;
+}
+
 .card-dark {
   border: 3px solid #ccff00;
   background-color: #0f172a;
@@ -159,14 +165,6 @@ body {
   padding: 4px 12px;
   border: 2px solid #334155;
   box-shadow: 4px 4px 0px #ccff00;
-}
-
-/* ===== Input Patterns ===== */
-
-.input-brutalist {
-  border: 4px solid #020617 !important;
-  border-radius: 0 !important;
-  box-shadow: 4px 4px 0px #000;
 }
 
 /* ===== Button Patterns ===== */
@@ -279,28 +277,6 @@ body {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes scan-sweep {
-  0% { top: 0%; opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
-  100% { top: 100%; opacity: 0; }
-}
-
-@keyframes float-card {
-  0%, 100% { transform: translateY(0px) rotate(1deg); }
-  50% { transform: translateY(-8px) rotate(-1deg); }
-}
-
-@keyframes float-card-reverse {
-  0%, 100% { transform: translateY(0px) rotate(-1deg); }
-  50% { transform: translateY(-6px) rotate(1deg); }
-}
-
 .hero-radar {
   animation: radar-sweep 4s linear infinite;
   transform-origin: center;
@@ -310,41 +286,11 @@ body {
   animation: fade-slide-up 0.4s ease-out;
 }
 
-.hero-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.radar-scan-line {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(to right, transparent, #ccff00, transparent);
-  box-shadow: 0 0 10px #ccff00;
-  animation: scan-sweep 3s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.animate-float-1 {
-  animation: float-card 6s ease-in-out infinite;
-}
-
-.animate-float-2 {
-  animation: float-card-reverse 5s ease-in-out infinite;
-}
-
 /* Respeita usuários com sensibilidade a movimento (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   .hero-radar,
-  .hero-glow,
-  .radar-scan-line,
-  .animate-float-1,
-  .animate-float-2 {
-    animation: none;
-  }
   .hero-word {
-    animation: fade-slide-up 0.01s ease-out;
+    animation: none;
   }
 }
 

@@ -6,14 +6,7 @@ import Link from "next/link";
 /** CTA para usuários anônimos usarem o assistente de carreira (logado). */
 export function ChatTeaser() {
   return (
-    <Box
-      sx={{
-        bgcolor: "#0f172a",
-        border: "2px solid #334155",
-        boxShadow: "4px 4px 0px #000",
-        p: 2.5,
-      }}
-    >
+    <Box className="card-panel" sx={{ p: 2.5 }}>
       <Typography
         sx={{
           fontFamily: "ui-monospace, monospace",

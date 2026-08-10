@@ -25,10 +25,8 @@ export function CourseRecommendationSidebar({ terms, area }: Props) {
 
   return (
     <Box
+      className="card-panel"
       sx={{
-        bgcolor: "#0f172a",
-        border: "2px solid #334155",
-        boxShadow: "4px 4px 0px #000",
         p: { xs: 2.5, sm: 3 },
         width: "100%",
         mt: 4,

@@ -4,6 +4,7 @@ import { Box, Container, Typography } from '@mui/material';
 import Link from 'next/link';
 import { allSkillSlugs, skillFromSlug, coursesForSlug } from '@/lib/core/courses/course-skills';
 import { CourseCard } from '@/components/cursos/course-card';
+import { CourseGrid } from '@/components/cursos/course-grid';
 
 export const revalidate = 86400; // ISR: regenera a cada 24h
 
@@ -85,17 +86,11 @@ export default async function SkillPage({
           </Typography>
         </Box>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
-            gap: 2.5,
-          }}
-        >
+        <CourseGrid>
           {courses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
-        </Box>
+        </CourseGrid>
 
         <Typography
           sx={{

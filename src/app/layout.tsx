@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
 import { SnackbarProvider } from "@/hooks/useSnackbar";
 import { ChatAssistantProvider } from "@/contexts/chat-assistant-context";
 import { ChatAssistantMount } from "@/components/chat/chat-mount";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Header, Footer } from "@/components/layout";
 import { PwaRegister } from "@/components/ui/pwa-register";
 import "./globals.css";
@@ -131,7 +132,9 @@ export default function RootLayout({
                     {children}
                   </main>
                   <Footer />
-                  <ChatAssistantMount />
+                  <ErrorBoundary>
+                    <ChatAssistantMount />
+                  </ErrorBoundary>
                 </ChatAssistantProvider>
             </SnackbarProvider>
           </ThemeProvider>

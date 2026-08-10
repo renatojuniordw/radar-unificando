@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, IconButton, Typography } from '@mui/material';
+import Link from 'next/link';
 
 export function SyncErrorBanner() {
   return (
@@ -107,9 +108,9 @@ export function TokenLimitBanner() {
     >
       <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.dark' }}>
         Limite diário de consumo de IA atingido. Os limites renovam à meia-noite (diário) e no dia 1º do mês (mensal).{' '}
-        <a href="/termos" style={{ color: 'inherit' }}>
+        <Link href="/termos" style={{ color: 'inherit' }}>
           Saiba mais
-        </a>
+        </Link>
       </Typography>
     </Box>
   );
