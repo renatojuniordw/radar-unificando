@@ -45,7 +45,10 @@ export default function BuscaPage() {
 
       {running && <LoadingOverlay />}
 
-      <Container maxWidth="xl" sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 } }}>
+      <Container
+        maxWidth="xl"
+        sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 } }}
+      >
         <Box sx={{ width: "100%", minWidth: 0 }}>
           <ResultsSection
             recommendedMode={recommendedMode}
@@ -58,7 +61,8 @@ export default function BuscaPage() {
           />
         </Box>
 
-        <Box sx={{ width: "100%" }}>
+        {/* TODO: Adicionar quando tiver tempo */}
+        {/* <Box sx={{ width: "100%" }}>
           <CourseRecommendationSidebar
             terms={roleQueries}
             area={profile.area || profile.currentRole}
@@ -68,7 +72,7 @@ export default function BuscaPage() {
               <ChatTeaser />
             </Box>
           )}
-        </Box>
+        </Box> */}
       </Container>
 
       {snackbar && (
@@ -78,7 +82,11 @@ export default function BuscaPage() {
           onClose={() => setSnackbar(null)}
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          <Alert severity={snackbar.severity} variant="filled" onClose={() => setSnackbar(null)}>
+          <Alert
+            severity={snackbar.severity}
+            variant="filled"
+            onClose={() => setSnackbar(null)}
+          >
             {snackbar.message}
           </Alert>
         </Snackbar>
