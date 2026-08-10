@@ -399,7 +399,7 @@ export default function TermosPage() {
                 <strong>Revogação de consentimento:</strong> retirar o consentimento de cookies de análise a qualquer momento.
               </li>
               <li style={{ marginBottom: 0 }}>
-                <strong>Como exercer:</strong> envie sua solicitação pelo e-mail de contato disponível na página <Link href="/sobre" style={{ color: '#ccff00' }}>Sobre</Link>. Responderemos no prazo legal.
+                <strong>Como exercer:</strong> envie sua solicitação pelos canais de contato informados na página <Link href="/sobre" style={{ color: '#ccff00' }}>Sobre</Link>. Responderemos no prazo legal.
               </li>
             </ul>
           </section>
