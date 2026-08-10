@@ -4,7 +4,8 @@
 // ---------------------------------------------------------------------------
 
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
-import { analyzeAts, ATS_ANALYZER_PROMPT_VERSION, type AtsAnalysis } from './ats-analyzer';
+import { ATS_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/ats-analyzer';
+import { analyzeAts, type AtsAnalysis } from './ats-analyzer';
 import { analyzeAtsHeuristics, type AtsHeuristic } from './ats-heuristics';
 
 export interface AtsServiceResult {

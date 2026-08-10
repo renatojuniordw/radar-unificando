@@ -13,7 +13,6 @@ vi.mock('@/lib/core/ai/generated-content-cache', () => ({
 
 vi.mock('@/lib/ats/ats-analyzer', () => ({
   analyzeAts: (resume: string, opts?: unknown) => analyzeAtsMock(resume, opts),
-  ATS_ANALYZER_PROMPT_VERSION: 'v1',
 }));
 
 import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
