@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Link from "next/link";
 
@@ -9,34 +9,40 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92";
 
 type Consent = "accepted" | "declined" | null;
 
+function subscribe(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getSnapshot(): Consent {
+  try {
+    const stored = localStorage.getItem(CONSENT_KEY);
+    return stored === "accepted" || stored === "declined" ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+function getServerSnapshot(): Consent {
+  return null;
+}
+
 /**
  * Aviso de cookies (LGPD): o Google Analytics só é carregado após o
  * consentimento. Cookies essenciais (sessão do login) não dependem do aviso.
  */
 export function CookieConsent() {
-  const [consent, setConsent] = useState<Consent>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    try {
-      const stored = localStorage.getItem(CONSENT_KEY);
-      if (stored === "accepted" || stored === "declined") setConsent(stored);
-    } catch {
-      // localStorage indisponível → não mostra o banner e não carrega GA
-    }
-  }, []);
+  const consent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const choose = (value: Exclude<Consent, null>) => {
-    setConsent(value);
     try {
       localStorage.setItem(CONSENT_KEY, value);
+      // Notifica os listeners do useSyncExternalStore (mesma aba).
+      window.dispatchEvent(new Event("storage"));
     } catch {
       // sem persistência → vale só para esta sessão
     }
   };
-
-  if (!mounted) return null;
 
   return (
     <>
