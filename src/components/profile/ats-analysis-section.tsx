@@ -7,8 +7,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { CheckCircle, ErrorOutline, InfoOutlined } from "@mui/icons-material";
-import type { AtsHeuristic } from "@/lib/ats/ats-heuristics";
-import type { AtsAnalysis } from "@/lib/ats/ats-analyzer";
+import type { AtsHeuristic } from "@/lib/core/ai/ats/ats-heuristics";
+import type { AtsAnalysis } from "@/lib/core/ai/ats/ats-analyzer";
 
 interface AtsResult {
   heuristics: AtsHeuristic;

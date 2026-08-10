@@ -10,7 +10,7 @@ import { JOB_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/job-analyzer'
 import { COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/prompts/cover-letter';
 import { INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/prompts/interview-questions';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
 import { recommendCourses } from '@/lib/core/courses/course-matcher';
 import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';

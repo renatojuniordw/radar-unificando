@@ -10,7 +10,7 @@ vi.mock('@/lib/core/extension/extension-token', () => ({
 vi.mock('@/lib/infrastructure/repositories', () => ({
   profileRepository: { findByUserId: vi.fn() },
 }));
-vi.mock('@/lib/ats/ats-service', () => ({
+vi.mock('@/lib/core/ai/ats/ats-service', () => ({
   analyzeAtsWithCache: vi.fn(),
 }));
 vi.mock('@/lib/infrastructure/rate-limit', () => ({
@@ -18,7 +18,7 @@ vi.mock('@/lib/infrastructure/rate-limit', () => ({
 }));
 
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { POST } from '@/app/api/extension/analyze/route';
 

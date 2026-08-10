@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { findUserIdByExtensionToken } from '@/lib/core/extension/extension-token';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { recommendCourses } from '@/lib/core/courses/course-matcher';

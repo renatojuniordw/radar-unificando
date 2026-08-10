@@ -5,10 +5,10 @@
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
-import { generate } from "@/lib/core/ai/llm-provider";
-import { logAiEvent } from "@/lib/core/ai/ai-logger";
+import { generate } from "../llm-provider";
+import { logAiEvent } from "../ai-logger";
 import { normalizeKeyword } from "./normalize";
-import { ATS_ANALYZER_PROMPT } from "@/lib/core/ai/prompts/ats-analyzer";
+import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
 
 const LIMITS = {
   resumeText: { min: 30, max: 15000 },

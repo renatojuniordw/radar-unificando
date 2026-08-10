@@ -3,8 +3,8 @@
 // o score LLM, cacheando por versão do currículo + vaga alvo.
 // ---------------------------------------------------------------------------
 
-import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
-import { ATS_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/ats-analyzer';
+import { computeCacheKey, getCached, saveToCache } from '../generated-content-cache';
+import { ATS_ANALYZER_PROMPT_VERSION } from '../prompts/ats-analyzer';
 import { analyzeAts, type AtsAnalysis } from './ats-analyzer';
 import { analyzeAtsHeuristics, type AtsHeuristic } from './ats-heuristics';
 

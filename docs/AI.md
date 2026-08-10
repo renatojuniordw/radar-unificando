@@ -6,7 +6,7 @@ O texto de todos os prompts (system prompt do chat, extração de currículo, an
 carta de apresentação, roteiro de entrevista, análise ATS) vive centralizado em
 `src/lib/core/ai/prompts/` — um arquivo por prompt, separado da lógica de validação, cache e
 chamada ao LLM (que permanece nos módulos de origem: `job-analyzer.ts`, `cover-letter-generator.ts`,
-`interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`, `lib/ats/ats-analyzer.ts`).
+`interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`, `core/ai/ats/ats-analyzer.ts`).
 
 O bloco `REGRAS DE SEGURANÇA (não negociáveis)` (defesa contra prompt injection, presente em
 job-analyzer/cover-letter/interview-questions/ats-analyzer) é gerado por um helper compartilhado em
