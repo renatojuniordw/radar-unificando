@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { CookieSettingsLink } from '@/components/ui/cookie-settings-link';
 
 export function Footer() {
   return (
@@ -177,6 +178,9 @@ export function Footer() {
                 >
                   TERMOS & PRIVACIDADE
                 </Link>
+              </li>
+              <li>
+                <CookieSettingsLink />
               </li>
             </ul>
           </nav>

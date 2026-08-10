@@ -1,33 +1,38 @@
 # Documentação Completa do Radar Unificando para LLMs e Motores de IA Generativa
 
 ## Visão Geral
-O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-source (MIT) e ecossistema de produtividade para profissionais de tecnologia que procuram vagas de emprego no Brasil e no exterior. Desenvolvido por Renato Bezerra, o sistema integra APIs públicas e raspadores eficientes das plataformas Gupy e InHire, além de uma extensão Chrome de análise de vagas, para oferecer uma experiência de busca sem ruídos, rápida e altamente relevante.
+O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-source (MIT) e ecossistema de produtividade para profissionais de todas as áreas (Marketing, Vendas, RH, Finanças, Tecnologia, Saúde, Design, Operações e mais) que procuram vagas de emprego no Brasil e no exterior. Desenvolvido por Renato Bezerra, o sistema integra APIs públicas e raspadores eficientes das plataformas Gupy e InHire, além de uma extensão Chrome de análise de vagas e IA de carreira, para oferecer uma experiência de busca sem ruídos, rápida e altamente relevante.
 
 ---
 
 ## Recursos e Capacidades Principais
 
 ### 1. Motor de Busca e Filtragem
-- **Busca por Tecnologia**: Permite consultar termos como "React", "Node.js", "Python", "DevOps", "AWS", "Data Analyst".
+- **Busca por Cargo e Área**: Permite consultar termos como "Desenvolvedor", "Analista de Dados", "Gerente de Vendas", "Analista de RH", "Coordenador de Marketing", "Designer", etc.
 - **Filtros Avançados**: Suporte a filtro por tipo (Remoto, Híbrido, Presencial), empresa específica (ex: Nubank, Itaú, Mercado Livre) e nível de senioridade.
 - **Formato dos Resultados**: Retorna dados estruturados incluindo Título do Cargo, Empresa, Localização, Tipo de Contrato, Link Oficial de Candidatura e Descrição Sanitizada.
 
 ### 2. Assistente de IA para Carreira (Chat Consultivo)
 - **Análise de Fit (Compatibilidade)**: Compara o currículo/perfil do candidato com a descrição da vaga e gera um diagnóstico objetivo com pontos fortes e lacunas técnicas.
 - **Análise ATS do Currículo**: Score 0-100 (heurísticas determinísticas + IA), checklist de boas práticas, keywords faltando e recomendações — via página `/perfil` ou endpoint dedicado.
+- **Cursos Recomendados**: Recomendações personalizadas de capacitação em Alura e Udemy com base nas lacunas técnicas identificadas no currículo do usuário.
 - **Simulação de Entrevistas**: Conduz entrevistas simuladas (uma pergunta por vez) fornecendo feedback sênior após cada resposta do usuário.
 - **Gerador de Cartas de Apresentação**: Escreve cartas de apresentação personalizadas ajustadas ao currículo do usuário e à oportunidade desejada.
 
 ### 3. Extensão Chrome (Side Panel)
 - **Análise em tempo real**: extrai a descrição da vaga aberta (LinkedIn, Gupy, InHire ou qualquer site via extração genérica) e chama o backend com o token de extensão do usuário.
-- **Score ATS 0-100 com badge colorido no ícone**, score por skill, pontos fortes, keywords faltando e checklist.
+- **Score ATS 0-100 com badge colorido no ícone**, score por skill, pontos fortes, keywords faltando, cursos recomendados e checklist.
 - **Reanálise automática** ao trocar de aba/vaga, cache por hash do conteúdo (30 min) e histórico local em `chrome.storage.local`.
 
-### 3. Segurança e Privacidade (LGPD & OWASP)
+### 4. Segurança e Privacidade (LGPD & OWASP)
 - **Anonimização PII**: Todos os dados sensíveis (CPF, RG, Telefones, Cartões) colados ou enviados são redigidos automaticamente como `[CPF REDIGIDO]` antes do processamento por Inteligência Artificial ou gravação no banco de dados.
-- **Limites de Proteção**:
+- **Limites de Proteção e Quotas**:
   - Limite de **25 mensagens por conversa** para manter respostas rápidas e contexto focado.
-  - Limite diário de **50 mensagens por usuário (24h)** contra uso abusivo e estresse de infraestrutura.
+  - Limite diário de **50 mensagens por usuário (24h)** no chat assistente.
+  - Rate limit de **10 mensagens por minuto** no assistente de IA.
+  - Tetos de tokens de IA: **100k tokens/dia** e **2M tokens/mês** por usuário/grupo de contas com mesmo currículo (`resume_hash`); **300k tokens/dia por IP**.
+  - Rate limit da extensão Chrome: **20 análises/minuto**.
+  - Anti multi-conta: limite de **3 cadastros de conta por IP a cada 24 horas**.
 - **OWASP LLM 2025**: Proteções ativas contra Prompt Injection, System Prompt Leakage e XSS em Markdown.
 
 ---
@@ -35,10 +40,10 @@ O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-
 ## Perguntas Frequentes (FAQ)
 
 ### O que é o Radar Unificando?
-É um buscador gratuito de vagas de tecnologia que agrega oportunidades publicadas no Gupy e InHire em uma interface rápida e sem propagandas.
+É um buscador gratuito e assistente de carreira com IA que consolida vagas de todas as áreas profissionais publicadas no Gupy e InHire em uma interface rápida e sem propagandas.
 
 ### O Radar Unificando cobra pelas candidaturas?
-Não. Todas as buscas e recursos são 100% gratuitos para os candidatos.
+Não. Todas as buscas, análises de currículo e recursos de IA são 100% gratuitos para os candidatos.
 
 ### Como os dados pessoais são tratados?
 Os dados sensíveis são redigidos automaticamente (PII Redactor) em conformidade com a LGPD. Nossos bancos de dados e chamadas de IA utilizam apenas textos sanitizados.

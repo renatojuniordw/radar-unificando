@@ -126,7 +126,7 @@ export default function TermosPage() {
               1. Visão Geral do Serviço
             </h2>
             <p>
-              O <strong>Radar Unificando</strong> é um agregador e motor de busca independente que otimiza a localização de vagas de emprego públicas publicadas em plataformas como Gupy e InHire. Nosso objetivo é acelerar a busca de profissionais de tecnologia por novas oportunidades de trabalho remoto ou presencial no Brasil e no exterior.
+              O <strong>Radar Unificando</strong> é uma plataforma inteligente, agregador e motor de busca independente que otimiza a localização de vagas de emprego públicas publicadas em grandes portais de recrutamento (como Gupy e InHire), além de oferecer uma Extensão Chrome integrada, análise de aderência por Inteligência Artificial (score ATS), recomendações de capacitação profissional e assistente de carreira. Nosso objetivo é acelerar a busca de profissionais de <strong>todas as áreas do mercado</strong> (Marketing, Vendas, RH, Finanças, Tecnologia, Saúde, Design, Operações e mais) por oportunidades de trabalho remoto, híbrido ou presencial no Brasil e no exterior.
             </p>
           </section>
 
@@ -202,32 +202,35 @@ export default function TermosPage() {
                 fontFamily: 'ui-monospace, monospace',
               }}
             >
-              3. Limites de Uso do Assistente de IA (uso justo)
+              3. Limites de Uso da Plataforma e do Assistente de IA (uso justo)
             </h2>
             <p>
-              Para assegurar a disponibilidade, performance e equidade entre os usuários — e para que o serviço continue gratuito e aberto:
+              Para assegurar a disponibilidade, performance e equidade entre os usuários — e para que o serviço continue 100% gratuito e aberto:
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>
-                <strong>Limite por Conversa:</strong> Cada sessão de chat pode acumular no máximo <strong>25 mensagens</strong>. Ao atingir o limite, a conversa é congelada e o usuário deve iniciar um novo tópico para manter a resposta rápida e objetiva.
+                <strong>Limite por Conversa:</strong> Cada sessão de chat pode acumular no máximo <strong>25 mensagens</strong>. Ao atingir o limite, a conversa é concluída e o usuário deve iniciar um novo tópico para manter as respostas objetivas e rápidas.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Cota de Interações:</strong> Cada usuário possui um limite de <strong>50 mensagens a cada 24 horas</strong>, renovado à meia-noite.
+                <strong>Cota de Interações Diárias:</strong> Cada conta de usuário possui um limite de <strong>50 mensagens a cada 24 horas</strong> no chat, renovado diariamente à meia-noite.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Cota de Tokens de IA:</strong> O consumo de inteligência artificial é medido em tokens (a unidade de processamento do modelo). Cada conta possui um teto diário de <strong>100 mil tokens</strong> (renova à meia-noite) e um teto mensal de <strong>2 milhões de tokens</strong> (renova no dia 1º de cada mês). O header do chat mostra o consumo em tempo real.
+                <strong>Taxa de Mensagens (Rate Limit):</strong> Para evitar sobrecarga de servidor, há uma limitação de no máximo <strong>10 mensagens por minuto</strong> por usuário/IP no assistente de IA.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Limites por Pessoa, não por Conta:</strong> Os limites acima valem por pessoa. Contas que carregam o mesmo currículo são tratadas como uma única pessoa e <strong>compartilham o mesmo teto</strong>. Também há um teto diário por endereço de IP (3x o individual) e um limite de <strong>3 cadastros por IP a cada 24 horas</strong>, para coibir a criação em massa de contas.
+                <strong>Cota de Tokens de IA:</strong> O processamento dos modelos de Inteligência Artificial possui um teto de <strong>100 mil tokens/dia</strong> (renova à meia-noite) e <strong>2 milhões de tokens/mês</strong> (renova no dia 1º de cada mês) por usuário. O header do chat exibe o consumo de tokens em tempo real.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Taxa de Mensagens:</strong> Para evitar sobrecarga, há um limite de <strong>10 mensagens por minuto</strong> por usuário.
+                <strong>Limites por Pessoa (Anti Multi-Conta):</strong> Contas que compartilham o mesmo currículo são vinculadas e <strong>compartilham o mesmo teto de tokens</strong>. Existe também um teto diário global por endereço de IP de <strong>300 mil tokens/dia</strong> e um limite de <strong>3 cadastros de conta por IP a cada 24 horas</strong>.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Ferramentas de IA:</strong> A análise ATS de currículo, o chat e as demais ferramentas de IA consomem os mesmos tetos diário e mensal de tokens descritos acima.
+                <strong>Orçamento Diário Global:</strong> O projeto possui um limite diário global de custos em nuvem que reativa automaticamente o serviço após a meia-noite em caso de picos atípicos de demanda.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Extensão do Navegador Chrome:</strong> As requisições de análise de vagas enviadas pela Extensão Chrome contam com rate limit próprio de <strong>20 análises por minuto</strong>.
               </li>
               <li style={{ marginBottom: 0 }}>
-                <strong>Uso Responsável:</strong> Tentativas de burlar os limites (múltiplas contas, automação, abuso de prompts) podem levar à suspensão do acesso, preservando o serviço para todos.
+                <strong>Uso Responsável:</strong> Tentativas de burlar os limites (automações não autorizadas, criação massiva de contas, abuso de prompts) podem acarretar a suspensão temporária ou definitiva do acesso.
               </li>
             </ul>
           </section>
