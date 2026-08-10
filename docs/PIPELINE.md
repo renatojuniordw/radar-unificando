@@ -37,8 +37,8 @@ O pipeline busca vagas em Gupy e InHire, processa e salva no PostgreSQL.
 ## Rate Limit e Cooldown
 
 - `POST /api/pipeline` retorna `{ runId, cooldownSeconds? }`.
-- Máx. 1 execução a cada 5 min por usuário (ou IP anônimo). Ao exceder, retorna 429 com `retryAfter`.
-- O cooldown é persistido no IndexedDB (`cooldown_end`) e conta regressiva na UI.
+- **Busca manual**: máx. 1 execução a cada 5 min por usuário (ou IP anônimo). Ao exceder, retorna 429 com `retryAfter`. O cooldown é persistido no IndexedDB (`cooldown_end`) e conta regressiva na UI.
+- **Auto-sync** (`auto: true`, refresh silencioso ao entrar): usa limiter próprio (2/5min), retorna `cooldownSeconds: 0` e **não** consome a cota da busca manual — o usuário pode buscar imediatamente. O client pula o auto-sync quando não há filtros salvos.
 
 ## Estrutura
 

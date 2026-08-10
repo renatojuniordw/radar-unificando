@@ -10,7 +10,7 @@ vi.mock('@/lib/core/extension/extension-token', () => ({
 vi.mock('@/lib/infrastructure/repositories', () => ({
   profileRepository: { findByUserId: vi.fn() },
 }));
-vi.mock('@/lib/ats/ats-service', () => ({
+vi.mock('@/lib/core/ai/ats/ats-service', () => ({
   analyzeAtsWithCache: vi.fn(),
 }));
 vi.mock('@/lib/infrastructure/rate-limit', () => ({
@@ -18,7 +18,7 @@ vi.mock('@/lib/infrastructure/rate-limit', () => ({
 }));
 
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { POST } from '@/app/api/extension/analyze/route';
 
@@ -82,10 +82,71 @@ describe('Extension Analyze API', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.analysis.score).toBe(75);
+    expect(body.courses).toEqual([]);
     expect(analyzeAtsWithCache).toHaveBeenCalledWith(
       'user-1',
       expect.stringContaining('Currículo'),
       expect.objectContaining({ jobDescription: 'Vaga de dev' })
     );
+  });
+
+  it('should_include_courses_when_missing_keywords_present', async () => {
+    mockFindUser.mockResolvedValue('user-1');
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true } as any);
+    vi.mocked(profileRepository.findByUserId).mockResolvedValue({
+      resumeText: 'Currículo com experiência em desenvolvimento de software por mais de trinta caracteres.',
+      area: 'Desenvolvimento',
+    } as any);
+    vi.mocked(analyzeAtsWithCache).mockResolvedValue({
+      heuristics: { checks: [], score: 80 },
+      analysis: {
+        score: 75,
+        summary: 'ok',
+        strengths: [],
+        missingKeywords: ['Kubernetes', 'Docker'],
+        formattingIssues: [],
+        recommendations: [],
+      },
+      cached: false,
+    } as any);
+
+    const res = await POST(makeRequest('Bearer valid-token', { jobDescription: 'Vaga de dev' }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(Array.isArray(body.courses)).toBe(true);
+    expect(body.courses.length).toBeGreaterThan(0);
+    expect(body.courses.length).toBeLessThanOrEqual(3);
+    for (const curso of body.courses) {
+      expect(typeof curso.titulo).toBe('string');
+      expect(['Alura', 'Udemy']).toContain(curso.plataforma);
+      expect(typeof curso.skill).toBe('string');
+      expect(typeof curso.preco).toBe('string');
+      expect(curso.url.startsWith('https://')).toBe(true);
+    }
+  });
+
+  it('should_return_empty_courses_when_no_missing_keywords', async () => {
+    mockFindUser.mockResolvedValue('user-1');
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true } as any);
+    vi.mocked(profileRepository.findByUserId).mockResolvedValue({
+      resumeText: 'Currículo com experiência em desenvolvimento de software por mais de trinta caracteres.',
+    } as any);
+    vi.mocked(analyzeAtsWithCache).mockResolvedValue({
+      heuristics: { checks: [], score: 80 },
+      analysis: {
+        score: 90,
+        summary: 'ok',
+        strengths: [],
+        missingKeywords: [],
+        formattingIssues: [],
+        recommendations: [],
+      },
+      cached: false,
+    } as any);
+
+    const res = await POST(makeRequest('Bearer valid-token', { jobDescription: 'Vaga de dev' }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.courses).toEqual([]);
   });
 });

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { jobRepository } from '@/lib/infrastructure/repositories';
+import { publicJobRepository } from '@/lib/infrastructure/repositories';
 import { JobPostingSchema, type JobPostingData } from '@/components/seo/job-posting-schema';
 import { slugify } from '@/lib/core/vagas/slug';
 
@@ -40,8 +40,8 @@ export default async function VagasPage() {
   // Banco pode estar indisponível durante o build (ex.: build de imagem Docker sem
   // acesso à rede do Postgres). Falha aberta para não quebrar o build estático.
   const [jobs, categories] = await Promise.all([
-    jobRepository.findPublicJobs(200).catch(() => []),
-    jobRepository.findRoleCategories().catch(() => []),
+    publicJobRepository.findPublic(200).catch(() => []),
+    publicJobRepository.findRoleCategories().catch(() => []),
   ]);
 
   const schemaJobs = jobs.slice(0, 10).map(toJobPosting);
@@ -59,8 +59,8 @@ export default async function VagasPage() {
           </Typography>
           <Typography variant="body1" sx={{ color: '#94a3b8', maxWidth: 560, mx: 'auto' }}>
             {jobs.length > 0
-              ? `${jobs.length} vagas ativas de Gupy e InHire. Busque em tempo real na home ou navegue por categoria.`
-              : 'Nenhuma vaga persistida no momento. Faça uma busca em tempo real na home.'}
+              ? `${jobs.length} vagas ativas de Gupy e InHire. Busque em tempo real em /busca ou navegue por categoria.`
+              : 'Nenhuma vaga persistida no momento. Faça uma busca em tempo real em /busca.'}
           </Typography>
         </Box>
 
@@ -95,7 +95,7 @@ export default async function VagasPage() {
         {jobs.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <Typography sx={{ color: '#94a3b8', mb: 3 }}>Nenhuma vaga no momento.</Typography>
-            <Link href="/" style={{ textDecoration: 'none' }}>
+            <Link href="/busca" style={{ textDecoration: 'none' }}>
               <Box
                 sx={{
                   display: 'inline-block',

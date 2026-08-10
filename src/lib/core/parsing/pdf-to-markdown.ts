@@ -183,8 +183,8 @@ function isNumberedItem(text: string): boolean {
 function cleanText(text: string): string {
   return text
     .replace(/\s+/g, ' ')
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
+    .replace(/["“”]/g, '"')
+    .replace(/['‘’]/g, "'")
     .trim();
 }
 

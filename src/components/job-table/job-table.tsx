@@ -132,6 +132,10 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
           searchFilter={searchFilter}
           onSearchChange={setSearchFilter}
           onSubmit={handleSearch}
+          countSecondaryFilters={countSecondaryFilters}
+          countTotalFilters={countTotalFilters}
+          onOpenDrawer={() => setDrawerOpen(true)}
+          onClearFilters={handleClearFilters}
         />
 
         {/* MOBILE BOTTOM FILTER DRAWER */}

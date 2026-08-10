@@ -1,4 +1,5 @@
 import type { ProgressEvent } from '@/types';
+import { debugLog } from '@/lib/utils/debug';
 
 type ProgressListener = (event: ProgressEvent) => void;
 
@@ -64,7 +65,7 @@ export class ProgressEmitter {
     if (event.type === 'step_error' || event.type === 'pipeline_error') {
       console.error(prefix, label, '-', event.message || event.error);
     } else {
-      console.log(prefix, label, '-', event.message);
+      debugLog(prefix, label, '-', event.message);
     }
 
     this.runTimestamps.set(runId, Date.now());

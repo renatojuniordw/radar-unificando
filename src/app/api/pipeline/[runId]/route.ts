@@ -11,14 +11,19 @@ export async function GET(
 
   const { runId } = await params;
 
-  const result = await pipelineRunRepository.findById(runId);
-  if (!result) {
-    return NextResponse.json({ error: 'Execução não encontrada' }, { status: 404 });
-  }
+  try {
+    const result = await pipelineRunRepository.findById(runId);
+    if (!result) {
+      return NextResponse.json({ error: 'Execução não encontrada' }, { status: 404 });
+    }
 
-  if (result.userId !== session.user.id) {
-    return NextResponse.json({ error: 'Execução não encontrada' }, { status: 404 });
-  }
+    if (result.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Execução não encontrada' }, { status: 404 });
+    }
 
-  return NextResponse.json(result);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error(`[pipeline/${runId}] Erro ao consultar execução:`, error);
+    return NextResponse.json({ error: 'Erro ao consultar a execução' }, { status: 500 });
+  }
 }

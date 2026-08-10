@@ -1,24 +1,25 @@
-# Radar Unificando — Motor de Busca de Vagas de Tecnologia & Assistente de Carreira
+# Radar Unificando — Motor de Busca de Vagas & Assistente de Carreira
 
-> O Radar Unificando é um motor de busca avançado e assistente de carreira com Inteligência Artificial projetado para desenvolvedores e profissionais de tecnologia no Brasil. Ele consolida vagas de plataformas como Gupy e InHire, oferecendo busca unificada, análise de aderência de perfil (fit score), análise de score ATS de currículo, simulação de entrevistas com feedback e geração de cartas de apresentação.
+> O Radar Unificando é um motor de busca avançado e assistente de carreira com Inteligência Artificial projetado para profissionais de todas as áreas (Marketing, Vendas, RH, Finanças, Tecnologia, Saúde, Design, Operações e mais) no Brasil e no exterior. Ele consolida vagas de grandes plataformas (como Gupy e InHire), oferecendo busca unificada em tempo real, análise de aderência de perfil (fit score), score ATS de currículo, recomendação de cursos, simulação de entrevistas com feedback e geração de cartas de apresentação.
 
 ## Funcionalidades Principais
 
-- **Busca Unificada de Vagas**: Pesquisa consolidada de vagas no Gupy e InHire por palavras-chave, empresa, tecnologia, senioridade e tipo de trabalho (Remoto, Híbrido, Presencial).
+- **Busca Unificada de Vagas**: Pesquisa consolidada de vagas no Gupy e InHire por palavras-chave, área, empresa, senioridade e tipo de trabalho (Remoto, Híbrido, Presencial).
 - **Assistente de Carreira com IA**: Consultor virtual sênior de recrutamento para análise de currículo, diagnósticos de compatibilidade com vagas e mentorias profissionais.
 - **Análise ATS**: Score 0-100 do currículo com heurísticas determinísticas + IA, checklist de boas práticas e keywords faltando — disponível no site e na extensão Chrome.
-- **Extensão Chrome (Side Panel)**: Analisa a vaga aberta no navegador (LinkedIn, Gupy, InHire e sites genéricos) em tempo real, mostrando score ATS, skills por vaga, dicas e histórico local.
-- **Simulação de Entrevistas**: Treinamento interativo com perguntas comportamentais e técnicas específicas para vagas do mercado de tecnologia.
+- **Extensão Chrome (Side Panel)**: Analisa a vaga aberta no navegador (LinkedIn, Gupy, InHire e sites genéricos) em tempo real, mostrando score ATS, skills por vaga, cursos recomendados e histórico local.
+- **Cursos Recomendados**: Recomendações personalizadas de capacitação em Alura e Udemy com base nas lacunas técnicas identificadas no currículo.
+- **Simulação de Entrevistas**: Treinamento interativo com perguntas comportamentais e técnicas específicas para diversas áreas do mercado.
 - **Privacidade & LGPD**: Anonimização automática (PII Redactor) de dados sensíveis (CPF, RG, telefones) tanto na transmissão quanto no armazenamento de dados.
 
 ## URLs e Recursos Úteis
 
 - [Página Principal / Busca](https://radar.unificando.com.br/): Acesso ao motor de busca e filtros.
 - [Extensão Chrome](https://radar.unificando.com.br/extensao): Página da extensão de análise de vagas.
-- [Termos de Uso & Privacidade (LGPD)](https://radar.unificando.com.br/termos): Política de privacidade e garantias de segurança.
+- [Termos de Uso & Privacidade (LGPD)](https://radar.unificando.com.br/termos): Política de privacidade, limites de uso e garantias de segurança.
 
 ## Especificação Técnica
 
 - **Plataformas Cobertas**: Gupy API, InHire, extensão Chrome (LinkedIn/Gupy/InHire/outros sites via extração genérica).
 - **Formato de Dados**: Resultados estruturados em JSON, cartões escaneáveis e relatórios de aderência.
-- **Segurança**: OWASP Top 10 para Aplicações LLM, Rate Limiting por usuário, sanitização XSS, prevenção de Prompt Injection e validação de origem da extensão.
+- **Segurança**: OWASP Top 10 para Aplicações LLM, Rate Limiting por usuário e IP, sanitização XSS, prevenção de Prompt Injection e validação de origem da extensão.

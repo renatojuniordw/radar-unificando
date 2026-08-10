@@ -26,10 +26,12 @@ export function useJobSearch() {
     severity: "success" | "error" | "info";
   } | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [cooldownLoaded, setCooldownLoaded] = useState(false);
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
 
   // Perfil mínimo: skills >= 3 E (currentRole OU area)
   const minimalProfile = useMemo(() => {
-    return profile.skills.length >= 3 && (profile.currentRole || profile.area);
+    return profile.skills.length >= 3 && Boolean(profile.currentRole || profile.area);
   }, [profile.skills.length, profile.currentRole, profile.area]);
 
   // Modo recomendado é derivado (logado + perfil completo); não é estado.
@@ -112,10 +114,12 @@ export function useJobSearch() {
   // Carregar filtros persistidos (companies/roles) na montagem
   useEffect(() => {
     browserStorage.getFilters().then((filters) => {
-      if (!filters) return;
-      if (Array.isArray(filters.companies)) setCompanies(filters.companies);
-      if (Array.isArray(filters.roles)) setRoleQueries(filters.roles);
-    }).catch(() => {});
+      if (filters) {
+        if (Array.isArray(filters.companies)) setCompanies(filters.companies);
+        if (Array.isArray(filters.roles)) setRoleQueries(filters.roles);
+      }
+    }).catch(() => {})
+      .finally(() => setFiltersLoaded(true));
   }, []);
 
   // Persistir filtros a cada alteração
@@ -130,7 +134,8 @@ export function useJobSearch() {
         if (remaining > 0) setCooldown(remaining);
         else void browserStorage.clearCooldown();
       }
-    }).catch(() => {});
+    }).catch(() => {})
+      .finally(() => setCooldownLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -170,20 +175,30 @@ export function useJobSearch() {
       const res = await fetch("/api/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companies, queries: roleQueries }),
+        body: JSON.stringify({ companies, queries: roleQueries, auto: isSilent }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         if (res.status === 429 && body.retryAfter) {
-          const endsAt = Date.now() + body.retryAfter * 1000;
-          await browserStorage.setCooldownEnd(endsAt);
-          setCooldown(body.retryAfter);
+          // Auto-sync silencioso não aplica cooldown — só a busca manual limita.
+          if (!isSilent) {
+            const endsAt = Date.now() + body.retryAfter * 1000;
+            await browserStorage.setCooldownEnd(endsAt);
+            setCooldown(body.retryAfter);
+          }
           if (!isSilent) {
             setSnackbar({
               message: body.error || "Muitas requisições. Aguarde.",
               severity: "info",
             });
+          }
+          // 429 no auto-sync: marca "última tentativa" para o effect não
+          // re-disparar em loop (cross-reload também fica protegido).
+          if (isSilent) {
+            const now = Date.now();
+            setLastRunAt(now);
+            void browserStorage.setLastRunAt(now);
           }
         } else if (!isSilent) {
           setSnackbar({
@@ -197,7 +212,8 @@ export function useJobSearch() {
       }
 
       const { runId: id, cooldownSeconds: cd } = await res.json();
-      if (cd) {
+      // Cooldown só na busca manual; auto-sync retorna 0 e não trava o usuário.
+      if (cd && !isSilent) {
         const endsAt = Date.now() + cd * 1000;
         await browserStorage.setCooldownEnd(endsAt);
         setCooldown(cd);
@@ -302,14 +318,32 @@ export function useJobSearch() {
     handleStartRef.current = handleStart;
   });
 
+  // Evita loop de auto-sync na mesma aba: se o servidor devolver 429 (limiter
+  // de auto cheio) sem atualizar lastRunAt, o effect re-dispararia infinito.
+  const lastAutoSyncAttemptRef = useRef(0);
+
   useEffect(() => {
-    if (cooldown > 0 || running || autoSyncing) return;
+    // Só decide após cooldown e filtros serem carregados do storage, e pula
+    // quando não há filtros salvos (evita "vagas aleatórias" na entrada).
+    if (
+      !cooldownLoaded ||
+      !filtersLoaded ||
+      cooldown > 0 ||
+      running ||
+      autoSyncing
+    ) return;
+    if (companies.length === 0 && roleQueries.length === 0) return;
 
     let cancelled = false;
     browserStorage.getLastRunAt().then((ts) => {
       if (cancelled) return;
       const now = Date.now();
-      if (ts && now - ts > AUTO_SYNC_INTERVAL_MS) {
+      const sinceLastRun = ts ? now - ts : Infinity;
+      if (
+        sinceLastRun > AUTO_SYNC_INTERVAL_MS &&
+        now - lastAutoSyncAttemptRef.current > AUTO_SYNC_INTERVAL_MS
+      ) {
+        lastAutoSyncAttemptRef.current = now;
         void handleStartRef.current({ silent: true });
       }
     });
@@ -317,7 +351,7 @@ export function useJobSearch() {
     return () => {
       cancelled = true;
     };
-  }, [cooldown, running, autoSyncing]);
+  }, [cooldown, running, autoSyncing, cooldownLoaded, filtersLoaded, companies, roleQueries]);
 
   return {
     session,

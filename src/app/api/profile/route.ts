@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { computeResumeHash } from '@/lib/core/upload/resume-hash';
+import { profileUpdateSchema } from '@/lib/core/profile/profile-schema';
 
 export async function GET() {
   const { session, response } = await requireAuth();
@@ -16,20 +17,27 @@ export async function PUT(req: NextRequest) {
   if (response) return response;
 
   try {
-    const data = await req.json();
-    const resumeText = data.resumeText || null;
-    const resumeMarkdown = data.resumeMarkdown || null;
+    const parsed = profileUpdateSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Dados do perfil inválidos' },
+        { status: 400 }
+      );
+    }
+    const data = parsed.data;
+    const resumeText = data.resumeText ?? null;
+    const resumeMarkdown = data.resumeMarkdown ?? null;
     await profileRepository.upsert(session.user.id, {
-      skills: data.skills || [],
-      experienceYears: data.experienceYears || null,
-      seniority: data.seniority || null,
-      currentRole: data.currentRole || null,
-      area: data.area || null,
-      education: data.education || [],
+      skills: data.skills,
+      experienceYears: data.experienceYears ?? null,
+      seniority: data.seniority ?? null,
+      currentRole: data.currentRole ?? null,
+      area: data.area ?? null,
+      education: data.education,
       resumeText,
       resumeMarkdown,
       resumeHash: computeResumeHash(resumeText, resumeMarkdown),
-      profileSource: data.profileSource || undefined,
+      profileSource: data.profileSource,
     });
 
     return NextResponse.json({ success: true });

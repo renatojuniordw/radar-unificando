@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
 import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
 import { SnackbarProvider } from "@/hooks/useSnackbar";
-import { QueryProvider } from "@/lib/infrastructure/ui/query-provider";
 import { ChatAssistantProvider } from "@/contexts/chat-assistant-context";
 import { ChatAssistantMount } from "@/components/chat/chat-mount";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Header, Footer } from "@/components/layout";
 import { PwaRegister } from "@/components/ui/pwa-register";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 import "./globals.css";
 
 const inter = Inter({
@@ -95,6 +96,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={inter.variable}>
       <head>
+        <meta
+          name="impact-site-verification"
+          content="ff7672f3-df2c-43e0-8c56-c3448dd4896a"
+          {...({ value: "ff7672f3-df2c-43e0-8c56-c3448dd4896a" } as Record<string, string>)}
+        />
         <StructuredData />
       </head>
       <body
@@ -103,8 +109,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <SnackbarProvider>
-              <QueryProvider>
-                <ChatAssistantProvider>
+              <ChatAssistantProvider>
                   {/* Skip link for keyboard navigation */}
                   <Box
                     component="a"
@@ -133,14 +138,22 @@ export default function RootLayout({
                     {children}
                   </main>
                   <Footer />
-                  <ChatAssistantMount />
+                  <ErrorBoundary>
+                    <ChatAssistantMount />
+                  </ErrorBoundary>
                 </ChatAssistantProvider>
-              </QueryProvider>
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
         <PwaRegister />
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92"} />
+        <CookieConsent />
+        <Script
+          id="impact-tracking"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7591577-ee13-4a49-8d27-59b5a61f41ec1.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');`,
+          }}
+        />
       </body>
     </html>
   );

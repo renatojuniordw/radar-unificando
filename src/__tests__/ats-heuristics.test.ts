@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeAtsHeuristics } from '@/lib/ats/ats-heuristics';
+import { analyzeAtsHeuristics } from '@/lib/core/ai/ats/ats-heuristics';
 
 function buildResume(overrides: Partial<Record<string, string>> = {}): string {
   const experience =

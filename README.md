@@ -1,6 +1,6 @@
 # Radar Unificando
 
-> Plataforma inteligente de busca de vagas remotas com IA — busque em **Gupy** e **InHire**, analise seu perfil, receba recomendações personalizadas e converse com um assistente de carreira.
+> Plataforma inteligente de busca de vagas (todas as áreas profissionais, trabalho remoto, híbrido ou presencial) com IA — busque em **Gupy** e **InHire**, analise seu perfil, receba recomendações de cursos e converse com um assistente de carreira.
 
 Desenvolvido por: [Renato Bezerra](https://renatobezerra.com.br/)
 Licença: MIT
@@ -10,13 +10,14 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 
 ## Funcionalidades
 
-- **Busca em tempo real** em Gupy e InHire — sem base pré-carregada
+- **Busca em tempo real** em Gupy e InHire para todas as áreas profissionais — sem base pré-carregada
 - **Chat IA** para análise de perfil, recomendação de vagas, carta de apresentação e preparação de entrevistas (com redação de PII e proteção contra prompt injection)
-- **Importação de currículo** — upload PDF do LinkedIn ou texto colado, com extração automática de skills, experiência e senioridade
-- **Análise de match** — compara perfil × vaga com skills casadas/faltantes e fit geral
+- **Importação de currículo** — upload PDF do LinkedIn ou texto colado, com extração automática de skills, experiência, cargo e senioridade
+- **Análise de match & ATS** — compara perfil × vaga com score 0-100, skills casadas/faltantes e fit geral
+- **Cursos Recomendados** — sugestões personalizadas de capacitação (Alura e Udemy) baseadas nas lacunas técnicas do currículo
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
-- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra dicas de ATS, com re-análise automática ao trocar de vaga (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`)
+- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`)
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
 ## Stack

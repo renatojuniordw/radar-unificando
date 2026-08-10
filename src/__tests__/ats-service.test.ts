@@ -11,12 +11,11 @@ vi.mock('@/lib/core/ai/generated-content-cache', () => ({
     saveToCacheMock(userId, kind, key, content),
 }));
 
-vi.mock('@/lib/ats/ats-analyzer', () => ({
+vi.mock('@/lib/core/ai/ats/ats-analyzer', () => ({
   analyzeAts: (resume: string, opts?: unknown) => analyzeAtsMock(resume, opts),
-  ATS_ANALYZER_PROMPT_VERSION: 'v1',
 }));
 
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 
 const RESUME = 'Maria Silva\nExperiencia\nAumentei a conversao em 30%.\nHabilidades\nReact, TypeScript';
 const ANALYSIS = {

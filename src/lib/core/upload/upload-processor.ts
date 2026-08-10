@@ -16,7 +16,7 @@ import {
 export async function processUploadJob(
   jobId: string,
   userId: string,
-  input: { rawText: string; markdown: string; traceId?: string },
+  input: { rawText: string; markdown: string; traceId?: string; profileSource?: string },
 ): Promise<void> {
   try {
     const hash = hashContent(input.markdown);
@@ -49,7 +49,7 @@ export async function processUploadJob(
       currentRole: extracted.currentRole || undefined,
       area: extracted.area || undefined,
       education: extracted.education,
-      profileSource: 'linkedin',
+      profileSource: input.profileSource || 'manual',
       parsedData: { extractedAt: new Date().toISOString() },
     });
 

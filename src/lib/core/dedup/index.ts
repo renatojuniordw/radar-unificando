@@ -12,17 +12,6 @@ export class DedupEngine {
     return Array.from(seen.values());
   }
 
-  dedupByTitleAndCompany(jobs: Job[]): Job[] {
-    const seen = new Map<string, Job>();
-    for (const job of jobs) {
-      const key = `${(job.company || '').toLowerCase().trim()}|${(job.title || '').toLowerCase().trim()}`;
-      if (!seen.has(key)) {
-        seen.set(key, job);
-      }
-    }
-    return Array.from(seen.values());
-  }
-
   mergeSources(existing: Job[], incoming: Job[]): Job[] {
     const merged = [...existing];
     const existingLinks = new Set(existing.map(j => j.link));

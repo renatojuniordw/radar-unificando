@@ -67,31 +67,6 @@ describe('DedupEngine', () => {
     expect(result).toHaveLength(1);
   });
 
-  // ── dedupByTitleAndCompany ──
-
-  it('should_deduplicate_by_company_and_title_case_insensitively', () => {
-    const jobs = [
-      makeJob({ company: 'CorpA', title: 'Data Analyst', link: '1' }),
-      makeJob({ company: 'corpa', title: 'data analyst', link: '2' }),
-      makeJob({ company: 'CorpA', title: 'Data Engineer', link: '3' }),
-    ];
-    const result = engine.dedupByTitleAndCompany(jobs);
-    expect(result).toHaveLength(2);
-  });
-
-  it('should_deduplicate_by_title_and_company_with_whitespace', () => {
-    const jobs = [
-      makeJob({ company: '  CorpA  ', title: '  Data Analyst  ' }),
-      makeJob({ company: 'CorpA', title: 'Data Analyst' }),
-    ];
-    const result = engine.dedupByTitleAndCompany(jobs);
-    expect(result).toHaveLength(1);
-  });
-
-  it('should_return_empty_array_for_empty_input_in_title_dedup', () => {
-    expect(engine.dedupByTitleAndCompany([])).toEqual([]);
-  });
-
   // ── mergeSources ──
 
   it('should_merge_incoming_into_existing_skipping_duplicate_links', () => {

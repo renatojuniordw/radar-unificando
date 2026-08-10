@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 
 const MAX_JOB_DESCRIPTION = 8000;
 

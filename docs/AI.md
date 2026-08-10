@@ -1,5 +1,18 @@
 # AI Pipeline — Radar Unificando
 
+## Prompts
+
+O texto de todos os prompts (system prompt do chat, extração de currículo, análise de vaga,
+carta de apresentação, roteiro de entrevista, análise ATS) vive centralizado em
+`src/lib/core/ai/prompts/` — um arquivo por prompt, separado da lógica de validação, cache e
+chamada ao LLM (que permanece nos módulos de origem: `job-analyzer.ts`, `cover-letter-generator.ts`,
+`interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`, `core/ai/ats/ats-analyzer.ts`).
+
+O bloco `REGRAS DE SEGURANÇA (não negociáveis)` (defesa contra prompt injection, presente em
+job-analyzer/cover-letter/interview-questions/ats-analyzer) é gerado por um helper compartilhado em
+`prompts/shared/security-rules.ts`, para evitar que uma correção nessa defesa precise ser replicada
+manualmente em cada prompt.
+
 ## Stack
 
 | Camada | Tecnologia |
@@ -57,7 +70,7 @@ Chat UI → POST /api/chat (streaming)
   → compare_jobs(2-5 vagas) → comparação lado a lado
 ```
 
-Auxiliares (sem rota própria, usados pelas tools):
+Auxiliares (sem rota própria, usados pelas tools; prompt de cada um em `prompts/<nome>.ts`):
 - `job-analyzer.ts` — `analyzeJobFit()` (limites: resumo 30–15000 chars, descrição ≤ 8000, skills ≤ 60, timeout 20s)
 - `cover-letter-generator.ts` — `generateCoverLetter()` (carta ≤ 3000 chars, ≤ 10 key points)
 - `interview-questions.ts` — `generateInterviewQuestions()` (até 8 perguntas categorizadas)

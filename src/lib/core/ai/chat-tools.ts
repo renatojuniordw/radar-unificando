@@ -3,12 +3,19 @@ import { z } from 'zod';
 import type { Profile } from '@prisma/client';
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeJobFit, JOB_ANALYZER_PROMPT_VERSION, type JobAnalysis } from '@/lib/core/ai/job-analyzer';
-import { generateCoverLetter, COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/cover-letter-generator';
-import { generateInterviewQuestions, INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/interview-questions';
+import { analyzeJobFit, type JobAnalysis } from '@/lib/core/ai/job-analyzer';
+import { generateCoverLetter } from '@/lib/core/ai/cover-letter-generator';
+import { generateInterviewQuestions } from '@/lib/core/ai/interview-questions';
+import { JOB_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/job-analyzer';
+import { COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/prompts/cover-letter';
+import { INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/prompts/interview-questions';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
-import { analyzeAtsWithCache } from '@/lib/ats/ats-service';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
+import { recommendCourses } from '@/lib/core/courses/course-matcher';
+import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
+import { searchUdemyCourses } from '@/lib/core/courses/impact-client';
+import { debugLog } from '@/lib/utils/debug';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
 
@@ -102,7 +109,7 @@ export function createChatTools(userId: string) {
         if (searchCount > MAX_SEARCHES_PER_MESSAGE) {
           return { error: 'Limite de 2 buscas por mensagem atingido. Reformule o pedido.' };
         }
-        console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
+        debugLog(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
         const jobs = await gupyMcpClient.searchJobs(query, Math.min((limit || 10) * 2, 40));
         const aliveJobs = await jobLinkFilter.filterAlive(jobs, { concurrency: 5 });
         return aliveJobs.slice(0, limit || 10).map(formatJobResult);
@@ -113,7 +120,7 @@ export function createChatTools(userId: string) {
       description: 'Obter o perfil do usuário logado (skills, experiência, senioridade, formação).',
       inputSchema: z.object({}),
       execute: async () => {
-        console.log('[chat-tools] get_my_profile chamado');
+        debugLog('[chat-tools] get_my_profile chamado');
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
         return {
@@ -140,7 +147,7 @@ export function createChatTools(userId: string) {
           .describe('Descrição da vaga alvo (opcional). Se fornecida, o score considera o keyword match com a vaga.'),
       }),
       execute: async ({ jobDescription }: { jobDescription?: string }) => {
-        console.log('[chat-tools] analyze_ats_score chamado');
+        debugLog('[chat-tools] analyze_ats_score chamado');
         const profile = await profileRepository.findByUserId(userId);
         const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
         if (!resumeText || resumeText.length < 30) {
@@ -177,7 +184,7 @@ export function createChatTools(userId: string) {
           .describe('Descrição da vaga (campo "descricao" retornado por search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -196,7 +203,7 @@ export function createChatTools(userId: string) {
         ).min(2, 'Informe pelo menos 2 vagas para comparar').max(5, 'Compare no máximo 5 vagas por vez'),
       }),
       execute: async ({ jobs }: { jobs: { jobTitle: string; jobDescription: string }[] }) => {
-        console.log(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
+        debugLog(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -219,7 +226,7 @@ export function createChatTools(userId: string) {
         jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] generate_cover_letter chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] generate_cover_letter chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -245,7 +252,7 @@ export function createChatTools(userId: string) {
         jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] get_interview_questions chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] get_interview_questions chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -269,6 +276,59 @@ export function createChatTools(userId: string) {
 
         await saveToCache(userId, 'interview_questions', cacheKey, questions);
         return questions;
+      },
+    }),
+
+    recommend_courses: tool({
+      description: 'Recomendar cursos de capacitação (Alura ou Udemy) para skills específicas que faltam no currículo do usuário. Use quando analyze_job_fit ou analyze_ats_score indicar missingSkills/missingKeywords. Retorna até 4 cursos com link de afiliado. Apresente cada curso no formato de bloco de curso (📚) — no máximo 3 blocos por resposta, apenas quando fizer sentido, nunca em toda resposta.',
+      inputSchema: z.object({
+        skills: z
+          .array(z.string().min(1).max(60).trim())
+          .min(1, 'Informe pelo menos 1 skill')
+          .max(6, 'Informe no máximo 6 skills')
+          .describe('Skills/requisitos faltando no currículo (ex: ["Kubernetes", "Excel Avançado"])'),
+      }),
+      execute: async ({ skills }: { skills: string[] }) => {
+        debugLog(`[chat-tools] recommend_courses chamado com skills=${JSON.stringify(skills)}`);
+        const profile = await profileRepository.findByUserId(userId);
+        const area = profile?.area || profile?.currentRole || null;
+        const courses = recommendCourses(skills, area, 4);
+
+        // Enriquecimento: skill sem match no catálogo curado → busca avulsos
+        // na API Impact (Udemy). Limitado a 2 chamadas para não atrasar o chat.
+        const matchedTags = courses.flatMap((c) => c.skillTags);
+        const unmatched = skills.filter(
+          (s) =>
+            !matchedTags.some(
+              (t) =>
+                t.toLowerCase().includes(s.toLowerCase()) ||
+                s.toLowerCase().includes(t.toLowerCase()),
+            ),
+        );
+
+        const merged = [...courses];
+        if (unmatched.length > 0) {
+          const top = unmatched.slice(0, 2);
+          const apiResults = await Promise.all(
+            top.map((skill) => searchUdemyCourses(skill, 2)),
+          );
+          for (const list of apiResults) {
+            for (const c of list) {
+              if (!merged.some((x) => x.id === c.id)) merged.push(c);
+            }
+          }
+        }
+
+        return {
+          cursos: merged.slice(0, 4).map((c) => ({
+            titulo: c.title,
+            plataforma: c.provider === 'alura' ? 'Alura' : 'Udemy',
+            skill: c.skillTags[0],
+            preco: c.priceLabel,
+            // Cursos da API Impact já são rastreados pelo script do site.
+            url: c.id.startsWith('impact-') ? c.url : buildAffiliateUrl(c),
+          })),
+        };
       },
     }),
   };

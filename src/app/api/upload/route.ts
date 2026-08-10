@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const textDirect = formData.get('text') as string | null;
+    // Origem do perfil: campo explícito do cliente, ou inferência por tipo de
+    // arquivo (PDF do LinkedIn → 'linkedin'; colagem/arquivo de texto → 'manual').
+    const profileSource =
+      (formData.get('source') as string | null) ||
+      (file?.name.endsWith('.pdf') ? 'linkedin' : 'manual') ||
+      undefined;
 
     let rawText = '';
     let markdown = '';
@@ -83,7 +89,7 @@ export async function POST(req: NextRequest) {
     // Isso elimina o 504 do nginx (a resposta não fica mais presa na chamada LLM).
     const jobId = crypto.randomUUID();
     uploadJobStore.create(jobId, session.user.id);
-    void processUploadJob(jobId, session.user.id, { rawText, markdown, traceId });
+    void processUploadJob(jobId, session.user.id, { rawText, markdown, traceId, profileSource });
 
     return NextResponse.json({ jobId });
   } catch (error) {

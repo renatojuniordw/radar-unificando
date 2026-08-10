@@ -6,7 +6,7 @@ vi.mock('@/lib/core/ai/llm-provider', () => ({
   generate: (schema: unknown, prompt: string) => generateMock(schema, prompt),
 }));
 
-import { analyzeAts } from '@/lib/ats/ats-analyzer';
+import { analyzeAts } from '@/lib/core/ai/ats/ats-analyzer';
 
 const RESUME = 'Maria Silva\nExperiencia\nDesenvolvedora com 5 anos. Aumentei conversao em 30%.\nHabilidades\nReact, TypeScript';
 
