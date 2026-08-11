@@ -3,9 +3,10 @@
 import { useSyncExternalStore } from "react";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Link from "next/link";
+import { ANALYTICS } from "@/lib/core/constants";
 
 const CONSENT_KEY = "cookie_consent";
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92";
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || ANALYTICS.gaId;
 
 type Consent = "accepted" | "declined" | null;
 

@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import { publicJobRepository } from '@/lib/infrastructure/repositories';
 import { JobPostingSchema, type JobPostingData } from '@/components/seo/job-posting-schema';
 import { slugify } from '@/lib/core/vagas/slug';
+import { SITE } from '@/lib/core/constants';
 
 export const revalidate = 3600; // ISR: regenera a cada 1h
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   title: 'Vagas de Tecnologia e Dados',
   description:
     'Consulte as vagas mais recentes de tecnologia, dados, produto e mais, agregadas de Gupy e InHire em tempo real.',
-  alternates: { canonical: 'https://radar.unificando.com.br/vagas' },
+  alternates: { canonical: `${SITE.url}/vagas` },
 };
 
 function toJobPosting(job: {

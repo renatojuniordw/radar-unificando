@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CookieSettingsLink } from "@/components/ui/cookie-settings-link";
+import { LINKS } from "@/lib/core/constants";
 
 export function Footer() {
   return (
@@ -104,7 +105,7 @@ export function Footer() {
               Pronto para o próximo nível?
             </p>
             <a
-              href="https://unificando.com.br/"
+              href={LINKS.unificando}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -163,7 +164,7 @@ export function Footer() {
           >
             © 2026 RADAR UNIFICANDO — Desenvolvido por{" "}
             <a
-              href="https://renatobezerra.com.br/"
+              href={LINKS.portfolio}
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "#94a3b8", textDecoration: "none" }}

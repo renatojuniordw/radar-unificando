@@ -15,6 +15,7 @@ import {
   SUGGESTED_VALUES,
   TRANSPARENCY_ITEMS,
 } from "@/lib/constants/doar";
+import { LINKS } from "@/lib/core/constants";
 
 export default function DoarContent() {
   const [copied, setCopied] = useState(false);
@@ -371,7 +372,7 @@ export default function DoarContent() {
           <p style={{ color: "#cbd5e1", fontSize: "0.9rem", margin: 0 }}>
             Quer conferir os custos detalhados do projeto? Veja o nosso{" "}
             <a
-              href="https://github.com/renatobezerra/radar-unificando/blob/main/COSTS.md"
+              href={LINKS.costs}
               target="_blank"
               rel="noopener noreferrer"
               style={{

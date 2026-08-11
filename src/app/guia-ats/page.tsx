@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { SITE } from '@/lib/core/constants';
 
 export const revalidate = 86400; // ISR diário
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: 'Análise ATS de Currículo: o que é e como passar nos filtros automáticos',
   description:
     'Entenda o que é ATS (Applicant Tracking System), por que currículos são rejeitados automaticamente e as boas práticas para seu CV passar nos filtros — com análise gratuita no Radar Unificando.',
-  alternates: { canonical: 'https://radar.unificando.com.br/guia-ats' },
+  alternates: { canonical: `${SITE.url}/guia-ats` },
 };
 
 const faq = [

@@ -3,9 +3,10 @@ import { publicJobRepository } from "@/lib/infrastructure/repositories";
 import { slugify } from "@/lib/core/vagas/slug";
 import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import { skillSlug } from "@/lib/core/courses/course-matcher";
+import { SITE } from "@/lib/core/constants";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = "https://radar.unificando.com.br";
+  const base = SITE.url;
   // Data fixa para permitir cache estático do sitemap
   const lastModified = "2026-08-04";
 

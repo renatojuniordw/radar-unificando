@@ -1,10 +1,12 @@
+import { SITE } from '@/lib/core/constants';
+
 export function StructuredData() {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Radar Unificando",
     alternateName: "Radar de Vagas Gupy & InHire",
-    url: "https://radar.unificando.com.br",
+    url: SITE.url,
     description:
       "Busca automática de vagas em Gupy e InHire em tempo real para cargos de TI, Dados, Marketing e Vendas.",
     inLanguage: "pt-BR",
@@ -12,7 +14,7 @@ export function StructuredData() {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://radar.unificando.com.br/?q={search_term_string}",
+        urlTemplate: `${SITE.url}/?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
@@ -22,8 +24,8 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Radar Unificando",
-    url: "https://radar.unificando.com.br",
-    logo: "https://radar.unificando.com.br/logo.png",
+    url: SITE.url,
+    logo: SITE.logo,
     sameAs: [],
     description:
       "Plataforma unificada de busca e recomendação inteligente de vagas em tempo real.",
@@ -33,7 +35,7 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Radar Unificando",
-    url: "https://radar.unificando.com.br",
+    url: SITE.url,
     applicationCategory: "BusinessApplication",
     operatingSystem: "All",
     browserRequirements: "Requires JavaScript. Requires HTML5.",

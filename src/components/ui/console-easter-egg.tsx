@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { LINKS } from "@/lib/core/constants";
 
 declare global {
   interface Window {
@@ -29,15 +30,15 @@ export function ConsoleEasterEgg() {
       "color: #94a3b8; font-size: 12px; font-family: sans-serif;"
     );
     console.log(
-      "%c🌐 UNIFICANDO:\nhttps://unificando.com.br\n",
+      `%c🌐 UNIFICANDO:\n${LINKS.unificando}\n`,
       "color: #38bdf8; font-weight: bold; font-family: sans-serif;"
     );
     console.log(
-      "%c🚀 GITHUB:\nhttps://github.com/renatojuniordw/radar-unificando\n",
+      `%c🚀 GITHUB:\n${LINKS.githubAlt}\n`,
       "color: #38bdf8; font-weight: bold; font-family: sans-serif;"
     );
     console.log(
-      "%c👨‍💻 PORTFÓLIO:\nhttps://renatobezerra.com.br/\n",
+      `%c👨‍💻 PORTFÓLIO:\n${LINKS.portfolio}\n`,
       "color: #38bdf8; font-weight: bold; font-family: sans-serif;"
     );
     console.log("%c---", "color: #64748b;");

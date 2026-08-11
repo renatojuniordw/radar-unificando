@@ -17,6 +17,7 @@ import {
   Sparkles,
   GraduationCap,
 } from 'lucide-react';
+import { LINKS } from '@/lib/core/constants';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -277,7 +278,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           {/* Consultancy Banner inside Menu Footer */}
           <div className="mt-2 pt-3 border-t border-[#1e293b] flex flex-col gap-2">
             <a
-              href="https://unificando.com.br/"
+              href={LINKS.unificando}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] text-[#94a3b8] font-mono no-underline uppercase tracking-wider flex items-center justify-between hover:text-[#ccff00] transition-colors"

@@ -20,9 +20,10 @@ const inter = Inter({
 });
 
 import { StructuredData } from "@/components/seo/structured-data";
+import { SITE, IMPACT } from "@/lib/core/constants";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://radar.unificando.com.br"),
+  metadataBase: new URL(SITE.url),
   title: {
     default: "Radar Unificando — Buscador de Vagas Gupy + InHire em Tempo Real",
     template: "%s | Radar Unificando",
@@ -47,12 +48,12 @@ export const metadata: Metadata = {
   creator: "Radar Unificando",
   publisher: "Radar Unificando",
   alternates: {
-    canonical: "https://radar.unificando.com.br",
+    canonical: SITE.url,
   },
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://radar.unificando.com.br",
+    url: SITE.url,
     siteName: "Radar Unificando",
     title: "Radar Unificando — Vagas Gupy e InHire Unificadas em Tempo Real",
     description:
@@ -100,8 +101,8 @@ export default function RootLayout({
       <head>
         <meta
           name="impact-site-verification"
-          content="ff7672f3-df2c-43e0-8c56-c3448dd4896a"
-          {...({ value: "ff7672f3-df2c-43e0-8c56-c3448dd4896a" } as Record<string, string>)}
+          content={IMPACT.siteVerification}
+          {...({ value: IMPACT.siteVerification } as Record<string, string>)}
         />
         <StructuredData />
       </head>
@@ -154,7 +155,7 @@ export default function RootLayout({
           id="impact-tracking"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7591577-ee13-4a49-8d27-59b5a61f41ec1.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');`,
+            __html: `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('${IMPACT.scriptUrl}','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');`,
           }}
         />
       </body>

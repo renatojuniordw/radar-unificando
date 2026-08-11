@@ -3,8 +3,9 @@
 // Fail-open: qualquer falha retorna [] para nunca derrubar a UX.
 
 import type { Course } from './course-provider';
+import { IMPACT } from '@/lib/core/constants';
 
-const IMPACT_BASE = 'https://api.impact.com';
+const IMPACT_BASE = IMPACT.apiBase;
 const TIMEOUT_MS = 6000;
 
 interface ImpactItem {

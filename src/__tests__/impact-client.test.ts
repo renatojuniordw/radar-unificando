@@ -6,6 +6,7 @@ import {
   isImpactMatch,
   tokenizeImpactText,
 } from '@/lib/core/courses/impact-client';
+import { IMPACT } from '@/lib/core/constants';
 
 describe('mapImpactItemToCourse', () => {
   it('deve_mapear_item_do_impact_para_course', () => {
@@ -106,14 +107,14 @@ describe('searchUdemyCourses (fail-open)', () => {
   it('deve_retornar_vazio_para_query_sem_tokens', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
     vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
-    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '26324');
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
     await expect(searchUdemyCourses('!!!', 5)).resolves.toEqual([]);
   });
 
   it('deve_paginar_filtrar_e_ordenar_por_score', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
     vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
-    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '26324');
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
 
     const page1 = {
       Items: [
@@ -145,7 +146,7 @@ describe('searchUdemyCourses (fail-open)', () => {
   it('deve_parar_cedo_quando_ja_tem_candidatos_suficientes', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
     vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
-    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '26324');
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
 
     const page1 = {
       Items: [

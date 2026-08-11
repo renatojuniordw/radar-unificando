@@ -12,6 +12,7 @@ import {
   Rocket,
 } from 'lucide-react';
 import { SupportSection } from '@/components/shared/support-section';
+import { LINKS } from '@/lib/core/constants';
 
 export const metadata: Metadata = {
   title: 'Sobre — Radar Unificando',
@@ -256,7 +257,7 @@ export default function SobrePage() {
 
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <a
-                href="https://renatobezerra.com.br/"
+                href={LINKS.portfolio}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-neon"
@@ -273,7 +274,7 @@ export default function SobrePage() {
               </a>
 
               <a
-                href="https://unificando.com.br/"
+                href={LINKS.unificando}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-dark"

@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { publicJobRepository } from '@/lib/infrastructure/repositories';
 import { JobPostingSchema, type JobPostingData } from '@/components/seo/job-posting-schema';
 import { slugify } from '@/lib/core/vagas/slug';
+import { SITE } from '@/lib/core/constants';
 
 export const revalidate = 3600; // ISR: regenera a cada 1h
 
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ cargo: st
   return {
     title: `Vagas de ${name}`,
     description: `Vagas de ${name} agregadas de Gupy e InHire em tempo real.`,
-    alternates: { canonical: `https://radar.unificando.com.br/vagas/${cargo}` },
+    alternates: { canonical: `${SITE.url}/vagas/${cargo}` },
   };
 }
 

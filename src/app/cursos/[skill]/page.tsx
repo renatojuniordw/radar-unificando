@@ -6,6 +6,7 @@ import { allSkillSlugs, skillFromSlug, coursesForSlug } from '@/lib/core/courses
 import { CourseCard } from '@/components/cursos/course-card';
 import { CourseGrid } from '@/components/cursos/course-grid';
 import { CourseFallbackCta } from '@/components/cursos/course-fallback-cta';
+import { SITE } from '@/lib/core/constants';
 
 export const revalidate = 86400; // ISR: regenera a cada 24h
 
@@ -25,11 +26,11 @@ export async function generateMetadata({
   return {
     title: `Curso de ${name} — Udemy | Radar Unificando`,
     description: `Cursos de ${name} recomendados para fechar os gaps do seu currículo: cursos avulsos baratos na Udemy.`,
-    alternates: { canonical: `https://radar.unificando.com.br/cursos/${skill}` },
+    alternates: { canonical: `${SITE.url}/cursos/${skill}` },
     openGraph: {
       title: `Curso de ${name} — Udemy`,
       description: `Cursos de ${name} para fechar os gaps do seu currículo.`,
-      url: `https://radar.unificando.com.br/cursos/${skill}`,
+      url: `${SITE.url}/cursos/${skill}`,
       type: 'website',
     },
   };
