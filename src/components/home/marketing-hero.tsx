@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -6,7 +6,13 @@ import { Box, Container, Typography } from "@mui/material";
 import { Search, ArrowRight, Sparkles } from "lucide-react";
 import { RotatingText } from "@/components/home/rotating-text";
 
-const POPULAR_TAGS = ["DevOps", "Frontend React", "Backend Node", "Python", "Product Manager"];
+const POPULAR_TAGS = [
+  "DevOps",
+  "Frontend React",
+  "Backend Node",
+  "Python",
+  "Product Manager",
+];
 
 const HOW_IT_WORKS = [
   {
@@ -46,7 +52,12 @@ export function MarketingHero() {
   return (
     <Box
       className="section-hero"
-      sx={{ position: "relative", overflow: "hidden", pt: { xs: 5, sm: 8 }, pb: { xs: 8, sm: 10 } }}
+      sx={{
+        position: "relative",
+        overflow: "hidden",
+        pt: { xs: 5, sm: 8 },
+        pb: { xs: 8, sm: 10 },
+      }}
     >
       {/* Background Radar Grid Glow */}
       <Box
@@ -103,7 +114,7 @@ export function MarketingHero() {
               mb: 2.5,
             }}
           >
-            RADAR DE VAGAS REMOTAS
+            RADAR DE VAGAS
           </Typography>
 
           {/* Subtitle */}
@@ -262,7 +273,12 @@ export function MarketingHero() {
                 {item.title}
               </Typography>
               <Typography
-                sx={{ color: "#94a3b8", fontSize: "0.825rem", lineHeight: 1.5, m: 0 }}
+                sx={{
+                  color: "#94a3b8",
+                  fontSize: "0.825rem",
+                  lineHeight: 1.5,
+                  m: 0,
+                }}
               >
                 {item.desc}
               </Typography>
