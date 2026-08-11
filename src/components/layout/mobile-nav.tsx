@@ -15,6 +15,7 @@ import {
   ChevronRight,
   FileText,
   Sparkles,
+  GraduationCap,
 } from 'lucide-react';
 
 interface MobileNavProps {
@@ -206,6 +207,18 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               <div className="flex items-center gap-2.5">
                 <Search size={16} className="text-[#ccff00]" />
                 <span>BUSCA DE VAGAS</span>
+              </div>
+              <ChevronRight size={16} className="text-[#64748b]" />
+            </Link>
+
+            <Link
+              href="/cursos"
+              onClick={onClose}
+              className="flex items-center justify-between p-3 bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <GraduationCap size={16} className="text-[#ccff00]" />
+                <span>CURSOS</span>
               </div>
               <ChevronRight size={16} className="text-[#64748b]" />
             </Link>
