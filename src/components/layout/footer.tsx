@@ -10,7 +10,7 @@ export function Footer() {
       style={{
         backgroundColor: "#020617",
         borderTop: "8px solid #ccff00",
-        padding: "48px 24px",
+        padding: "48px 24px 80px 24px",
         marginTop: "auto",
       }}
     >

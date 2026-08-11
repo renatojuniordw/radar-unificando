@@ -11,7 +11,6 @@ import {
   Download,
   KeyRound,
   Sparkles,
-  ArrowRight,
   CheckCircle2,
   Zap,
   ArrowLeft,
@@ -130,8 +129,8 @@ export default function ExtensaoPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: "48px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "32px",
               alignItems: "center",
             }}
           >

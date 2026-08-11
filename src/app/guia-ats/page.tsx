@@ -128,18 +128,22 @@ export default function GuiaAtsPage() {
           <Link
             href="/perfil"
             style={{
-              display: 'inline-block',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '44px',
               backgroundColor: '#ccff00',
               color: '#020617',
               padding: '14px 28px',
               fontWeight: 900,
               textTransform: 'uppercase',
-              fontSize: '0.8rem',
+              fontSize: '0.85rem',
+              fontFamily: 'ui-monospace, monospace',
               textDecoration: 'none',
               boxShadow: '4px 4px 0px #ffffff',
             }}
           >
-            Importar currículo
+            IMPORTAR CURRÍCULO AGORA
           </Link>
         </Box>
       </Container>

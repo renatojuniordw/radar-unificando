@@ -25,6 +25,8 @@ export default function TermosPage() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '44px',
               gap: 8,
               color: '#ccff00',
               textDecoration: 'none',

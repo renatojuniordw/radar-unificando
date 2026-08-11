@@ -65,9 +65,9 @@ export function Header() {
                 onClick={() => setIsMobileNavOpen((prev) => !prev)}
                 aria-label="Abrir menu principal"
                 aria-expanded={isMobileNavOpen}
-                className="sm:hidden flex items-center justify-center p-1.5 bg-[#0f172a] text-white border-2 border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] cursor-pointer transition-colors active:scale-95"
+                className="sm:hidden flex items-center justify-center w-11 h-11 bg-[#0f172a] text-white border-2 border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] cursor-pointer transition-colors active:scale-95 shrink-0"
               >
-                <Menu size={18} />
+                <Menu size={22} />
               </button>
             </div>
           </div>

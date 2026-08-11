@@ -25,7 +25,7 @@ const inputStyle: React.CSSProperties = {
   backgroundColor: '#ffffff',
   color: '#020617',
   padding: '10px 12px',
-  fontSize: '0.85rem',
+  fontSize: '1rem',
   fontFamily: 'inherit',
   boxShadow: '3px 3px 0px #000',
   boxSizing: 'border-box',

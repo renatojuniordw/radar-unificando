@@ -92,14 +92,14 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           <button
             onClick={onClose}
             aria-label="Fechar menu"
-            className="w-9 h-9 bg-[#1e293b] text-[#94a3b8] hover:text-[#ccff00] hover:border-[#ccff00] border-2 border-[#334155] flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+            className="w-11 h-11 bg-[#1e293b] text-[#94a3b8] hover:text-[#ccff00] hover:border-[#ccff00] border-2 border-[#334155] flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-4 flex flex-col gap-4">
+        <div className="overflow-y-auto p-4 pb-20 flex flex-col gap-4">
           {/* User Status / Authentication Card */}
           <div className="bg-[#0f172a] border-2 border-[#334155] p-3.5 shadow-[4px_4px_0px_#000]">
             {session?.user ? (
@@ -141,16 +141,16 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   <Link
                     href="/perfil"
                     onClick={onClose}
-                    className="flex items-center justify-center gap-2 py-2 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all"
+                    className="flex items-center justify-center gap-2 py-2.5 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all active:scale-95"
                   >
                     <User size={14} />
                     <span>PERFIL</span>
                   </Link>
 
                   <Link
-                    href="/extensao/conectar"
+                    href="/extensao"
                     onClick={onClose}
-                    className="flex items-center justify-center gap-2 py-2 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all"
+                    className="flex items-center justify-center gap-2 py-2.5 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all active:scale-95"
                   >
                     <Puzzle size={14} />
                     <span>EXTENSÃO</span>
@@ -162,7 +162,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     onClose();
                     signOut();
                   }}
-                  className="flex items-center justify-center gap-2 py-2 px-3 bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/30 text-xs font-mono font-extrabold uppercase hover:bg-[#ff4d4d] hover:text-white cursor-pointer transition-all w-full text-center"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 bg-[#ff4d4d]/10 text-[#ff4d4d] border border-[#ff4d4d]/30 text-xs font-mono font-extrabold uppercase hover:bg-[#ff4d4d] hover:text-white cursor-pointer transition-all w-full text-center active:scale-95"
                 >
                   <LogOut size={14} />
                   <span>SAIR DA CONTA</span>
@@ -177,14 +177,14 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   <Link
                     href="/login"
                     onClick={onClose}
-                    className="bg-[#0f172a] text-white border-2 border-[#334155] font-extrabold text-xs tracking-wider uppercase py-2.5 text-center no-underline font-mono transition-all hover:border-[#ccff00] hover:text-[#ccff00] active:scale-98 flex items-center justify-center"
+                    className="bg-[#0f172a] text-white border-2 border-[#334155] font-extrabold text-xs tracking-wider uppercase py-2.5 text-center no-underline font-mono transition-all hover:border-[#ccff00] hover:text-[#ccff00] active:scale-95 flex items-center justify-center min-h-[44px]"
                   >
                     ENTRAR
                   </Link>
                   <Link
                     href="/register"
                     onClick={onClose}
-                    className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-xs tracking-wider uppercase py-2.5 text-center no-underline font-mono shadow-[2px_2px_0px_#000] hover:bg-[#d9ff33] active:scale-98 flex items-center justify-center gap-1"
+                    className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-xs tracking-wider uppercase py-2.5 text-center no-underline font-mono shadow-[2px_2px_0px_#000] hover:bg-[#d9ff33] active:scale-95 flex items-center justify-center gap-1 min-h-[44px]"
                   >
                     <Sparkles size={13} />
                     <span>CRIAR CONTA</span>
@@ -203,7 +203,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <Link
               href="/busca"
               onClick={onClose}
-              className="flex items-center justify-between p-3 bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors"
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
             >
               <div className="flex items-center gap-2.5">
                 <Search size={16} className="text-[#ccff00]" />
@@ -213,13 +213,37 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             </Link>
 
             <Link
+              href="/vagas"
+              onClick={onClose}
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
+            >
+              <div className="flex items-center gap-2.5">
+                <Sparkles size={16} className="text-[#ccff00]" />
+                <span>VAGAS POR CARGO</span>
+              </div>
+              <ChevronRight size={16} className="text-[#64748b]" />
+            </Link>
+
+            <Link
               href="/cursos"
               onClick={onClose}
-              className="flex items-center justify-between p-3 bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors"
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
             >
               <div className="flex items-center gap-2.5">
                 <GraduationCap size={16} className="text-[#ccff00]" />
-                <span>CURSOS</span>
+                <span>CURSOS RECOMENDADOS</span>
+              </div>
+              <ChevronRight size={16} className="text-[#64748b]" />
+            </Link>
+
+            <Link
+              href="/guia-ats"
+              onClick={onClose}
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
+            >
+              <div className="flex items-center gap-2.5">
+                <FileText size={16} className="text-[#ccff00]" />
+                <span>GUIA ATS & CURRÍCULO</span>
               </div>
               <ChevronRight size={16} className="text-[#64748b]" />
             </Link>
@@ -227,7 +251,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <Link
               href="/extensao"
               onClick={onClose}
-              className="flex items-center justify-between p-3 bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors"
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
             >
               <div className="flex items-center gap-2.5">
                 <Puzzle size={16} className="text-[#ccff00]" />
@@ -241,7 +265,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <Link
               href="/sobre"
               onClick={onClose}
-              className="flex items-center justify-between p-3 bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors"
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
             >
               <div className="flex items-center gap-2.5">
                 <Info size={16} className="text-[#ccff00]" />
@@ -253,7 +277,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <Link
               href="/doar"
               onClick={onClose}
-              className="flex items-center justify-between p-3 bg-[#ccff00]/10 text-[#ccff00] border-2 border-[#ccff00] no-underline font-mono text-xs font-black uppercase tracking-wider hover:bg-[#ccff00] hover:text-[#020617] transition-all shadow-[2px_2px_0px_#ccff00]"
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#ccff00]/10 text-[#ccff00] border-2 border-[#ccff00] no-underline font-mono text-xs font-black uppercase tracking-wider hover:bg-[#ccff00] hover:text-[#020617] transition-all shadow-[2px_2px_0px_#ccff00] active:scale-98"
             >
               <div className="flex items-center gap-2.5">
                 <Heart size={16} fill="currentColor" />
@@ -265,7 +289,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <Link
               href="/termos"
               onClick={onClose}
-              className="flex items-center justify-between p-3 bg-[#0f172a] text-[#94a3b8] border border-[#1e293b] no-underline font-mono text-xs font-bold uppercase tracking-wider hover:text-white transition-colors"
+              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-[#94a3b8] border border-[#1e293b] no-underline font-mono text-xs font-bold uppercase tracking-wider hover:text-white transition-colors active:scale-98"
             >
               <div className="flex items-center gap-2.5">
                 <FileText size={16} />

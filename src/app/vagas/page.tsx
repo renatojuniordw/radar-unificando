@@ -78,12 +78,17 @@ export default async function VagasPage() {
                     bgcolor: '#0f172a',
                     border: '2px solid #ccff00',
                     color: '#ccff00',
-                    px: 2,
-                    py: 1,
+                    px: 2.5,
+                    py: 1.25,
+                    minHeight: '44px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     fontWeight: 900,
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                     textTransform: 'uppercase',
                     '&:hover': { bgcolor: '#ccff00', color: '#020617' },
+                    '&:active': { transform: 'scale(0.95)' },
                   }}
                 >
                   {c.roleCategory} ({c.count})

@@ -92,7 +92,7 @@ export function TagInput({ label, helperText, placeholder, value, onChange, auto
           aria-label={label}
           style={{
             border: 'none', outline: 'none', flex: 1, minWidth: 120,
-            fontFamily: 'inherit', fontSize: '0.875rem', padding: '4px 0',
+            fontFamily: 'inherit', fontSize: '1rem', padding: '4px 0',
             background: 'transparent', color: dark ? '#e2e8f0' : 'inherit',
           }}
         />

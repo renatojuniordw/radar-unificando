@@ -176,16 +176,21 @@ export default function DoarContent() {
               onClick={handleCopy}
               className="btn-neon"
               style={{
-                padding: "16px 32px",
-                fontSize: "1rem",
+                padding: "16px 24px",
+                fontSize: "0.95rem",
                 display: "inline-flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: "10px",
                 backgroundColor: copied ? "#00ff66" : "#ccff00",
                 color: "#020617",
                 border: "4px solid #020617",
                 boxShadow: "6px 6px 0px #000",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                minHeight: "48px",
                 transition: "all 0.2s ease-in-out",
+                wordBreak: "break-word",
               }}
             >
               {copied ? (

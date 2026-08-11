@@ -69,8 +69,8 @@ export default async function VagasCategoriaPage({ params }: { params: Promise<{
       <JobPostingSchema jobs={schemaJobs} />
       <Container maxWidth="lg">
         <Box sx={{ mb: 4 }}>
-          <Link href="/vagas" style={{ color: '#ccff00', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', textDecoration: 'none' }}>
-            ← Todas as vagas
+          <Link href="/vagas" style={{ color: '#ccff00', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', textDecoration: 'none', minHeight: '44px', display: 'inline-flex', alignItems: 'center' }}>
+            ← TODAS AS VAGAS
           </Link>
         </Box>
         <Box sx={{ textAlign: 'center', mb: 5 }}>

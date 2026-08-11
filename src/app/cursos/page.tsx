@@ -146,6 +146,7 @@ export default function CursosPage() {
               "& fieldset": { border: "2px solid #334155", borderRadius: 0 },
               "&:hover fieldset": { borderColor: "#ccff00" },
               "&.Mui-focused fieldset": { borderColor: "#ccff00" },
+              "& input": { fontSize: "1rem" },
             },
           }}
         />
@@ -156,20 +157,24 @@ export default function CursosPage() {
           </SectionEyebrow>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {POPULAR_SKILLS.map((skill) => (
-              <Link key={skill} href={`/cursos/${skillSlug(skill)}`}>
+              <Link key={skill} href={`/cursos/${skillSlug(skill)}`} style={{ textDecoration: "none" }}>
                 <Box
                   sx={{
                     bgcolor: "#0f172a",
                     border: "2px solid #334155",
                     color: "#cbd5e1",
-                    px: 1.5,
-                    py: 0.75,
-                    fontSize: "0.7rem",
+                    px: 2,
+                    py: 1,
+                    minHeight: "38px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    fontSize: "0.75rem",
                     fontWeight: 800,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     fontFamily: "ui-monospace, monospace",
                     "&:hover": { borderColor: "#ccff00", color: "#ccff00" },
+                    "&:active": { transform: "scale(0.95)" },
                   }}
                 >
                   {skill}

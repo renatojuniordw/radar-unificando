@@ -97,7 +97,7 @@ export default function ProfilePage() {
         {/* Link de voltar */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#64748b] hover:text-[#020617] no-underline mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#64748b] hover:text-[#020617] no-underline mb-6 transition-colors min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar para vagas

@@ -168,14 +168,14 @@ export function MarketingHero() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Digite o cargo desejado (ex: React, DevOps, Python)..."
-                className="w-full bg-transparent text-white font-mono text-sm sm:text-base border-none outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder-[#64748b]"
+                className="w-full bg-transparent text-white font-mono text-base border-none outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder-[#64748b]"
                 style={{ outline: "none", boxShadow: "none" }}
               />
             </Box>
 
             <button
               type="submit"
-              className="btn-neon w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap cursor-pointer active:scale-95 transition-all shrink-0"
+              className="btn-neon w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3.5 text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap cursor-pointer active:scale-95 transition-all shrink-0 min-h-[44px]"
             >
               <span>BUSCAR VAGAS AGORA</span>
               <ArrowRight size={16} strokeWidth={3} className="shrink-0" />
@@ -208,7 +208,7 @@ export function MarketingHero() {
                 key={tag}
                 type="button"
                 onClick={() => handleChipClick(tag)}
-                className="bg-[#0f172a] text-[#cbd5e1] border border-[#334155] px-2.5 py-1 text-xs font-mono font-bold hover:border-[#ccff00] hover:text-[#ccff00] transition-colors cursor-pointer active:scale-95"
+                className="bg-[#0f172a] text-[#cbd5e1] border border-[#334155] px-3 py-1.5 min-h-[36px] text-xs font-mono font-bold hover:border-[#ccff00] hover:text-[#ccff00] transition-colors cursor-pointer active:scale-95 flex items-center justify-center"
               >
                 + {tag}
               </button>
