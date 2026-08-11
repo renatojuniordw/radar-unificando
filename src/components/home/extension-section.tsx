@@ -1,126 +1,60 @@
 import Link from "next/link";
-import { EXTENSION_FEATURES } from "@/lib/constants/home";
-import { Gauge, RefreshCw, BarChart3, Copy, ShieldAlert, History, ArrowRight } from "lucide-react";
-
-const FEATURE_ICONS = [Gauge, RefreshCw, BarChart3, Copy, ShieldAlert, History];
+import { ArrowRight, Puzzle, Zap, ShieldCheck } from "lucide-react";
 
 export function ExtensionSection() {
   return (
-    <section className="section-dark-eco">
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "64px 16px" }}>
-        <div className="badge-neon" style={{ marginBottom: "20px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
-          <span>EXTENSÃO CHROME</span>
-          <span style={{ backgroundColor: "#020617", color: "#ccff00", padding: "2px 6px", fontSize: "0.7rem", border: "1px solid #ccff00" }}>
-            EM BREVE
-          </span>
-        </div>
-        <h2
-          style={{
-            fontWeight: 900,
-            textTransform: "uppercase",
-            letterSpacing: "-0.02em",
-            color: "#ffffff",
-            fontSize: "clamp(1.75rem, 4vw, 3rem)",
-            marginBottom: "16px",
-            lineHeight: 0.95,
-          }}
-        >
-          ANALISE A VAGA NA HORA,
-          <br />
-          <span style={{ color: "#ccff00" }}>SEM SAIR DO SITE</span>
-        </h2>
-        <p
-          style={{
-            color: "#94a3b8",
-            maxWidth: "640px",
-            marginBottom: "40px",
-            fontSize: "0.95rem",
-            lineHeight: 1.6,
-          }}
-        >
-          Instale a extensão e veja o score ATS do seu currículo para cada vaga
-          em um painel lateral — com re-análise automática ao trocar de vaga.
-        </p>
+    <section className="section-dark-eco py-12 sm:py-16 border-t-2 border-[#1e293b]">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
+        <div className="bg-[#0f172a] border-2 border-[#ccff00] p-6 sm:p-10 shadow-[8px_8px_0px_#000] relative overflow-hidden">
+          {/* Subtle glow accent */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#ccff00]/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "24px",
-          }}
-        >
-          {EXTENSION_FEATURES.map((item, index) => {
-            const IconComponent = FEATURE_ICONS[index % FEATURE_ICONS.length];
-            return (
-              <div
-                key={item.title}
-                className="card-dark"
-                style={{
-                  padding: "24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+            <div className="max-w-[680px]">
+              <div className="badge-neon mb-4 inline-flex items-center gap-2">
+                <Puzzle size={14} />
+                <span>EXTENSÃO CHROME ATS</span>
+                <span className="bg-[#020617] text-[#ccff00] px-1.5 py-0.5 text-[10px] font-mono border border-[#ccff00]">
+                  EM BREVE
+                </span>
+              </div>
+
+              <h2
+                className="font-black uppercase tracking-tight text-white mb-3 leading-[0.95]"
+                style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}
               >
-                <div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      marginBottom: "14px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        padding: "8px",
-                        backgroundColor: "rgba(204, 255, 0, 0.1)",
-                        border: "1px solid #ccff00",
-                        color: "#ccff00",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <IconComponent size={20} />
-                    </div>
-                    <h3
-                      style={{
-                        fontWeight: 900,
-                        textTransform: "uppercase",
-                        letterSpacing: "-0.01em",
-                        fontSize: "1.05rem",
-                        color: "#ccff00",
-                        margin: 0,
-                      }}
-                    >
-                      {item.title}
-                    </h3>
-                  </div>
-                  <p style={{ color: "#cbd5e1", fontSize: "0.85rem", lineHeight: 1.6, margin: 0 }}>
-                    {item.desc}
-                  </p>
+                ANALISE A VAGA NA HORA,{" "}
+                <span className="text-[#ccff00]">DIRETO NO NAVEGADOR</span>
+              </h2>
+
+              <p className="text-[#cbd5e1] text-sm sm:text-base leading-relaxed m-0">
+                Veja o score ATS do seu currículo em um painel lateral
+                inteligente no <strong>Gupy, LinkedIn e InHire</strong> — com
+                re-análise automática ao trocar de vaga.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 mt-5 text-xs font-mono text-[#94a3b8]">
+                <div className="flex items-center gap-1.5 text-[#ccff00]">
+                  <Zap size={14} />
+                  <span>Score Automático</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[#00ff66]">
+                  <ShieldCheck size={14} />
+                  <span>100% Seguro</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        <div style={{ textAlign: "center", marginTop: "48px" }}>
-          <Link
-            href="/extensao"
-            className="btn-neon"
-            style={{
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "14px 28px",
-              fontSize: "0.95rem",
-            }}
-          >
-            CONHECER A EXTENSÃO <ArrowRight size={18} strokeWidth={3} />
-          </Link>
+            <div className="w-full md:w-auto shrink-0">
+              <Link
+                href="/extensao"
+                className="btn-neon w-full md:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap shadow-[4px_4px_0px_#000] active:scale-95 transition-transform"
+              >
+                <span>VER DETALHES DA EXTENSÃO</span>
+                <ArrowRight size={18} strokeWidth={3} className="shrink-0" />
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

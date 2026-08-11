@@ -10,7 +10,7 @@ export interface CourseClickData {
   ipHash?: string | null;
 }
 
-/** Registra um clique em link de curso de afiliado (Alura/Udemy). */
+/** Registra um clique em link de curso de afiliado (Udemy). */
 export async function recordCourseClick(data: CourseClickData): Promise<void> {
   try {
     await prisma.courseClick.create({

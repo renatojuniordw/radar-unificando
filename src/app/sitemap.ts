@@ -17,8 +17,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
-    // TODO: Adicionar quando tiver tempo
-    // { url: `${base}/cursos`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+    {
+      url: `${base}/cursos`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     {
       url: `${base}/vagas`,
       lastModified,

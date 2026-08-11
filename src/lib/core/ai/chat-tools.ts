@@ -280,7 +280,7 @@ export function createChatTools(userId: string) {
     }),
 
     recommend_courses: tool({
-      description: 'Recomendar cursos de capacitação (Alura ou Udemy) para skills específicas que faltam no currículo do usuário. Use quando analyze_job_fit ou analyze_ats_score indicar missingSkills/missingKeywords. Retorna até 4 cursos com link de afiliado. Apresente cada curso no formato de bloco de curso (📚) — no máximo 3 blocos por resposta, apenas quando fizer sentido, nunca em toda resposta.',
+      description: 'Recomendar cursos de capacitação (Udemy) para skills específicas que faltam no currículo do usuário. Use quando analyze_job_fit ou analyze_ats_score indicar missingSkills/missingKeywords. Retorna até 4 cursos com link de afiliado. Apresente cada curso no formato de bloco de curso (📚) — no máximo 3 blocos por resposta, apenas quando fizer sentido, nunca em toda resposta.',
       inputSchema: z.object({
         skills: z
           .array(z.string().min(1).max(60).trim())

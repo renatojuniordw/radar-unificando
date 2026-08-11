@@ -88,6 +88,8 @@ export const metadata: Metadata = {
 
 import { ConsoleEasterEgg } from "@/components/ui/console-easter-egg";
 
+import { MobileFloatingBar } from "@/components/layout/mobile-floating-bar";
+
 export default function RootLayout({
   children,
 }: {
@@ -145,6 +147,7 @@ export default function RootLayout({
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
+        <MobileFloatingBar />
         <PwaRegister />
         <CookieConsent />
         <Script

@@ -5,20 +5,15 @@ const ICONS = [Zap, ShieldCheck, Clock, Sparkles, Target, Bot];
 
 export function WhyUseSection() {
   return (
-    <section className="section-white" style={{ paddingTop: "64px", paddingBottom: "64px" }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "48px 16px" }}>
-        <div className="badge-dark" style={{ marginBottom: "20px", display: "inline-block" }}>
+    <section className="section-white py-12 sm:py-16">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
+        <div className="badge-dark mb-5 inline-block">
           POR QUE USAR O RADAR
         </div>
         <h2
+          className="font-black uppercase tracking-tight text-white mb-8 sm:mb-10 leading-[0.95]"
           style={{
-            fontWeight: 900,
-            textTransform: "uppercase",
-            letterSpacing: "-0.02em",
-            color: "#ffffff",
             fontSize: "clamp(1.75rem, 4vw, 3rem)",
-            marginBottom: "36px",
-            lineHeight: 0.95,
           }}
         >
           TUDO QUE VOCÊ PRECISA
@@ -26,27 +21,13 @@ export function WhyUseSection() {
           <span style={{ color: "#ccff00" }}>PARA SE RELOCAR</span>
         </h2>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "24px",
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           {WHY_USE_ITEMS.map((item, index) => {
             const IconComponent = ICONS[index % ICONS.length];
             return (
               <div
                 key={item.title}
-                className="card-brutalist"
-                style={{
-                  padding: "28px 24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
+                className="card-brutalist p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden"
               >
                 <div>
                   <div

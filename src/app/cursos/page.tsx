@@ -101,7 +101,7 @@ export default function CursosPage() {
       <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 }, px: { xs: 2, sm: 3 } }}>
         <Box sx={{ maxWidth: 720, mb: 4 }}>
           <Box className="badge-neon" sx={{ mb: 2 }}>
-            ALURA + UDEMY · LINKS DE AFILIADO
+            UDEMY · LINKS DE AFILIADO
           </Box>
           <Typography
             component="h1"
@@ -227,8 +227,8 @@ export default function CursosPage() {
             maxWidth: 720,
           }}
         >
-          Alguns links desta página são de afiliados (Alura e Udemy) e podem
-          gerar comissão para a manutenção do projeto, sem custo adicional para
+          Alguns links desta página são de afiliados (Udemy) e podem gerar
+          comissão para a manutenção do projeto, sem custo adicional para
           você. A recomendação é baseada nas skills das vagas que você busca.
         </Typography>
       </Container>

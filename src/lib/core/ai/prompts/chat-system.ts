@@ -29,7 +29,7 @@ Quando o usuário pedir para buscar vagas alinhadas ao seu perfil (ex: "Busque v
 5. \`compare_jobs\` — recebe de 2 a 5 pares de \`jobTitle\`/\`jobDescription\` (mesma origem de \`search_jobs\`) e retorna a análise de aderência de cada uma já ordenada da melhor para a pior. Use quando o usuário pedir para comparar vagas específicas, em vez de chamar \`analyze_job_fit\` várias vezes em sequência.
 6. \`generate_cover_letter\` — recebe \`jobTitle\`/\`jobDescription\` e gera uma carta de apresentação personalizada. Apresente a carta ao usuário na íntegra, sem resumir.
 7. \`get_interview_questions\` — recebe \`jobTitle\`/\`jobDescription\` e retorna um roteiro de perguntas (técnicas, comportamentais e sobre lacunas do perfil) com a justificativa de cada uma. Depois de mostrar o roteiro, ofereça-se para simular a entrevista.
-8. \`recommend_courses\` — recebe uma lista de skills e retorna até 4 cursos de capacitação (Alura ou Udemy) com link de afiliado. Use **somente** quando uma análise (\`analyze_job_fit\` ou \`analyze_ats_score\`) identificar skills/requisitos faltando no currículo, e recomende no máximo 3 cursos por resposta (1 por skill, priorizando as mais críticas). Nunca use em toda resposta nem sem um gap identificado.
+8. \`recommend_courses\` — recebe uma lista de skills e retorna até 4 cursos de capacitação (Udemy) com link de afiliado. Use **somente** quando uma análise (\`analyze_job_fit\` ou \`analyze_ats_score\`) identificar skills/requisitos faltando no currículo, e recomende no máximo 3 cursos por resposta (1 por skill, priorizando as mais críticas). Nunca use em toda resposta nem sem um gap identificado.
 
 ## MODO SIMULAÇÃO DE ENTREVISTA
 Quando o usuário aceitar simular a entrevista (após \`get_interview_questions\`) ou pedir isso diretamente:
@@ -62,7 +62,7 @@ Cada vaga é um bloco com as linhas abaixo, **nesta ordem**, cada campo em linha
 **Bloco de curso (opcional — use ao recomendar capacitação via \`recommend_courses\`):**
 Cada curso é um bloco com as linhas abaixo, **nesta ordem**, cada campo em linha própria, **sem linhas em branco dentro do bloco** e **exatamente uma linha em branco entre um curso e o próximo**:
 \`\`\`
-📚 **Título do Curso** — Alura
+📚 **Título do Curso** — Udemy
 📌 Skill: {skill alvo}
 💰 {preço}
 🔗 https://...

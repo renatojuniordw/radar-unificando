@@ -9,14 +9,17 @@ const TIMEOUT_MS = 6000;
 
 interface ImpactItem {
   id?: string;
+  Id?: string;
   ItemSID?: string;
   Name?: string;
   Title?: string;
   Description?: string;
   Price?: number;
-  PriceString?: string;
+  CurrentPrice?: string;
+  Currency?: string;
   Rating?: number;
   RatingCount?: number;
+  Category?: string;
   Url?: string;
   [key: string]: unknown;
 }
@@ -35,7 +38,7 @@ function authHeader(): string {
 
 async function impactFetch(path: string): Promise<unknown> {
   const res = await fetch(`${IMPACT_BASE}${path}`, {
-    headers: { Authorization: authHeader() },
+    headers: { Authorization: authHeader(), Accept: 'application/json' },
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
   if (!res.ok) {
@@ -75,12 +78,18 @@ export async function getUdemyCatalogId(): Promise<string | null> {
  * Export puro — testável com fixture.
  */
 export function mapImpactItemToCourse(item: ImpactItem, query: string): Course | null {
-  const id = String(item.ItemSID ?? item.id ?? '');
+  const id = String(item.ItemSID ?? item.Id ?? item.id ?? '');
   const title = String(item.Name ?? item.Title ?? '').trim();
   const url = String(item.Url ?? '').trim();
   if (!id || !title || !url) return null;
 
-  const price = typeof item.Price === 'number' ? item.Price : undefined;
+  const price =
+    typeof item.Price === 'number'
+      ? item.Price
+      : item.CurrentPrice != null
+        ? parseFloat(item.CurrentPrice)
+        : undefined;
+  const currencySymbol = item.Currency && item.Currency !== 'BRL' ? 'US$' : 'R$';
   const rating = typeof item.Rating === 'number' ? item.Rating : undefined;
   const ratingCount = typeof item.RatingCount === 'number' ? item.RatingCount : undefined;
 
@@ -90,9 +99,13 @@ export function mapImpactItemToCourse(item: ImpactItem, query: string): Course |
     title,
     description: String(item.Description ?? '').slice(0, 300),
     skillTags: [query.toLowerCase().trim()],
-    // URL plaina: o script impactStat('transformLinks') do layout faz o tracking.
+    // URL já vem com tracking da Impact (ex.: trk.udemy.com/c/.../u=...) quando vinda do catálogo;
+    // links planos (udemy.com) são reescritos no client pelo script impactStat('transformLinks').
     url,
-    priceLabel: price != null ? `R$ ${price.toFixed(2).replace('.', ',')}` : 'Ver preço',
+    priceLabel:
+      price != null && !Number.isNaN(price)
+        ? `${currencySymbol} ${price.toFixed(2).replace('.', ',')}`
+        : 'Ver preço',
     rating:
       rating != null
         ? `${rating.toFixed(1)}${ratingCount != null ? ` (${ratingCount})` : ''}`
@@ -100,7 +113,15 @@ export function mapImpactItemToCourse(item: ImpactItem, query: string): Course |
   };
 }
 
-/** Busca cursos avulsos da Udemy no catálogo Impact (ItemSearch). */
+const ITEMS_PAGE_SIZE = 100;
+
+/**
+ * Busca cursos avulsos da Udemy no catálogo Impact.
+ * Observação: o endpoint /ItemSearch retorna 403 (Access Denied) com o
+ * escopo atual do token — não há busca full-text disponível na API. Como
+ * alternativa, paginamos /Items (listagem plana, sem relevância) e filtramos
+ * localmente pelos termos da query, igual ao CuratedCatalogProvider.
+ */
 export async function searchUdemyCourses(
   query: string,
   limit = 10,
@@ -112,10 +133,24 @@ export async function searchUdemyCourses(
     if (!catalogId) return [];
 
     const data = (await impactFetch(
-      `/Mediapartners/${process.env.IMPACT_ACCOUNT_SID}/Catalogs/${catalogId}/ItemSearch?ItemText=${encodeURIComponent(query)}&ItemLimit=${limit}`,
+      `/Mediapartners/${process.env.IMPACT_ACCOUNT_SID}/Catalogs/${catalogId}/Items?PageSize=${ITEMS_PAGE_SIZE}`,
     )) as { Items?: ImpactItem[] };
 
-    return (data?.Items || [])
+    const tokens = query
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((t) => t.length > 1);
+
+    const items = data?.Items || [];
+    const matched =
+      tokens.length === 0
+        ? items
+        : items.filter((item) => {
+            const haystack = `${item.Name ?? ''} ${item.Description ?? ''} ${item.Category ?? ''}`.toLowerCase();
+            return tokens.some((t) => haystack.includes(t));
+          });
+
+    return matched
       .map((item) => mapImpactItemToCourse(item, query))
       .filter((c): c is Course => c !== null)
       .slice(0, limit);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
@@ -28,6 +29,14 @@ export function useJobSearch() {
   const [cooldown, setCooldown] = useState(0);
   const [cooldownLoaded, setCooldownLoaded] = useState(false);
   const [filtersLoaded, setFiltersLoaded] = useState(false);
+
+  // Termo `q` da URL (ex: busca da home) — já aplicado ou não.
+  const urlQueryHandledRef = useRef<string | null>(null);
+  // Bloqueia o auto-sync enquanto uma busca vinda da URL estiver em andamento.
+  const autoSyncBlockedRef = useRef(false);
+
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q");
 
   // Perfil mínimo: skills >= 3 E (currentRole OU area)
   const minimalProfile = useMemo(() => {
@@ -159,8 +168,14 @@ export function useJobSearch() {
     }
   }
 
-  const handleStart = useCallback(async (options?: { silent?: boolean }) => {
+  const handleStart = useCallback(async (options?: {
+    silent?: boolean;
+    queries?: string[];
+    companies?: string[];
+  }) => {
     const isSilent = options?.silent ?? false;
+    const effectiveQueries = options?.queries ?? roleQueries;
+    const effectiveCompanies = options?.companies ?? companies;
 
     if (isSilent) {
       setAutoSyncing(true);
@@ -168,14 +183,14 @@ export function useJobSearch() {
       setRunning(true);
       setJobs([]);
       if (!session) await browserStorage.clear();
-      trackJobSearch({ companies, roles: roleQueries });
+      trackJobSearch({ companies: effectiveCompanies, roles: effectiveQueries });
     }
 
     try {
       const res = await fetch("/api/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companies, queries: roleQueries, auto: isSilent }),
+        body: JSON.stringify({ companies: effectiveCompanies, queries: effectiveQueries, auto: isSilent }),
       });
 
       if (!res.ok) {
@@ -322,9 +337,33 @@ export function useJobSearch() {
   // de auto cheio) sem atualizar lastRunAt, o effect re-dispararia infinito.
   const lastAutoSyncAttemptRef = useRef(0);
 
+  // Termo `q` vindo da URL (ex: busca da home): preenche o filtro de cargos e
+  // dispara a busca automaticamente, como uma pesquisa do Google.
+  useEffect(() => {
+    if (!urlQuery) return;
+    if (!filtersLoaded || !cooldownLoaded) return;
+    if (urlQueryHandledRef.current === urlQuery) return;
+    urlQueryHandledRef.current = urlQuery;
+
+    // Evita que o auto-sync dispare uma segunda busca na mesma montagem.
+    autoSyncBlockedRef.current = true;
+
+    // Adia a aplicação para fora do corpo do effect (evita setState síncrono).
+    queueMicrotask(() => {
+      // Sobrescreve os filtros persistidos com o termo explícito da URL.
+      setRoleQueries([urlQuery]);
+
+      // Cooldown ativo ou busca em andamento: apenas preenche o input.
+      if (cooldown > 0 || running || autoSyncing) return;
+
+      void handleStart({ queries: [urlQuery] });
+    });
+  }, [urlQuery, filtersLoaded, cooldownLoaded, cooldown, running, autoSyncing, handleStart]);
+
   useEffect(() => {
     // Só decide após cooldown e filtros serem carregados do storage, e pula
     // quando não há filtros salvos (evita "vagas aleatórias" na entrada).
+    if (autoSyncBlockedRef.current) return;
     if (
       !cooldownLoaded ||
       !filtersLoaded ||

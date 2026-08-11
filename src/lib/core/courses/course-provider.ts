@@ -1,7 +1,8 @@
-// Domínio de cursos de afiliados (Alura + Udemy).
-// A interface CourseProvider permite plugar fontes dinâmicas no futuro
-// (ex.: API de afiliados da Udemy após aprovação na Rakuten/Impact).
-// Hoje a única implementação é o catálogo curado local (CuratedCatalogProvider).
+// Domínio de cursos de afiliados. Catálogo atual é 100% Udemy — Alura fica
+// suportada pelo tipo CourseProviderId mas sem entradas até a afiliação ser
+// aprovada. A interface CourseProvider permite plugar fontes dinâmicas
+// (ex.: busca avulsa via API da Impact, ver impact-client.ts).
+// Hoje a implementação padrão é o catálogo curado local (CuratedCatalogProvider).
 
 import { COURSES } from './course-catalog';
 import { expandTokens } from './course-matcher';

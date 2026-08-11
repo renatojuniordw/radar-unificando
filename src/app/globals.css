@@ -170,7 +170,10 @@ body {
 /* ===== Button Patterns ===== */
 
 .btn-neon {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   background-color: #ccff00;
   color: #020617;
   font-weight: 900;
@@ -195,7 +198,10 @@ body {
 }
 
 .btn-dark {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   background-color: #020617;
   color: #ccff00;
   font-weight: 900;

@@ -13,6 +13,18 @@ export const SUGGESTED_ROLES = [
   "Analista de Qualidade",
 ];
 
+// Empresas-alvo curadas (grandes contratantes presentes no Gupy/InHire).
+export const SUGGESTED_COMPANIES = [
+  "iFood",
+  "Magazine Luiza",
+  "Ambev",
+  "Localiza",
+  "Natura",
+  "Raia Drogasil",
+  "Inter",
+  "XP Inc",
+];
+
 export const ROTATING_WORDS = [
   "Dados",
   "Marketing",

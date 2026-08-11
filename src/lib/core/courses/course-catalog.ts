@@ -1,14 +1,13 @@
-// Catálogo curado de cursos de afiliados (Alura + Udemy).
+// Catálogo curado de cursos de afiliados (Udemy).
+//
+// Alura removido temporariamente: afiliação ainda não aprovada. Reintroduzir
+// quando aprovada — o tipo CourseProviderId em course-provider.ts já suporta
+// 'alura', só falta adicionar as entradas de volta aqui.
 //
 // IMPORTANTE: as URLs abaixo são links-base reais dos cursos. Antes de divulgar,
-// SUBSTITUA cada URL pelo seu link de afiliado:
-//   - Alura: deep link gerado no painel da Awin (programa Alura BR, ID 23465).
-//   - Udemy: deep link gerado na rede parceira (Rakuten/Impact) OU deixe a URL
-//     base e configure NEXT_PUBLIC_UDEMY_AFFILIATE_REF — o ?ref= é adicionado
-//     automaticamente por buildAffiliateUrl.
-//
-// Regra de curadoria: skills de formação ampla em tech → Alura (assinatura);
-// ferramentas pontuais e áreas gerais → Udemy (curso avulso barato).
+// SUBSTITUA cada URL pelo seu link de afiliado gerado na Impact (ou deixe a URL
+// base e configure NEXT_PUBLIC_UDEMY_AFFILIATE_REF — o ?ref= é adicionado
+// automaticamente por buildAffiliateUrl).
 
 import type { Course } from './course-provider';
 
@@ -27,116 +26,10 @@ export const POPULAR_SKILLS = [
 ];
 
 export const COURSES: Course[] = [
-  // ===== ALURA (tech / formação ampla) =====
-  {
-    id: 'alura-python',
-    provider: 'alura',
-    title: 'Formação Python',
-    description:
-      'Do básico ao avançado: sintaxe, orientação a objetos, APIs e automação. Trilha completa para quem busca vagas de desenvolvimento.',
-    skillTags: ['python', 'programacao', 'backend', 'automacao', 'dados'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.9',
-    url: 'https://www.alura.com.br/formacao-python',
-    featured: true,
-  },
-  {
-    id: 'alura-react',
-    provider: 'alura',
-    title: 'Formação React',
-    description:
-      'Componentes, hooks, estado e integração com APIs. Formação para vagas de front-end e desenvolvimento web.',
-    skillTags: ['react', 'javascript', 'frontend', 'typescript', 'web'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.8',
-    url: 'https://www.alura.com.br/formacao-react-js',
-    featured: true,
-  },
-  {
-    id: 'alura-devops',
-    provider: 'alura',
-    title: 'Formação DevOps',
-    description:
-      'Docker, Kubernetes, CI/CD e infraestrutura como código. Cobre os requisitos mais pedidos em vagas de DevOps e SRE.',
-    skillTags: ['docker', 'kubernetes', 'devops', 'ci', 'cd', 'cloud', 'aws'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.8',
-    url: 'https://www.alura.com.br/formacao-devops',
-    featured: true,
-  },
-  {
-    id: 'alura-data-science',
-    provider: 'alura',
-    title: 'Formação Data Science',
-    description:
-      'Python para dados, estatística, machine learning e visualização. Trilha para vagas de dados e IA.',
-    skillTags: ['data', 'science', 'machine', 'learning', 'ia', 'python', 'analise'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.9',
-    url: 'https://www.alura.com.br/formacao-data-science',
-    featured: true,
-  },
-  {
-    id: 'alura-front-end',
-    provider: 'alura',
-    title: 'Formação Front-end',
-    description:
-      'HTML, CSS, JavaScript e boas práticas de interface. Base sólida para vagas de desenvolvimento web.',
-    skillTags: ['html', 'css', 'javascript', 'frontend', 'web', 'ui'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.7',
-    url: 'https://www.alura.com.br/formacao-front-end',
-  },
-  {
-    id: 'alura-nodejs',
-    provider: 'alura',
-    title: 'Formação Node.js',
-    description:
-      'APIs REST, bancos de dados e arquitetura de servidores com JavaScript. Para vagas de backend.',
-    skillTags: ['node', 'javascript', 'backend', 'api', 'rest'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.8',
-    url: 'https://www.alura.com.br/formacao-node-js',
-  },
-  {
-    id: 'alura-java',
-    provider: 'alura',
-    title: 'Formação Java',
-    description:
-      'Java do básico ao Spring Boot, com foco no mercado corporativo. Muito pedida em vagas de backend.',
-    skillTags: ['java', 'spring', 'backend', 'programacao'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.7',
-    url: 'https://www.alura.com.br/formacao-java',
-  },
-  {
-    id: 'alura-sql',
-    provider: 'alura',
-    title: 'Formação SQL e Banco de Dados',
-    description:
-      'Modelagem, consultas, índices e performance. Requisito transversal para dados, backend e BI.',
-    skillTags: ['sql', 'banco', 'dados', 'postgres', 'mysql', 'database'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.8',
-    url: 'https://www.alura.com.br/formacao-sql-e-banco-de-dados',
-  },
-  {
-    id: 'alura-ux',
-    provider: 'alura',
-    title: 'Formação UX Design',
-    description:
-      'Pesquisa, prototipação e design de interfaces. Para vagas de produto, UX e UI.',
-    skillTags: ['ux', 'ui', 'design', 'produto', 'prototipacao'],
-    priceLabel: 'Assinatura a partir de R$ 99/mês',
-    rating: '4.7',
-    url: 'https://www.alura.com.br/formacao-ux-design',
-  },
-
-  // ===== UDEMY (ferramentas pontuais / áreas gerais) =====
   // ATENÇÃO: as URLs abaixo são as páginas canônicas de cada curso (para o
   // usuário cair no curso, não numa busca). ANTES de divulgar, substitua cada
-  // uma pelo seu deep link de afiliado gerado no painel da Rakuten/Impact
-  // (ou deixe a canônica e configure NEXT_PUBLIC_UDEMY_AFFILIATE_REF).
+  // uma pelo seu deep link de afiliado gerado no painel da Impact (ou deixe a
+  // canônica e configure NEXT_PUBLIC_UDEMY_AFFILIATE_REF).
   {
     id: 'udemy-excel-avancado',
     provider: 'udemy',
@@ -160,6 +53,52 @@ export const COURSES: Course[] = [
     rating: '4.6',
     url: 'https://www.udemy.com/course/power-bi-completo/',
     featured: true,
+  },
+  {
+    id: 'udemy-python',
+    provider: 'udemy',
+    title: 'Python do Zero ao Avançado',
+    description:
+      'Sintaxe, orientação a objetos, APIs e automação. Curso completo para quem busca vagas de desenvolvimento e dados.',
+    skillTags: ['python', 'programacao', 'backend', 'automacao', 'dados'],
+    priceLabel: 'R$ 39,90',
+    rating: '4.7',
+    url: 'https://www.udemy.com/course/python-para-iniciantes-curso-completo/',
+    featured: true,
+  },
+  {
+    id: 'udemy-react',
+    provider: 'udemy',
+    title: 'React do Zero à Prática',
+    description:
+      'Componentes, hooks, estado e integração com APIs. Base para vagas de front-end e desenvolvimento web.',
+    skillTags: ['react', 'javascript', 'frontend', 'typescript', 'web'],
+    priceLabel: 'R$ 39,90',
+    rating: '4.6',
+    url: 'https://www.udemy.com/course/react-do-zero-a-pratica/',
+    featured: true,
+  },
+  {
+    id: 'udemy-docker-kubernetes',
+    provider: 'udemy',
+    title: 'Docker e Kubernetes na Prática',
+    description:
+      'Containers, orquestração e CI/CD. Cobre os requisitos mais pedidos em vagas de DevOps e SRE.',
+    skillTags: ['docker', 'kubernetes', 'devops', 'ci', 'cd', 'cloud'],
+    priceLabel: 'R$ 39,90',
+    rating: '4.6',
+    url: 'https://www.udemy.com/course/docker-e-kubernetes-na-pratica/',
+  },
+  {
+    id: 'udemy-sql-banco-dados',
+    provider: 'udemy',
+    title: 'SQL do Zero ao Avançado',
+    description:
+      'Modelagem, consultas, índices e performance. Requisito transversal para dados, backend e BI.',
+    skillTags: ['sql', 'banco', 'dados', 'postgres', 'mysql', 'database'],
+    priceLabel: 'R$ 39,90',
+    rating: '4.7',
+    url: 'https://www.udemy.com/course/sql-do-zero-ao-avancado/',
   },
   {
     id: 'udemy-pacote-office',

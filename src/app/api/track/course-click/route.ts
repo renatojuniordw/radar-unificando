@@ -15,7 +15,7 @@ function getClientIp(req: NextRequest): string {
 }
 
 /**
- * Registra cliques em links de cursos de afiliado (Alura/Udemy).
+ * Registra cliques em links de cursos de afiliado (Udemy).
  * Público (sem login), limitado por IP — só analytics, nunca bloqueia a navegação.
  */
 export async function POST(req: NextRequest) {

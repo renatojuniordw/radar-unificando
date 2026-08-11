@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { COURSES } from '@/lib/core/courses/course-catalog';
-import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
+import { buildAffiliateUrl, type Course } from '@/lib/core/courses/course-provider';
 
 describe('course-catalog', () => {
   it('deve_ter_ids_unicos', () => {
@@ -25,19 +25,26 @@ describe('course-catalog', () => {
     }
   });
 
-  it('deve_ter_ambos_providers_representados', () => {
-    expect(COURSES.some((c) => c.provider === 'alura')).toBe(true);
+  it('deve_ter_apenas_provider_udemy_ate_afiliacao_alura_ser_aprovada', () => {
     expect(COURSES.some((c) => c.provider === 'udemy')).toBe(true);
+    expect(COURSES.every((c) => c.provider === 'udemy')).toBe(true);
   });
 
   it('deve_ter_pelo_menos_um_featured_para_fallback', () => {
     expect(COURSES.some((c) => c.featured)).toBe(true);
   });
 
-  it('buildAffiliateUrl_nao_altera_url_da_alura', () => {
-    const alura = COURSES.find((c) => c.provider === 'alura');
-    expect(alura).toBeDefined();
-    expect(buildAffiliateUrl(alura!)).toBe(alura!.url);
+  it('buildAffiliateUrl_nao_altera_url_de_provider_nao_udemy', () => {
+    const alura: Course = {
+      id: 'fixture-alura',
+      provider: 'alura',
+      title: 'Curso fixture',
+      description: '',
+      skillTags: ['fixture'],
+      priceLabel: 'R$ 0',
+      url: 'https://www.alura.com.br/fixture',
+    };
+    expect(buildAffiliateUrl(alura)).toBe(alura.url);
   });
 
   it('buildAffiliateUrl_adiciona_ref_da_udemy_quando_env_definido', () => {

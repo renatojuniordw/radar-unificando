@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Container, Box, Typography, Button, Chip } from "@mui/material";
 import { TagInput } from "@/components/ui/tag-input";
-import { SUGGESTED_ROLES } from "@/lib/constants/home";
+import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from "@/lib/constants/home";
 
 interface BuscaHeaderProps {
   companies: string[];
@@ -14,7 +14,53 @@ interface BuscaHeaderProps {
   running: boolean;
   onStart: () => void;
   onAddSuggestion: (role: string) => void;
+  onAddCompany: (company: string) => void;
 }
+
+// Estilo compartilhado dos chips de sugestão (cargos e empresas-alvo).
+const suggestionChipSx = {
+  bgcolor: "#1e293b",
+  color: "#cbd5e1",
+  border: "1px solid #334155",
+  fontFamily: "ui-monospace, monospace",
+  fontSize: "0.7rem",
+  borderRadius: 0,
+  shrink: 0,
+  whiteSpace: "nowrap",
+  transition: "all 0.15s",
+  "&:active": { transform: "scale(0.95)" },
+  "&:hover": {
+    bgcolor: "#ccff00",
+    color: "#020617",
+    borderColor: "#ccff00",
+    fontWeight: 800,
+  },
+} as const;
+
+// Carrossel horizontal dos chips de sugestão.
+const suggestionRowSx = {
+  display: "flex",
+  alignItems: "center",
+  gap: 1,
+  overflowX: "auto",
+  pb: 1,
+  pt: 0.5,
+  width: "100%",
+  "::-webkit-scrollbar": { display: "none" },
+  msOverflowStyle: "none",
+  scrollbarWidth: "none",
+} as const;
+
+const suggestionLabelSx = {
+  fontSize: "0.7rem",
+  fontFamily: "ui-monospace, monospace",
+  fontWeight: 800,
+  color: "#94a3b8",
+  textTransform: "uppercase",
+  mr: 0.5,
+  shrink: 0,
+  whitespace: "nowrap",
+} as const;
 
 export const BuscaHeader = memo(function BuscaHeader({
   companies,
@@ -25,6 +71,7 @@ export const BuscaHeader = memo(function BuscaHeader({
   running,
   onStart,
   onAddSuggestion,
+  onAddCompany,
 }: BuscaHeaderProps) {
   return (
     <Box
@@ -49,7 +96,14 @@ export const BuscaHeader = memo(function BuscaHeader({
               gap: 1.5,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: 1.25,
+              }}
+            >
               <Box
                 sx={{
                   bgcolor: "#ccff00",
@@ -122,7 +176,7 @@ export const BuscaHeader = memo(function BuscaHeader({
 
             <Box>
               <TagInput
-                label="🏢 EMPRESAS (OPCIONAL)"
+                label="🏢 EMPRESAS-ALVO"
                 value={companies}
                 onChange={onCompaniesChange}
                 placeholder="Ex: Nubank, Mercado Livre..."
@@ -164,41 +218,32 @@ export const BuscaHeader = memo(function BuscaHeader({
           </Box>
 
 
-          {/* Quick Suggestions Chips */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-            <Typography
-              sx={{
-                fontSize: "0.7rem",
-                fontFamily: "ui-monospace, monospace",
-                fontWeight: 700,
-                color: "#64748b",
-                textTransform: "uppercase",
-                mr: 0.5,
-              }}
-            >
-              SUGESTÕES:
-            </Typography>
-            {SUGGESTED_ROLES.slice(0, 7).map((role) => (
+          {/* Quick Suggestions Chips Carousel — Cargos */}
+          <Box sx={suggestionRowSx}>
+            <Typography sx={suggestionLabelSx}>SUGESTÕES:</Typography>
+            {SUGGESTED_ROLES.map((role) => (
               <Chip
                 key={role}
                 label={`+ ${role}`}
                 onClick={() => onAddSuggestion(role)}
                 size="small"
                 clickable
-                sx={{
-                  bgcolor: "#1e293b",
-                  color: "#cbd5e1",
-                  border: "1px solid #334155",
-                  fontFamily: "ui-monospace, monospace",
-                  fontSize: "0.7rem",
-                  borderRadius: 0,
-                  "&:hover": {
-                    bgcolor: "#ccff00",
-                    color: "#020617",
-                    borderColor: "#ccff00",
-                    fontWeight: 800,
-                  },
-                }}
+                sx={suggestionChipSx}
+              />
+            ))}
+          </Box>
+
+          {/* Quick Suggestions Chips Carousel — Empresas-alvo */}
+          <Box sx={suggestionRowSx}>
+            <Typography sx={suggestionLabelSx}>EMPRESAS-ALVO:</Typography>
+            {SUGGESTED_COMPANIES.map((company) => (
+              <Chip
+                key={company}
+                label={`+ ${company}`}
+                onClick={() => onAddCompany(company)}
+                size="small"
+                clickable
+                sx={suggestionChipSx}
               />
             ))}
           </Box>

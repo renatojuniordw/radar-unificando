@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Snackbar, Alert, Box, Container } from "@mui/material";
 import { useJobSearch } from "@/hooks/useJobSearch";
 import { BuscaHeader } from "@/components/busca/busca-header";
@@ -8,7 +9,7 @@ import { ResultsSection } from "@/components/home/results-section";
 import { CourseRecommendationSidebar } from "@/components/busca/course-recommendation-sidebar";
 import { ChatTeaser } from "@/components/shared/chat-teaser";
 
-export default function BuscaPage() {
+function BuscaPageContent() {
   const {
     session,
     profile,
@@ -41,6 +42,11 @@ export default function BuscaPage() {
         running={running}
         onStart={handleStart}
         onAddSuggestion={addSuggestion}
+        onAddCompany={(company) =>
+          setCompanies((prev) =>
+            prev.includes(company) ? prev : [...prev, company],
+          )
+        }
       />
 
       {running && <LoadingOverlay />}
@@ -61,8 +67,7 @@ export default function BuscaPage() {
           />
         </Box>
 
-        {/* TODO: Adicionar quando tiver tempo */}
-        {/* <Box sx={{ width: "100%" }}>
+        <Box sx={{ width: "100%" }}>
           <CourseRecommendationSidebar
             terms={roleQueries}
             area={profile.area || profile.currentRole}
@@ -72,7 +77,7 @@ export default function BuscaPage() {
               <ChatTeaser />
             </Box>
           )}
-        </Box> */}
+        </Box>
       </Container>
 
       {snackbar && (
@@ -92,5 +97,14 @@ export default function BuscaPage() {
         </Snackbar>
       )}
     </Box>
+  );
+}
+
+export default function BuscaPage() {
+  // useSearchParams (usado no useJobSearch) exige Suspense durante o prerender.
+  return (
+    <Suspense fallback={null}>
+      <BuscaPageContent />
+    </Suspense>
   );
 }

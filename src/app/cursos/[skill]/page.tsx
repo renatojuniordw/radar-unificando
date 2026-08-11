@@ -22,11 +22,11 @@ export async function generateMetadata({
   if (courses.length === 0) return { title: 'Curso não encontrado | Radar Unificando' };
   const name = skillFromSlug(skill);
   return {
-    title: `Curso de ${name} — Alura e Udemy | Radar Unificando`,
-    description: `Cursos de ${name} recomendados para fechar os gaps do seu currículo: trilha completa na Alura ou curso avulso barato na Udemy.`,
+    title: `Curso de ${name} — Udemy | Radar Unificando`,
+    description: `Cursos de ${name} recomendados para fechar os gaps do seu currículo: cursos avulsos baratos na Udemy.`,
     alternates: { canonical: `https://radar.unificando.com.br/cursos/${skill}` },
     openGraph: {
-      title: `Curso de ${name} — Alura e Udemy`,
+      title: `Curso de ${name} — Udemy`,
       description: `Cursos de ${name} para fechar os gaps do seu currículo.`,
       url: `https://radar.unificando.com.br/cursos/${skill}`,
       type: 'website',
@@ -64,7 +64,7 @@ export default async function SkillPage({
 
         <Box sx={{ mt: 3, mb: 5, maxWidth: 720 }}>
           <Box className="badge-neon" sx={{ mb: 2 }}>
-            ALURA + UDEMY · LINKS DE AFILIADO
+            UDEMY · LINKS DE AFILIADO
           </Box>
           <Typography
             component="h1"
@@ -82,7 +82,7 @@ export default async function SkillPage({
           </Typography>
           <Typography sx={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6 }}>
             As vagas que você busca pedem {name.toLowerCase()}. Estude exatamente
-            essa skill — curso avulso barato na Udemy ou trilha completa na Alura.
+            essa skill com um curso avulso barato na Udemy.
           </Typography>
         </Box>
 
@@ -103,8 +103,8 @@ export default async function SkillPage({
             maxWidth: 720,
           }}
         >
-          Alguns links desta página são de afiliados (Alura e Udemy) e podem
-          gerar comissão para a manutenção do projeto, sem custo adicional para
+          Alguns links desta página são de afiliados (Udemy) e podem gerar
+          comissão para a manutenção do projeto, sem custo adicional para
           você.
         </Typography>
       </Container>

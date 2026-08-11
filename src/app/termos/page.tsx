@@ -283,7 +283,7 @@ export default function TermosPage() {
               5. Links de Afiliados
             </h2>
             <p>
-              Para manter o serviço gratuito e aberto, o Radar Unificando participa de programas de afiliados de capacitação profissional, atualmente com as plataformas <strong>Alura</strong> e <strong>Udemy</strong>. Quando você clica em um link de curso recomendado e realiza uma compra, podemos receber uma comissão da plataforma — <strong>sem nenhum custo adicional para você</strong>.
+              Para manter o serviço gratuito e aberto, o Radar Unificando participa de programas de afiliados de capacitação profissional, atualmente com a plataforma <strong>Udemy</strong> (outras plataformas poderão ser adicionadas futuramente). Quando você clica em um link de curso recomendado e realiza uma compra, podemos receber uma comissão da plataforma — <strong>sem nenhum custo adicional para você</strong>.
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>
@@ -293,7 +293,7 @@ export default function TermosPage() {
                 <strong>Base da recomendação:</strong> Os cursos são sugeridos com base nas skills exigidas pelas vagas que você busca e nas lacunas identificadas na análise do seu currículo — não por qualquer pagamento de terceiros.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Sem interferência no preço:</strong> A comissão de afiliado não altera o valor cobrado pelas plataformas (Alura e Udemy), nem os termos de compra delas.
+                <strong>Sem interferência no preço:</strong> A comissão de afiliado não altera o valor cobrado pela plataforma (Udemy), nem os termos de compra dela.
               </li>
               <li style={{ marginBottom: 0 }}>
                 <strong>Dados pessoais:</strong> Nenhum dado pessoal seu é compartilhado com as plataformas de afiliados. A identificação da indicação ocorre apenas por parâmetro técnico no link (ex: <code>?ref=</code>).
@@ -356,7 +356,7 @@ export default function TermosPage() {
                 <strong>Como gerenciar:</strong> Você pode limpar cookies e dados de sites pelas configurações do seu navegador a qualquer momento. Ao limpar os dados do site, o aviso de cookies será exibido novamente.
               </li>
               <li style={{ marginBottom: 0 }}>
-                <strong>Links de afiliados:</strong> Os links de cursos (Alura/Udemy) podem conter parâmetros técnicos de identificação (ex: <code>?ref=</code>) que não identificam você pessoalmente e não configuram cookies de rastreamento no nosso site.
+                <strong>Links de afiliados:</strong> Os links de cursos (Udemy) podem conter parâmetros técnicos de identificação (ex: <code>?ref=</code>) que não identificam você pessoalmente e não configuram cookies de rastreamento no nosso site.
               </li>
             </ul>
           </section>

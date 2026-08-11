@@ -10,6 +10,11 @@ vi.mock('next-auth/react', () => ({
   })),
 }));
 
+const searchParamsState = vi.hoisted(() => ({ value: '' as string }));
+vi.mock('next/navigation', () => ({
+  useSearchParams: vi.fn(() => new URLSearchParams(searchParamsState.value)),
+}));
+
 const profileState = vi.hoisted(() => ({
   skills: [] as string[],
   currentRole: null as string | null,
@@ -108,6 +113,7 @@ describe('useJobSearch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionState.data = null;
+    searchParamsState.value = '';
     profileState.skills = [];
     profileState.currentRole = null;
     profileState.area = null;
@@ -506,6 +512,53 @@ describe('useJobSearch', () => {
       expect(result.current.snackbar).toBeNull();
       expect(result.current.jobs).toEqual([{ ...JOB_DEV, detectedAt: '' }]);
       expect(result.current.autoSyncing).toBe(false);
+    });
+  });
+
+  describe('busca via URL (?q=)', () => {
+    it('preenche_roleQueries_e_dispara_busca_manual', async () => {
+      searchParamsState.value = 'q=Consultor de vendas';
+      const { result } = renderHook(() => useJobSearch());
+      await flushMount();
+
+      expect(result.current.roleQueries).toEqual(['Consultor de vendas']);
+      const pipelineCall = fetchMock.mock.calls.find(
+        (c) => String(c[0]) === '/api/pipeline',
+      );
+      expect(pipelineCall).toBeTruthy();
+      expect(JSON.parse(pipelineCall![1].body)).toMatchObject({
+        queries: ['Consultor de vendas'],
+        auto: false,
+      });
+      expect(trackJobSearch).toHaveBeenCalledWith({
+        companies: [],
+        roles: ['Consultor de vendas'],
+      });
+    });
+
+    it('cooldown_ativo_preenche_input_mas_nao_dispara_busca', async () => {
+      searchParamsState.value = 'q=Consultor de vendas';
+      storageMock.getCooldownEnd.mockResolvedValue(Date.now() + 120_000);
+      const { result } = renderHook(() => useJobSearch());
+      await flushMount();
+
+      expect(result.current.roleQueries).toEqual(['Consultor de vendas']);
+      expect(result.current.cooldown).toBeGreaterThan(0);
+      const pipelineCall = fetchMock.mock.calls.find(
+        (c) => String(c[0]) === '/api/pipeline',
+      );
+      expect(pipelineCall).toBeFalsy();
+    });
+
+    it('sem_q_na_url_nao_dispara_busca_automatica', async () => {
+      const { result } = renderHook(() => useJobSearch());
+      await flushMount();
+
+      expect(result.current.roleQueries).toEqual([]);
+      const pipelineCall = fetchMock.mock.calls.find(
+        (c) => String(c[0]) === '/api/pipeline',
+      );
+      expect(pipelineCall).toBeFalsy();
     });
   });
 
