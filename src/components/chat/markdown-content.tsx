@@ -42,8 +42,33 @@ function normalizeText(text: string): string {
     .trim();
 }
 
+/**
+ * O markdown do chat vem de saída da LLM (fronteira não confiável): um link
+ * como [x](javascript:alert(1)) seria renderizado cru pelo react-markdown
+ * (ele não sanitiza URLs). Só aceitamos esquemas http/https — qualquer outro
+ * vira texto simples, nunca um href.
+ */
+function isSafeHref(href: string | undefined): href is string {
+  if (!href) return false;
+  try {
+    const url = new URL(href);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 const markdownComponents: Components = {
   a: ({ href, children }) => {
+    if (!isSafeHref(href)) {
+      // Link com esquema perigoso (javascript:, data:, ...): renderiza só o texto.
+      return (
+        <Typography component="span" variant="body2" sx={{ mb: 1.5, lineHeight: 1.7 }}>
+          {children}
+        </Typography>
+      );
+    }
+
     const isJobLink = href && (href.includes('gupy.io') || href.includes('job'));
     const linkText = String(children).trim();
 

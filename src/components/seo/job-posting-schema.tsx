@@ -12,6 +12,19 @@ export interface JobPostingData {
 const nowIso = new Date().toISOString();
 const validThroughIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
+/**
+ * Serializa o schema para inserção segura em <script type="application/ld+json">.
+ * JSON.stringify NÃO escapa `<`, `>` e `&`: um título/descrição de vaga contendo
+ * "</script><script>..." vazaria do bloco JSON-LD e injetaria HTML/JS (stored XSS).
+ * Escapar como \uXXXX mantém o JSON semanticamente idêntico e o HTML inofensivo.
+ */
+function toScriptJson(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
+}
+
 export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
   if (!jobs || jobs.length === 0) return null;
 
@@ -51,7 +64,7 @@ export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
         <script
           key={index}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: toScriptJson(schema) }}
         />
       ))}
     </>

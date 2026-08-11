@@ -95,4 +95,27 @@ describe('MarkdownContent', () => {
     expect(screen.queryByText(/📍/)).toBeNull();
     expect(screen.queryByText(/🔗/)).toBeNull();
   });
+
+  it('nao_deve_renderizar_href_javascript_em_link_markdown', () => {
+    // Saída de LLM com link malicioso: react-markdown não sanitiza URLs por si só.
+    const text = 'Veja [este link](javascript:alert(1)) e [outro](https://ok.gupy.io/jobs/1)';
+
+    const { container } = render(<MarkdownContent text={text} />);
+
+    const anchors = container.querySelectorAll('a');
+    // Só o link https:// é renderizado como âncora.
+    expect(anchors).toHaveLength(1);
+    expect(anchors[0].getAttribute('href')).toBe('https://ok.gupy.io/jobs/1');
+    // O texto do link malicioso continua visível, mas sem href.
+    expect(screen.getByText('este link')).toBeTruthy();
+  });
+
+  it('nao_deve_renderizar_link_com_esquema_desconhecido', () => {
+    const text = '[baixar](file:///etc/passwd)';
+
+    const { container } = render(<MarkdownContent text={text} />);
+
+    expect(container.querySelectorAll('a')).toHaveLength(0);
+    expect(screen.getByText('baixar')).toBeTruthy();
+  });
 });
