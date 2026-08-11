@@ -72,7 +72,7 @@ export function JobFiltersDesktop({
           size="small"
           value={searchFilter}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Buscar vagas por cargo, tecnologia ou palavra-chave..."
+          placeholder="Refinar resultados nesta lista por palavra-chave..."
           slotProps={{
             input: {
               startAdornment: (
@@ -146,115 +146,127 @@ export function JobFiltersDesktop({
         </Badge>
       </Box>
 
-      {/* Quick Filter Chips Row */}
+      {/* Quick Filter Segmented Control Groups Row */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
+          gap: 2.5,
           flexWrap: 'wrap',
           bgcolor: '#f8fafc',
-          p: 1.5,
-          border: '2px solid #e2e8f0',
+          p: 1.75,
+          border: '2px solid #020617',
+          boxShadow: '3px 3px 0px #020617',
         }}
       >
-        {/* Platform Quick Chips */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        {/* Platform Segmented Filter Group */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
-            component="span"
             sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              bgcolor: '#020617',
+              color: '#f8fafc',
+              px: 1,
+              py: 0.5,
               fontSize: '0.68rem',
-              fontWeight: 800,
+              fontWeight: 900,
               fontFamily: 'ui-monospace, monospace',
-              color: '#64748b',
+              letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              mr: 0.5,
             }}
           >
-            Plataforma:
+            Plataforma
           </Box>
-          {PLATFORMS.map((p) => {
-            const isSelected = platformFilter === p.value;
-            return (
-              <Chip
-                key={p.label}
-                label={p.label}
-                onClick={() => onPlatformChange(p.value)}
-                size="small"
-                clickable
-                sx={{
-                  bgcolor: isSelected ? '#020617' : '#ffffff',
-                  border: '2px solid #020617',
-                  fontWeight: 900,
-                  fontSize: '0.68rem',
-                  fontFamily: 'ui-monospace, monospace',
-                  borderRadius: 0,
-                  boxShadow: isSelected ? '2px 2px 0px #000' : 'none',
-                  '& .MuiChip-label': {
-                    color: isSelected ? '#ffffff' : '#020617',
-                    px: 1,
-                  },
-                  '&:hover': {
-                    bgcolor: '#020617',
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {PLATFORMS.map((p) => {
+              const isSelected = platformFilter === p.value;
+              return (
+                <Chip
+                  key={p.label}
+                  label={p.label}
+                  onClick={() => onPlatformChange(p.value)}
+                  size="small"
+                  clickable
+                  sx={{
+                    bgcolor: isSelected ? '#ccff00' : '#ffffff',
+                    border: '2px solid #020617',
+                    fontWeight: 900,
+                    fontSize: '0.7rem',
+                    fontFamily: 'ui-monospace, monospace',
+                    borderRadius: 0,
+                    boxShadow: isSelected ? '2px 2px 0px #020617' : 'none',
+                    transition: 'all 0.15s ease',
                     '& .MuiChip-label': {
-                      color: '#ffffff',
+                      color: isSelected ? '#020617' : '#334155',
+                      px: 1.25,
                     },
-                  },
-                }}
-              />
-            );
-          })}
+                    '&:hover': {
+                      bgcolor: isSelected ? '#b3e600' : '#020617',
+                      '& .MuiChip-label': {
+                        color: isSelected ? '#020617' : '#ffffff',
+                      },
+                    },
+                  }}
+                />
+              );
+            })}
+          </Box>
         </Box>
 
-        {/* Separator Divider */}
-        <Box sx={{ width: 1, height: 18, bgcolor: '#cbd5e1' }} />
-
-        {/* Modality Quick Chips */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        {/* Modality Segmented Filter Group */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
-            component="span"
             sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              bgcolor: '#020617',
+              color: '#f8fafc',
+              px: 1,
+              py: 0.5,
               fontSize: '0.68rem',
-              fontWeight: 800,
+              fontWeight: 900,
               fontFamily: 'ui-monospace, monospace',
-              color: '#64748b',
+              letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              mr: 0.5,
             }}
           >
-            Modalidade:
+            Modalidade
           </Box>
-          {QUICK_TYPES.map((t) => {
-            const isSelected = typeFilter === t.value;
-            return (
-              <Chip
-                key={t.label}
-                label={t.label}
-                onClick={() => onTypeChange(t.value)}
-                size="small"
-                clickable
-                sx={{
-                  bgcolor: isSelected ? '#020617' : '#ffffff',
-                  border: '2px solid #020617',
-                  fontWeight: 900,
-                  fontSize: '0.68rem',
-                  fontFamily: 'ui-monospace, monospace',
-                  borderRadius: 0,
-                  boxShadow: isSelected ? '2px 2px 0px #000' : 'none',
-                  '& .MuiChip-label': {
-                    color: isSelected ? '#ffffff' : '#020617',
-                    px: 1,
-                  },
-                  '&:hover': {
-                    bgcolor: '#020617',
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {QUICK_TYPES.map((t) => {
+              const isSelected = typeFilter === t.value;
+              return (
+                <Chip
+                  key={t.label}
+                  label={t.label}
+                  onClick={() => onTypeChange(t.value)}
+                  size="small"
+                  clickable
+                  sx={{
+                    bgcolor: isSelected ? '#ccff00' : '#ffffff',
+                    border: '2px solid #020617',
+                    fontWeight: 900,
+                    fontSize: '0.7rem',
+                    fontFamily: 'ui-monospace, monospace',
+                    borderRadius: 0,
+                    boxShadow: isSelected ? '2px 2px 0px #020617' : 'none',
+                    transition: 'all 0.15s ease',
                     '& .MuiChip-label': {
-                      color: '#ffffff',
+                      color: isSelected ? '#020617' : '#334155',
+                      px: 1.25,
                     },
-                  },
-                }}
-              />
-            );
-          })}
+                    '&:hover': {
+                      bgcolor: isSelected ? '#b3e600' : '#020617',
+                      '& .MuiChip-label': {
+                        color: isSelected ? '#020617' : '#ffffff',
+                      },
+                    },
+                  }}
+                />
+              );
+            })}
+          </Box>
         </Box>
       </Box>
 

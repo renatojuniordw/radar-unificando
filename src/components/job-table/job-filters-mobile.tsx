@@ -1,6 +1,4 @@
-'use client';
-
-import { Box, TextField, Button, InputAdornment } from '@mui/material';
+import { Box, TextField, Button, InputAdornment, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -8,6 +6,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 interface Props {
   searchFilter: string;
   onSearchChange: (value: string) => void;
+  platformFilter: string;
+  onPlatformChange: (value: string) => void;
+  typeFilter: string;
+  onTypeChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   countSecondaryFilters: number;
   countTotalFilters: number;
@@ -15,9 +17,26 @@ interface Props {
   onClearFilters: () => void;
 }
 
+const PLATFORMS = [
+  { label: 'TODAS', value: '' },
+  { label: 'GUPY', value: 'Gupy' },
+  { label: 'INHIRE', value: 'InHire' },
+];
+
+const QUICK_TYPES = [
+  { label: 'TODAS', value: '' },
+  { label: 'REMOTO', value: 'Remoto' },
+  { label: 'HÍBRIDO', value: 'Híbrido' },
+  { label: 'PRESENCIAL', value: 'Presencial' },
+];
+
 export function JobFiltersMobile({
   searchFilter,
   onSearchChange,
+  platformFilter,
+  onPlatformChange,
+  typeFilter,
+  onTypeChange,
   onSubmit,
   countSecondaryFilters,
   countTotalFilters,
@@ -32,7 +51,7 @@ export function JobFiltersMobile({
           size="small"
           value={searchFilter}
           onChange={e => onSearchChange(e.target.value)}
-          placeholder="Buscar cargo, empresa, termo..."
+          placeholder="Refinar nesta lista..."
           slotProps={{
             input: {
               startAdornment: (
@@ -76,6 +95,86 @@ export function JobFiltersMobile({
         >
           IR
         </Button>
+      </Box>
+
+      {/* Mobile Horizontal Quick Filters Carousel */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          overflowX: 'auto',
+          pb: 1.5,
+          mb: 1.5,
+          '::-webkit-scrollbar': { display: 'none' },
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+        }}
+      >
+        {PLATFORMS.filter(p => p.value !== '').map((p) => {
+          const isSelected = platformFilter === p.value;
+          return (
+            <Chip
+              key={p.label}
+              label={p.label}
+              onClick={() => onPlatformChange(isSelected ? '' : p.value)}
+              size="small"
+              clickable
+              sx={{
+                bgcolor: isSelected ? '#ccff00' : '#ffffff',
+                color: isSelected ? '#020617' : '#475569',
+                border: '2px solid #020617',
+                fontWeight: 900,
+                fontSize: '0.68rem',
+                fontFamily: 'ui-monospace, monospace',
+                borderRadius: 0,
+                boxShadow: isSelected ? '2px 2px 0px #000' : 'none',
+                flexShrink: 0,
+              }}
+            />
+          );
+        })}
+
+        <Chip
+          label={`MODALIDADE: ${typeFilter ? typeFilter.toUpperCase() : 'TODAS'}`}
+          onClick={onOpenDrawer}
+          size="small"
+          clickable
+          sx={{
+            bgcolor: typeFilter ? '#020617' : '#f1f5f9',
+            color: typeFilter ? '#ccff00' : '#020617',
+            border: '2px solid #020617',
+            fontWeight: 900,
+            fontSize: '0.68rem',
+            fontFamily: 'ui-monospace, monospace',
+            borderRadius: 0,
+            boxShadow: '2px 2px 0px #000',
+            flexShrink: 0,
+          }}
+        />
+
+        {QUICK_TYPES.filter(t => t.value !== '').map((t) => {
+          const isSelected = typeFilter === t.value;
+          return (
+            <Chip
+              key={t.label}
+              label={t.label}
+              onClick={() => onTypeChange(isSelected ? '' : t.value)}
+              size="small"
+              clickable
+              sx={{
+                bgcolor: isSelected ? '#ccff00' : '#ffffff',
+                color: isSelected ? '#020617' : '#475569',
+                border: '2px solid #020617',
+                fontWeight: 900,
+                fontSize: '0.68rem',
+                fontFamily: 'ui-monospace, monospace',
+                borderRadius: 0,
+                boxShadow: isSelected ? '2px 2px 0px #000' : 'none',
+                flexShrink: 0,
+              }}
+            />
+          );
+        })}
       </Box>
 
       {/* Filter Trigger Pills */}

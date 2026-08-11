@@ -113,6 +113,10 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
         <JobFiltersMobile
           searchFilter={searchFilter}
           onSearchChange={setSearchFilter}
+          platformFilter={platformFilter}
+          onPlatformChange={handlePlatformChange}
+          typeFilter={typeFilter}
+          onTypeChange={setTypeFilter}
           onSubmit={handleSearch}
           countSecondaryFilters={countSecondaryFilters}
           countTotalFilters={countTotalFilters}
