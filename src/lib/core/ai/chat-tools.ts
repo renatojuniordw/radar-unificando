@@ -6,9 +6,15 @@ import { profileRepository } from '@/lib/infrastructure/repositories';
 import { analyzeJobFit, type JobAnalysis } from '@/lib/core/ai/job-analyzer';
 import { generateCoverLetter } from '@/lib/core/ai/cover-letter-generator';
 import { generateInterviewQuestions } from '@/lib/core/ai/interview-questions';
+import {
+  generateAdaptedResume,
+  adaptedResumeToMarkdown,
+  type AdaptedResume,
+} from '@/lib/core/ai/resume-adaptation-generator';
 import { JOB_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/job-analyzer';
 import { COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/prompts/cover-letter';
 import { INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/prompts/interview-questions';
+import { RESUME_ADAPTATION_PROMPT_VERSION } from '@/lib/core/ai/prompts/resume-adaptation';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
 import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
@@ -242,6 +248,34 @@ export function createChatTools(userId: string) {
 
         await saveToCache(userId, 'cover_letter', cacheKey, letter);
         return letter;
+      },
+    }),
+
+    generate_resume: tool({
+      description: 'Gerar um currículo adaptado (reescrito) para uma vaga específica, incorporando palavras-chave da vaga sem inventar fatos. Use título e descrição já retornados por search_jobs — não invente dados.',
+      inputSchema: z.object({
+        jobTitle: z.string().min(1).max(200).trim().describe('Título da vaga (campo "titulo" de search_jobs)'),
+        jobDescription: z.string().max(5000).trim().optional().default('').describe('Descrição da vaga (campo "descricao" de search_jobs), se disponível'),
+      }),
+      execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
+        debugLog(`[chat-tools] generate_resume chamado com jobTitle="${jobTitle}"`);
+        const profile = await profileRepository.findByUserId(userId);
+        if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
+
+        const resumeContext = profile.resumeMarkdown || profile.resumeText || '';
+        if (!resumeContext || resumeContext.length < 30) {
+          return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
+        }
+
+        const cacheKey = computeCacheKey(RESUME_ADAPTATION_PROMPT_VERSION, [jobTitle, jobDescription, resumeContext]);
+        const cached = await getCached<AdaptedResume>(userId, 'resume_adaptation', cacheKey);
+        if (cached) return { resume: cached, resumeMarkdown: adaptedResumeToMarkdown(cached) };
+
+        const traceId = crypto.randomUUID();
+        const resume = await generateAdaptedResume(resumeContext, jobTitle, jobDescription, { traceId });
+
+        await saveToCache(userId, 'resume_adaptation', cacheKey, resume);
+        return { resume, resumeMarkdown: adaptedResumeToMarkdown(resume) };
       },
     }),
 

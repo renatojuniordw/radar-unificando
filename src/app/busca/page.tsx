@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Snackbar, Alert, Box, Container } from "@mui/material";
 import { useJobSearch } from "@/hooks/useJobSearch";
 import { BuscaHeader } from "@/components/busca/busca-header";
@@ -8,6 +8,8 @@ import { LoadingOverlay } from "@/components/home/loading-overlay";
 import { ResultsSection } from "@/components/home/results-section";
 import { CourseRecommendationSidebar } from "@/components/busca/course-recommendation-sidebar";
 import { ChatTeaser } from "@/components/shared/chat-teaser";
+import { ResumeGenerationModal } from "@/components/resume/resume-generation-modal";
+import type { Job } from "@/lib/types/job";
 
 function BuscaPageContent() {
   const {
@@ -30,6 +32,9 @@ function BuscaPageContent() {
     addSuggestion,
     handleStart,
   } = useJobSearch();
+
+  const [resumeJob, setResumeJob] = useState<Job | null>(null);
+  const canGenerateResume = !!(session && (profile.resumeMarkdown || profile.resumeText));
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#020617", pb: 6 }}>
@@ -64,6 +69,8 @@ function BuscaPageContent() {
             roleCategories={roleCategories}
             areaOrRole={profile.area || profile.currentRole || ""}
             onFilterChange={loadJobs}
+            canGenerateResume={canGenerateResume}
+            onGenerateResume={setResumeJob}
           />
         </Box>
 
@@ -96,6 +103,12 @@ function BuscaPageContent() {
           </Alert>
         </Snackbar>
       )}
+
+      <ResumeGenerationModal
+        open={!!resumeJob}
+        job={resumeJob}
+        onClose={() => setResumeJob(null)}
+      />
     </Box>
   );
 }

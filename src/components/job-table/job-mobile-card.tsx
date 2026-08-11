@@ -7,9 +7,11 @@ import type { Job } from '@/lib/types/job';
 
 interface Props {
   job: Job;
+  canGenerateResume: boolean;
+  onGenerateResume: (job: Job) => void;
 }
 
-export function JobMobileCard({ job }: Props) {
+export function JobMobileCard({ job, canGenerateResume, onGenerateResume }: Props) {
   const dateInfo = formatJobDate(job.postedAt, job.detectedAt);
 
   return (
@@ -118,6 +120,42 @@ export function JobMobileCard({ job }: Props) {
           VER VAGA NO {job.platform.toUpperCase()} →
         </Box>
       </a>
+
+      {canGenerateResume && (
+        <Box
+          onClick={() => onGenerateResume(job)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onGenerateResume(job);
+            }
+          }}
+          sx={{
+            width: '100%',
+            textAlign: 'center',
+            bgcolor: '#ccff00',
+            color: '#020617',
+            fontWeight: 900,
+            fontSize: '0.75rem',
+            py: 1.25,
+            px: 2,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontFamily: 'ui-monospace, monospace',
+            border: '2px solid #020617',
+            boxShadow: '3px 3px 0px #000',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            '&:hover': {
+              bgcolor: '#b8e600',
+            },
+          }}
+        >
+          GERAR CURRÍCULO ADAPTADO
+        </Box>
+      )}
     </Box>
   );
 }

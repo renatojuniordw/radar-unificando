@@ -6,7 +6,8 @@ export type CachedContentKind =
   | 'cover_letter'
   | 'interview_questions'
   | 'skill_suggestions'
-  | 'ats_analysis';
+  | 'ats_analysis'
+  | 'resume_adaptation';
 
 const TTL_MS = 30 * 24 * 60 * 60 * 1000;
 

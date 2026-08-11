@@ -23,9 +23,11 @@ interface Props {
   roleCategories: string[];
   onExportCsv: () => void;
   onFilterChange: (filters: { platform?: string; role?: string; search?: string }) => void;
+  canGenerateResume: boolean;
+  onGenerateResume: (job: Job) => void;
 }
 
-export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, onExportCsv, onFilterChange }: Props) {
+export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, onExportCsv, onFilterChange, canGenerateResume, onGenerateResume }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobilePage, setMobilePage] = useState(1);
   const [exporting, setExporting] = useState(false);
@@ -175,10 +177,16 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
               containerRef={mobileContainerRef}
               page={mobilePage}
               onPageChange={setMobilePage}
+              canGenerateResume={canGenerateResume}
+              onGenerateResume={onGenerateResume}
             />
 
             {/* DESKTOP TABLE VIEW (md screens and up >=768px) */}
-            <JobDesktopTable jobs={filteredJobs} />
+            <JobDesktopTable
+              jobs={filteredJobs}
+              canGenerateResume={canGenerateResume}
+              onGenerateResume={onGenerateResume}
+            />
           </>
         )}
 

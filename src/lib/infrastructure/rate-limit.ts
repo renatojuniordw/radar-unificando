@@ -8,6 +8,7 @@ const memoryLimiterAuth = new RateLimiterMemory({ points: 5, duration: 60 });
 const memoryLimiterGeneral = new RateLimiterMemory({ points: 60, duration: 60 });
 const memoryLimiterRegisterDaily = new RateLimiterMemory({ points: 3, duration: 86400 });
 const memoryLimiterExtension = new RateLimiterMemory({ points: 20, duration: 60 });
+const memoryLimiterResumeDaily = new RateLimiterMemory({ points: 10, duration: 86400 });
 
 // Rate Limiters no Redis
 let redisLimiterChat: RateLimiterRedis | null = null;
@@ -16,6 +17,7 @@ let redisLimiterAuth: RateLimiterRedis | null = null;
 let redisLimiterGeneral: RateLimiterRedis | null = null;
 let redisLimiterRegisterDaily: RateLimiterRedis | null = null;
 let redisLimiterExtension: RateLimiterRedis | null = null;
+let redisLimiterResumeDaily: RateLimiterRedis | null = null;
 
 if (redisClient) {
   redisLimiterChat = new RateLimiterRedis({
@@ -59,9 +61,16 @@ if (redisClient) {
     points: 20, // 20 análises
     duration: 60, // por 60 segundos
   });
+
+  redisLimiterResumeDaily = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_resume_daily',
+    points: 10, // 10 currículos gerados
+    duration: 86400, // por 24 horas
+  });
 }
 
-export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily' | 'extension';
+export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily' | 'extension' | 'resume_daily';
 
 export interface RateLimitResult {
   success: boolean;
@@ -91,6 +100,7 @@ export async function checkRateLimit(
     else if (profile === 'auth') limiterToUse = redisLimiterAuth!;
     else if (profile === 'register_daily') limiterToUse = redisLimiterRegisterDaily!;
     else if (profile === 'extension') limiterToUse = redisLimiterExtension!;
+    else if (profile === 'resume_daily') limiterToUse = redisLimiterResumeDaily!;
     else limiterToUse = redisLimiterGeneral!;
   } else {
     // Usar fallback em memória
@@ -99,6 +109,7 @@ export async function checkRateLimit(
     else if (profile === 'auth') limiterToUse = memoryLimiterAuth;
     else if (profile === 'register_daily') limiterToUse = memoryLimiterRegisterDaily;
     else if (profile === 'extension') limiterToUse = memoryLimiterExtension;
+    else if (profile === 'resume_daily') limiterToUse = memoryLimiterResumeDaily;
     else limiterToUse = memoryLimiterGeneral;
   }
 
