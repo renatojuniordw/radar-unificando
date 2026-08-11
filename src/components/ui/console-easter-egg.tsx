@@ -19,27 +19,27 @@ export function ConsoleEasterEgg() {
 
     console.log(
       "%c RADAR UNIFICANDO ",
-      "background: #ccff00; color: #020617; font-weight: 900; font-size: 16px; padding: 6px 12px; border: 2px solid #020617; font-family: sans-serif;"
+      "background: #ccff00; color: #020617; font-weight: 900; font-size: 16px; padding: 6px 12px; border: 2px solid #020617; font-family: sans-serif;",
     );
     console.log(
       "%c 🚀 Motor de Busca de Vagas & Assistente de Carreira ",
-      "background: #020617; color: #ccff00; font-weight: 700; font-size: 13px; padding: 4px 8px; font-family: sans-serif;"
+      "background: #020617; color: #ccff00; font-weight: 700; font-size: 13px; padding: 4px 8px; font-family: sans-serif;",
     );
     console.log(
       "%cEste projeto é ofertado pela Unificando e desenvolvido por Renato Bezerra.\nAdoraria ver você contribuindo ou fazendo um fork para seu ambiente!\n",
-      "color: #94a3b8; font-size: 12px; font-family: sans-serif;"
+      "color: #94a3b8; font-size: 12px; font-family: sans-serif;",
     );
     console.log(
       `%c🌐 UNIFICANDO:\n${LINKS.unificando}\n`,
-      "color: #38bdf8; font-weight: bold; font-family: sans-serif;"
+      "color: #38bdf8; font-weight: bold; font-family: sans-serif;",
     );
     console.log(
-      `%c🚀 GITHUB:\n${LINKS.githubAlt}\n`,
-      "color: #38bdf8; font-weight: bold; font-family: sans-serif;"
+      `%c🚀 GITHUB:\n${LINKS.github}\n`,
+      "color: #38bdf8; font-weight: bold; font-family: sans-serif;",
     );
     console.log(
       `%c👨‍💻 PORTFÓLIO:\n${LINKS.portfolio}\n`,
-      "color: #38bdf8; font-weight: bold; font-family: sans-serif;"
+      "color: #38bdf8; font-weight: bold; font-family: sans-serif;",
     );
     console.log("%c---", "color: #64748b;");
   }, []);

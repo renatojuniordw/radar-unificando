@@ -1,5 +1,6 @@
 import type { Job } from '@/types';
 import { inferRole } from '@/lib/core/matching/infer-role';
+import { API_ENDPOINTS } from '@/lib/core/constants';
 
 interface ApiJob {
   careerPageId: string;
@@ -21,7 +22,7 @@ interface ApiResponse {
 }
 
 export class InHireScraper {
-  private baseUrl = 'https://api.inhire.app/job-posts/public/pages';
+  private baseUrl = API_ENDPOINTS.inhire;
   private headers = {
     'X-Inhire-Client': 'web-inhire',
     'Content-Type': 'application/json',

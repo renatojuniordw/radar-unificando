@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { API_ENDPOINTS } from '@/lib/core/constants';
 
-const baseURL = process.env.AI_BASE_URL || 'https://api.openai.com/v1';
+const baseURL = process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase;
 const apiKey = process.env.AI_API_KEY || '';
 const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
 

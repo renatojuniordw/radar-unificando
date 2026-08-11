@@ -1,6 +1,7 @@
 import type { Job } from '@/types';
 import { inferRole } from '@/lib/core/matching/infer-role';
 import { debugLog } from '@/lib/utils/debug';
+import { API_ENDPOINTS } from '@/lib/core/constants';
 
 interface RawGupyJob {
   careerPageName?: string;
@@ -33,7 +34,7 @@ interface McpResponse {
 }
 
 export class GupyMcpClient {
-  private url = 'https://candidates.mcp.api.gupy.io/mcp';
+  private url = API_ENDPOINTS.gupyMcp;
 
   async searchJobs(query: string, limit = 50): Promise<Job[]> {
     const res = await fetch(this.url, {
