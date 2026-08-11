@@ -4,10 +4,11 @@
 // quando aprovada — o tipo CourseProviderId em course-provider.ts já suporta
 // 'alura', só falta adicionar as entradas de volta aqui.
 //
-// IMPORTANTE: as URLs abaixo são links-base reais dos cursos. Antes de divulgar,
-// SUBSTITUA cada URL pelo seu link de afiliado gerado na Impact (ou deixe a URL
-// base e configure NEXT_PUBLIC_UDEMY_AFFILIATE_REF — o ?ref= é adicionado
-// automaticamente por buildAffiliateUrl).
+// IMPORTANTE: as URLs abaixo são páginas canônicas REAIS dos cursos (verificadas).
+// O tracking de afiliado é feito pelo script da Impact no client
+// (impactStat('transformLinks') em layout.tsx), que reescreve links udemy.com
+// no DOM. Se NEXT_PUBLIC_UDEMY_AFFILIATE_REF estiver setado, buildAffiliateUrl
+// também adiciona ?ref= automaticamente.
 
 import type { Course } from './course-provider';
 
@@ -26,10 +27,9 @@ export const POPULAR_SKILLS = [
 ];
 
 export const COURSES: Course[] = [
-  // ATENÇÃO: as URLs abaixo são as páginas canônicas de cada curso (para o
-  // usuário cair no curso, não numa busca). ANTES de divulgar, substitua cada
-  // uma pelo seu deep link de afiliado gerado no painel da Impact (ou deixe a
-  // canônica e configure NEXT_PUBLIC_UDEMY_AFFILIATE_REF).
+  // ATENÇÃO: as URLs abaixo são as páginas canônicas REAIS de cada curso
+  // (para o usuário cair no curso, não numa busca). Tracking via script Impact
+  // no client + buildAffiliateUrl quando NEXT_PUBLIC_UDEMY_AFFILIATE_REF.
   {
     id: 'udemy-excel-avancado',
     provider: 'udemy',
@@ -39,7 +39,7 @@ export const COURSES: Course[] = [
     skillTags: ['excel', 'office', 'planilha', 'administrativo', 'financeiro'],
     priceLabel: 'R$ 39,90',
     rating: '4.7',
-    url: 'https://www.udemy.com/course/excel-avancado-do-basico-ao-profissional/',
+    url: 'https://www.udemy.com/course/curso-excel-completo/',
     featured: true,
   },
   {
@@ -51,7 +51,7 @@ export const COURSES: Course[] = [
     skillTags: ['power', 'bi', 'dashboards', 'dados', 'visualizacao'],
     priceLabel: 'R$ 39,90',
     rating: '4.6',
-    url: 'https://www.udemy.com/course/power-bi-completo/',
+    url: 'https://www.udemy.com/course/power-bi-completo-do-basico-ao-avancado/',
     featured: true,
   },
   {
@@ -63,7 +63,7 @@ export const COURSES: Course[] = [
     skillTags: ['python', 'programacao', 'backend', 'automacao', 'dados'],
     priceLabel: 'R$ 39,90',
     rating: '4.7',
-    url: 'https://www.udemy.com/course/python-para-iniciantes-curso-completo/',
+    url: 'https://www.udemy.com/course/python-3-do-zero-ao-avancado/',
     featured: true,
   },
   {
@@ -75,7 +75,7 @@ export const COURSES: Course[] = [
     skillTags: ['react', 'javascript', 'frontend', 'typescript', 'web'],
     priceLabel: 'R$ 39,90',
     rating: '4.6',
-    url: 'https://www.udemy.com/course/react-do-zero-a-pratica/',
+    url: 'https://www.udemy.com/course/react-the-complete-guide-incl-redux/',
     featured: true,
   },
   {
@@ -87,7 +87,7 @@ export const COURSES: Course[] = [
     skillTags: ['docker', 'kubernetes', 'devops', 'ci', 'cd', 'cloud'],
     priceLabel: 'R$ 39,90',
     rating: '4.6',
-    url: 'https://www.udemy.com/course/docker-e-kubernetes-na-pratica/',
+    url: 'https://www.udemy.com/course/docker-e-kubernetes-de-forma-pratica-e-direta/',
   },
   {
     id: 'udemy-sql-banco-dados',
@@ -98,7 +98,7 @@ export const COURSES: Course[] = [
     skillTags: ['sql', 'banco', 'dados', 'postgres', 'mysql', 'database'],
     priceLabel: 'R$ 39,90',
     rating: '4.7',
-    url: 'https://www.udemy.com/course/sql-do-zero-ao-avancado/',
+    url: 'https://www.udemy.com/course/curso-sql-do-zero-ao-avancado/',
   },
   {
     id: 'udemy-pacote-office',
@@ -109,7 +109,7 @@ export const COURSES: Course[] = [
     skillTags: ['office', 'word', 'excel', 'powerpoint', 'administrativo'],
     priceLabel: 'R$ 39,90',
     rating: '4.5',
-    url: 'https://www.udemy.com/course/pacote-office-word-excel-powerpoint/',
+    url: 'https://www.udemy.com/course/complete-microsoft-office-masterclass-word-excel-powerpoint/',
   },
   {
     id: 'udemy-people-analytics',
@@ -120,7 +120,7 @@ export const COURSES: Course[] = [
     skillTags: ['rh', 'people', 'analytics', 'gestao', 'pessoas'],
     priceLabel: 'R$ 39,90',
     rating: '4.5',
-    url: 'https://www.udemy.com/course/people-analytics-e-rh/',
+    url: 'https://www.udemy.com/course/recursos-humanos-analytics-i-people-analytics-em-rh/',
   },
   {
     id: 'udemy-gestao-pessoas',
@@ -131,7 +131,7 @@ export const COURSES: Course[] = [
     skillTags: ['gestao', 'pessoas', 'lideranca', 'rh', 'equipe'],
     priceLabel: 'R$ 39,90',
     rating: '4.6',
-    url: 'https://www.udemy.com/course/gestao-de-pessoas-e-lideranca/',
+    url: 'https://www.udemy.com/course/curso-de-gestao-de-pessoas-e-lideranca/',
   },
   {
     id: 'udemy-financas',
@@ -142,7 +142,7 @@ export const COURSES: Course[] = [
     skillTags: ['financas', 'contabilidade', 'financeiro', 'fluxo', 'caixa'],
     priceLabel: 'R$ 39,90',
     rating: '4.5',
-    url: 'https://www.udemy.com/course/financas-e-contabilidade-na-pratica/',
+    url: 'https://www.udemy.com/course/contabilidade-financeira-e-tributaria/',
   },
   {
     id: 'udemy-marketing-digital',
@@ -175,7 +175,7 @@ export const COURSES: Course[] = [
     skillTags: ['logistica', 'supply', 'chain', 'estoque', 'operacoes'],
     priceLabel: 'R$ 39,90',
     rating: '4.4',
-    url: 'https://www.udemy.com/course/logistica-e-supply-chain/',
+    url: 'https://www.udemy.com/course/logistics-and-supply-chains/',
   },
   {
     id: 'udemy-vendas',
@@ -186,7 +186,7 @@ export const COURSES: Course[] = [
     skillTags: ['vendas', 'negociacao', 'comercial', 'consultor'],
     priceLabel: 'R$ 39,90',
     rating: '4.5',
-    url: 'https://www.udemy.com/course/vendas-e-negociacao/',
+    url: 'https://www.udemy.com/course/master-em-negociacao-e-vendas/',
   },
   {
     id: 'udemy-design-grafico',
@@ -197,7 +197,7 @@ export const COURSES: Course[] = [
     skillTags: ['design', 'grafico', 'photoshop', 'illustrator', 'social'],
     priceLabel: 'R$ 39,90',
     rating: '4.5',
-    url: 'https://www.udemy.com/course/design-grafico-photoshop-illustrator/',
+    url: 'https://www.udemy.com/course/photoshop-e-illustrator/',
   },
   {
     id: 'udemy-gestao-projetos',
@@ -208,6 +208,6 @@ export const COURSES: Course[] = [
     skillTags: ['projetos', 'scrum', 'agil', 'pmbok', 'coordenacao'],
     priceLabel: 'R$ 39,90',
     rating: '4.6',
-    url: 'https://www.udemy.com/course/gestao-de-projetos-e-scrum/',
+    url: 'https://www.udemy.com/course/gestao-projetos-gestao-agil-scrum-pmbok/',
   },
 ];

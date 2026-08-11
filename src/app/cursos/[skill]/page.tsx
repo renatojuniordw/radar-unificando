@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { allSkillSlugs, skillFromSlug, coursesForSlug } from '@/lib/core/courses/course-skills';
 import { CourseCard } from '@/components/cursos/course-card';
 import { CourseGrid } from '@/components/cursos/course-grid';
+import { CourseFallbackCta } from '@/components/cursos/course-fallback-cta';
 
 export const revalidate = 86400; // ISR: regenera a cada 24h
 
@@ -91,6 +92,8 @@ export default async function SkillPage({
             <CourseCard key={course.id} course={course} />
           ))}
         </CourseGrid>
+
+        <CourseFallbackCta />
 
         <Typography
           sx={{

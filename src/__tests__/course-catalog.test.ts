@@ -21,7 +21,8 @@ describe('course-catalog', () => {
     const udemy = COURSES.filter((c) => c.provider === 'udemy');
     expect(udemy.length).toBeGreaterThan(0);
     for (const course of udemy) {
-      expect(course.url).toMatch(/^https:\/\/www\.udemy\.com\/course\//);
+      // Slug real (letras/números/hífens), nunca slug vazio nem URL de busca.
+      expect(course.url).toMatch(/^https:\/\/www\.udemy\.com\/course\/[a-z0-9-]+\/?$/);
     }
   });
 

@@ -13,6 +13,7 @@ import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import type { Course } from "@/lib/core/courses/course-provider";
 import { CourseCard } from "@/components/cursos/course-card";
 import { CourseGrid } from "@/components/cursos/course-grid";
+import { CourseFallbackCta } from "@/components/cursos/course-fallback-cta";
 import { ChatTeaser } from "@/components/shared/chat-teaser";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 
@@ -215,6 +216,8 @@ export default function CursosPage() {
             ))}
           </CourseGrid>
         </Box>
+
+        <CourseFallbackCta />
 
         <Typography
           sx={{
