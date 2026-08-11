@@ -32,7 +32,7 @@ Application/Core Layer
   ├── core/mcp/             → gupy-client (JSON-RPC)
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine
-  └── core/discovery/       → company-discovery (não acoplado ao pipeline ativo)
+  └── core/discovery/       → company-discovery (executado para usuários logados)
         |
 Domain Types
   ├── types/index.ts        → JobData, Platform, ProgressEvent
@@ -91,15 +91,16 @@ A extensão (MV3, side panel) reusa o motor ATS do backend e se autentica por **
 
 **Origem cruzada:** o middleware de CORS não reflete `Origin` — `EXTENSION_ORIGIN` é a única origem externa permitida nas rotas `/api/*` (ver `docs/SECURITY.md`).
 
-## Cursos de Afiliado (Alura + Udemy)
+## Cursos de Afiliado (Udemy)
 
 Monetização via indicação de capacitação. Domínio em `src/lib/core/courses/`:
 
-- **`course-catalog.ts`** — catálogo curado (`COURSES`, ~21 cursos; `POPULAR_SKILLS` para SEO). URLs são placeholders a trocar pelos deep links de afiliado (Awin p/ Alura; Rakuten/Impact p/ Udemy).
-- **`course-provider.ts`** — tipo `Course`, interface `CourseProvider` (extensível para API da Udemy futura), `buildAffiliateUrl` (adiciona `?ref=` via `NEXT_PUBLIC_UDEMY_AFFILIATE_REF`).
-- **`course-matcher.ts`** — matching determinístico `recommendCourses(terms, area, limit)` com sinônimos (`k8s`→`kubernetes`), área tech → Alura primeiro, cap 4/máx 2 por provider; `skillSlug`/`expandTokens`.
-- **`course-skills.ts`** — helper das páginas estáticas `/cursos/[skill]` (SSG, 88 páginas).
-- **Superfícies:** sidebar em `/busca`, hub `/cursos`, chat (tool `recommend_courses` + bloco `📚`), extensão (seção "Cursos Recomendados"). Cliques rastreados em `CourseClick` via `POST /api/track/course-click` + GA4.
+- **`course-catalog.ts`** — catálogo curado (`COURSES`, 16 cursos Udemy; `POPULAR_SKILLS` para SEO). URLs são páginas canônicas **reais** dos cursos (verificadas). Alura foi removido temporariamente (afiliação não aprovada).
+- **`course-provider.ts`** — tipo `Course`, interface `CourseProvider`, `buildAffiliateUrl` (adiciona `?ref=` via `NEXT_PUBLIC_UDEMY_AFFILIATE_REF`).
+- **`impact-client.ts`** — busca dinâmica no catálogo da Udemy via API da Impact (`searchUdemyCourses`) com scoring de relevância (título > descrição, penalidade para idiomas não-latinos) e cache Redis.
+- **`course-matcher.ts`** — matching determinístico `recommendCourses(terms, area, limit=4)` com sinônimos (`k8s`→`kubernetes`) e scoring; `skillSlug`/`expandTokens`.
+- **`course-skills.ts`** — helper das páginas estáticas `/cursos/[skill]` (SSG, 71 páginas).
+- **Superfícies:** sidebar em `/busca`, hub `/cursos` (com CTA de fallback `trk.udemy.com` para buscar qualquer curso), chat (tool `recommend_courses` + bloco `📚`), extensão (seção "Cursos Recomendados"). Cliques rastreados em `CourseClick` via `POST /api/track/course-click` + GA4.
 
 ## Persistência no Navegador
 

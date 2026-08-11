@@ -82,7 +82,7 @@ inline brutalistas (backgrounds `#020617`/`#0f172a`), não de um tema dark confi
 | Alertas | Alert, AlertTitle |
 | Loading | Skeleton, LinearProgress, CircularProgress |
 
-## Chat Assistente (`chat-assistant-ui.tsx`)
+## Chat Assistente (`chat-ui.tsx`)
 
 Drawer lateral direito com FAB. Regras aplicadas:
 

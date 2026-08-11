@@ -31,8 +31,9 @@ O pipeline busca vagas em Gupy e InHire, processa e salva no PostgreSQL.
 3. **InHire** — `inhire-scraper.ts` (GET `api.inhire.app/job-posts/public/pages`, header `X-Inhire-Client: web-inhire`), só vagas `published`
 4. **Merge + Save** — `DedupEngine.mergeSources` + `dedupByLink`, cap `slice(0, 200)`, `createMany` com `skipDuplicates`
 
-> O `discovery-step.ts` (descoberta de empresas) **existe mas não é chamado** pela rota ativa
-> (`discoveryEnabled: false`). É código preparado para o roadmap v3.
+> O `discovery-step.ts` (descoberta de empresas) **é executado para usuários logados**
+> (`pipeline-runner.ts`: `discoveryEnabled !== false && isLoggedIn`), registrando novas
+> empresas em `NewCompany`/`CompanyPresence`.
 
 ## Rate Limit e Cooldown
 

@@ -75,15 +75,36 @@ Auxiliares (sem rota própria, usados pelas tools; prompt de cada um em `prompts
 - `cover-letter-generator.ts` — `generateCoverLetter()` (carta ≤ 3000 chars, ≤ 10 key points)
 - `interview-questions.ts` — `generateInterviewQuestions()` (até 8 perguntas categorizadas)
 
-> A **adaptação de currículo** (`resume_adaptation`) **não foi implementada** — a tool
-> mais próxima é `generate_cover_letter`.
+## Análise ATS Dedicada
+
+Além da análise de fit via chat, existe uma rota dedicada **`POST /api/ats/analyze`**
+(com rate limiting próprio) e a tool **`analyze_ats_score`** no chat:
+
+- Entrada: currículo do perfil + descrição da vaga (opcional).
+- Saída: **score 0-100**, checklist, palavras-chave faltando e recomendações.
+- `ats-analyzer.ts` (LLM) + `ats-heuristics.ts` (heurísticas) + `ats-service.ts` (cache).
+- Superfícies: drawer na `/busca` (botão por vaga), chat (tool), extensão Chrome.
+
+### Adaptação de Currículo (`generate_resume`)
+
+Implementada como tool do chat (`chat-tools.ts`) e como geração de PDF:
+
+- **Tool `generate_resume`** — gera uma versão do currículo adaptada à vaga
+  (título, resumo, skills, experiência) com **veracidade garantida em 3 camadas**:
+  prompt restritivo + input ATS (skills da vaga) + filtro pós-geração que bloqueia
+  skills não presentes no currículo original.
+- **PDF export** — `@react-pdf/renderer` (`lib/pdf/resume-pdf.tsx` +
+  `render-resume-pdf.tsx`); download direto via `POST /api/resume/generate` e botão
+  por vaga na `/busca` (`downloadAdaptedResume`).
+- **Cache** por `resume_adaptation` (cache key) + hash (TTL 30 dias em `GeneratedContentCache`).
 
 ## Chat Assistente
 
 ```
 Chat UI (MUI + @ai-sdk/react) → POST /api/chat (streaming)
-  → LLM com ferramentas: search_jobs, get_my_profile, analyze_job_fit,
-    compare_jobs, generate_cover_letter, get_interview_questions
+  → LLM com ferramentas: search_jobs, get_my_profile, analyze_ats_score,
+    analyze_job_fit, compare_jobs, generate_cover_letter, generate_resume,
+    get_interview_questions, recommend_courses
   → Stream de resposta + logs no onFinish
 ```
 

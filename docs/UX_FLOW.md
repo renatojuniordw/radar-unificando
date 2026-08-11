@@ -27,7 +27,7 @@
 │   └── 6 cards: Gratuito · Sem Cadastro · Tempo Real · IA Perfil · Score · Assistente
 ├── 5. FAQ SECTION (light gray background)
 │   ├── Heading: "PERGUNTAS FREQUENTES"
-│   └── 9 itens expandíveis (details/summary)
+│   └── 10 itens expandíveis (details/summary)
 └── 6. CHAT ASSISTENT (FAB + Drawer) — só para logados
     ├── Botão flutuante canto inferior direito
     ├── Drawer lateral (100% mobile, 400px desktop)
@@ -132,9 +132,21 @@ FAQ: como funciona, segurança do token, revogação
   - Teto de tokens (429 `TOKEN_LIMIT_REACHED`) → `TokenLimitBanner` (renova meia-noite/dia 1º, link para /termos).
 - **429 "resposta em andamento"**: lock de concorrência — mensagem clara para aguardar o término da resposta atual.
 
-## Análise ATS (perfil)
+## Análise ATS
 
 - **Seção "Análise ATS do currículo"** na página /perfil (visível apenas com currículo importado).
+- **Drawer de análise ATS na `/busca`** (`AtsAnalysisDrawer`): botão por vaga na tabela abre um drawer com o score ATS daquela vaga + botão "gerar currículo adaptado".
 - Estados: sem currículo (orientação para importar) → botão "Analisar compatibilidade ATS" (+ campo opcional "descrição da vaga") → loading (`aria-busy`) → resultado (score com cor + rótulo, checklist de heurísticas, keywords faltando, recomendações) → erro com retry.
 - Nota de transparência sempre visível: "Avaliação baseada em boas práticas de ATS — não é garantia de passar em nenhum sistema específico."
 - No chat, o assistente chama a tool `analyze_ats_score` quando o usuário pergunta sobre filtros automáticos/otimização de CV.
+
+## Currículo Adaptado (PDF)
+
+- **Botão por vaga na `/busca`** (logado + com currículo importado): "GERAR CURRÍCULO ADAPTADO" → `POST /api/resume/generate` → **download direto do PDF** (sem fluxo multi-modal).
+- Snackbar de sucesso ("Currículo adaptado baixado!") ou erro.
+- No chat, a tool `generate_resume` gera a versão adaptada em markdown.
+- Veracidade garantida em 3 camadas (prompt restritivo + input ATS + filtro pós-geração).
+
+## Cursos — CTA de Fallback
+
+- Abaixo da grade de cursos em `/cursos` e `/cursos/[skill]`: card "Não encontrou o curso desejado?" com botão "PROCURAR NA UDEMY →" apontando para o deep-link de afiliado `trk.udemy.com` (abre em nova aba).

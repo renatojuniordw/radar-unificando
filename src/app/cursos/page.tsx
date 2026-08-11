@@ -120,7 +120,7 @@ export default function CursosPage() {
           </Typography>
           <Typography sx={{ color: "#94a3b8", fontSize: "0.95rem", lineHeight: 1.6 }}>
             Identificamos as skills que as vagas mais pedem. Estude exatamente o
-            que falta no seu perfil — cursos avulsos baratos ou trilhas completas.
+            que falta no seu perfil com cursos avulsos baratos na Udemy.
           </Typography>
         </Box>
 

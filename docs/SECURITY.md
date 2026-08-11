@@ -37,6 +37,9 @@ Dois sistemas:
 | Registro (`/api/auth/register`) | 1 min | 5 | Redis | IP |
 | Registro (`/api/auth/register`) | 24 h | 3 cadastros | Redis | IP |
 | Extensão (`/api/extension/*`) | 1 min | 20 | Redis | user_id + IP |
+| Análise ATS (`/api/ats/analyze`) | 24 h | 10 | Redis | user_id |
+| Currículo adaptado (`/api/resume/generate`) | 24 h | 10 | Redis | user_id + IP |
+| Busca de cursos (`/api/courses/search`) | 1 min | 60 | Redis | IP |
 
 ## Limites de Conversa (Chat)
 

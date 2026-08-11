@@ -54,7 +54,9 @@ Base URL local: `http://localhost:11010`.
 | GET | `/api/chat/conversations` | ✅ | Listar conversas (id, título, última mensagem, data) |
 | GET | `/api/chat/usage` | ✅ | Uso do usuário: interações do dia + tokens do dia/mês e tetos (`dailyTokens`, `monthlyTokens`, `isTokenLimitReached`, etc.) |
 | GET | `/api/chat/context?chatId=` | ✅ | Tokens de contexto da última chamada (`{ contextTokens }`) — tamanho real da janela enviada |
-| POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo |
+| POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo. Rate limit próprio |
+| POST | `/api/courses/search` | ❌ (limitado por IP) | Busca dinâmica de cursos. Body: `{ query }` (1-80 chars). Prioriza a API Impact (Udemy, máx. 12), com cache Redis (1h) e fallback para o catálogo curado local. Retorna `{ courses, source }` (`source` ∈ `impact\|curated`) |
+| POST | `/api/resume/generate` | ✅ | Gera currículo adaptado à vaga em PDF. Body: `{ jobTitle, jobDescription?, jobCompany?, jobLocation? }`. Retorna `{ resume, resumeMarkdown, pdfBase64 }`. Veracidade garantida (`enforceVeracity`). Rate limit diário (`resume_daily`). 400 sem currículo importado |
 
 **Exemplo de resposta do GET `/api/chat/usage`:**
 ```json
@@ -88,7 +90,7 @@ A extensão se autentica com um **token de extensão** (Bearer) — não usa coo
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/extension/analyze` | Bearer token | Análise ATS da vaga aberta na extensão. Body: `{ jobDescription, jobTitle? }` (jobDescription truncado em 8000 chars; jobTitle em 200 — melhora o match dos cursos). Retorna `{ heuristics, analysis, cached, courses }`. `courses` é um array (máx. 3) de `{ titulo, plataforma, skill, preco, url }` com links de afiliado (Alura/Udemy), presente apenas quando há `missingKeywords` (senão `[]`). 401 token inválido/revogado, 400 sem currículo importado, 429 rate limit |
+| POST | `/api/extension/analyze` | Bearer token | Análise ATS da vaga aberta na extensão. Body: `{ jobDescription, jobTitle? }` (jobDescription truncado em 8000 chars; jobTitle em 200 — melhora o match dos cursos). Retorna `{ heuristics, analysis, cached, courses }`. `courses` é um array (máx. 3) de `{ titulo, plataforma, skill, preco, url }` com links de afiliado (Udemy), presente apenas quando há `missingKeywords` (senão `[]`). 401 token inválido/revogado, 400 sem currículo importado, 429 rate limit |
 | POST | `/api/extension/feedback` | Bearer token | Feedback de utilidade. Body: `{ rating: boolean, comment? }` (comentário truncado em 1000 chars). Retorna `{ ok: true }` |
 | GET | `/api/extensao/status` | Sessão (cookie) | Status de conexão da extensão para o usuário logado: `{ connected: boolean, lastUsedAt: Date \| null }` — usado pelo polling da página `/extensao/conectar` |
 
@@ -114,11 +116,11 @@ Resposta (trecho — `courses` só aparece quando há `missingKeywords`):
   "cached": false,
   "courses": [
     {
-      "titulo": "Formação DevOps",
-      "plataforma": "Alura",
+      "titulo": "Docker e Kubernetes na Prática",
+      "plataforma": "Udemy",
       "skill": "docker",
-      "preco": "Assinatura a partir de R$ 99/mês",
-      "url": "https://www.alura.com.br/formacao-devops"
+      "preco": "R$ 27,90",
+      "url": "https://www.udemy.com/course/docker-e-kubernetes-de-forma-pratica-e-direta/"
     }
   ]
 }
