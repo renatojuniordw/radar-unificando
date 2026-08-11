@@ -8,7 +8,8 @@ import { LoadingOverlay } from "@/components/home/loading-overlay";
 import { ResultsSection } from "@/components/home/results-section";
 import { CourseRecommendationSidebar } from "@/components/busca/course-recommendation-sidebar";
 import { ChatTeaser } from "@/components/shared/chat-teaser";
-import { ResumeGenerationModal } from "@/components/resume/resume-generation-modal";
+import { AtsAnalysisDrawer } from "@/components/ats/ats-analysis-drawer";
+import { downloadAdaptedResume, jobKey } from "@/lib/client/resume-download";
 import type { Job } from "@/lib/types/job";
 
 function BuscaPageContent() {
@@ -33,8 +34,25 @@ function BuscaPageContent() {
     handleStart,
   } = useJobSearch();
 
-  const [resumeJob, setResumeJob] = useState<Job | null>(null);
+  const [atsJob, setAtsJob] = useState<Job | null>(null);
+  const [generatingJobKey, setGeneratingJobKey] = useState<string | null>(null);
   const canGenerateResume = !!(session && (profile.resumeMarkdown || profile.resumeText));
+
+  const handleGenerateResume = async (job: Job) => {
+    const key = jobKey(job);
+    setGeneratingJobKey(key);
+    try {
+      await downloadAdaptedResume(job);
+      setSnackbar({ severity: "success", message: "Currículo adaptado baixado!" });
+    } catch (e) {
+      setSnackbar({
+        severity: "error",
+        message: e instanceof Error ? e.message : "Erro ao gerar o currículo.",
+      });
+    } finally {
+      setGeneratingJobKey(null);
+    }
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#020617", pb: 6 }}>
@@ -70,7 +88,9 @@ function BuscaPageContent() {
             areaOrRole={profile.area || profile.currentRole || ""}
             onFilterChange={loadJobs}
             canGenerateResume={canGenerateResume}
-            onGenerateResume={setResumeJob}
+            onGenerateResume={handleGenerateResume}
+            generatingJobKey={generatingJobKey}
+            onAnalyzeAts={setAtsJob}
           />
         </Box>
 
@@ -104,10 +124,10 @@ function BuscaPageContent() {
         </Snackbar>
       )}
 
-      <ResumeGenerationModal
-        open={!!resumeJob}
-        job={resumeJob}
-        onClose={() => setResumeJob(null)}
+      <AtsAnalysisDrawer
+        open={!!atsJob}
+        job={atsJob}
+        onClose={() => setAtsJob(null)}
       />
     </Box>
   );

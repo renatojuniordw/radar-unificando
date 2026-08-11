@@ -14,9 +14,11 @@ interface Props {
   onPageChange: (page: number) => void;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
-export function JobMobileList({ jobs, containerRef, page, onPageChange, canGenerateResume, onGenerateResume }: Props) {
+export function JobMobileList({ jobs, containerRef, page, onPageChange, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
   const totalPages = Math.ceil(jobs.length / ITEMS_PER_PAGE);
 
   function goToPage(newPage: number) {
@@ -34,6 +36,8 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
             job={job}
             canGenerateResume={canGenerateResume}
             onGenerateResume={onGenerateResume}
+            generatingJobKey={generatingJobKey}
+            onAnalyzeAts={onAnalyzeAts}
           />
         ))}
 

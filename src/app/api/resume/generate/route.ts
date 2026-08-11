@@ -9,6 +9,8 @@ import {
 } from '@/lib/core/ai/resume-adaptation-generator';
 import { RESUME_ADAPTATION_PROMPT_VERSION } from '@/lib/core/ai/prompts/resume-adaptation';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
+import { enforceVeracity } from '@/lib/core/ai/resume-veracity';
 import { renderResumePdf } from '@/lib/pdf/render-resume-pdf';
 
 export const runtime = 'nodejs';
@@ -72,12 +74,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Análise ATS (com cache próprio) para guiar a adaptação com dados reais.
+    const ats = await analyzeAtsWithCache(session.user.id, resumeContext, {
+      jobDescription,
+      traceId: crypto.randomUUID(),
+    });
+    const atsKeywords = ats.analysis.missingKeywords ?? [];
+
     const cacheKey = computeCacheKey(RESUME_ADAPTATION_PROMPT_VERSION, [
       jobTitle,
       jobDescription,
       jobCompany,
       jobLocation,
       resumeContext,
+      atsKeywords.join('|'),
     ]);
 
     let resume = await getCached<AdaptedResume>(session.user.id, 'resume_adaptation', cacheKey);
@@ -86,16 +96,21 @@ export async function POST(req: NextRequest) {
       resume = await generateAdaptedResume(resumeContext, jobTitle, jobDescription, {
         jobCompany,
         jobLocation,
+        atsKeywords,
         traceId: crypto.randomUUID(),
       });
       await saveToCache(session.user.id, 'resume_adaptation', cacheKey, resume);
     }
 
-    const pdf = await renderResumePdf(resume);
+    // Garantia de veracidade: remove qualquer empresa/cargo/instituição/
+    // certificação que não exista no currículo original.
+    const verified = enforceVeracity(resumeContext, resume);
+
+    const pdf = await renderResumePdf(verified.resume);
 
     return NextResponse.json({
-      resume,
-      resumeMarkdown: adaptedResumeToMarkdown(resume),
+      resume: verified.resume,
+      resumeMarkdown: adaptedResumeToMarkdown(verified.resume),
       pdfBase64: pdf.toString('base64'),
     });
   } catch (error) {

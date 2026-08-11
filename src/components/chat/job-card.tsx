@@ -1,9 +1,11 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, Snackbar, Alert, CircularProgress } from '@mui/material';
 import type { ParsedJob } from './job-card-parser';
 import { ExternalLinkIcon } from './icons';
+import { AtsAnalysisDrawer } from '@/components/ats/ats-analysis-drawer';
+import { downloadAdaptedResume } from '@/lib/client/resume-download';
 
 interface Props {
   job: ParsedJob;
@@ -11,6 +13,9 @@ interface Props {
 
 function JobCardComponent({ job }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const [atsOpen, setAtsOpen] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [snackbar, setSnackbar] = useState('');
 
   const metaItems = [
     job.location,
@@ -19,6 +24,23 @@ function JobCardComponent({ job }: Props) {
   ].filter((item): item is string => Boolean(item));
 
   const hasDescription = Boolean(job.description);
+
+  const handleGenerateResume = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      await downloadAdaptedResume({
+        title: job.title,
+        company: job.company || '',
+        description: job.description,
+      });
+      setSnackbar('Currículo adaptado baixado!');
+    } catch (e) {
+      setSnackbar(e instanceof Error ? e.message : 'Erro ao gerar o currículo.');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <Box
@@ -113,6 +135,48 @@ function JobCardComponent({ job }: Props) {
           </Typography>
         </Box>
       )}
+
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => setAtsOpen(true)}
+          sx={{ textTransform: 'none', fontWeight: 700 }}
+        >
+          Analisar ATS
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={handleGenerateResume}
+          disabled={generating}
+          startIcon={generating ? <CircularProgress size={14} /> : undefined}
+          sx={{ textTransform: 'none', fontWeight: 700 }}
+        >
+          {generating ? 'Gerando currículo...' : 'Gerar Currículo'}
+        </Button>
+      </Box>
+
+      <AtsAnalysisDrawer
+        open={atsOpen}
+        job={{ title: job.title, company: job.company, description: job.description }}
+        onClose={() => setAtsOpen(false)}
+      />
+
+      <Snackbar
+        open={!!snackbar}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity={snackbar.includes('baixado') ? 'success' : 'error'}
+          variant="filled"
+          onClose={() => setSnackbar('')}
+        >
+          {snackbar}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -18,6 +18,12 @@ vi.mock('@/lib/core/ai/generated-content-cache', () => ({
   getCached: vi.fn(),
   saveToCache: vi.fn(),
 }));
+vi.mock('@/lib/core/ai/ats/ats-service', () => ({
+  analyzeAtsWithCache: vi.fn(),
+}));
+vi.mock('@/lib/core/ai/resume-veracity', () => ({
+  enforceVeracity: vi.fn((_original: string, resume: unknown) => ({ resume, removed: { companies: [], roles: [], institutions: [], certifications: [] } })),
+}));
 vi.mock('@/lib/pdf/render-resume-pdf', () => ({
   renderResumePdf: vi.fn(),
 }));
@@ -29,6 +35,7 @@ import {
   adaptedResumeToMarkdown,
 } from '@/lib/core/ai/resume-adaptation-generator';
 import { getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { renderResumePdf } from '@/lib/pdf/render-resume-pdf';
 import { POST } from '@/app/api/resume/generate/route';
 
@@ -59,6 +66,11 @@ describe('Resume Generate API', () => {
     } as any);
     vi.mocked(profileRepository.findByUserId).mockResolvedValue({
       resumeMarkdown: 'Currículo com experiência em desenvolvimento por mais de trinta caracteres.',
+    } as any);
+    vi.mocked(analyzeAtsWithCache).mockResolvedValue({
+      heuristics: { checks: [], score: 80 },
+      analysis: { missingKeywords: ['AWS', 'React'] },
+      cached: false,
     } as any);
     vi.mocked(renderResumePdf).mockResolvedValue(Buffer.from('%PDF-1.4 test'));
     vi.mocked(adaptedResumeToMarkdown).mockReturnValue('# Maria Silva');
@@ -111,7 +123,7 @@ describe('Resume Generate API', () => {
       expect.stringContaining('Currículo'),
       'Dev',
       'Vaga de dev',
-      expect.objectContaining({ jobCompany: 'Nubank' }),
+      expect.objectContaining({ jobCompany: 'Nubank', atsKeywords: ['AWS', 'React'] }),
     );
     expect(renderResumePdf).toHaveBeenCalledTimes(1);
     expect(saveToCache).toHaveBeenCalledWith('user-1', 'resume_adaptation', 'cache-key', SAMPLE_RESUME);

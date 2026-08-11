@@ -21,10 +21,14 @@ vi.mock('@/lib/core/ai/resume-adaptation-generator', () => ({
   generateAdaptedResume: vi.fn(),
   adaptedResumeToMarkdown: vi.fn(() => '# Maria Silva'),
 }));
+vi.mock('@/lib/core/ai/resume-veracity', () => ({
+  enforceVeracity: vi.fn((_original: string, resume: unknown) => ({ resume, removed: { companies: [], roles: [], institutions: [], certifications: [] } })),
+}));
 
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
 import { generateAdaptedResume } from '@/lib/core/ai/resume-adaptation-generator';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
 
 const SAMPLE_RESUME = {
@@ -44,6 +48,11 @@ describe('createChatTools.generate_resume', () => {
     vi.clearAllMocks();
     vi.mocked(profileRepository.findByUserId).mockResolvedValue({
       resumeMarkdown: 'Currículo com experiência em desenvolvimento por mais de trinta caracteres.',
+    } as any);
+    vi.mocked(analyzeAtsWithCache).mockResolvedValue({
+      heuristics: { checks: [], score: 80 },
+      analysis: { missingKeywords: ['AWS'] },
+      cached: false,
     } as any);
   });
 

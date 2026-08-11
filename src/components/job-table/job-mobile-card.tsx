@@ -9,9 +9,11 @@ interface Props {
   job: Job;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
-export function JobMobileCard({ job, canGenerateResume, onGenerateResume }: Props) {
+export function JobMobileCard({ job, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
   const dateInfo = formatJobDate(job.postedAt, job.detectedAt);
 
   return (
@@ -123,19 +125,19 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume }: Prop
 
       {canGenerateResume && (
         <Box
-          onClick={() => onGenerateResume(job)}
+          onClick={() => onAnalyzeAts(job)}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              onGenerateResume(job);
+              onAnalyzeAts(job);
             }
           }}
           sx={{
             width: '100%',
             textAlign: 'center',
-            bgcolor: '#ccff00',
+            bgcolor: '#ffffff',
             color: '#020617',
             fontWeight: 900,
             fontSize: '0.75rem',
@@ -149,11 +151,50 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume }: Prop
             cursor: 'pointer',
             transition: 'all 0.15s ease',
             '&:hover': {
-              bgcolor: '#b8e600',
+              bgcolor: '#e2e8f0',
             },
           }}
         >
-          GERAR CURRÍCULO ADAPTADO
+          ANALISAR ATS
+        </Box>
+      )}
+
+      {canGenerateResume && (
+        <Box
+          onClick={() => onGenerateResume(job)}
+          role="button"
+          tabIndex={0}
+          aria-disabled={generatingJobKey === `${job.company}|${job.title}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onGenerateResume(job);
+            }
+          }}
+          sx={{
+            width: '100%',
+            textAlign: 'center',
+            bgcolor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : '#ccff00',
+            color: '#020617',
+            fontWeight: 900,
+            fontSize: '0.75rem',
+            py: 1.25,
+            px: 2,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontFamily: 'ui-monospace, monospace',
+            border: '2px solid #020617',
+            boxShadow: '3px 3px 0px #000',
+            cursor: generatingJobKey === `${job.company}|${job.title}` ? 'wait' : 'pointer',
+            transition: 'all 0.15s ease',
+            '&:hover': {
+              bgcolor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : '#b8e600',
+            },
+          }}
+        >
+          {generatingJobKey === `${job.company}|${job.title}`
+            ? 'GERANDO CURRÍCULO...'
+            : 'GERAR CURRÍCULO ADAPTADO'}
         </Box>
       )}
     </Box>

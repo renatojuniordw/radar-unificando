@@ -10,6 +10,8 @@ const LIMITS = {
   jobDescription: { max: 8000 },
   jobCompany: { max: 300 },
   jobLocation: { max: 300 },
+  keywordItem: { max: 80 },
+  keywordsArray: { max: 40 },
   name: { max: 200 },
   headline: { max: 300 },
   contactItem: { max: 300 },
@@ -58,6 +60,11 @@ const inputSchema = z.object({
     .max(LIMITS.jobLocation.max, 'Localidade muito longa.')
     .optional()
     .default(''),
+  atsKeywords: z
+    .array(z.string().max(LIMITS.keywordItem.max))
+    .max(LIMITS.keywordsArray.max)
+    .optional()
+    .default([]),
 });
 
 const resumeSchema = z.object({
@@ -136,6 +143,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 export interface GenerateAdaptedResumeOptions {
   jobCompany?: string;
   jobLocation?: string;
+  /** Palavras-chave que a análise ATS apontou como faltando na vaga. */
+  atsKeywords?: string[];
   traceId?: string;
 }
 
@@ -153,6 +162,7 @@ export async function generateAdaptedResume(
     jobDescription,
     jobCompany: opts?.jobCompany,
     jobLocation: opts?.jobLocation,
+    atsKeywords: opts?.atsKeywords,
   });
 
   if (!parsedInput.success) {
@@ -166,12 +176,16 @@ export async function generateAdaptedResume(
     throw new Error(parsedInput.error.issues[0]?.message || 'Dados de entrada inválidos.');
   }
 
-  const { resumeText: safeResume, jobTitle: safeJobTitle, jobDescription: safeJobDescription } = parsedInput.data;
+  const { resumeText: safeResume, jobTitle: safeJobTitle, jobDescription: safeJobDescription, atsKeywords } = parsedInput.data;
   const safeCompany = sanitizeUntrusted(parsedInput.data.jobCompany, 'job_company');
   const safeLocation = sanitizeUntrusted(parsedInput.data.jobLocation, 'job_location');
 
   const companyBlock = safeCompany ? `\n<job_company>\n${safeCompany}\n</job_company>` : '';
   const locationBlock = safeLocation ? `\n<job_location>\n${safeLocation}\n</job_location>` : '';
+  const keywordsBlock =
+    atsKeywords.length > 0
+      ? `\n<ats_keywords>\n${atsKeywords.join(', ')}\n</ats_keywords>`
+      : '';
 
   const fullPrompt = `${RESUME_ADAPTATION_PROMPT}
 
@@ -181,7 +195,7 @@ ${safeJobTitle}
 
 <job_description>
 ${safeJobDescription}
-</job_description>${companyBlock}${locationBlock}
+</job_description>${companyBlock}${locationBlock}${keywordsBlock}
 
 <resume>
 ${safeResume}

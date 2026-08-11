@@ -11,6 +11,7 @@ import {
   adaptedResumeToMarkdown,
   type AdaptedResume,
 } from '@/lib/core/ai/resume-adaptation-generator';
+import { enforceVeracity } from '@/lib/core/ai/resume-veracity';
 import { JOB_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/job-analyzer';
 import { COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/prompts/cover-letter';
 import { INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/prompts/interview-questions';
@@ -267,15 +268,33 @@ export function createChatTools(userId: string) {
           return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
         }
 
-        const cacheKey = computeCacheKey(RESUME_ADAPTATION_PROMPT_VERSION, [jobTitle, jobDescription, resumeContext]);
+        const ats = await analyzeAtsWithCache(userId, resumeContext, {
+          jobDescription,
+          traceId: crypto.randomUUID(),
+        });
+        const atsKeywords = ats.analysis.missingKeywords ?? [];
+
+        const cacheKey = computeCacheKey(RESUME_ADAPTATION_PROMPT_VERSION, [
+          jobTitle,
+          jobDescription,
+          resumeContext,
+          atsKeywords.join('|'),
+        ]);
         const cached = await getCached<AdaptedResume>(userId, 'resume_adaptation', cacheKey);
-        if (cached) return { resume: cached, resumeMarkdown: adaptedResumeToMarkdown(cached) };
+        if (cached) {
+          const verified = enforceVeracity(resumeContext, cached);
+          return { resume: verified.resume, resumeMarkdown: adaptedResumeToMarkdown(verified.resume) };
+        }
 
         const traceId = crypto.randomUUID();
-        const resume = await generateAdaptedResume(resumeContext, jobTitle, jobDescription, { traceId });
+        const resume = await generateAdaptedResume(resumeContext, jobTitle, jobDescription, {
+          atsKeywords,
+          traceId,
+        });
 
         await saveToCache(userId, 'resume_adaptation', cacheKey, resume);
-        return { resume, resumeMarkdown: adaptedResumeToMarkdown(resume) };
+        const verified = enforceVeracity(resumeContext, resume);
+        return { resume: verified.resume, resumeMarkdown: adaptedResumeToMarkdown(verified.resume) };
       },
     }),
 

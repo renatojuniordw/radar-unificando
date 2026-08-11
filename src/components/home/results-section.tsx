@@ -19,6 +19,8 @@ interface ResultsSectionProps {
   }) => void;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
 export const ResultsSection = memo(function ResultsSection({
@@ -31,6 +33,8 @@ export const ResultsSection = memo(function ResultsSection({
   onFilterChange,
   canGenerateResume,
   onGenerateResume,
+  generatingJobKey,
+  onAnalyzeAts,
 }: ResultsSectionProps) {
   const handleExportCsv = useCallback(() => {
     window.open("/export?format=csv", "_blank");
@@ -105,6 +109,8 @@ export const ResultsSection = memo(function ResultsSection({
           onFilterChange={onFilterChange}
           canGenerateResume={canGenerateResume}
           onGenerateResume={onGenerateResume}
+          generatingJobKey={generatingJobKey}
+          onAnalyzeAts={onAnalyzeAts}
         />
       </Container>
     </Box>
