@@ -33,8 +33,8 @@ const PLATFORMS = [
 
 const QUICK_TYPES = [
   { label: 'TODAS', value: '' },
-  { label: 'REMOTO', value: 'Remoto' },
-  { label: 'HÍBRIDO', value: 'Híbrido' },
+  { label: 'REMOTO', value: 'Remota' },
+  { label: 'HÍBRIDO', value: 'Híbrida' },
   { label: 'PRESENCIAL', value: 'Presencial' },
 ];
 

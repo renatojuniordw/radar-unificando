@@ -42,6 +42,17 @@ describe('job.normalizeJobType', () => {
     expect(normalizeJobType(undefined)).toBe('');
     expect(normalizeJobType('Outro')).toBe('Outro');
   });
+
+  it('normaliza_variacoes_adicionais_de_tipo', () => {
+    expect(normalizeJobType('Home Office')).toBe('Remota');
+    expect(normalizeJobType('Work From Home')).toBe('Remota');
+    expect(normalizeJobType('WFH')).toBe('Remota');
+    expect(normalizeJobType('Remota')).toBe('Remota');
+    expect(normalizeJobType('onsite')).toBe('Presencial');
+    expect(normalizeJobType('On Site')).toBe('Presencial');
+    expect(normalizeJobType('In-Office')).toBe('Presencial');
+    expect(normalizeJobType('In-Person')).toBe('Presencial');
+  });
 });
 
 describe('chat utils', () => {
