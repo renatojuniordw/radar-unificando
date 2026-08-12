@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import {
   Heart,
   Copy,
@@ -115,22 +116,26 @@ export default function DoarContent() {
 
             {/* QR Code Container */}
             <div style={{ marginBottom: "24px" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/pix-qr.png"
-                alt="QR Code PIX para doação ao Radar Unificando"
-                width={220}
-                height={220}
+              <div
                 style={{
-                  display: "block",
-                  margin: "0 auto",
-                  imageRendering: "pixelated",
+                  display: "inline-block",
                   border: "3px solid #ccff00",
                   boxShadow: "6px 6px 0px #000000",
                   backgroundColor: "#ffffff",
-                  padding: "8px",
+                  padding: "12px",
+                  lineHeight: 0,
                 }}
-              />
+              >
+                <QRCodeSVG
+                  value={PIX_BRCODE}
+                  size={220}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                  level="M"
+                  marginSize={0}
+                  aria-label="QR Code PIX para doação ao Radar Unificando"
+                />
+              </div>
             </div>
 
             {/* Chave PIX */}

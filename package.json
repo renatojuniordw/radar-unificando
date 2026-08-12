@@ -42,6 +42,7 @@
     "next-auth": "^5.0.0-beta.25",
     "pdfjs-dist": "^6.2.108",
     "pg": "^8.22.0",
+    "qrcode.react": "^4.2.0",
     "rate-limiter-flexible": "^11.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
