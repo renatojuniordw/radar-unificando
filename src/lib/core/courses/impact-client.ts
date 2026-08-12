@@ -4,6 +4,7 @@
 
 import type { Course } from './course-provider';
 import { IMPACT } from '@/lib/core/constants';
+import { removeAccents } from '@/lib/utils/string';
 
 const IMPACT_BASE = IMPACT.apiBase;
 const TIMEOUT_MS = 6000;
@@ -138,10 +139,7 @@ export interface ImpactItemScore {
 
 /** Minúsculas + NFD + remove acentos (mesmo padrão do course-matcher). */
 export function normalizeImpactText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+  return removeAccents(text).toLowerCase();
 }
 
 /** Tokeniza texto normalizado em termos significativos (len > 1). */

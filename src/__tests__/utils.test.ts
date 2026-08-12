@@ -59,7 +59,7 @@ describe('chat utils', () => {
   it('getMessageText_extrai_apenas_partes_de_texto', () => {
     expect(
       getMessageText({ parts: [{ type: 'text', text: 'Olá ' }, { type: 'tool', text: 'ignorado' }, { type: 'text', text: 'mundo' }] }),
-    ).toBe('Olá mundo');
+    ).toBe('Olá  mundo');
     expect(getMessageText({})).toBe('');
   });
 

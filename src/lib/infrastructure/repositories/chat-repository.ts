@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { getMessageText } from '@/lib/utils/chat';
 
 export interface ChatMessageData {
   id: string;
@@ -38,14 +39,6 @@ export interface IChatRepository {
   getLastContextTokens(userId: string, chatId?: string | null): Promise<number | null>;
 }
 
-function extractText(content: unknown): string {
-  const message = content as { parts?: Array<{ type: string; text?: string }> };
-  return (message.parts || [])
-    .filter((p) => p.type === 'text' && p.text)
-    .map((p) => p.text)
-    .join(' ');
-}
-
 export const chatRepository: IChatRepository = {
   async getMessages(userId, externalId) {
     const chat = await prisma.chat.findUnique({
@@ -58,7 +51,7 @@ export const chatRepository: IChatRepository = {
 
   async replaceMessages(userId, externalId, messages) {
     const firstUserMsg = messages.find((m) => m.role === 'user');
-    const inferredTitle = firstUserMsg ? extractText(firstUserMsg).trim().slice(0, 40) : null;
+    const inferredTitle = firstUserMsg ? getMessageText(firstUserMsg as { parts?: { type: string; text?: string }[] }).trim().slice(0, 40) : null;
 
     const chat = await prisma.chat.upsert({
       where: { userId_externalId: { userId, externalId } },
@@ -100,7 +93,7 @@ export const chatRepository: IChatRepository = {
     return chats
       .filter((chat) => chat.messages.length > 0)
       .map((chat) => {
-        const lastMessage = extractText(chat.messages[0].content);
+        const lastMessage = getMessageText(chat.messages[0].content as { parts?: { type: string; text?: string }[] });
         return {
           id: chat.externalId,
           title: chat.title || lastMessage.slice(0, 40) || 'Conversa',

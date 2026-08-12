@@ -1,6 +1,8 @@
 import type { Job } from '@/types';
 import { inferRole } from '@/lib/core/matching/infer-role';
 import { API_ENDPOINTS } from '@/lib/core/constants';
+import { slugify } from '@/lib/core/vagas/slug';
+import { removeAccents } from '@/lib/utils/string';
 
 interface ApiJob {
   careerPageId: string;
@@ -68,8 +70,8 @@ export class InHireScraper {
 
   private slugVariants(name: string): string[] {
     const base = name.toLowerCase().trim();
-    const compacted = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
-    const tokens = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
+    const compacted = removeAccents(base).replace(/[^a-z0-9]+/g, '');
+    const tokens = removeAccents(base).split(/[^a-z0-9]+/).filter(Boolean);
 
     const variants = [compacted];
     if (tokens.length > 1) {
@@ -91,21 +93,13 @@ export class InHireScraper {
       title: j.displayName.trim(),
       type: j.workplaceType || j.location || '',
       location: j.location || '',
-      link: `https://${slug}.inhire.app/vagas/${j.jobId}/${this.slugify(j.displayName)}`,
+      link: `https://${slug}.inhire.app/vagas/${j.jobId}/${slugify(j.displayName) || 'vaga'}`,
       companyNameOnPlatform: tenantName || slug,
       postedAt: '',
       alert: '',
     };
   }
 
-  private slugify(s: string): string {
-    return String(s)
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/&/g, ' and ')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'vaga';
-  }
 }
 
 export const inhireScraper = new InHireScraper();

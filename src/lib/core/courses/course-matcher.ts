@@ -4,6 +4,7 @@
 
 import { COURSES } from './course-catalog';
 import type { Course } from './course-provider';
+import { removeAccents } from '@/lib/utils/string';
 
 /** Sinônimos/gírias comuns de skills → token canônico do catálogo. */
 const SKILL_SYNONYMS: Record<string, string> = {
@@ -23,10 +24,7 @@ const SKILL_SYNONYMS: Record<string, string> = {
 };
 
 function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+  return removeAccents(text).toLowerCase();
 }
 
 function tokenize(text: string): string[] {

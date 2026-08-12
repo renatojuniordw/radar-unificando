@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { recordFeedback } from '@/lib/core/extension/extension-feedback';
 import { findUserIdByExtensionToken } from '@/lib/core/extension/extension-token';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
-
-function extractBearerToken(req: NextRequest): string | null {
-  const header = req.headers.get('authorization');
-  if (!header?.startsWith('Bearer ')) return null;
-  const token = header.slice('Bearer '.length).trim();
-  return token || null;
-}
+import { extractBearerToken } from '@/lib/api/auth-guard';
 
 export async function POST(req: NextRequest) {
   const token = extractBearerToken(req);

@@ -1,3 +1,5 @@
+import { debugLog } from '@/lib/utils/debug';
+
 export type AiEvent =
   | 'resume_extraction'
   | 'job_analysis'
@@ -12,7 +14,7 @@ export function logAiEvent(
   event: AiEvent,
   data: Record<string, unknown>,
 ) {
-  console.log('[AI_LOG]', JSON.stringify({
+  debugLog('[AI_LOG]', JSON.stringify({
     event,
     timestamp: new Date().toISOString(),
     ...data,

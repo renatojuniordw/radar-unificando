@@ -6,6 +6,7 @@
 
 import { COURSES } from './course-catalog';
 import { expandTokens } from './course-matcher';
+import { removeAccents } from '@/lib/utils/string';
 
 export type CourseProviderId = 'alura' | 'udemy';
 
@@ -50,10 +51,8 @@ class CuratedCatalogProvider implements CourseProvider {
 
   async searchCourses(query: string): Promise<Course[]> {
     const tokens = expandTokens(
-      query
+      removeAccents(query)
         .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
         .split(/[^a-z0-9]+/)
         .filter((t) => t.length > 1),
     );
@@ -63,11 +62,8 @@ class CuratedCatalogProvider implements CourseProvider {
     const scored = COURSES.map((course) => {
       const haystack = new Set(
         expandTokens(
-          [...course.skillTags, course.title]
-            .join(' ')
+          removeAccents([...course.skillTags, course.title].join(' '))
             .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
             .split(/[^a-z0-9]+/)
             .filter((t) => t.length > 1),
         ),

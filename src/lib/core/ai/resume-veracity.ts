@@ -6,13 +6,12 @@
 // ---------------------------------------------------------------------------
 
 import type { AdaptedResume } from './resume-adaptation-generator';
+import { removeAccents } from '@/lib/utils/string';
 
 /** Normaliza um termo para comparação: minúsculas, sem acentos/pontuação. */
 function normalizeTerm(value: string): string {
-  return value
+  return removeAccents(value)
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9+#]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();

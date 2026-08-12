@@ -1,19 +1,12 @@
 // Utils client-side para download do currículo adaptado (usa atob/document — só cliente).
 
+import { slugify } from '@/lib/core/vagas/slug';
+
 export interface ResumeJobInput {
   title: string;
   company: string;
   description?: string;
   location?: string;
-}
-
-export function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 /** Chave composta para identificar uma vaga (para estado de loading). */

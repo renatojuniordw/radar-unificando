@@ -19,13 +19,14 @@ export const CHAT_SUGGESTIONS = [
   'Como está o mercado de dados?',
 ];
 
-export const CHAT_THREAD_MESSAGE_LIMIT = 25;
+import { MAX_THREAD_MESSAGES } from '@/lib/core/ai/chat-guard';
+export const CHAT_THREAD_MESSAGE_LIMIT = MAX_THREAD_MESSAGES;
 
 export function getMessageText(msg: { parts?: { type: string; text?: string }[] }): string {
   return (msg.parts || [])
-    .filter(p => p.type === 'text')
+    .filter(p => p.type === 'text' && p.text)
     .map(p => p.text || '')
-    .join('');
+    .join(' ');
 }
 
 export function createWelcomeMessage(userName?: string | null) {

@@ -1,6 +1,8 @@
 // Módulo puro de recomendação por perfil
 // Funções testáveis sem dependência de banco de dados
 
+import { removeAccents } from '@/lib/utils/string';
+
 const STOPWORDS_PT = new Set([
   'de', 'do', 'da', 'dos', 'das', 'em', 'no', 'na', 'nos', 'nas',
   'para', 'por', 'com', 'um', 'uma', 'os', 'as', 'que', 'se', 'não',
@@ -25,10 +27,8 @@ const STOPWORDS_PT = new Set([
  * Normaliza texto: lowercase, remove acentos, remove stopwords PT
  */
 function normalizeText(text: string): string {
-  return text
+  return removeAccents(text)
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
     .split(/\s+/)
     .filter(word => word.length > 2 && !STOPWORDS_PT.has(word))
     .join(' ');

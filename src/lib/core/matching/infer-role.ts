@@ -1,3 +1,5 @@
+import { removeAccents } from '@/lib/utils/string';
+
 /**
  * Infere a categoria de cargo a partir do título da vaga.
  * Módulo único compartilhado entre Gupy (MCP/REST) e InHire.
@@ -5,7 +7,7 @@
  * Retorna uma categoria de negócio em PT (dado de produto) ou '' se não houver match.
  */
 export function inferRole(title: string): string {
-  const t = ' ' + title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
+  const t = ' ' + removeAccents(title).toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
   const has = (re: RegExp) => re.test(t);
   if (has(/ revenue operations /) || has(/ revops /)) return 'Revenue Operations / RevOps';
   if (has(/ growth /)) return 'Growth Analyst / Analista de Growth';

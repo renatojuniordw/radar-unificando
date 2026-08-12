@@ -5,15 +5,9 @@ import { findUserIdByExtensionToken } from '@/lib/core/extension/extension-token
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { recommendCourses } from '@/lib/core/courses/course-matcher';
 import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
+import { extractBearerToken } from '@/lib/api/auth-guard';
 
 const MAX_JOB_DESCRIPTION = 8000;
-
-function extractBearerToken(req: NextRequest): string | null {
-  const header = req.headers.get('authorization');
-  if (!header?.startsWith('Bearer ')) return null;
-  const token = header.slice('Bearer '.length).trim();
-  return token || null;
-}
 
 export async function POST(req: NextRequest) {
   const token = extractBearerToken(req);
