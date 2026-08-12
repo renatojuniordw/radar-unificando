@@ -16,6 +16,8 @@ export interface AtsServiceResult {
 
 export interface AnalyzeAtsWithCacheOptions {
   jobDescription?: string;
+  /** Identificador da vaga (id ou hash de title+company) — evita colisão de cache entre vagas com descrição vazia/idêntica. */
+  jobKey?: string;
   traceId?: string;
 }
 
@@ -29,6 +31,7 @@ export async function analyzeAtsWithCache(
   const cacheKey = computeCacheKey(ATS_ANALYZER_PROMPT_VERSION, [
     resumeText,
     opts?.jobDescription || '',
+    opts?.jobKey || '',
   ]);
   const cached = await getCached<AtsAnalysis>(userId, 'ats_analysis', cacheKey);
   if (cached) return { heuristics, analysis: cached, cached: true };

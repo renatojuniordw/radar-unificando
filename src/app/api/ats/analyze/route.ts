@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       typeof body?.jobDescription === 'string'
         ? body.jobDescription.slice(0, MAX_JOB_DESCRIPTION)
         : undefined;
+    const jobKey = typeof body?.jobKey === 'string' ? body.jobKey.slice(0, 300) : undefined;
 
     const profile = await profileRepository.findByUserId(session.user.id);
     const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
 
     const result = await analyzeAtsWithCache(session.user.id, resumeText, {
       jobDescription,
+      jobKey,
       traceId: crypto.randomUUID(),
     });
 

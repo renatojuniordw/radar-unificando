@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
 
     const result = await analyzeAtsWithCache(userId, resumeText, {
       jobDescription,
+      jobKey: jobTitle,
       traceId: crypto.randomUUID(),
     });
 

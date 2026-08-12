@@ -14,6 +14,21 @@ interface GupyRestJob {
   jobUrl?: string;
   careerPageUrl?: string;
   publishedDate?: string;
+  description?: string;
+}
+
+const HTML_ENTITIES: Record<string, string> = {
+  nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", '#39': "'",
+};
+
+/** Remove tags HTML e decodifica entidades comuns da descrição da vaga (vem como HTML da API da Gupy). */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(#?\w+);/g, (m, code) => HTML_ENTITIES[code.toLowerCase()] ?? m)
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export interface GupyStepOptions {
@@ -142,6 +157,7 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
         companyNameOnPlatform: j.careerPageName || '',
         postedAt: j.publishedDate || '',
         alert: '',
+        description: j.description ? stripHtml(j.description).slice(0, 3000) : undefined,
       });
     }
   }

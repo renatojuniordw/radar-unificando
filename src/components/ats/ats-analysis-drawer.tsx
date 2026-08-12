@@ -23,6 +23,7 @@ interface AtsResult {
 
 /** Shape mínimo de vaga aceito pelo drawer (Job da busca ou ParsedJob do chat). */
 export interface AtsDrawerJob {
+  id?: string;
   title: string;
   company?: string;
   description?: string;
@@ -74,6 +75,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         signal: controller.signal,
         body: JSON.stringify({
           jobDescription: target.description || undefined,
+          jobKey: target.id || `${target.title}|${target.company || ""}`,
         }),
       });
       const data = await res.json().catch(() => null);

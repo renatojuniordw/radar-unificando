@@ -68,8 +68,13 @@ export default auth((req) => {
 
     // Reject state-changing requests that don't carry a matching Origin/Referer —
     // blocks other sites, scripts, and direct HTTP clients from driving this API.
+    // /api/extension/* is exempt: it authenticates via `Authorization: Bearer <token>`
+    // only (no session cookie), so it isn't CSRF-able the way cookie-auth routes are —
+    // a page can't forge that header without already holding the token. This also
+    // avoids depending on EXTENSION_ORIGIN matching the exact chrome-extension:// id,
+    // which differs per machine/build for an unpacked extension.
     const isMutating = !['GET', 'HEAD'].includes(req.method);
-    if (isMutating && !sameOrigin && !path.startsWith('/api/auth')) {
+    if (isMutating && !sameOrigin && !path.startsWith('/api/auth') && !path.startsWith('/api/extension')) {
       return NextResponse.json({ error: 'Origem não permitida' }, { status: 403 });
     }
   }
