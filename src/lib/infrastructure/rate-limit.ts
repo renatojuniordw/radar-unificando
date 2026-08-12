@@ -1,85 +1,50 @@
 import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { redisClient, isRedisReady } from '@/lib/infrastructure/redis/client';
 
-// Fallback em memória para garantia de funcionamento (Fail-safe)
-const memoryLimiterChat = new RateLimiterMemory({ points: 10, duration: 60 });
-const memoryLimiterChatDaily = new RateLimiterMemory({ points: 50, duration: 86400 });
-const memoryLimiterAuth = new RateLimiterMemory({ points: 5, duration: 60 });
-const memoryLimiterGeneral = new RateLimiterMemory({ points: 60, duration: 60 });
-const memoryLimiterRegisterDaily = new RateLimiterMemory({ points: 3, duration: 86400 });
-const memoryLimiterExtension = new RateLimiterMemory({ points: 20, duration: 60 });
-const memoryLimiterResumeDaily = new RateLimiterMemory({ points: 10, duration: 86400 });
-const memoryLimiterAtsDaily = new RateLimiterMemory({ points: 10, duration: 86400 });
+export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily' | 'extension' | 'resume_daily' | 'ats_daily';
 
-// Rate Limiters no Redis
-let redisLimiterChat: RateLimiterRedis | null = null;
-let redisLimiterChatDaily: RateLimiterRedis | null = null;
-let redisLimiterAuth: RateLimiterRedis | null = null;
-let redisLimiterGeneral: RateLimiterRedis | null = null;
-let redisLimiterRegisterDaily: RateLimiterRedis | null = null;
-let redisLimiterExtension: RateLimiterRedis | null = null;
-let redisLimiterResumeDaily: RateLimiterRedis | null = null;
-let redisLimiterAtsDaily: RateLimiterRedis | null = null;
-
-if (redisClient) {
-  redisLimiterChat = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_chat',
-    points: 10, // 10 requisições
-    duration: 60, // por 60 segundos
-  });
-
-  redisLimiterChatDaily = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_chat_daily',
-    points: 50, // 50 requisições por dia
-    duration: 86400, // por 24 horas
-  });
-
-  redisLimiterAuth = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_auth',
-    points: 5, // 5 requisições
-    duration: 60, // por 60 segundos
-  });
-
-  redisLimiterGeneral = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_general',
-    points: 60, // 60 requisições
-    duration: 60, // por 60 segundos
-  });
-
-  redisLimiterRegisterDaily = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_register_daily',
-    points: 3, // 3 cadastros por IP por dia
-    duration: 86400, // por 24 horas
-  });
-
-  redisLimiterExtension = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_extension',
-    points: 20, // 20 análises
-    duration: 60, // por 60 segundos
-  });
-
-  redisLimiterResumeDaily = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_resume_daily',
-    points: 10, // 10 currículos gerados
-    duration: 86400, // por 24 horas
-  });
-
-  redisLimiterAtsDaily = new RateLimiterRedis({
-    storeClient: redisClient,
-    keyPrefix: 'rl_ats_daily',
-    points: 10, // 10 análises ATS
-    duration: 86400, // por 24 horas
-  });
+interface RateLimitConfig {
+  points: number;
+  duration: number;
+  keyPrefix: string;
 }
 
-export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily' | 'extension' | 'resume_daily' | 'ats_daily';
+/** Configuração centralizada de todos os perfis de rate limiting. */
+const RATE_LIMIT_PROFILES: Record<RateLimitProfile, RateLimitConfig> = {
+  chat:           { points: 10,  duration: 60,    keyPrefix: 'rl_chat' },
+  chat_daily:     { points: 50,  duration: 86400, keyPrefix: 'rl_chat_daily' },
+  auth:           { points: 5,   duration: 60,    keyPrefix: 'rl_auth' },
+  general:        { points: 60,  duration: 60,    keyPrefix: 'rl_general' },
+  register_daily: { points: 3,   duration: 86400, keyPrefix: 'rl_register_daily' },
+  extension:      { points: 20,  duration: 60,    keyPrefix: 'rl_extension' },
+  resume_daily:   { points: 10,  duration: 86400, keyPrefix: 'rl_resume_daily' },
+  ats_daily:      { points: 10,  duration: 86400, keyPrefix: 'rl_ats_daily' },
+};
+
+/** Cria limiters em memória (fallback fail-safe) a partir da config. */
+const memoryLimiters = new Map<RateLimitProfile, RateLimiterMemory>(
+  Object.entries(RATE_LIMIT_PROFILES).map(([profile, cfg]) => [
+    profile as RateLimitProfile,
+    new RateLimiterMemory({ points: cfg.points, duration: cfg.duration }),
+  ]),
+);
+
+/** Cria limiters Redis a partir da config (só se Redis estiver disponível). */
+const redisLimiters = new Map<RateLimitProfile, RateLimiterRedis>();
+
+if (redisClient) {
+  for (const [profile, cfg] of Object.entries(RATE_LIMIT_PROFILES)) {
+    redisLimiters.set(
+      profile as RateLimitProfile,
+      new RateLimiterRedis({
+        storeClient: redisClient,
+        keyPrefix: cfg.keyPrefix,
+        points: cfg.points,
+        duration: cfg.duration,
+      }),
+    );
+  }
+}
 
 export interface RateLimitResult {
   success: boolean;
@@ -101,28 +66,10 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   const cleanKey = key.split(',')[0].trim() || '127.0.0.1';
 
-  let limiterToUse: RateLimiterRedis | RateLimiterMemory;
-
-  if (isRedisReady() && redisClient) {
-    if (profile === 'chat') limiterToUse = redisLimiterChat!;
-    else if (profile === 'chat_daily') limiterToUse = redisLimiterChatDaily!;
-    else if (profile === 'auth') limiterToUse = redisLimiterAuth!;
-    else if (profile === 'register_daily') limiterToUse = redisLimiterRegisterDaily!;
-    else if (profile === 'extension') limiterToUse = redisLimiterExtension!;
-    else if (profile === 'resume_daily') limiterToUse = redisLimiterResumeDaily!;
-    else if (profile === 'ats_daily') limiterToUse = redisLimiterAtsDaily!;
-    else limiterToUse = redisLimiterGeneral!;
-  } else {
-    // Usar fallback em memória
-    if (profile === 'chat') limiterToUse = memoryLimiterChat;
-    else if (profile === 'chat_daily') limiterToUse = memoryLimiterChatDaily;
-    else if (profile === 'auth') limiterToUse = memoryLimiterAuth;
-    else if (profile === 'register_daily') limiterToUse = memoryLimiterRegisterDaily;
-    else if (profile === 'extension') limiterToUse = memoryLimiterExtension;
-    else if (profile === 'resume_daily') limiterToUse = memoryLimiterResumeDaily;
-    else if (profile === 'ats_daily') limiterToUse = memoryLimiterAtsDaily;
-    else limiterToUse = memoryLimiterGeneral;
-  }
+  const useRedis = isRedisReady() && redisClient;
+  const limiterToUse = useRedis
+    ? redisLimiters.get(profile)!
+    : memoryLimiters.get(profile)!;
 
   try {
     const res: RateLimiterRes = await limiterToUse.consume(cleanKey);
