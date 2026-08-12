@@ -10,7 +10,7 @@ import {
   Button,
   Snackbar,
 } from "@mui/material";
-import { CheckCircle, ErrorOutline, InfoOutlined, AutoAwesome } from "@mui/icons-material";
+import { CheckCircle, ErrorOutline, InfoOutlined, AutoAwesome, AccessTime } from "@mui/icons-material";
 import type { AtsHeuristic } from "@/lib/core/ai/ats/ats-heuristics";
 import type { AtsAnalysis } from "@/lib/core/ai/ats/ats-analyzer";
 import { downloadAdaptedResume } from "@/lib/client/resume-download";
@@ -35,9 +35,20 @@ interface Props {
   onClose: () => void;
 }
 
-type Stage = "loading" | "ready" | "error";
+type Stage = "loading" | "ready" | "error" | "rate-limited";
 
 const FETCH_TIMEOUT_MS = 60_000;
+
+/** Formata segundos como "Xh Ymin" / "Xmin Ys" / "Xs" conforme a magnitude. */
+function formatRetryTime(totalSeconds: number): string {
+  const s = Math.max(0, totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}min`;
+  if (m > 0) return `${m}min ${String(sec).padStart(2, "0")}s`;
+  return `${sec}s`;
+}
 
 function scoreColor(score: number): string {
   if (score < 50) return "#ef4444";
@@ -55,6 +66,8 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
   const [stage, setStage] = useState<Stage>("loading");
   const [result, setResult] = useState<AtsResult | null>(null);
   const [error, setError] = useState("");
+  const [retryAfter, setRetryAfter] = useState(0);
+  const [initialRetryAfter, setInitialRetryAfter] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [snackbar, setSnackbar] = useState("");
   const abortRef = useRef<AbortController | null>(null);
@@ -80,6 +93,12 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
+        if (res.status === 429 && data?.code === "RATE_LIMITED" && typeof data?.retryAfter === "number") {
+          setRetryAfter(data.retryAfter);
+          setInitialRetryAfter(data.retryAfter);
+          setStage("rate-limited");
+          return;
+        }
         setError(data?.error || "Erro ao analisar o currículo.");
         setStage("error");
         return;
@@ -93,6 +112,15 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
       clearTimeout(timeoutId);
     }
   }, []);
+
+  // Contagem regressiva do rate limit — mesmo padrão do cooldown de busca em useJobSearch.
+  useEffect(() => {
+    if (stage !== "rate-limited" || retryAfter <= 0) return;
+    const id = setInterval(() => {
+      setRetryAfter((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [stage, retryAfter]);
 
   useEffect(() => {
     if (!open || !job) return;
@@ -167,6 +195,46 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
           <Alert severity="error" variant="filled">
             {error}
           </Alert>
+        )}
+
+        {stage === "rate-limited" && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              gap: 1.5,
+              py: 4,
+              px: 2,
+              bgcolor: "#1e293b",
+              border: "1px solid #f59e0b",
+              borderRadius: 1,
+            }}
+          >
+            <AccessTime sx={{ fontSize: 32, color: "#f59e0b" }} />
+            <Box role="status">
+              <Typography sx={{ fontWeight: 800, color: "#fff", fontSize: "1rem" }}>
+                Limite diário atingido
+              </Typography>
+              <Typography sx={{ color: "#94a3b8", fontSize: "0.8rem", mt: 0.5 }}>
+                Você já usou suas análises ATS de hoje. Tente novamente em aproximadamente{" "}
+                {formatRetryTime(initialRetryAfter)}.
+              </Typography>
+            </Box>
+            <Typography
+              aria-hidden="true"
+              sx={{
+                fontFamily: "ui-monospace, monospace",
+                fontSize: "1.4rem",
+                fontWeight: 700,
+                color: retryAfter > 0 ? "#f59e0b" : "#22c55e",
+                mt: 1,
+              }}
+            >
+              {retryAfter > 0 ? formatRetryTime(retryAfter) : "Disponível agora"}
+            </Typography>
+          </Box>
         )}
 
         {stage === "ready" && result && (
@@ -296,6 +364,28 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
               sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, "&:hover": { bgcolor: "#b8e600" } }}
             >
               TENTAR NOVAMENTE
+            </Button>
+          )}
+          {stage === "rate-limited" && job && (
+            <Button
+              variant="contained"
+              onClick={() => void analyze(job)}
+              disabled={retryAfter > 0}
+              aria-disabled={retryAfter > 0}
+              aria-label={
+                retryAfter > 0
+                  ? `Tentar novamente disponível em ${formatRetryTime(retryAfter)}`
+                  : "Tentar novamente"
+              }
+              sx={{
+                bgcolor: "#ccff00",
+                color: "#020617",
+                fontWeight: 900,
+                "&:hover": { bgcolor: "#b8e600" },
+                "&.Mui-disabled": { bgcolor: "#334155", color: "#64748b" },
+              }}
+            >
+              {retryAfter > 0 ? `DISPONÍVEL EM ${formatRetryTime(retryAfter).toUpperCase()}` : "TENTAR NOVAMENTE"}
             </Button>
           )}
           {stage === "ready" && job && (

@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
     const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
     return new Response(
       JSON.stringify({
-        error: `Limite diário de análises ATS atingido. Tente novamente em ${retryAfterSeconds} segundos.`,
+        error: 'Limite diário de análises ATS atingido.',
+        code: 'RATE_LIMITED',
+        retryAfter: retryAfterSeconds,
       }),
       {
         status: 429,
