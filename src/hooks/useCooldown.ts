@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 
-const STORAGE_KEY = "cooldownEnd";
-
 /**
  * Hook responsável por gerenciar o cooldown entre buscas de pipeline.
  * Extraído de useJobSearch para separar responsabilidades (SRP).

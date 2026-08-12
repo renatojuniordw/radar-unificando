@@ -89,5 +89,5 @@ export function useAutoSync(options: AutoSyncOptions) {
     return () => {
       cancelled = true;
     };
-  }, [cooldown, running, autoSyncing, cooldownLoaded, filtersLoaded, companies, roleQueries]);
+  }, [cooldown, running, autoSyncing, cooldownLoaded, filtersLoaded, companies, roleQueries, blockedRef]);
 }

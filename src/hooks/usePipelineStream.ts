@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import type { Job } from "@/lib/types/job";
 
@@ -32,7 +32,9 @@ export interface PipelineStreamCallbacks {
  */
 export function usePipelineStream(callbacks: PipelineStreamCallbacks) {
   const callbacksRef = useRef(callbacks);
-  callbacksRef.current = callbacks;
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  });
 
   const connectToPipeline = useCallback(
     (
