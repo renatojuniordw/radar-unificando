@@ -87,4 +87,29 @@ Aplicada no `POST /api/chat` (`src/app/api/chat/route.ts`):
 DATABASE_URL=postgresql://...
 AUTH_SECRET=<openssl rand -base64 64>
 EXTENSION_ORIGIN=chrome-extension://<id-da-extensao>   # para a extensão Chrome
+CRON_SECRET=<openssl rand -base64 32>                  # para a rotina de retenção (produção)
 ```
+
+## Rotina de Retenção (LGPD)
+
+`GET /api/cron/cleanup` exclui caches expirados (`generated_content_cache`) e chats inativos
+(>`RETENTION_INACTIVE_CHAT_MONTHS` meses, default 12; mensagens removidas em cascata).
+O Next não dispara a rotina sozinho — o cron do VPS deve chamá-la com o header
+`x-cron-secret` (comparação com `timingSafeEqual`):
+
+```bash
+# /usr/local/bin/radar-cleanup.sh
+#!/bin/bash
+set -a; source /caminho/do/projeto/.env; set +a
+curl -sS -H "x-cron-secret: $CRON_SECRET" https://radar.unificando.com.br/api/cron/cleanup
+```
+
+```bash
+chmod +x /usr/local/bin/radar-cleanup.sh
+crontab -e
+# diariamente às 03:00
+0 3 * * * /usr/local/bin/radar-cleanup.sh
+```
+
+Sem `CRON_SECRET` configurado, a rota responde 503 (fail-safe — nada é apagado).
+`chat_usage` órfãos não são limpos por decisão de projeto (controle de orçamento de consumo).
