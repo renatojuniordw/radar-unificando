@@ -493,7 +493,7 @@ export default function TermosPage() {
               9. Controlador de Dados e Encarregado (DPO)
             </h2>
             <p>
-              Em conformidade com o <strong>Art. 41 da LGPD</strong>, o controlador das operações de tratamento é o <strong>Radar Unificando</strong> (serviço operado pelo desenvolvedor Renato Bezerra). <em>CNPJ e endereço do controlador: a preencher.</em>
+              Em conformidade com o <strong>Art. 41 da LGPD</strong>, o controlador das operações de tratamento é o <strong>Radar Unificando</strong> (projeto de código aberto desenvolvido e mantido pelo desenvolvedor Renato Bezerra, como pessoa física).
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>

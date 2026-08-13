@@ -263,8 +263,8 @@
 - **Status:** Parcialmente conforme
 - **Severidade:** Baixo
 - **Evidência:** `src/app/termos/page.tsx` — Seções 9 (Controlador/DPO), 10 (Base Legal), 11 (Transferência Internacional) e atualizações nas seções 6/7/8
-- **Problema:** A estrutura exigida foi adicionada (controlador, DPO, transferência, retenção com prazos). Resta apenas **dado factual do controlador**: "CNPJ e endereço do controlador: a preencher" (seção 9). Sem isso, o Art. 41 (identificação do controlador) não está 100% cumprido — depende de dado externo do titular (Renato), não é código.
-- **Sugestão de correção:** Preencher CNPJ e endereço no arquivo dos termos quando disponíveis.
+- **Problema:** N/A (projeto de código aberto mantido por pessoa física, sem CNPJ).
+- **Sugestão de correção:** Identificação do controlador atualizada na Seção 9 como projeto open-source mantido por Renato Bezerra (Pessoa Física).
 
 ---
 
@@ -324,8 +324,8 @@
 - **Status:** Parcialmente conforme
 - **Severidade:** Baixo
 - **Evidência:** `src/app/termos/page.tsx` — Seção 9 (DPO: Renato Bezerra; canal `privacidade@unificando.com.br`; prazo 15 dias úteis, Art. 19)
-- **Problema:** A estrutura exigida pelo Art. 41 existe. Restam dependências externas: confirmar que o email `privacidade@unificando.com.br` está criado e é monitorado, e preencher o CNPJ/endereço (mesmo bloco do 3.2).
-- **Sugestão de correção:** confirmar/criar o email de DPO; preencher dados do controlador.
+- **Problema:** A estrutura exigida pelo Art. 41 existe. Resta apenas confirmar que o email `privacidade@unificando.com.br` está criado e é monitorado (o controlador está identificado como projeto open-source mantido por pessoa física).
+- **Sugestão de correção:** confirmar/criar o email de DPO.
 
 ---
 
@@ -471,8 +471,7 @@ Revisão linha a linha das correções implementadas, contra as regras anti-fals
 
 ### Pendências que dependem de Renato (não são código)
 
-1. Preencher CNPJ e endereço do controlador (seção 9 dos termos).
-2. Confirmar/criar o email de DPO `privacidade@unificando.com.br`.
+1. Confirmar/criar o email de DPO `privacidade@unificando.com.br`.
 3. Definir `CRON_SECRET` no `.env` e agendar `/api/cron/cleanup` no cron do VPS.
 4. Itens não verificáveis no repo: backup (4.6), monitoramento (4.7), estratégia de deploy/rollback (4.8) e logs estruturados (4.5).
 
