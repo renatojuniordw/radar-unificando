@@ -54,17 +54,6 @@ const nextConfig: NextConfig = {
     ],
   },
   poweredByHeader: false,
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push({
-        pg: 'commonjs pg',
-        'pg-connection-string': 'commonjs pg-connection-string',
-        pgpass: 'commonjs pgpass',
-        '@prisma/adapter-pg': 'commonjs @prisma/adapter-pg',
-      });
-    }
-    return config;
-  },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },

@@ -27,7 +27,7 @@ vi.mock('next/server', () => ({
   NextRequest: class {},
 }));
 
-import middleware, { config as middlewareConfig } from '@/middleware';
+import middleware, { config as middlewareConfig } from '@/proxy';
 import { NextResponse } from 'next/server';
 
 type ReqOverrides = {
