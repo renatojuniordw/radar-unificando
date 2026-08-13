@@ -13,7 +13,7 @@ interface Props {
 export function ChatSidebar({ conversations, activeId, onSelect, onNew }: Props) {
   return (
     <Box sx={{ 
-      width: 250, 
+      width: '100%', 
       borderRight: '1px solid', 
       borderColor: 'divider',
       display: 'flex',

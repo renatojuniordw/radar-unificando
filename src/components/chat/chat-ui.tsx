@@ -175,14 +175,26 @@ export function ChatAssistantUI() {
           onClose={closeDrawer}
         />
 
-        <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
+        <Box sx={{ flex: 1, display: 'flex', minHeight: 0, position: 'relative' }}>
           {sidebarOpen && (
-            <ChatSidebar
-              conversations={conversations}
-              activeId={chatId}
-              onSelect={handleSelectConversation}
-              onNew={handleNewConversation}
-            />
+            <Box
+              sx={{
+                width: { xs: '100%', sm: 250 },
+                position: { xs: 'absolute', sm: 'relative' },
+                top: 0,
+                bottom: 0,
+                left: 0,
+                zIndex: 20,
+                bgcolor: 'background.paper',
+              }}
+            >
+              <ChatSidebar
+                conversations={conversations}
+                activeId={chatId}
+                onSelect={handleSelectConversation}
+                onNew={handleNewConversation}
+              />
+            </Box>
           )}
 
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
