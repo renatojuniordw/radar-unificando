@@ -36,32 +36,7 @@ export const ROTATING_WORDS = [
   "Produto",
 ];
 
-export const WHY_USE_ITEMS = [
-  {
-    title: "100% GRATUITO",
-    desc: "Sem taxas escondidas e sem custo. Acesse todas as funcionalidades de busca e análise gratuitamente.",
-  },
-  {
-    title: "SEM CADASTRO OBRIGATÓRIO",
-    desc: "Busque vagas sem precisar criar conta. Cadastre-se apenas se quiser usar o assistente de IA e perfil personalizado.",
-  },
-  {
-    title: "DADOS EM TEMPO REAL",
-    desc: "Buscamos as vagas diretamente nas empresas no momento da sua pesquisa. Resultados sempre atualizados.",
-  },
-  {
-    title: "IA QUE ENTENDE SEU PERFIL",
-    desc: "Importe seu currículo em PDF ou cole o texto. A IA identifica suas habilidades, experiência e área automaticamente.",
-  },
-  {
-    title: "SCORE DE COMPATIBILIDADE",
-    desc: "Veja o percentual de afinidade entre seu perfil e cada vaga, com detalhamento dos requisitos alinhados.",
-  },
-  {
-    title: "ASSISTENTE DE VAGAS 24H",
-    desc: "Chat inteligente disponível para tirar dúvidas, sugerir oportunidades, gerar cartas de apresentação e simular entrevistas.",
-  },
-];
+
 
 export const EXTENSION_FEATURES = [
   {
