@@ -8,6 +8,32 @@ const securityHeaders = [
   { key: 'X-XSS-Protection', value: '1; mode=block' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // CSP redundante (defense-in-depth): o nginx já define um CSP, mas esta camada
+  // garante proteção quando a app é servida sem o proxy (dev local, outro host).
+  // 'unsafe-inline' em style-src é exigido pelo MUI/emotion (styles injetados);
+  // 'unsafe-inline'/'unsafe-eval' em script-src cobrem scripts inline do Next.js.
+  // Os domínios de terceiros abaixo precisam estar em script-src, senão o CSP
+  // BLOQUEIA o GA4 (@next/third-parties) e o tracking da Impact (loader inline
+  // cria <script> externo de utt.impactcdn.com) — regressão funcional (validação
+  // 13/08, item V-1). object-src/base-uri/form-action/frame-ancestors restringem
+  // vetores clássicos de XSS/clickjacking.
+  {
+    key: 'Content-Security-Policy',
+    value:
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' " +
+      'https://www.googletagmanager.com https://www.google-analytics.com ' +
+      'https://utt.impactcdn.com; ' +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: blob: https:; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' https:; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self'; " +
+      "frame-ancestors 'none'; " +
+      "worker-src 'self' blob:",
+  },
 ];
 
 const nextConfig: NextConfig = {

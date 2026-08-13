@@ -5,10 +5,10 @@
 // 'alura', só falta adicionar as entradas de volta aqui.
 //
 // IMPORTANTE: as URLs abaixo são páginas canônicas REAIS dos cursos (verificadas).
-// O tracking de afiliado é feito pelo script da Impact no client
-// (impactStat('transformLinks') em layout.tsx), que reescreve links udemy.com
-// no DOM. Se NEXT_PUBLIC_UDEMY_AFFILIATE_REF estiver setado, buildAffiliateUrl
-// também adiciona ?ref= automaticamente.
+// O tracking de afiliado é feito pelo script da Impact carregado no client via
+// CookieConsent (impactStat('transformLinks'), somente após consentimento de
+// cookies), que reescreve links udemy.com no DOM. Se NEXT_PUBLIC_UDEMY_AFFILIATE_REF
+// estiver setado, buildAffiliateUrl também adiciona ?ref= automaticamente.
 
 import type { Course } from './course-provider';
 

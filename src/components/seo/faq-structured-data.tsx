@@ -1,6 +1,7 @@
 'use client';
 
 import { FAQ_ITEMS } from "@/lib/constants/home";
+import { toScriptJson } from "@/lib/core/seo/jsonld";
 
 // FAQPage renderizado apenas na home, onde o FAQ realmente existe.
 export function FaqStructuredData() {
@@ -20,7 +21,7 @@ export function FaqStructuredData() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      dangerouslySetInnerHTML={{ __html: toScriptJson(faqSchema) }}
     />
   );
 }

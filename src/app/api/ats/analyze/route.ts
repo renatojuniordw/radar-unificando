@@ -60,11 +60,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    // O detalhe fica apenas no log do servidor — não expomos error.message ao
+    // client (pode conter URLs internas/nomes de provedor) (relatório item 2.6).
     console.error('[ats] Erro na análise:', error);
-    const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    // Mensagem segura para diagnóstico (não expõe headers/chaves — vem do zod/llm-provider)
     return NextResponse.json(
-      { error: `Erro ao analisar o currículo: ${message.slice(0, 300)}` },
+      { error: 'Erro ao analisar o currículo.' },
       { status: 500 }
     );
   }

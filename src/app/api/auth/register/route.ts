@@ -44,7 +44,9 @@ export async function POST(req: NextRequest) {
 
     const existing = await userRepository.findByEmail(email);
     if (existing) {
-      return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 });
+      // Mensagem unificada (mesma da validação) para não confirmar quais emails
+      // existem no sistema — evita enumeração de contas (relatório item 1.10).
+      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);

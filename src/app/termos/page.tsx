@@ -357,6 +357,9 @@ export default function TermosPage() {
               <li style={{ marginBottom: 8 }}>
                 <strong>Como gerenciar:</strong> Você pode limpar cookies e dados de sites pelas configurações do seu navegador a qualquer momento. Ao limpar os dados do site, o aviso de cookies será exibido novamente.
               </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Tracking de afiliados (Impact):</strong> O script de recomendação de cursos da plataforma Impact é carregado <strong>somente após o seu consentimento</strong> (&quot;Aceitar&quot; no aviso de cookies), da mesma forma que o Google Analytics. Ele permite atribuir as recomendações de cursos que você acessa via links do site.
+              </li>
               <li style={{ marginBottom: 0 }}>
                 <strong>Links de afiliados:</strong> Os links de cursos (Udemy) podem conter parâmetros técnicos de identificação (ex: <code>?ref=</code>) que não identificam você pessoalmente e não configuram cookies de rastreamento no nosso site.
               </li>
@@ -395,16 +398,16 @@ export default function TermosPage() {
                 <strong>Correção:</strong> atualizar dados incompletos, inexatos ou desatualizados.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Eliminação:</strong> solicitar a exclusão dos seus dados pessoais e do seu perfil.
+                <strong>Eliminação:</strong> solicitar a exclusão dos seus dados pessoais e do seu perfil. No painel <Link href="/perfil" style={{ color: '#ccff00' }}>Meu Perfil</Link> você encontra o botão &quot;Excluir minha conta&quot;, que remove sua conta e todos os dados associados (Art. 18, VI).
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Portabilidade:</strong> receber seus dados em formato estruturado, quando aplicável.
+                <strong>Portabilidade:</strong> receber seus dados em formato estruturado, quando aplicável. No painel <Link href="/perfil" style={{ color: '#ccff00' }}>Meu Perfil</Link> você encontra o botão &quot;Exportar meus dados&quot;, que gera um arquivo JSON legível e reutilizável (Art. 18, V).
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Revogação de consentimento:</strong> retirar o consentimento de cookies de análise a qualquer momento.
+                <strong>Revogação de consentimento:</strong> retirar o consentimento de cookies de análise e de tracking a qualquer momento pelo aviso de cookies ou pelas configurações do navegador.
               </li>
               <li style={{ marginBottom: 0 }}>
-                <strong>Como exercer:</strong> envie sua solicitação pelos canais de contato informados na página <Link href="/sobre" style={{ color: '#ccff00' }}>Sobre</Link>. Responderemos no prazo legal.
+                <strong>Como exercer:</strong> envie sua solicitação pelos canais de contato informados na página <Link href="/sobre" style={{ color: '#ccff00' }}>Sobre</Link> ou diretamente ao nosso Encarregado de Dados (seção 9 abaixo). Responderemos no prazo legal.
               </li>
             </ul>
           </section>
@@ -430,18 +433,160 @@ export default function TermosPage() {
             >
               8. Retenção de Dados
             </h2>
+            <p>
+              Os prazos de retenção abaixo são aplicados automaticamente por rotinas de limpeza agendadas no servidor, além da exclusão manual pela sua conta.
+            </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>
-                <strong>Perfil e currículo:</strong> mantidos enquanto sua conta estiver ativa. Você pode excluir seu perfil a qualquer momento.
+                <strong>Perfil e currículo:</strong> mantidos enquanto sua conta estiver ativa. Você pode excluir seu perfil a qualquer momento (o que remove também todos os dados associados).
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Histórico de conversas:</strong> as mensagens do chat são armazenadas para continuidade da conversa e podem ser apagadas por você a qualquer momento.
+                <strong>Histórico de conversas:</strong> as mensagens do chat são armazenadas para continuidade da conversa e podem ser apagadas por você a qualquer momento. Chats sem nenhuma atividade há mais de 12 meses são removidos automaticamente.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Dados anônimos:</strong> vagas públicas e métricas agregadas de uso não contêm dados pessoais e são mantidas para o funcionamento e melhoria do serviço.
+                <strong>Cache de análises de IA:</strong> resultados de análise (ATS, fit, entrevistas) são cacheados por até 30 dias e removidos automaticamente após o vencimento.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Sessão (JWT):</strong> o token de sessão fica em cookie seguro (HttpOnly) e é encerrado no logout, na exclusão da conta ou por expiração natural.
               </li>
               <li style={{ marginBottom: 0 }}>
-                <strong>Cache de análises de IA:</strong> resultados de análise (ATS, fit, entrevistas) são cacheados por até 30 dias para reduzir custos e acelerar respostas.
+                <strong>Dados anônimos:</strong> vagas públicas e métricas agregadas de uso não contêm dados pessoais e são mantidas para o funcionamento e melhoria do serviço.
+              </li>
+            </ul>
+          </section>
+
+          {/* Seção 9 - Controlador e Encarregado */}
+          <section
+            style={{
+              backgroundColor: '#0f172a',
+              border: '2px solid #ccff00',
+              padding: '28px',
+              boxShadow: '4px 4px 0px rgba(204,255,0,0.15)',
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-block',
+                backgroundColor: '#ccff00',
+                color: '#020617',
+                padding: '2px 8px',
+                fontWeight: 900,
+                fontSize: '0.65rem',
+                textTransform: 'uppercase',
+                marginBottom: 12,
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              📋 ART. 41 — LGPD
+            </div>
+            <h2
+              style={{
+                color: '#ffffff',
+                fontSize: '1.25rem',
+                fontWeight: 800,
+                marginTop: 0,
+                marginBottom: 16,
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              9. Controlador de Dados e Encarregado (DPO)
+            </h2>
+            <p>
+              Em conformidade com o <strong>Art. 41 da LGPD</strong>, o controlador das operações de tratamento é o <strong>Radar Unificando</strong> (serviço operado pelo desenvolvedor Renato Bezerra). <em>CNPJ e endereço do controlador: a preencher.</em>
+            </p>
+            <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Encarregado de Dados (DPO):</strong> Renato Bezerra.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Canal de contato direto:</strong>{' '}
+                <a href="mailto:privacidade@unificando.com.br" style={{ color: '#ccff00' }}>privacidade@unificando.com.br</a>{' '}
+                (assuntos de proteção de dados, direitos LGPD e comunicação com a ANPD). Também é possível usar o formulário da página{' '}
+                <Link href="/sobre" style={{ color: '#ccff00' }}>Sobre</Link>.
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <strong>Prazo de resposta:</strong> as solicitações são respondidas em até 15 dias úteis, conforme o Art. 19 da LGPD.
+              </li>
+            </ul>
+          </section>
+
+          {/* Seção 10 - Base Legal */}
+          <section
+            style={{
+              backgroundColor: '#0f172a',
+              border: '2px solid #1e293b',
+              padding: '28px',
+            }}
+          >
+            <h2
+              style={{
+                color: '#ccff00',
+                fontSize: '1.25rem',
+                fontWeight: 800,
+                marginTop: 0,
+                marginBottom: 16,
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              10. Base Legal para o Tratamento de Dados (Art. 7º)
+            </h2>
+            <p>
+              Cada categoria de dados tratada possui uma base legal específica, conforme o <strong>Art. 7º da LGPD</strong>:
+            </p>
+            <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Cadastro (nome, e-mail e senha):</strong> execução do contrato de prestação de serviço (Art. 7º, V) e, para a senha, segurança de dados.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Currículo e análises com IA (score ATS, fit, entrevistas):</strong> seu consentimento (Art. 7º, I). Seus dados são redigidos automaticamente (PII) antes do envio a provedores de IA (ver seção 11).
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Cookies de análise (Google Analytics) e tracking de afiliados (Impact):</strong> seu consentimento (Art. 7º, I), que pode ser revogado a qualquer momento.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Logs técnicos e proteção contra abuso (rate limiting, histórico de uso):</strong> legítimo interesse do controlador (Art. 7º, IX) na segurança e integridade do serviço.
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <strong>Obrigações legais e regulatórias:</strong> cumprimento de obrigação legal (Art. 7º, II), quando aplicável.
+              </li>
+            </ul>
+          </section>
+
+          {/* Seção 11 - Transferência Internacional */}
+          <section
+            style={{
+              backgroundColor: '#0f172a',
+              border: '2px solid #1e293b',
+              padding: '28px',
+            }}
+          >
+            <h2
+              style={{
+                color: '#ccff00',
+                fontSize: '1.25rem',
+                fontWeight: 800,
+                marginTop: 0,
+                marginBottom: 16,
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, monospace',
+              }}
+            >
+              11. Transferência Internacional de Dados (Art. 33)
+            </h2>
+            <p>
+              Para fornecer as análises por inteligência artificial, partes do seu currículo podem ser processadas por provedores de IA localizados fora do Brasil (por exemplo, provedores nos Estados Unidos). Essa transferência observa o <strong>Art. 33 da LGPD</strong> e adota salvaguardas:
+            </p>
+            <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Minimização de dados:</strong> apenas o texto do currículo necessário para a análise é enviado, com dados pessoais sensíveis redigidos automaticamente (CPF, CNPJ, RG, telefone, cartão).
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Nenhum dado é vendido:</strong> os provedores processam os dados apenas para executar a análise solicitada, sem cessão a terceiros para finalidade própria.
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <strong>Mecanismos de conformidade:</strong> utilizamos provedores com cláusulas contratuais padrão (SCCs) ou programas de adequação reconhecidos internacionalmente, quando aplicável.
               </li>
             </ul>
           </section>

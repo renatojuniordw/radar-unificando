@@ -1,12 +1,27 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Link from "next/link";
-import { ANALYTICS } from "@/lib/core/constants";
+import { ANALYTICS, IMPACT } from "@/lib/core/constants";
 
 const CONSENT_KEY = "cookie_consent";
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || ANALYTICS.gaId;
+
+/**
+ * Script de tracking da Impact (afiliados). Antes vivia incondicionalmente no
+ * layout.tsx via <Script afterInteractive>; agora só é injetado após o
+ * consentimento de cookies (LGPD — relatório itens 3.2/3.3).
+ */
+function loadImpactScript() {
+  // Re-consentimento (recusar e aceitar de novo) não deve duplicar o script.
+  if (document.getElementById("impact-tracking")) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.id = "impact-tracking";
+  script.textContent = `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('${IMPACT.scriptUrl}','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');`;
+  document.body.appendChild(script);
+}
 
 type Consent = "accepted" | "declined" | null;
 
@@ -34,6 +49,10 @@ function getServerSnapshot(): Consent {
  */
 export function CookieConsent() {
   const consent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  useEffect(() => {
+    if (consent === "accepted") loadImpactScript();
+  }, [consent]);
 
   const choose = (value: Exclude<Consent, null>) => {
     try {
@@ -89,8 +108,9 @@ export function CookieConsent() {
             >
               <strong style={{ color: "#ccff00" }}>🍪 AVISO DE COOKIES</strong>{" "}
               Usamos cookies essenciais para o funcionamento (ex.: sua sessão de
-              login) e, com seu consentimento, o Google Analytics para entender
-              como o site é usado. Você pode aceitar ou recusar.{" "}
+              login) e, com seu consentimento, o Google Analytics (para entender
+              como o site é usado) e o tracking de afiliados da Impact (para
+              recomendar cursos). Você pode aceitar ou recusar.{" "}
               <Link
                 href="/termos#cookies"
                 style={{ color: "#ccff00", textDecoration: "underline" }}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EXTENSION_FEATURES } from "@/lib/constants/home";
+import { toScriptJson } from "@/lib/core/seo/jsonld";
 import {
   Gauge,
   RefreshCw,
@@ -95,7 +96,7 @@ export default function ExtensaoPage() {
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD_SCHEMA) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(JSON_LD_SCHEMA) }}
       />
       {/* Hero Section */}
       <section

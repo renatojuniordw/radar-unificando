@@ -5,6 +5,12 @@ import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import { skillSlug } from "@/lib/core/courses/course-matcher";
 import { SITE } from "@/lib/core/constants";
 
+// Dinâmico: o sitemap consulta as categorias de vagas no banco (findRoleCategories).
+// No build (ex.: Docker, sem banco) essa consulta falha e as URLs /vagas/* ficam de
+// fora do sitemap de produção. force-dynamic gera o sitemap em runtime (banco
+// disponível), sem prerender no build — elimina o erro de conexão do log de build.
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE.url;
   // Data fixa para permitir cache estático do sitemap

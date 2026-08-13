@@ -53,11 +53,12 @@ describe('POST /api/auth/register', () => {
     expect((await res.json()).error).toContain('maiúscula');
   });
 
-  it('should_return_409_when_email_already_exists', async () => {
+  it('should_return_400_when_email_already_exists_without_leaking_that_it_exists', async () => {
+    // Anti-enumeração: mensagem unificada com a validação genérica (relatório item 1.10)
     vi.mocked(userRepository.findByEmail).mockResolvedValue({ id: '1' } as any);
     const res = await POST(makeRequest({ email: 'existing@test.com', password: 'ValidP@ssword123' }));
-    expect(res.status).toBe(409);
-    expect((await res.json()).error).toContain('cadastrado');
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('Dados inválidos');
   });
 
   it('should_return_201_on_successful_registration', async () => {

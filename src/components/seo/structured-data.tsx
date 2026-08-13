@@ -1,4 +1,5 @@
 import { SITE } from '@/lib/core/constants';
+import { toScriptJson } from '@/lib/core/seo/jsonld';
 
 export function StructuredData() {
   const websiteSchema = {
@@ -52,15 +53,15 @@ export function StructuredData() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(websiteSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(organizationSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(webAppSchema) }}
       />
     </>
   );

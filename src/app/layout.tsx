@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
 import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
@@ -151,13 +150,6 @@ export default function RootLayout({
         <MobileFloatingBar />
         <PwaRegister />
         <CookieConsent />
-        <Script
-          id="impact-tracking"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('${IMPACT.scriptUrl}','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');`,
-          }}
-        />
       </body>
     </html>
   );

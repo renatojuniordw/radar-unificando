@@ -2,8 +2,9 @@ import { Box, Typography } from '@mui/material';
 import { IMPACT } from '@/lib/core/constants';
 
 // Deep-link estático de afiliado da Impact (formato trk.udemy.com/c/{account}/{campaign}/{ad}).
-// O script da Impact (impactStat) em layout.tsx faz o tracking de clique/impressão
-// automaticamente; buildAffiliateUrl não o altera (só modifica URLs udemy.com).
+// O script da Impact (impactStat) é carregado no CookieConsent (só após consentimento
+// de cookies) e faz o tracking de clique/impressão automaticamente; buildAffiliateUrl
+// não o altera (só modifica URLs udemy.com).
 const FALLBACK_URL = IMPACT.udemyFallbackUrl;
 
 export function CourseFallbackCta() {

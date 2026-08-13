@@ -4,6 +4,7 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { SITE } from '@/lib/core/constants';
+import { toScriptJson } from '@/lib/core/seo/jsonld';
 
 export const revalidate = 86400; // ISR diário
 
@@ -43,7 +44,7 @@ export default function GuiaAtsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: toScriptJson({
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
             mainEntity: faq.map((f) => ({
