@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import { UserMenu } from "./user-menu";
 import { MobileNav } from "./mobile-nav";
+import { MAIN_NAV_ITEMS } from "./nav-config";
 
 export function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -27,47 +28,44 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-              <Link
-                href="/busca"
-                className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
-              >
-                BUSCA
-              </Link>
+            <div className="flex items-center gap-2 md:gap-3 lg:gap-4 shrink-0">
+              <nav className="hidden md:flex items-center gap-2.5 lg:gap-4">
+                {MAIN_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  if (item.highlight) {
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-[0.7rem] lg:text-[0.75rem] tracking-wider uppercase px-2 py-0.5 lg:px-2.5 lg:py-1 no-underline font-mono shadow-[2px_2px_0px_#fff] transition-all hover:bg-[#d9ff33] active:scale-95 flex items-center gap-1 whitespace-nowrap"
+                      >
+                        <Icon size={12} fill="currentColor" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  }
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="text-[#94a3b8] text-[0.7rem] lg:text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00] whitespace-nowrap"
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
 
-              <Link
-                href="/cursos"
-                className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
-              >
-                CURSOS
-              </Link>
-
-              <Link
-                href="/sobre"
-                className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
-              >
-                SOBRE
-              </Link>
-
-              <Link
-                href="/extensao"
-                className="hidden sm:inline-flex text-[#94a3b8] text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00]"
-              >
-                EXTENSÃO
-              </Link>
-
-              <div className="hidden sm:block">
-                <UserMenu />
-              </div>
+              <UserMenu />
 
               {/* Mobile Hamburger Toggle Button */}
               <button
                 onClick={() => setIsMobileNavOpen((prev) => !prev)}
                 aria-label="Abrir menu principal"
                 aria-expanded={isMobileNavOpen}
-                className="sm:hidden flex items-center justify-center w-11 h-11 bg-[#0f172a] text-white border-2 border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] cursor-pointer transition-colors active:scale-95 shrink-0"
+                className="md:hidden flex items-center justify-center w-10 h-10 bg-[#0f172a] text-white border-2 border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] cursor-pointer transition-colors active:scale-95 shrink-0"
               >
-                <Menu size={22} />
+                <Menu size={20} />
               </button>
             </div>
           </div>
@@ -82,4 +80,5 @@ export function Header() {
     </>
   );
 }
+
 

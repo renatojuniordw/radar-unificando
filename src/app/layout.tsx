@@ -96,7 +96,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" className={inter.variable} data-scroll-behavior="smooth">
       <head>
         <meta
           name="impact-site-verification"

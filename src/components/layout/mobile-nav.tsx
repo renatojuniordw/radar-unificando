@@ -5,19 +5,17 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import {
   X,
-  Search,
-  Info,
   Puzzle,
-  Heart,
   User,
   LogOut,
   ShieldCheck,
   ChevronRight,
   FileText,
   Sparkles,
-  GraduationCap,
 } from 'lucide-react';
 import { LINKS } from '@/lib/core/constants';
+
+import { MAIN_NAV_ITEMS } from './nav-config';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -148,7 +146,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   </Link>
 
                   <Link
-                    href="/extensao"
+                    href="/extensao/conectar"
                     onClick={onClose}
                     className="flex items-center justify-center gap-2 py-2.5 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all active:scale-95"
                   >
@@ -200,91 +198,48 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               NAVEGAÇÃO PRINCIPAL
             </p>
 
-            <Link
-              href="/busca"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <Search size={16} className="text-[#ccff00]" />
-                <span>BUSCA DE VAGAS</span>
-              </div>
-              <ChevronRight size={16} className="text-[#64748b]" />
-            </Link>
+            {MAIN_NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              if (item.highlight) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className="flex items-center justify-between p-3 min-h-[44px] bg-[#ccff00]/10 text-[#ccff00] border-2 border-[#ccff00] no-underline font-mono text-xs font-black uppercase tracking-wider hover:bg-[#ccff00] hover:text-[#020617] transition-all shadow-[2px_2px_0px_#ccff00] active:scale-98"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon size={16} fill="currentColor" />
+                      <span>{item.mobileLabel}</span>
+                    </div>
+                    {item.badge && (
+                      <span className="text-[10px] font-mono underline">{item.badge}</span>
+                    )}
+                  </Link>
+                );
+              }
 
-            <Link
-              href="/vagas"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <Sparkles size={16} className="text-[#ccff00]" />
-                <span>VAGAS POR CARGO</span>
-              </div>
-              <ChevronRight size={16} className="text-[#64748b]" />
-            </Link>
-
-            <Link
-              href="/cursos"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <GraduationCap size={16} className="text-[#ccff00]" />
-                <span>CURSOS RECOMENDADOS</span>
-              </div>
-              <ChevronRight size={16} className="text-[#64748b]" />
-            </Link>
-
-            <Link
-              href="/guia-ats"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <FileText size={16} className="text-[#ccff00]" />
-                <span>GUIA ATS & CURRÍCULO</span>
-              </div>
-              <ChevronRight size={16} className="text-[#64748b]" />
-            </Link>
-
-            <Link
-              href="/extensao"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <Puzzle size={16} className="text-[#ccff00]" />
-                <span>EXTENSÃO CHROME</span>
-              </div>
-              <span className="bg-[#020617] text-[#ccff00] border border-[#ccff00] px-1.5 py-0.5 text-[9px] font-black tracking-wider">
-                EM BREVE
-              </span>
-            </Link>
-
-            <Link
-              href="/sobre"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <Info size={16} className="text-[#ccff00]" />
-                <span>SOBRE O RADAR</span>
-              </div>
-              <ChevronRight size={16} className="text-[#64748b]" />
-            </Link>
-
-            <Link
-              href="/doar"
-              onClick={onClose}
-              className="flex items-center justify-between p-3 min-h-[44px] bg-[#ccff00]/10 text-[#ccff00] border-2 border-[#ccff00] no-underline font-mono text-xs font-black uppercase tracking-wider hover:bg-[#ccff00] hover:text-[#020617] transition-all shadow-[2px_2px_0px_#ccff00] active:scale-98"
-            >
-              <div className="flex items-center gap-2.5">
-                <Heart size={16} fill="currentColor" />
-                <span>APOIAR O PROJETO</span>
-              </div>
-              <span className="text-[10px] font-mono underline">PIX</span>
-            </Link>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon size={16} className="text-[#ccff00]" />
+                    <span>{item.mobileLabel}</span>
+                  </div>
+                  {item.badge ? (
+                    <span className="bg-[#020617] text-[#ccff00] border border-[#ccff00] px-1.5 py-0.5 text-[9px] font-black tracking-wider">
+                      {item.badge}
+                    </span>
+                  ) : (
+                    <ChevronRight size={16} className="text-[#64748b]" />
+                  )}
+                </Link>
+              );
+            })}
 
             <Link
               href="/termos"

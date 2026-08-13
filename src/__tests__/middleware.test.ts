@@ -27,7 +27,7 @@ vi.mock('next/server', () => ({
   NextRequest: class {},
 }));
 
-import middleware, { config as middlewareConfig } from '@/proxy';
+import proxyHandler, { config as middlewareConfig } from '@/proxy';
 import { NextResponse } from 'next/server';
 
 type ReqOverrides = {
@@ -65,6 +65,12 @@ function makeReq({
     url: `http://localhost${path}`,
   };
 }
+
+// O wrapper `auth()` do next-auth tipa o handler com `void | Response`; o teste
+// mocka o next-auth e o next/server, então o retorno real é o objeto mockado.
+const middleware = proxyHandler as unknown as (
+  req: ReturnType<typeof makeReq>,
+) => Promise<{ headers: Headers; status: number; body?: unknown; url?: string }>;
 
 const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',

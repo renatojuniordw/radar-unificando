@@ -34,7 +34,7 @@ describe('checkRateLimit (rate limiter rejection contract)', () => {
   });
 
   it('should_propagate_rejection_fields_when_rate_limited', async () => {
-    consumeMock.mockRejectedValue(new RateLimiterRes({ remainingPoints: 3, msBeforeNext: 5000, consumedPoints: 2 }));
+    consumeMock.mockRejectedValue(new RateLimiterRes({ remainingPoints: 3, msBeforeNext: 5000, consumedPoints: 2 } as never));
     const result = await checkRateLimit('limit-key', 'chat');
     expect(result.success).toBe(false);
     expect(result.remainingPoints).toBe(3);
@@ -43,7 +43,7 @@ describe('checkRateLimit (rate limiter rejection contract)', () => {
   });
 
   it('should_default_rejection_fields_when_they_are_missing', async () => {
-    consumeMock.mockRejectedValue(new RateLimiterRes({ remainingPoints: 0 }));
+    consumeMock.mockRejectedValue(new RateLimiterRes({ remainingPoints: 0 } as never));
     const result = await checkRateLimit('limit-key', 'chat');
     expect(result.success).toBe(false);
     expect(result.remainingPoints).toBe(0);

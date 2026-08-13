@@ -1,14 +1,8 @@
 import type { MetadataRoute } from "next";
-import { publicJobRepository } from "@/lib/infrastructure/repositories";
-import { slugify } from "@/lib/core/vagas/slug";
 import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import { skillSlug } from "@/lib/core/courses/course-matcher";
 import { SITE } from "@/lib/core/constants";
 
-// Dinâmico: o sitemap consulta as categorias de vagas no banco (findRoleCategories).
-// No build (ex.: Docker, sem banco) essa consulta falha e as URLs /vagas/* ficam de
-// fora do sitemap de produção. force-dynamic gera o sitemap em runtime (banco
-// disponível), sem prerender no build — elimina o erro de conexão do log de build.
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -29,12 +23,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: "weekly",
       priority: 0.8,
-    },
-    {
-      url: `${base}/vagas`,
-      lastModified,
-      changeFrequency: "daily",
-      priority: 0.9,
     },
     {
       url: `${base}/guia-ats`,
@@ -87,19 +75,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Rotas dinâmicas de categorias de vagas (indexáveis — SEO)
-  let categoryRoutes: MetadataRoute.Sitemap = [];
-  try {
-    const categories = await publicJobRepository.findRoleCategories();
-    categoryRoutes = categories.map((c) => ({
-      url: `${base}/vagas/${slugify(c.roleCategory)}`,
-      lastModified,
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    }));
-  } catch (error) {
-    console.error("[sitemap] Erro ao buscar categorias de vagas:", error);
-  }
-
-  return [...staticRoutes, ...courseRoutes, ...categoryRoutes];
+  return [...staticRoutes, ...courseRoutes];
 }

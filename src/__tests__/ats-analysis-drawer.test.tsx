@@ -76,7 +76,7 @@ describe('AtsAnalysisDrawer', () => {
   });
 
   it('should_send_job_description_and_job_key_from_id_in_request_body', async () => {
-    const fetchMock = vi.fn(() =>
+    const fetchMock = vi.fn((_url: RequestInfo | URL, _init?: RequestInit) =>
       Promise.resolve({ ok: true, status: 200, json: async () => okResult }),
     );
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -91,7 +91,7 @@ describe('AtsAnalysisDrawer', () => {
   });
 
   it('should_build_job_key_from_title_and_company_when_id_is_missing', async () => {
-    const fetchMock = vi.fn(() =>
+    const fetchMock = vi.fn((_url: RequestInfo | URL, _init?: RequestInit) =>
       Promise.resolve({ ok: true, status: 200, json: async () => okResult }),
     );
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -104,7 +104,7 @@ describe('AtsAnalysisDrawer', () => {
   });
 
   it('should_omit_job_description_when_job_has_none', async () => {
-    const fetchMock = vi.fn(() =>
+    const fetchMock = vi.fn((_url: RequestInfo | URL, _init?: RequestInit) =>
       Promise.resolve({ ok: true, status: 200, json: async () => okResult }),
     );
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -279,7 +279,7 @@ describe('AtsAnalysisDrawer', () => {
     vi.useFakeTimers();
     let capturedSignal: AbortSignal | undefined;
     mockFetch((_url, init) => {
-      capturedSignal = init?.signal;
+      capturedSignal = init?.signal ?? undefined;
       return new Promise(() => {});
     });
 
@@ -297,7 +297,7 @@ describe('AtsAnalysisDrawer', () => {
     vi.useFakeTimers();
     mockFetch((_url, init) =>
       new Promise((_resolve, reject) => {
-        init?.signal.addEventListener('abort', () =>
+        init?.signal?.addEventListener('abort', () =>
           reject(new DOMException('Aborted', 'AbortError')),
         );
       }),
@@ -316,7 +316,7 @@ describe('AtsAnalysisDrawer', () => {
   });
 
   it('should_build_job_key_with_empty_company_and_omit_company_suffix_when_company_missing', async () => {
-    const fetchMock = vi.fn(() =>
+    const fetchMock = vi.fn((_url: RequestInfo | URL, _init?: RequestInit) =>
       Promise.resolve({ ok: true, status: 200, json: async () => okResult }),
     );
     global.fetch = fetchMock as unknown as typeof fetch;

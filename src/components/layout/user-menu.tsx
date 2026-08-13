@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { User, LogOut, ChevronDown, ShieldCheck, Info, Puzzle } from 'lucide-react';
+import { User, LogOut, ChevronDown, ShieldCheck, Puzzle } from 'lucide-react';
 
 /**
  * Safely extracts only the first name of the user.
@@ -163,16 +163,6 @@ export function UserMenu() {
             >
               <Puzzle size={14} />
               <span>CONECTAR EXTENSÃO</span>
-            </Link>
-
-            {/* Quick Link to Sobre on Mobile */}
-            <Link
-              href="/sobre"
-              onClick={() => setIsOpen(false)}
-              className="flex sm:hidden items-center gap-2.5 p-2 text-[#94a3b8] text-xs font-bold font-mono no-underline bg-[#1e293b]/50 border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
-            >
-              <Info size={14} />
-              <span>SOBRE O RADAR</span>
             </Link>
 
             <button
