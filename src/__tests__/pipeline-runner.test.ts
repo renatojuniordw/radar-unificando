@@ -21,10 +21,12 @@ import { runPipeline, ANONYMOUS_USER_ID } from '@/lib/core/pipeline/pipeline-run
 import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { runGupyStep } from '@/lib/core/pipeline/steps/gupy-step';
+import { pipelineCache } from '@/lib/infrastructure/cache/pipeline-cache';
 
 describe('runPipeline', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    pipelineCache.clear();
     mockDiscovery.mockResolvedValue(3);
     vi.mocked(runGupyStep).mockResolvedValue([]);
   });

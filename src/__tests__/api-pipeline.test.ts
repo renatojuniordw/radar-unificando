@@ -10,7 +10,7 @@ vi.mock('@/lib/core/pipeline/progress-emitter', () => ({
   progressEmitter: { on: vi.fn(), emit: vi.fn(), removeAll: vi.fn() },
 }));
 vi.mock('@/lib/infrastructure/security/rate-limiter', () => ({
-  pipelineLimiter: { check: vi.fn(), windowMs: 300_000 },
+  pipelineLimiter: { check: vi.fn(), windowMs: 60_000 },
   pipelineAutoLimiter: { check: vi.fn(), windowMs: 300_000 },
 }));
 vi.mock('@/lib/core/pipeline/steps/gupy-step', () => ({
@@ -121,7 +121,7 @@ describe('Pipeline API', () => {
       const res = await PipelinePOST(makeRequest({ auto: false }));
       const body = await res.json();
       expect(res.status).toBe(200);
-      expect(body.cooldownSeconds).toBe(300);
+      expect(body.cooldownSeconds).toBe(60);
     });
   });
 
