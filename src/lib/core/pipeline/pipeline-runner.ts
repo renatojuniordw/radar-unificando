@@ -16,6 +16,36 @@ export interface RunPipelineOptions {
   discoveryEnabled?: boolean;
 }
 
+async function fetchFreshJobs(
+  runId: string,
+  userId: string,
+  companies: string[],
+  queries: string[],
+  isLoggedIn: boolean,
+  discoveryEnabled: boolean,
+) {
+  const expandedQueries = await expandQueries(queries);
+  const [gupyJobs, inhireJobs, discCount] = await Promise.all([
+    runGupyStep(runId, {
+      companies,
+      isLoggedIn,
+      queries: expandedQueries,
+      relevanceQueries: queries,
+    }),
+    runInHireStep(runId, { companies, queries }),
+    discoveryEnabled ? runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
+  ]);
+
+  const allJobs = dedupEngine.mergeSources(gupyJobs, inhireJobs);
+  pipelineCache.set(companies, queries, allJobs);
+  return {
+    allJobs,
+    gupyCount: gupyJobs.length,
+    inhireCount: inhireJobs.length,
+    newCompaniesFound: discCount,
+  };
+}
+
 export async function runPipeline(
   runId: string,
   userId: string,
@@ -27,7 +57,7 @@ export async function runPipeline(
   try {
     const discoveryEnabled = options.discoveryEnabled !== false && isLoggedIn;
 
-    const cachedJobs = pipelineCache.get(companies, queries);
+    const { jobs: cachedJobs, isStale } = pipelineCache.get(companies, queries);
     let allJobs;
     let gupyCount = 0;
     let inhireCount = 0;
@@ -37,29 +67,22 @@ export async function runPipeline(
       progressEmitter.emit(runId, {
         type: 'step_complete',
         step: 'Cache',
-        message: `Resultados obtidos em cache (${cachedJobs.length} vagas encontadas)`,
+        message: `Resultados obtidos em cache (${cachedJobs.length} vagas encontradas)${isStale ? ' - atualizando em segundo plano...' : ''}`,
       });
       allJobs = cachedJobs;
+
+      if (isStale) {
+        // Stale-While-Revalidate: revalida em segundo plano sem bloquear a resposta ao usuário
+        void fetchFreshJobs(runId, userId, companies, queries, isLoggedIn, discoveryEnabled).catch((err) => {
+          console.warn('[pipeline-runner] Error during background revalidation:', err);
+        });
+      }
     } else {
-      // Expansão híbrida: mapa curado + IA cacheada. Fail-open — nunca quebra a busca.
-      const expandedQueries = await expandQueries(queries);
-      const [gupyJobs, inhireJobs, discCount] = await Promise.all([
-        runGupyStep(runId, {
-          companies,
-          isLoggedIn,
-          queries: expandedQueries,
-          relevanceQueries: queries, // filtro de relevância usa as originais
-        }),
-        runInHireStep(runId, { companies, queries }),
-        discoveryEnabled ? runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
-      ]);
-
-      gupyCount = gupyJobs.length;
-      inhireCount = inhireJobs.length;
-      newCompaniesFound = discCount;
-
-      allJobs = dedupEngine.mergeSources(gupyJobs, inhireJobs);
-      pipelineCache.set(companies, queries, allJobs);
+      const fresh = await fetchFreshJobs(runId, userId, companies, queries, isLoggedIn, discoveryEnabled);
+      allJobs = fresh.allJobs;
+      gupyCount = fresh.gupyCount;
+      inhireCount = fresh.inhireCount;
+      newCompaniesFound = fresh.newCompaniesFound;
     }
 
     // Pool público de vagas (SEO): alimentado em toda execução, logada ou anônima.

@@ -17,44 +17,48 @@ const mockJobs: Job[] = [
   },
 ];
 
-describe('PipelineCache', () => {
+describe('PipelineCache (SWR)', () => {
   let cache: PipelineCache;
 
   beforeEach(() => {
-    cache = new PipelineCache(1000); // 1s TTL
+    cache = new PipelineCache(1000, 5000); // 1s stale, 5s expires
   });
 
-  it('deve retornar null para chaves inexistentes', () => {
-    expect(cache.get(['Acme'], ['ui/ux'])).toBeNull();
+  it('deve retornar jobs: null e isStale: true para chaves inexistentes', () => {
+    expect(cache.get(['Acme'], ['ui/ux'])).toEqual({ jobs: null, isStale: true });
   });
 
-  it('deve armazenar e recuperar vagas do cache', () => {
+  it('deve armazenar e recuperar vagas do cache como isStale: false quando recente', () => {
     cache.set(['Acme'], ['ui/ux'], mockJobs);
     const result = cache.get(['Acme'], ['ui/ux']);
-    expect(result).toEqual(mockJobs);
+    expect(result).toEqual({ jobs: mockJobs, isStale: false });
   });
 
   it('deve normalizar maiúsculas/minúsculas e ordenação de chaves', () => {
     cache.set(['Acme', 'Beta'], ['UI/UX', 'Frontend'], mockJobs);
     const result = cache.get(['beta', 'ACME'], ['frontend', 'ui/ux']);
-    expect(result).toEqual(mockJobs);
+    expect(result.jobs).toEqual(mockJobs);
   });
 
-  it('deve expirar os itens após o tempo de TTL', async () => {
+  it('deve marcar como isStale: true após passar o tempo de staleMs, mas antes de expiresMs', () => {
     vi.useFakeTimers();
-    cache.set(['Acme'], ['ui/ux'], mockJobs, 500);
+    cache.set(['Acme'], ['ui/ux'], mockJobs, 1000, 5000);
 
-    expect(cache.get(['Acme'], ['ui/ux'])).toEqual(mockJobs);
+    expect(cache.get(['Acme'], ['ui/ux'])).toEqual({ jobs: mockJobs, isStale: false });
 
-    vi.advanceTimersByTime(600);
+    vi.advanceTimersByTime(1200);
 
-    expect(cache.get(['Acme'], ['ui/ux'])).toBeNull();
+    expect(cache.get(['Acme'], ['ui/ux'])).toEqual({ jobs: mockJobs, isStale: true });
+
+    vi.advanceTimersByTime(4000);
+
+    expect(cache.get(['Acme'], ['ui/ux'])).toEqual({ jobs: null, isStale: true });
     vi.useRealTimers();
   });
 
   it('deve limpar todos os itens com o método clear', () => {
     cache.set(['Acme'], ['ui/ux'], mockJobs);
     cache.clear();
-    expect(cache.get(['Acme'], ['ui/ux'])).toBeNull();
+    expect(cache.get(['Acme'], ['ui/ux'])).toEqual({ jobs: null, isStale: true });
   });
 });

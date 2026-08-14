@@ -347,6 +347,27 @@ export function useJobSearch() {
     handleStart,
   ]);
 
+  const [clientFilter, setClientFilter] = useState("");
+
+  const filteredJobs = useMemo(() => {
+    if (!clientFilter.trim()) return jobs;
+    const term = clientFilter.trim().toLowerCase();
+    return jobs.filter((j) => {
+      const matchTitle = j.title?.toLowerCase().includes(term);
+      const matchCompany = j.company?.toLowerCase().includes(term);
+      const matchLocation = j.location?.toLowerCase().includes(term);
+      const matchCategory = j.roleCategory?.toLowerCase().includes(term);
+      const matchPlatform = j.platform?.toLowerCase().includes(term);
+      return (
+        matchTitle ||
+        matchCompany ||
+        matchLocation ||
+        matchCategory ||
+        matchPlatform
+      );
+    });
+  }, [jobs, clientFilter]);
+
   return {
     session,
     profile,
@@ -358,6 +379,9 @@ export function useJobSearch() {
     autoSyncing,
     lastRunAt,
     jobs,
+    filteredJobs,
+    clientFilter,
+    setClientFilter,
     loading,
     roleCategories,
     snackbar,

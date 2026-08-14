@@ -2,15 +2,25 @@ import type { Job } from '@/lib/types/job';
 
 interface CacheEntry {
   jobs: Job[];
+  staleAt: number;
   expiresAt: number;
 }
 
-const DEFAULT_TTL_MS = 15 * 60 * 1000; // 15 minutos
+export interface CacheResult {
+  jobs: Job[] | null;
+  isStale: boolean;
+}
+
+const DEFAULT_STALE_MS = 5 * 60 * 1000; // 5 minutos (stale: precisa de revalidação em segundo plano)
+const DEFAULT_EXPIRES_MS = 30 * 60 * 1000; // 30 minutos (hard expiration: remove do cache)
 
 export class PipelineCache {
   private store = new Map<string, CacheEntry>();
 
-  constructor(private ttlMs: number = DEFAULT_TTL_MS) {}
+  constructor(
+    private staleMs: number = DEFAULT_STALE_MS,
+    private expiresMs: number = DEFAULT_EXPIRES_MS
+  ) {}
 
   private makeKey(companies: string[], queries: string[]): string {
     const sortedCompanies = [...companies].map(c => c.trim().toLowerCase()).sort().join(',');
@@ -18,28 +28,35 @@ export class PipelineCache {
     return `c:${sortedCompanies}|q:${sortedQueries}`;
   }
 
-  get(companies: string[], queries: string[]): Job[] | null {
+  get(companies: string[], queries: string[]): CacheResult {
     const key = this.makeKey(companies, queries);
     const entry = this.store.get(key);
 
     if (!entry) {
-      return null;
+      return { jobs: null, isStale: true };
     }
 
-    if (Date.now() > entry.expiresAt) {
+    const now = Date.now();
+
+    if (now > entry.expiresAt) {
       this.store.delete(key);
-      return null;
+      return { jobs: null, isStale: true };
     }
 
-    return entry.jobs;
+    const isStale = now > entry.staleAt;
+    return { jobs: entry.jobs, isStale };
   }
 
-  set(companies: string[], queries: string[], jobs: Job[], customTtlMs?: number): void {
+  set(companies: string[], queries: string[], jobs: Job[], customStaleMs?: number, customExpiresMs?: number): void {
     const key = this.makeKey(companies, queries);
-    const ttl = customTtlMs ?? this.ttlMs;
+    const now = Date.now();
+    const staleTtl = customStaleMs ?? this.staleMs;
+    const expiresTtl = customExpiresMs ?? this.expiresMs;
+
     this.store.set(key, {
       jobs,
-      expiresAt: Date.now() + ttl,
+      staleAt: now + staleTtl,
+      expiresAt: now + expiresTtl,
     });
   }
 
