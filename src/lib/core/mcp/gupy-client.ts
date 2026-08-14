@@ -36,7 +36,7 @@ interface McpResponse {
 export class GupyMcpClient {
   private url = API_ENDPOINTS.gupyMcp;
 
-  async searchJobs(query: string, limit = 50): Promise<Job[]> {
+  async searchJobs(query: string, limit = 50, offset = 0): Promise<Job[]> {
     const res = await fetch(this.url, {
       method: 'POST',
       headers: {
@@ -48,7 +48,7 @@ export class GupyMcpClient {
         method: 'tools/call',
         params: {
           name: 'search_jobs',
-          arguments: { term: query, limit },
+          arguments: { term: query, limit, offset },
         },
         id: crypto.randomUUID(),
       }),

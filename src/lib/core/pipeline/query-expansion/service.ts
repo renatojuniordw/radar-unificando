@@ -1,7 +1,7 @@
 import { canonicalQuery, dedupeQueries } from './normalize';
 import { getMapExpansion } from './map';
 import { getExpansion, setExpansion } from './cache';
-import { generateAiExpansion } from '@/lib/core/ai/query-expansion';
+import { generateAiExpansion, sanitizeVariants } from '@/lib/core/ai/query-expansion';
 
 export const MAX_EXPANDED_QUERIES = 30;
 
@@ -30,8 +30,9 @@ async function expandOne(query: string): Promise<string[]> {
 
     const run = (async () => {
       const variants = await generateAiExpansion(query);
-      await setExpansion(canonical, variants); // só grava em sucesso
-      return variants;
+      const clean = sanitizeVariants(variants, query);
+      if (clean.length > 0) await setExpansion(canonical, clean); // só grava em sucesso
+      return clean;
     })().finally(() => {
       inFlight.delete(canonical);
     });

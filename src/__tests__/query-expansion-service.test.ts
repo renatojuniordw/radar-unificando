@@ -17,7 +17,10 @@ vi.mock('@/lib/core/pipeline/query-expansion/cache', () => ({
   getExpansion: mockGetCache,
   setExpansion: mockSetCache,
 }));
-vi.mock('@/lib/core/ai/query-expansion', () => ({ generateAiExpansion: mockGenerateAi }));
+vi.mock('@/lib/core/ai/query-expansion', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/core/ai/query-expansion')>();
+  return { ...actual, generateAiExpansion: mockGenerateAi };
+});
 
 import { expandQueries, MAX_EXPANDED_QUERIES } from '@/lib/core/pipeline/query-expansion/service';
 
@@ -71,6 +74,20 @@ describe('expandQueries', () => {
 
     expect(result).toEqual(['Analista de Dados']);
     expect(mockSetCache).not.toHaveBeenCalled();
+  });
+
+  it('descarta_variantes_com_lixo_antes_de_cachear', async () => {
+    mockGenerateAi.mockResolvedValue([
+      'Data Analyst',
+      'Analista de Dados jobs',
+      'Analista 2026',
+      'Vagas Analista de Dados',
+    ]);
+
+    const result = await expandQueries(['Analista de Dados']);
+
+    expect(result).toEqual(['Analista de Dados', 'Data Analyst']);
+    expect(mockSetCache).toHaveBeenCalledWith('analista dados de', ['Data Analyst']);
   });
 
   it('deduplica_consultas_expandidas_por_forma_canonica', async () => {

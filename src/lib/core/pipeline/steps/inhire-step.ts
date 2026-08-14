@@ -1,5 +1,6 @@
 import { inhireScraper, type InHireScraper } from '@/lib/core/scrapers/inhire-scraper';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
+import { filterFreshJobs } from '@/lib/core/pipeline/freshness';
 import type { Job } from '@/types';
 
 export interface InHireStepOptions {
@@ -42,7 +43,7 @@ export async function runInHireStep(runId: string, options: InHireStepOptions, d
       message: `InHire: ${labeled.length} vagas encontradas`,
     });
 
-    return labeled;
+    return filterFreshJobs(labeled);
   } catch (error) {
     progressEmitter.emit(runId, {
       type: 'step_warn', step: 'InHire',

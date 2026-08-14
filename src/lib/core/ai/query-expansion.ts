@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { generate } from './llm-provider';
+import { removeAccents } from '@/lib/utils/string';
 import { QUERY_EXPANSION_PROMPT } from './prompts/query-expansion';
 
 export const expansionSchema = z.object({
@@ -17,6 +18,36 @@ export const expansionSchema = z.object({
 });
 
 export type ExpansionResult = z.infer<typeof expansionSchema>;
+
+/** Palavras de lixo que a LLM costuma anexar a variantes (não são cargos). */
+const JUNK_TOKENS = [
+  'vagas', 'vaga', 'emprego', 'empregos', 'trabalho', 'trabalhos',
+  'jobs', 'hiring', 'career', 'oportunidade', 'oportunidades', 'recrutamento',
+];
+
+function tokenize(text: string): string[] {
+  return removeAccents(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/**
+ * Descarta variantes com lixo (ex.: "Analista de Dados jobs", "Analista 2026").
+ * Um token de lixo é tolerado apenas se a query original também o contém
+ * (ex.: usuário digitou "vagas analista"). Números são sempre descartados.
+ */
+export function sanitizeVariants(variants: string[], original: string): string[] {
+  const originalTokens = new Set(tokenize(original));
+  return variants.filter((variant) => {
+    if (!variant.trim()) return false;
+    if (/\d/.test(variant)) return false;
+    const junk = tokenize(variant).filter((token) => JUNK_TOKENS.includes(token));
+    return junk.every((token) => originalTokens.has(token));
+  });
+}
 
 /** Chama a LLM para gerar variantes da query. Lança em erro (o service trata). */
 export async function generateAiExpansion(query: string): Promise<string[]> {

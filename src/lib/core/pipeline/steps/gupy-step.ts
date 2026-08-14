@@ -2,6 +2,7 @@ import { gupyMcpClient, type GupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { inferRole } from '@/lib/core/matching/infer-role';
 import { filterIrrelevantDesignJobs } from '@/lib/core/pipeline/relevance-filter';
+import { filterFreshJobs } from '@/lib/core/pipeline/freshness';
 import { API_ENDPOINTS } from '@/lib/core/constants';
 import type { Job } from '@/types';
 
@@ -47,6 +48,10 @@ export interface GupyStepDeps {
 
 /** Limite máximo aceito pelo MCP da Gupy (acima disso a chamada falha na validação). */
 const MCP_MAX_LIMIT = 100;
+/** Máximo de vagas buscadas por query (MCP e REST). */
+const MAX_PER_SEARCH = 500;
+/** Tamanho de página da API REST da Gupy. */
+const PAGE_SIZE = 100;
 
 export function shouldUseGupyMCP(isLoggedIn: boolean, queries: string[]): boolean {
   return isLoggedIn && queries.length > 0;
@@ -70,8 +75,12 @@ export async function runGupyStep(runId: string, options: GupyStepOptions, deps:
           current: i + 1, total: queries.length,
           message: `Gupy MCP (${i + 1}/${queries.length}): ${queries[i]}`,
         });
-        const result = await mcpClient.searchJobs(queries[i], MCP_MAX_LIMIT);
-        jobs.push(...filterByCompany(result, companies));
+        // Pagina até MAX_PER_SEARCH, igual ao caminho REST — o MCP aceita offset.
+        for (let offset = 0; offset < MAX_PER_SEARCH; offset += MCP_MAX_LIMIT) {
+          const result = await mcpClient.searchJobs(queries[i], MCP_MAX_LIMIT, offset);
+          jobs.push(...filterByCompany(result, companies));
+          if (result.length < MCP_MAX_LIMIT) break;
+        }
       }
       progressEmitter.emit(runId, {
         type: 'step_complete', step: 'Gupy',
@@ -90,7 +99,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions, deps:
     jobs.push(...restJobs);
   }
 
-  return filterIrrelevantDesignJobs(jobs, relevanceQueries);
+  return filterFreshJobs(filterIrrelevantDesignJobs(jobs, relevanceQueries));
 }
 
 async function scrapeGupyRest(runId: string, companies: string[], queries: string[]): Promise<Job[]> {
@@ -120,8 +129,6 @@ async function scrapeGupyRest(runId: string, companies: string[], queries: strin
 
   for (let i = 0; i < searches.length; i++) {
     const s = searches[i];
-    const MAX_PER_SEARCH = 500;
-    const PAGE_SIZE = 100;
     let offset = 0;
     const pageResults: GupyRestJob[] = [];
 

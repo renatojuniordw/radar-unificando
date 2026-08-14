@@ -19,7 +19,7 @@ const mockJob = (overrides: Partial<Job> = {}): Job => ({
   location: 'Remote',
   link: 'https://gupy.io/job/1',
   companyNameOnPlatform: 'TestCorp',
-  postedAt: '2024-01-01',
+  postedAt: new Date().toISOString(),
   alert: '',
   ...overrides,
 });
@@ -74,13 +74,61 @@ describe('GupyStep', () => {
     expect(result.map(j => j.title)).toEqual(['Product Designer Sênior']);
   });
 
+  it('should_paginate_mcp_up_to_500_when_there_are_more_results', async () => {
+    const mcpClient = {
+      searchJobs: vi.fn()
+        .mockResolvedValueOnce(Array.from({ length: 100 }, () => mockJob()))
+        .mockResolvedValueOnce(Array.from({ length: 100 }, () => mockJob()))
+        .mockResolvedValue([]),
+    };
+    const result = await runGupyStep(
+      'run-1',
+      { companies: [], isLoggedIn: true, queries: ['data analyst'] },
+      { mcpClient },
+    );
+    expect(mcpClient.searchJobs).toHaveBeenCalledTimes(3);
+    expect(mcpClient.searchJobs).toHaveBeenNthCalledWith(1, 'data analyst', 100, 0);
+    expect(mcpClient.searchJobs).toHaveBeenNthCalledWith(2, 'data analyst', 100, 100);
+    expect(mcpClient.searchJobs).toHaveBeenNthCalledWith(3, 'data analyst', 100, 200);
+    expect(result.length).toBe(200);
+  });
+
+  it('should_stop_paginating_mcp_when_page_returns_fewer_than_100', async () => {
+    const mcpClient = {
+      searchJobs: vi.fn().mockResolvedValueOnce(Array.from({ length: 50 }, () => mockJob())),
+    };
+    const result = await runGupyStep(
+      'run-1',
+      { companies: [], isLoggedIn: true, queries: ['data analyst'] },
+      { mcpClient },
+    );
+    expect(mcpClient.searchJobs).toHaveBeenCalledTimes(1);
+    expect(result.length).toBe(50);
+  });
+
+  it('should_discard_jobs_posted_more_than_20_days_ago', async () => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const mcpClient = {
+      searchJobs: vi.fn().mockResolvedValue([
+        mockJob({ title: 'Vaga Antiga', postedAt: thirtyDaysAgo }),
+        mockJob({ title: 'Vaga Recente', postedAt: new Date().toISOString() }),
+      ]),
+    };
+    const result = await runGupyStep(
+      'run-1',
+      { companies: [], isLoggedIn: true, queries: ['data analyst'] },
+      { mcpClient },
+    );
+    expect(result.map(j => j.title)).toEqual(['Vaga Recente']);
+  });
+
   it('should_fallback_to_rest_when_mcp_fails', async () => {
     const mcpClient = { searchJobs: vi.fn().mockRejectedValue(new Error('MCP error')) };
     global.fetch = restPage([{
       careerPageName: 'FallbackCo',
       name: 'Data Analyst',
       workplaceType: 'Remoto',
-      publishedDate: '2024-01-01',
+      publishedDate: new Date().toISOString(),
       jobUrl: 'https://fallback.co/job/1',
     }]) as any;
     const result = await runGupyStep(
@@ -102,7 +150,7 @@ describe('GupyStep', () => {
       careerPageName: 'MyCompany',
       name: 'Data Analyst',
       workplaceType: 'Remoto',
-      publishedDate: '2024-01-01',
+      publishedDate: new Date().toISOString(),
       jobUrl: 'https://co/job/1',
     }]) as any;
     const result = await runGupyStep('run-1', { companies: ['MyCompany'], isLoggedIn: false });
