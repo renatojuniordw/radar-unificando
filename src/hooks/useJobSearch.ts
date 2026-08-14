@@ -277,12 +277,15 @@ export function useJobSearch() {
       .then((filters) => {
         if (filters) {
           if (Array.isArray(filters.companies)) setCompanies(filters.companies);
-          if (Array.isArray(filters.roles)) setRoleQueries(filters.roles);
+          // Se houver parâmetro q na URL, a URL tem precedência sobre os filtros persistidos.
+          if (Array.isArray(filters.roles) && !urlQuery) {
+            setRoleQueries(filters.roles);
+          }
         }
       })
       .catch(() => {})
       .finally(() => setFiltersLoaded(true));
-  }, []);
+  }, [urlQuery]);
 
   // Persistir filtros a cada alteração
   useEffect(() => {
@@ -324,18 +327,16 @@ export function useJobSearch() {
 
     autoSyncBlockedRef.current = true;
 
-    queueMicrotask(() => {
-      const parsedQueries = urlQuery
-        .split(/[,;\n]+/)
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+    const parsedQueries = urlQuery
+      .split(/[,;\n]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
-      if (parsedQueries.length > 0) {
-        setRoleQueries(parsedQueries);
-        if (cooldown > 0 || running || autoSyncing) return;
-        void handleStart({ queries: parsedQueries });
-      }
-    });
+    if (parsedQueries.length > 0) {
+      setRoleQueries(parsedQueries);
+      if (cooldown > 0 || running || autoSyncing) return;
+      void handleStart({ queries: parsedQueries });
+    }
   }, [
     urlQuery,
     filtersLoaded,
