@@ -57,6 +57,17 @@ describe('POST /api/auth/forgot-password', () => {
     expect(res.headers.get('Retry-After')).toBe('60');
   });
 
+  it('should_return_429_when_email_rate_limited', async () => {
+    (checkRateLimit as any)
+      .mockResolvedValueOnce({ success: true, msBeforeNext: 0 }) // IP por minuto
+      .mockResolvedValueOnce({ success: true, msBeforeNext: 0 }) // IP diário
+      .mockResolvedValueOnce({ success: false, msBeforeNext: 3600000 }); // por e-mail
+    const res = await POST(makeRequest({ email: 'test@test.com' }));
+    expect(res.status).toBe(429);
+    expect(res.headers.get('Retry-After')).toBe('3600');
+    expect(checkRateLimit).toHaveBeenCalledWith('email:test@test.com', 'forgot_password_email');
+  });
+
   it('should_send_reset_email_when_user_exists', async () => {
     (userRepository.findByEmail as any).mockResolvedValueOnce({
       id: 'user-1',

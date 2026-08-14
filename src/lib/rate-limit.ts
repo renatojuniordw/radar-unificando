@@ -40,12 +40,18 @@ try {
 const memoryLimiterChat = new RateLimiterMemory({ points: 10, duration: 60 });
 const memoryLimiterChatDaily = new RateLimiterMemory({ points: 50, duration: 86400 });
 const memoryLimiterAuth = new RateLimiterMemory({ points: 5, duration: 60 });
+const memoryLimiterForgotPassword = new RateLimiterMemory({ points: 3, duration: 60 });
+const memoryLimiterForgotPasswordDaily = new RateLimiterMemory({ points: 10, duration: 86400 });
+const memoryLimiterForgotPasswordEmail = new RateLimiterMemory({ points: 3, duration: 3600 });
 const memoryLimiterGeneral = new RateLimiterMemory({ points: 60, duration: 60 });
 
 // Rate Limiters no Redis
 let redisLimiterChat: RateLimiterRedis | null = null;
 let redisLimiterChatDaily: RateLimiterRedis | null = null;
 let redisLimiterAuth: RateLimiterRedis | null = null;
+let redisLimiterForgotPassword: RateLimiterRedis | null = null;
+let redisLimiterForgotPasswordDaily: RateLimiterRedis | null = null;
+let redisLimiterForgotPasswordEmail: RateLimiterRedis | null = null;
 let redisLimiterGeneral: RateLimiterRedis | null = null;
 
 if (redisClient) {
@@ -70,6 +76,27 @@ if (redisClient) {
     duration: 60, // por 60 segundos
   });
 
+  redisLimiterForgotPassword = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_forgot_pwd',
+    points: 3, // 3 requisições
+    duration: 60, // por 60 segundos
+  });
+
+  redisLimiterForgotPasswordDaily = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_forgot_pwd_daily',
+    points: 10, // 10 requisições por dia
+    duration: 86400, // por 24 horas
+  });
+
+  redisLimiterForgotPasswordEmail = new RateLimiterRedis({
+    storeClient: redisClient,
+    keyPrefix: 'rl_forgot_pwd_email',
+    points: 3, // 3 solicitações por e-mail
+    duration: 3600, // por 1 hora
+  });
+
   redisLimiterGeneral = new RateLimiterRedis({
     storeClient: redisClient,
     keyPrefix: 'rl_general',
@@ -78,7 +105,14 @@ if (redisClient) {
   });
 }
 
-export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general';
+export type RateLimitProfile =
+  | 'chat'
+  | 'chat_daily'
+  | 'auth'
+  | 'forgot_password'
+  | 'forgot_password_daily'
+  | 'forgot_password_email'
+  | 'general';
 
 export interface RateLimitResult {
   success: boolean;
@@ -106,12 +140,18 @@ export async function checkRateLimit(
     if (profile === 'chat') limiterToUse = redisLimiterChat!;
     else if (profile === 'chat_daily') limiterToUse = redisLimiterChatDaily!;
     else if (profile === 'auth') limiterToUse = redisLimiterAuth!;
+    else if (profile === 'forgot_password') limiterToUse = redisLimiterForgotPassword!;
+    else if (profile === 'forgot_password_daily') limiterToUse = redisLimiterForgotPasswordDaily!;
+    else if (profile === 'forgot_password_email') limiterToUse = redisLimiterForgotPasswordEmail!;
     else limiterToUse = redisLimiterGeneral!;
   } else {
     // Usar fallback em memória
     if (profile === 'chat') limiterToUse = memoryLimiterChat;
     else if (profile === 'chat_daily') limiterToUse = memoryLimiterChatDaily;
     else if (profile === 'auth') limiterToUse = memoryLimiterAuth;
+    else if (profile === 'forgot_password') limiterToUse = memoryLimiterForgotPassword;
+    else if (profile === 'forgot_password_daily') limiterToUse = memoryLimiterForgotPasswordDaily;
+    else if (profile === 'forgot_password_email') limiterToUse = memoryLimiterForgotPasswordEmail;
     else limiterToUse = memoryLimiterGeneral;
   }
 
