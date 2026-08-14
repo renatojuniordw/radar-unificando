@@ -46,6 +46,34 @@ describe('GupyStep', () => {
     expect(result[0].platform).toBe('Gupy');
   });
 
+  it('should_call_mcp_with_limit_within_gupy_max_of_100', async () => {
+    const mcpClient = { searchJobs: vi.fn().mockResolvedValue([mockJob()]) };
+    await runGupyStep(
+      'run-1',
+      { companies: [], isLoggedIn: true, queries: ['data analyst', 'analista'] },
+      { mcpClient },
+    );
+    expect(mcpClient.searchJobs).toHaveBeenCalledTimes(2);
+    for (const call of mcpClient.searchJobs.mock.calls) {
+      expect(call[1]).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it('should_discard_physical_design_jobs_from_design_search', async () => {
+    const mcpClient = {
+      searchJobs: vi.fn().mockResolvedValue([
+        mockJob({ title: 'Product Designer Sênior' }),
+        mockJob({ title: 'Designer de Produto & Superfície (Estamparia)' }),
+      ]),
+    };
+    const result = await runGupyStep(
+      'run-1',
+      { companies: [], isLoggedIn: true, queries: ['designer de produto'] },
+      { mcpClient },
+    );
+    expect(result.map(j => j.title)).toEqual(['Product Designer Sênior']);
+  });
+
   it('should_fallback_to_rest_when_mcp_fails', async () => {
     const mcpClient = { searchJobs: vi.fn().mockRejectedValue(new Error('MCP error')) };
     global.fetch = restPage([{

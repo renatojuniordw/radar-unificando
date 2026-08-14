@@ -6,7 +6,7 @@ set -e
 # se o schema mudar inadvertidamente (relatório item 4.8).
 echo "[entrypoint] Aplicando migrations do Prisma (migrate deploy)..."
 if [ -f "./node_modules/.bin/prisma" ]; then
-  ./node_modules/.bin/prisma migrate deploy || echo "[entrypoint] Prisma migrate deploy finalizado com aviso."
+  ./node_modules/.bin/prisma migrate deploy
 fi
 
 exec "$@"

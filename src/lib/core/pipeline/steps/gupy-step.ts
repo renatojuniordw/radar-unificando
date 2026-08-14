@@ -1,6 +1,8 @@
 import { gupyMcpClient, type GupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { inferRole } from '@/lib/core/matching/infer-role';
+import { filterIrrelevantDesignJobs } from '@/lib/core/pipeline/relevance-filter';
+import { API_ENDPOINTS } from '@/lib/core/constants';
 import type { Job } from '@/types';
 
 interface GupyRestJob {
@@ -41,6 +43,9 @@ export interface GupyStepDeps {
   mcpClient?: Pick<GupyMcpClient, 'searchJobs'>;
 }
 
+/** Limite máximo aceito pelo MCP da Gupy (acima disso a chamada falha na validação). */
+const MCP_MAX_LIMIT = 100;
+
 export function shouldUseGupyMCP(isLoggedIn: boolean, queries: string[]): boolean {
   return isLoggedIn && queries.length > 0;
 }
@@ -63,7 +68,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions, deps:
           current: i + 1, total: queries.length,
           message: `Gupy MCP (${i + 1}/${queries.length}): ${queries[i]}`,
         });
-        const result = await mcpClient.searchJobs(queries[i], 500);
+        const result = await mcpClient.searchJobs(queries[i], MCP_MAX_LIMIT);
         jobs.push(...filterByCompany(result, companies));
       }
       progressEmitter.emit(runId, {
@@ -83,12 +88,12 @@ export async function runGupyStep(runId: string, options: GupyStepOptions, deps:
     jobs.push(...restJobs);
   }
 
-  return jobs;
+  return filterIrrelevantDesignJobs(jobs, queries);
 }
 
 async function scrapeGupyRest(runId: string, companies: string[], queries: string[]): Promise<Job[]> {
   const results: Job[] = [];
-  const API = 'https://employability-portal.gupy.io/api/v1/jobs';
+  const API = API_ENDPOINTS.gupyJobs;
 
   type SearchItem = { jobName?: string; careerPageName?: string };
   const searches: SearchItem[] = [];

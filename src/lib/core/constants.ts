@@ -33,6 +33,7 @@ export const ANALYTICS = {
 // chaves de acesso (AI_API_KEY, IMPACT_AUTH_TOKEN, etc.) continuam no .env.
 export const API_ENDPOINTS = {
   gupyMcp: "https://candidates.mcp.api.gupy.io/mcp",
+  gupyJobs: "https://employability-portal.gupy.io/api/v1/jobs",
   inhire: "https://api.inhire.app/job-posts/public/pages",
   waybackCdx:
     "https://web.archive.org/cdx/search/cdx?output=json&fl=original,timestamp&limit=50",
