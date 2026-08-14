@@ -24,7 +24,9 @@ import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { runGupyStep } from '@/lib/core/pipeline/steps/gupy-step';
 import { runInHireStep } from '@/lib/core/pipeline/steps/inhire-step';
+import { dedupEngine } from '@/lib/core/dedup';
 import { pipelineCache } from '@/lib/infrastructure/cache/pipeline-cache';
+import type { Job } from '@/types';
 
 describe('runPipeline', () => {
   beforeEach(() => {
@@ -89,6 +91,33 @@ describe('runPipeline', () => {
     expect(runInHireStep).toHaveBeenCalledWith(
       'run-1',
       expect.objectContaining({ queries: ['Analista de Dados'] }),
+    );
+  });
+
+  it('emite_jobs_no_pipeline_complete_para_usuario_logado', async () => {
+    const jobs: Job[] = [
+      {
+        company: 'iFood',
+        platform: 'Gupy',
+        onList: 'Não',
+        roleCategory: '',
+        title: 'Product Designer',
+        type: 'hybrid',
+        location: 'SP',
+        link: 'https://gupy.io/job/1',
+        companyNameOnPlatform: 'iFood',
+        postedAt: new Date().toISOString(),
+        alert: '',
+      },
+    ];
+    vi.mocked(runGupyStep).mockResolvedValue(jobs);
+    vi.mocked(dedupEngine.mergeSources).mockReturnValue(jobs);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Designer'], true);
+
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'pipeline_complete', jobs }),
     );
   });
 

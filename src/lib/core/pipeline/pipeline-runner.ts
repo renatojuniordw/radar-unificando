@@ -109,7 +109,7 @@ export async function runPipeline(
     progressEmitter.emit(runId, {
       type: 'pipeline_complete',
       message: `Busca concluída! ${allJobs.length} vaga(s) encontrada(s).`,
-      ...(isLoggedIn ? {} : { jobs: allJobs }),
+      jobs: allJobs,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';

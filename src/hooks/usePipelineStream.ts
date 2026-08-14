@@ -79,17 +79,13 @@ export function usePipelineStream(callbacks: PipelineStreamCallbacks) {
             evtSource.close();
             onPipelineFinished();
 
-            if (
-              !session &&
-              data.type === "pipeline_complete" &&
-              Array.isArray(data.jobs)
-            ) {
+            if (data.type === "pipeline_complete" && Array.isArray(data.jobs)) {
               const completedJobs: Job[] = data.jobs.map((j) => ({
                 ...j,
                 detectedAt: j.detectedAt || "",
               }));
               onJobsReceived(completedJobs);
-              await browserStorage.setJobs(data.jobs);
+              if (!session) await browserStorage.setJobs(data.jobs);
             } else {
               onReloadNeeded();
             }
