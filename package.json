@@ -49,12 +49,14 @@
     "react-markdown": "^10.1.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.20.0",
     "use-debounce": "^10.1.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.0.0",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/ioredis": "^4.28.10",

@@ -96,7 +96,7 @@ describe('Middleware', () => {
   });
 
   it('should_return_response_for_public_paths_without_authentication', async () => {
-    for (const path of ['/', '/login', '/register', '/api/auth/session']) {
+    for (const path of ['/', '/login', '/register', '/forgot-password', '/reset-password', '/api/auth/session']) {
       const res = await middleware(makeReq({ path }));
       expect(res.status).toBe(200);
     }

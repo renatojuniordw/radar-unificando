@@ -127,12 +127,25 @@ Janela deslizante: apenas as **15 mensagens mais recentes** (`MAX_CONTEXT_MESSAG
 
 ### Formatação das Vagas
 
-O prompt do sistema instrui o LLM a:
-- Enviar **cada vaga como mensagem separada** para facilitar leitura
-- Usar apenas **emojis funcionais**: 🏢 (empresa), 📍 (local), 🔗 (link), 📊 (dados), 📋 (lista)
-- Evitar **emojis decorativos**: 🟢🟡🔴✅❌💡⚡🔥🏠⚠️
-- Nunca enviar tabelas — usar listas ou cards com `label: valor`
-- Links sozinhos em sua linha para facilitar clique
+O prompt do sistema instrui o LLM a usar um **bloco determinístico por vaga**, que o
+frontend parseia e renderiza como **cards estruturados**:
+
+```
+🏢 **Título da Vaga** — Empresa
+📍 Cidade/Estado | Tipo
+📅 Publicada em {data}
+🔗 https://...
+```
+
+- Cada campo em linha própria, **sem linha em branco dentro do bloco** e **exatamente uma linha em branco entre vagas**.
+- `Tipo` ∈ `Remoto | Híbrido | Presencial`; a linha `📅` é omitida se `publicado` vier vazio; `🔗` leva URL pura.
+- Descrição opcional após `🔗`: `**Descrição:** {1–3 frases curtas}`.
+- Máximo **3 destaques por vez**; emojis funcionais: 🏢 📍 📅 🔗 📊 📋 (evitar decorativos: 🟢🟡🔴✅❌💡⚡🔥🏠⚠️); nunca tabelas.
+
+**Renderização:** `markdown-content.tsx` → `job-card-parser.ts` (extrai título, empresa,
+local, modalidade, data, link e descrição) → `job-card.tsx` (card com "Ver Vaga" no canto
+superior direito, linha de metadados e descrição truncada). Quebras de linha simples viram
+`<br>` (`remark-breaks`) como fallback quando o bloco não segue o formato.
 
 ### Redação de PII (LGPD)
 

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { userRepository } from '@/lib/infrastructure/repositories';
-
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { registerCredentialsSchema } from '@/lib/core/auth/register-schema';
 

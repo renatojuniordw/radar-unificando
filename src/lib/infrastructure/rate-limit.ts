@@ -1,7 +1,18 @@
 import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { redisClient, isRedisReady } from '@/lib/infrastructure/redis/client';
 
-export type RateLimitProfile = 'chat' | 'chat_daily' | 'auth' | 'general' | 'register_daily' | 'extension' | 'resume_daily' | 'ats_daily';
+export type RateLimitProfile =
+  | 'chat'
+  | 'chat_daily'
+  | 'auth'
+  | 'general'
+  | 'register_daily'
+  | 'extension'
+  | 'resume_daily'
+  | 'ats_daily'
+  | 'forgot_password'
+  | 'forgot_password_daily'
+  | 'forgot_password_email';
 
 interface RateLimitConfig {
   points: number;
@@ -19,6 +30,9 @@ const RATE_LIMIT_PROFILES: Record<RateLimitProfile, RateLimitConfig> = {
   extension:      { points: 20,  duration: 60,    keyPrefix: 'rl_extension' },
   resume_daily:   { points: 10,  duration: 86400, keyPrefix: 'rl_resume_daily' },
   ats_daily:      { points: 10,  duration: 86400, keyPrefix: 'rl_ats_daily' },
+  forgot_password: { points: 3,   duration: 60,    keyPrefix: 'rl_forgot_pwd' },
+  forgot_password_daily: { points: 10, duration: 86400, keyPrefix: 'rl_forgot_pwd_daily' },
+  forgot_password_email: { points: 3,  duration: 3600, keyPrefix: 'rl_forgot_pwd_email' },
 };
 
 /** Cria limiters em memória (fallback fail-safe) a partir da config. */

@@ -12,6 +12,8 @@ model User {
   passwordHash          String                  @map("password_hash") @db.VarChar(255)
   name                  String?                 @db.VarChar(255)
   createdAt             DateTime                @default(now()) @map("created_at")
+  resetTokenHash        String?                 @unique @map("reset_token_hash") @db.VarChar(64)
+  resetTokenExpiresAt   DateTime?               @map("reset_token_expires_at")
   sessions              Session[]
   profiles              Profile[]
   jobs                  Job[]
