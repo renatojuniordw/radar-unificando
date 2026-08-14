@@ -1,8 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { Container, Box, Typography, Button, Chip } from "@mui/material";
-import { TagInput } from "@/components/ui/tag-input";
+import { Container, Box, Typography, Chip } from "@mui/material";
+import { JobSearchBar } from "@/components/shared/job-search-bar";
 import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from "@/lib/constants/home";
 
 interface BuscaHeaderProps {
@@ -16,51 +16,6 @@ interface BuscaHeaderProps {
   onAddSuggestion: (role: string) => void;
   onAddCompany: (company: string) => void;
 }
-
-// Estilo compartilhado dos chips de sugestão (cargos e empresas-alvo).
-const suggestionChipSx = {
-  bgcolor: "#1e293b",
-  color: "#cbd5e1",
-  border: "1px solid #334155",
-  fontFamily: "ui-monospace, monospace",
-  fontSize: "0.7rem",
-  borderRadius: 0,
-  shrink: 0,
-  whiteSpace: "nowrap",
-  transition: "all 0.15s",
-  "&:active": { transform: "scale(0.95)" },
-  "&:hover": {
-    bgcolor: "#ccff00",
-    color: "#020617",
-    borderColor: "#ccff00",
-    fontWeight: 800,
-  },
-} as const;
-
-// Carrossel horizontal dos chips de sugestão.
-const suggestionRowSx = {
-  display: "flex",
-  alignItems: "center",
-  gap: 1,
-  overflowX: "auto",
-  pb: 1,
-  pt: 0.5,
-  width: "100%",
-  "::-webkit-scrollbar": { display: "none" },
-  msOverflowStyle: "none",
-  scrollbarWidth: "none",
-} as const;
-
-const suggestionLabelSx = {
-  fontSize: "0.7rem",
-  fontFamily: "ui-monospace, monospace",
-  fontWeight: 800,
-  color: "#94a3b8",
-  textTransform: "uppercase",
-  mr: 0.5,
-  shrink: 0,
-  whitespace: "nowrap",
-} as const;
 
 export const BuscaHeader = memo(function BuscaHeader({
   companies,
@@ -150,105 +105,24 @@ export const BuscaHeader = memo(function BuscaHeader({
             )}
           </Box>
 
-          {/* Tag Inputs Row */}
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr auto" },
-              gap: 2,
-              alignItems: "flex-end",
-              bgcolor: "#0f172a",
-              border: "2px solid #334155",
-              boxShadow: "4px 4px 0px #000",
-              p: 2,
-            }}
-          >
-            <Box>
-              <TagInput
-                label="🎯 CARGOS / PALAVRAS-CHAVE"
-                value={roleQueries}
-                onChange={onRoleQueriesChange}
-                placeholder="Ex: Frontend, React, Python..."
-                dark
-                compact
-              />
-            </Box>
-
-            <Box>
-              <TagInput
-                label="🏢 EMPRESAS-ALVO"
-                value={companies}
-                onChange={onCompaniesChange}
-                placeholder="Ex: Nubank, Mercado Livre..."
-                dark
-                compact
-              />
-            </Box>
-
-            <Button
-              onClick={onStart}
-              disabled={running || cooldown > 0}
-              variant="contained"
-              sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
-                fontWeight: 900,
-                fontSize: "0.875rem",
-                fontFamily: "ui-monospace, monospace",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                borderRadius: 0,
-                border: "2px solid #020617",
-                boxShadow: "3px 3px 0px #000",
-                height: 56,
-                px: 3,
-                whiteSpace: "nowrap",
-                "&:hover": {
-                  bgcolor: "#b3e600",
-                  boxShadow: "1px 1px 0px #000",
-                },
-                "&:disabled": {
-                  bgcolor: "#334155",
-                  color: "#94a3b8",
-                },
-              }}
-            >
-              {running ? "BUSCANDO..." : "BUSCAR VAGAS"}
-            </Button>
-          </Box>
-
-
-          {/* Quick Suggestions Chips Carousel — Cargos */}
-          <Box sx={suggestionRowSx}>
-            <Typography sx={suggestionLabelSx}>SUGESTÕES:</Typography>
-            {SUGGESTED_ROLES.map((role) => (
-              <Chip
-                key={role}
-                label={`+ ${role}`}
-                onClick={() => onAddSuggestion(role)}
-                size="small"
-                clickable
-                sx={suggestionChipSx}
-              />
-            ))}
-          </Box>
-
-          {/* Quick Suggestions Chips Carousel — Empresas-alvo */}
-          <Box sx={suggestionRowSx}>
-            <Typography sx={suggestionLabelSx}>EMPRESAS-ALVO:</Typography>
-            {SUGGESTED_COMPANIES.map((company) => (
-              <Chip
-                key={company}
-                label={`+ ${company}`}
-                onClick={() => onAddCompany(company)}
-                size="small"
-                clickable
-                sx={suggestionChipSx}
-              />
-            ))}
-          </Box>
+          {/* Componente Unificado de Busca por Tags */}
+          <JobSearchBar
+            variant="header"
+            roleQueries={roleQueries}
+            onRoleQueriesChange={onRoleQueriesChange}
+            companies={companies}
+            onCompaniesChange={onCompaniesChange}
+            onStart={onStart}
+            running={running}
+            cooldown={cooldown}
+            suggestedRoles={SUGGESTED_ROLES}
+            suggestedCompanies={SUGGESTED_COMPANIES}
+            onAddRole={onAddSuggestion}
+            onAddCompany={onAddCompany}
+          />
         </Box>
       </Container>
     </Box>
   );
 });
+

@@ -550,6 +550,22 @@ describe('useJobSearch', () => {
       expect(pipelineCall).toBeFalsy();
     });
 
+    it('preenche_multiplos_roleQueries_quando_url_contem_virgulas', async () => {
+      searchParamsState.value = 'q=React, Node, Python';
+      const { result } = renderHook(() => useJobSearch());
+      await flushMount();
+
+      expect(result.current.roleQueries).toEqual(['React', 'Node', 'Python']);
+      const pipelineCall = fetchMock.mock.calls.find(
+        (c) => String(c[0]) === '/api/pipeline',
+      );
+      expect(pipelineCall).toBeTruthy();
+      expect(JSON.parse(pipelineCall![1].body)).toMatchObject({
+        queries: ['React', 'Node', 'Python'],
+        auto: false,
+      });
+    });
+
     it('sem_q_na_url_nao_dispara_busca_automatica', async () => {
       const { result } = renderHook(() => useJobSearch());
       await flushMount();

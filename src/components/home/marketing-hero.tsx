@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Container, Typography } from "@mui/material";
-import { Search, ArrowRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { RotatingText } from "@/components/home/rotating-text";
+import { JobSearchBar } from "@/components/shared/job-search-bar";
 
 const POPULAR_TAGS = [
   "DevOps",
@@ -34,19 +35,16 @@ const HOW_IT_WORKS = [
 
 export function MarketingHero() {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [roleQueries, setRoleQueries] = useState<string[]>([]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      router.push(`/busca?q=${encodeURIComponent(searchTerm.trim())}`);
+    if (roleQueries.length > 0) {
+      const queryStr = roleQueries.join(",");
+      router.push(`/busca?q=${encodeURIComponent(queryStr)}`);
     } else {
       router.push("/busca");
     }
-  };
-
-  const handleChipClick = (tag: string) => {
-    router.push(`/busca?q=${encodeURIComponent(tag)}`);
   };
 
   return (
@@ -143,88 +141,14 @@ export function MarketingHero() {
             , calcula seu score de match e otimiza seu currículo.
           </Typography>
 
-          <Box
-            component="form"
+          {/* Componente Unificado de Busca por Tags na Home */}
+          <JobSearchBar
+            variant="hero"
+            roleQueries={roleQueries}
+            onRoleQueriesChange={setRoleQueries}
             onSubmit={handleSearchSubmit}
-            sx={{
-              bgcolor: "#0f172a",
-              border: "3px solid #ccff00",
-              boxShadow: "8px 8px 0px #000",
-              p: { xs: 1.5, sm: 2 },
-              mb: 3,
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              gap: 1.5,
-              alignItems: "center",
-              transition: "all 0.2s ease-in-out",
-              "&:focus-within": {
-                borderColor: "#ffffff",
-                boxShadow: "8px 8px 0px #ccff00",
-              },
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-                width: "100%",
-                flex: 1,
-                px: 1.5,
-              }}
-            >
-              <Search size={22} className="text-[#ccff00] shrink-0" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Digite o cargo desejado (ex: React, DevOps, Python)..."
-                className="w-full bg-transparent text-white font-mono text-base border-none outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder-[#64748b]"
-                style={{ outline: "none", boxShadow: "none" }}
-              />
-            </Box>
-
-            <button
-              type="submit"
-              className="btn-neon w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3.5 text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap cursor-pointer active:scale-95 transition-all shrink-0 min-h-[44px]"
-            >
-              <span>BUSCAR VAGAS AGORA</span>
-              <ArrowRight size={16} strokeWidth={3} className="shrink-0" />
-            </button>
-          </Box>
-
-          {/* Quick Tag Chips Shortcuts */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-              flexWrap: "wrap",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "0.7rem",
-                fontFamily: "ui-monospace, monospace",
-                fontWeight: 700,
-                color: "#64748b",
-                textTransform: "uppercase",
-              }}
-            >
-              POPULARES:
-            </Typography>
-            {POPULAR_TAGS.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleChipClick(tag)}
-                className="bg-[#0f172a] text-[#cbd5e1] border border-[#334155] px-3 py-1.5 min-h-[36px] text-xs font-mono font-bold hover:border-[#ccff00] hover:text-[#ccff00] transition-colors cursor-pointer active:scale-95 flex items-center justify-center"
-              >
-                + {tag}
-              </button>
-            ))}
-          </Box>
+            suggestedRoles={POPULAR_TAGS}
+          />
         </Box>
 
         {/* Passo a Passo Limpo e Minimalista */}
