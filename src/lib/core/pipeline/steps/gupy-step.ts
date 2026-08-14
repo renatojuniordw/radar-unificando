@@ -37,6 +37,8 @@ export interface GupyStepOptions {
   companies: string[];
   isLoggedIn: boolean;
   queries?: string[];
+  /** Queries usadas no filtro de relevância (originais, sem expansão). */
+  relevanceQueries?: string[];
 }
 
 export interface GupyStepDeps {
@@ -51,7 +53,7 @@ export function shouldUseGupyMCP(isLoggedIn: boolean, queries: string[]): boolea
 }
 
 export async function runGupyStep(runId: string, options: GupyStepOptions, deps: GupyStepDeps = {}): Promise<Job[]> {
-  const { companies, isLoggedIn, queries = [] } = options;
+  const { companies, isLoggedIn, queries = [], relevanceQueries = queries } = options;
   const { mcpClient = gupyMcpClient } = deps;
   const jobs: Job[] = [];
 
@@ -88,7 +90,7 @@ export async function runGupyStep(runId: string, options: GupyStepOptions, deps:
     jobs.push(...restJobs);
   }
 
-  return filterIrrelevantDesignJobs(jobs, queries);
+  return filterIrrelevantDesignJobs(jobs, relevanceQueries);
 }
 
 async function scrapeGupyRest(runId: string, companies: string[], queries: string[]): Promise<Job[]> {

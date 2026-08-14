@@ -7,6 +7,7 @@ import { runSaveStep } from '@/lib/core/pipeline/steps/save-step';
 import { runPublicSaveStep } from '@/lib/core/pipeline/steps/public-save-step';
 import { dedupEngine } from '@/lib/core/dedup';
 import { pipelineCache } from '@/lib/infrastructure/cache/pipeline-cache';
+import { expandQueries } from '@/lib/core/pipeline/query-expansion/service';
 
 export const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000';
 
@@ -40,8 +41,15 @@ export async function runPipeline(
       });
       allJobs = cachedJobs;
     } else {
+      // Expansão híbrida: mapa curado + IA cacheada. Fail-open — nunca quebra a busca.
+      const expandedQueries = await expandQueries(queries);
       const [gupyJobs, inhireJobs, discCount] = await Promise.all([
-        runGupyStep(runId, { companies, isLoggedIn, queries }),
+        runGupyStep(runId, {
+          companies,
+          isLoggedIn,
+          queries: expandedQueries,
+          relevanceQueries: queries, // filtro de relevância usa as originais
+        }),
         runInHireStep(runId, { companies, queries }),
         discoveryEnabled ? runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
       ]);

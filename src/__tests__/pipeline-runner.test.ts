@@ -16,11 +16,14 @@ vi.mock('@/lib/core/pipeline/steps/discovery-step', () => ({ runDiscoveryStep: m
 vi.mock('@/lib/core/pipeline/steps/save-step', () => ({ runSaveStep: vi.fn().mockResolvedValue(0) }));
 vi.mock('@/lib/core/pipeline/steps/public-save-step', () => ({ runPublicSaveStep: vi.fn().mockResolvedValue(0) }));
 vi.mock('@/lib/core/dedup', () => ({ dedupEngine: { mergeSources: vi.fn().mockReturnValue([]) } }));
+const { expandQueries: mockExpandQueries } = vi.hoisted(() => ({ expandQueries: vi.fn() }));
+vi.mock('@/lib/core/pipeline/query-expansion/service', () => ({ expandQueries: mockExpandQueries }));
 
 import { runPipeline, ANONYMOUS_USER_ID } from '@/lib/core/pipeline/pipeline-runner';
 import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 import { runGupyStep } from '@/lib/core/pipeline/steps/gupy-step';
+import { runInHireStep } from '@/lib/core/pipeline/steps/inhire-step';
 import { pipelineCache } from '@/lib/infrastructure/cache/pipeline-cache';
 
 describe('runPipeline', () => {
@@ -29,6 +32,7 @@ describe('runPipeline', () => {
     pipelineCache.clear();
     mockDiscovery.mockResolvedValue(3);
     vi.mocked(runGupyStep).mockResolvedValue([]);
+    mockExpandQueries.mockImplementation(async (queries: string[]) => [...queries]);
   });
 
   it('nao_roda_discovery_para_usuario_anonimo_e_nao_grava_run', async () => {
@@ -69,6 +73,32 @@ describe('runPipeline', () => {
     expect(progressEmitter.emit).toHaveBeenCalledWith(
       'run-1',
       expect.objectContaining({ type: 'pipeline_error' }),
+    );
+  });
+
+  it('passa_consultas_expandidas_para_gupy_e_originais_para_inhire', async () => {
+    mockExpandQueries.mockResolvedValue(['Analista de Dados', 'Data Analyst']);
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Analista de Dados'], true);
+    expect(runGupyStep).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({
+        queries: ['Analista de Dados', 'Data Analyst'],
+        relevanceQueries: ['Analista de Dados'],
+      }),
+    );
+    expect(runInHireStep).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ queries: ['Analista de Dados'] }),
+    );
+  });
+
+  it('roda_expansao_tambem_para_usuario_anonimo', async () => {
+    mockExpandQueries.mockResolvedValue(['Analista de Dados', 'Data Analyst']);
+    await runPipeline('run-1', ANONYMOUS_USER_ID, [], ['Analista de Dados'], false);
+    expect(mockExpandQueries).toHaveBeenCalledWith(['Analista de Dados']);
+    expect(runGupyStep).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ queries: ['Analista de Dados', 'Data Analyst'] }),
     );
   });
 });
