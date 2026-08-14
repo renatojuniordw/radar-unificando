@@ -1,27 +1,20 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 const DEFAULT_FROM = 'Radar Unificando <no-reply@radarunificando.com.br>';
 
-// Transport criado sob demanda apenas quando SMTP está configurado.
-let transport: ReturnType<typeof nodemailer.createTransport> | null = null;
+// Client criado sob demanda apenas quando RESEND_API_KEY está configurada.
+let resend: Resend | null = null;
 
-function getTransport() {
-  if (!transport) {
-    transport = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: String(process.env.SMTP_PORT) === '465',
-      auth: process.env.SMTP_USER
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
-    });
+function getClient() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
   }
-  return transport;
+  return resend;
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
-  if (!process.env.SMTP_HOST) {
-    // Fallback de desenvolvimento: sem SMTP configurado, loga o link no console.
+  if (!process.env.RESEND_API_KEY) {
+    // Fallback de desenvolvimento: sem chave configurada, loga o link no console.
     console.log(`[PASSWORD_RESET] ${to} ${resetUrl}`);
     return;
   }
@@ -50,11 +43,16 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
     </div>
   `;
 
-  await getTransport().sendMail({
+  const { error } = await getClient().emails.send({
     from: process.env.MAIL_FROM || DEFAULT_FROM,
     to,
     subject,
     text,
     html,
   });
+
+  // O SDK da Resend não lança em erro de API — retorna { data, error }.
+  if (error) {
+    throw new Error(`Resend error: ${error.message}`);
+  }
 }

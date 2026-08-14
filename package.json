@@ -43,7 +43,6 @@
     "lucide-react": "^1.28.0",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",
-    "nodemailer": "^9.0.4",
     "pdfjs-dist": "^6.2.108",
     "pg": "^8.22.0",
     "rate-limiter-flexible": "^11.2.0",
@@ -52,6 +51,7 @@
     "react-markdown": "^10.1.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.20.0",
     "use-debounce": "^10.1.1",
     "zod": "^4.4.3"
   },
@@ -64,7 +64,6 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/ioredis": "^4.28.10",
     "@types/node": "^22.0.0",
-    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
