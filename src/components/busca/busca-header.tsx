@@ -73,7 +73,7 @@ export const BuscaHeader = memo(function BuscaHeader({
                   boxShadow: "2px 2px 0px #000",
                 }}
               >
-                VAGAS & CURSOS
+                VAGAS
               </Box>
               <Typography
                 variant="h1"
@@ -85,7 +85,7 @@ export const BuscaHeader = memo(function BuscaHeader({
                   letterSpacing: "-0.02em",
                 }}
               >
-                CENTRAL DE BUSCA E CAPACITAÇÃO
+                CENTRAL DE BUSCA
               </Typography>
             </Box>
 
@@ -125,4 +125,3 @@ export const BuscaHeader = memo(function BuscaHeader({
     </Box>
   );
 });
-
