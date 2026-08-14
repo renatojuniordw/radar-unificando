@@ -22,9 +22,21 @@ const SUSPICIOUS_PATTERNS = [
   /repita (o|seu) prompt/i,
   /revele (seu|o) prompt/i,
   /qual (é|e) (seu|o) prompt/i,
+  /forget (everything|all|your instructions)/i,
+  /ignore (all|any) (previous|prior)/i,
+  /you are now/i,
+  /act as/i,
+  /developer mode/i,
+  /no (restrictions|rules|limits)/i,
+  /print (your|the) (system )?prompt/i,
+  /repeat (your|the) (system )?prompt/i,
+  /reveal (your|the) (system )?prompt/i,
+  /disregard (all )?(previous|prior)/i,
+  /you have no (rules|limits)/i,
+  /override (your|all) (instructions|rules)/i,
 ];
 
-interface ChatMessageInput {
+export interface ChatMessageInput {
   role?: string;
   content?: string;
 }

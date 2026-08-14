@@ -1,5 +1,7 @@
 import type { Job } from '@/types';
 import { inferRole } from '@/lib/core/matching/infer-role';
+import { debugLog } from '@/lib/utils/debug';
+import { API_ENDPOINTS } from '@/lib/core/constants';
 
 interface RawGupyJob {
   careerPageName?: string;
@@ -32,7 +34,7 @@ interface McpResponse {
 }
 
 export class GupyMcpClient {
-  private url = 'https://candidates.mcp.api.gupy.io/mcp';
+  private url = API_ENDPOINTS.gupyMcp;
 
   async searchJobs(query: string, limit = 50): Promise<Job[]> {
     const res = await fetch(this.url, {
@@ -78,7 +80,7 @@ export class GupyMcpClient {
       const parsed = JSON.parse(textContent.text);
       const rawJobs = parsed.data?.data || parsed.jobs || parsed;
       const jobs = this.normalizeJobs(rawJobs);
-      console.log(`[gupy-client] query="${query}" -> ${jobs.length} vagas`);
+      debugLog(`[gupy-client] query="${query}" -> ${jobs.length} vagas`);
       return jobs;
     } catch (err) {
       console.warn(`[gupy-client] falha ao parsear content para query="${query}":`, textContent.text.slice(0, 500), err);

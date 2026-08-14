@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 
 // Apenas para extrair o tipo de sessão da chamada auth() sem args
@@ -32,4 +32,15 @@ export async function requireAuth(): Promise<AuthResult> {
     };
   }
   return { session: session as AuthenticatedSession, response: null };
+}
+
+/**
+ * Extrai o token Bearer do header Authorization de uma NextRequest.
+ * Centralizado para evitar duplicação entre rotas de extensão.
+ */
+export function extractBearerToken(req: NextRequest): string | null {
+  const header = req.headers.get('authorization');
+  if (!header?.startsWith('Bearer ')) return null;
+  const token = header.slice('Bearer '.length).trim();
+  return token || null;
 }

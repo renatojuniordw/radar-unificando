@@ -1,3 +1,5 @@
+import { toScriptJson } from '@/lib/core/seo/jsonld';
+
 export interface JobPostingData {
   title: string;
   company: string;
@@ -11,6 +13,13 @@ export interface JobPostingData {
 // Avaliados uma vez por carregamento de módulo (evita datas instáveis a cada render)
 const nowIso = new Date().toISOString();
 const validThroughIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+/**
+ * Serializa o schema para inserção segura em <script type="application/ld+json">.
+ * Ver src/lib/core/seo/jsonld.ts — JSON.stringify NÃO escapa `<`, `>` e `&`:
+ * um título/descrição de vaga contendo "</script><script>..." vazaria do bloco
+ * JSON-LD e injetaria HTML/JS (stored XSS).
+ */
 
 export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
   if (!jobs || jobs.length === 0) return null;
@@ -51,7 +60,7 @@ export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
         <script
           key={index}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: toScriptJson(schema) }}
         />
       ))}
     </>

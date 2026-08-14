@@ -13,6 +13,18 @@ export const SUGGESTED_ROLES = [
   "Analista de Qualidade",
 ];
 
+// Empresas-alvo curadas (grandes contratantes presentes no Gupy/InHire).
+export const SUGGESTED_COMPANIES = [
+  "iFood",
+  "Magazine Luiza",
+  "Ambev",
+  "Localiza",
+  "Natura",
+  "Raia Drogasil",
+  "Inter",
+  "XP Inc",
+];
+
 export const ROTATING_WORDS = [
   "Dados",
   "Marketing",
@@ -24,30 +36,32 @@ export const ROTATING_WORDS = [
   "Produto",
 ];
 
-export const WHY_USE_ITEMS = [
+
+
+export const EXTENSION_FEATURES = [
   {
-    title: "100% GRATUITO",
-    desc: "Sem taxas escondidas e sem custo. Acesse todas as funcionalidades de busca e análise gratuitamente.",
+    title: "ANÁLISE NA HORA",
+    desc: "Abre um painel lateral com o score ATS da vaga que você está vendo, sem sair do site.",
   },
   {
-    title: "SEM CADASTRO OBRIGATÓRIO",
-    desc: "Busque vagas sem precisar criar conta. Cadastre-se apenas se quiser usar o assistente de IA e perfil personalizado.",
+    title: "RE-ANÁLISE AUTOMÁTICA",
+    desc: "Troque de vaga e o painel acompanha — re-analisa sozinho quando a página muda.",
   },
   {
-    title: "DADOS EM TEMPO REAL",
-    desc: "Buscamos as vagas diretamente nas empresas no momento da sua pesquisa. Resultados sempre atualizados.",
+    title: "SCORE POR SKILL",
+    desc: "Veja a aderência do seu currículo a cada tecnologia exigida, com sugestões de ajuste.",
   },
   {
-    title: "IA QUE ENTENDE SEU PERFIL",
-    desc: "Importe seu currículo em PDF ou cole o texto. A IA identifica suas habilidades, experiência e área automaticamente.",
+    title: "COPIE AS DICAS",
+    desc: "Exporte o resultado como texto formatado para aplicar as mudanças no currículo.",
   },
   {
-    title: "SCORE DE COMPATIBILIDADE",
-    desc: "Veja o percentual de afinidade entre seu perfil e cada vaga, com detalhamento dos requisitos alinhados.",
+    title: "BADGE NO ÍCONE",
+    desc: "O score aparece direto no ícone da extensão, em verde, amarelo ou vermelho.",
   },
   {
-    title: "ASSISTENTE DE VAGAS 24H",
-    desc: "Chat inteligente disponível para tirar dúvidas, sugerir oportunidades, gerar cartas de apresentação e simular entrevistas.",
+    title: "HISTÓRICO LOCAL",
+    desc: "Suas análises ficam salvas no navegador, com cache para evitar repetir chamadas.",
   },
 ];
 
@@ -87,5 +101,9 @@ export const FAQ_ITEMS = [
   {
     q: "COMO EXPORTAR AS VAGAS?",
     a: "Clique no botão 'Exportar' na tabela de resultados para baixar uma planilha completa com as vagas encontradas, contendo links diretos, empresas e descrições.",
+  },
+  {
+    q: "TEM EXTENSÃO DO CHROME?",
+    a: "Em breve! A extensão Radar Unificando está em processo de aprovação na Chrome Web Store. Ela abrirá um painel lateral que analisa a vaga aberta na página e mostra o score ATS do seu currículo, com dicas para passar em triagens automatizadas, re-analisando automaticamente quando você troca de vaga.",
   },
 ];

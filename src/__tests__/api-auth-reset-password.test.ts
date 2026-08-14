@@ -5,7 +5,7 @@ vi.mock('@/lib/infrastructure/repositories', () => ({
   userRepository: { findByResetTokenHash: vi.fn(), updatePassword: vi.fn() },
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true, msBeforeNext: 0 }),
 }));
 
@@ -16,7 +16,7 @@ vi.mock('bcryptjs', () => ({
 
 import { POST } from '@/app/api/auth/reset-password/route';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 function makeRequest(body: any): NextRequest {
   return {

@@ -1,7 +1,13 @@
 import crypto from 'crypto';
 import { prisma } from '@/lib/infrastructure/db/prisma-client';
 
-export type CachedContentKind = 'fit_analysis' | 'cover_letter' | 'interview_questions' | 'skill_suggestions';
+export type CachedContentKind =
+  | 'fit_analysis'
+  | 'cover_letter'
+  | 'interview_questions'
+  | 'skill_suggestions'
+  | 'ats_analysis'
+  | 'resume_adaptation';
 
 const TTL_MS = 30 * 24 * 60 * 60 * 1000;
 

@@ -65,18 +65,24 @@ describe('rankJobsByProfile', () => {
       companyNameOnPlatform: 'Nubank',
       roleCategory: 'Dados',
       company: 'Nubank',
+      postedAt: '2026-08-01T00:00:00.000Z',
+      detectedAt: '2026-08-01T00:00:00.000Z',
     },
     {
       title: 'Analista de Marketing',
       companyNameOnPlatform: 'Ambev',
       roleCategory: 'Marketing',
       company: 'Ambev',
+      postedAt: '2026-08-05T00:00:00.000Z',
+      detectedAt: '2026-08-05T00:00:00.000Z',
     },
     {
       title: 'Desenvolvedor Full Stack',
       companyNameOnPlatform: 'iFood',
       roleCategory: 'Engenharia',
       company: 'iFood',
+      postedAt: '2026-08-03T00:00:00.000Z',
+      detectedAt: '2026-08-03T00:00:00.000Z',
     },
   ];
 
@@ -85,6 +91,16 @@ describe('rankJobsByProfile', () => {
     const ranked = rankJobsByProfile(mockJobs, tokens);
     expect(ranked.length).toBeGreaterThan(0);
     expect(ranked[0].score).toBeGreaterThanOrEqual(ranked[1]?.score || 0);
+  });
+
+  it('ordena pela vaga mais nova primeiro (postedAt desc)', () => {
+    const tokens = ['dados', 'marketing', 'desenvolvedor']; // matcha os 3 jobs
+    const ranked = rankJobsByProfile(mockJobs, tokens);
+    expect(ranked.map(r => r.job.title)).toEqual([
+      'Analista de Marketing', // 2026-08-05
+      'Desenvolvedor Full Stack', // 2026-08-03
+      'Engenheiro de Dados Senior', // 2026-08-01
+    ]);
   });
 
   it('filtra jobs com score 0', () => {
@@ -107,6 +123,8 @@ describe('rankJobsByProfile', () => {
         companyNameOnPlatform: null,
         roleCategory: 'Dados',
         company: 'Teste',
+        postedAt: null,
+        detectedAt: null,
       },
     ];
     const tokens = ['dados'];

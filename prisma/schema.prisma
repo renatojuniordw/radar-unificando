@@ -23,8 +23,77 @@ model User {
   companyPresence       CompanyPresence[]
   generatedContentCache GeneratedContentCache[]
   chats                 Chat[]
+  chatUsage             ChatUsage[]
+  extensionTokens       ExtensionToken[]
+  extensionFeedback     ExtensionFeedback[]
+  courseClicks          CourseClick[]
 
   @@map("users")
+}
+
+model ExtensionToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  tokenHash  String    @map("token_hash") @db.VarChar(64)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("extension_tokens")
+}
+
+model ExtensionFeedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  rating    Boolean  @map("rating") // true = útil, false = não útil
+  comment   String?  @db.VarChar(1000)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("extension_feedback")
+}
+
+model CourseClick {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String?   @map("user_id") @db.Uuid
+  courseId  String    @map("course_id") @db.VarChar(100)
+  skill     String?   @db.VarChar(100)
+  platform  String?   @db.VarChar(10)
+  origin    String    @default("web") @db.VarChar(20)
+  url       String?   @db.VarChar
+  ipHash    String?   @map("ip_hash") @db.VarChar(64)
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([courseId, createdAt])
+  @@map("course_clicks")
+}
+
+model PublicJob {
+  id            String    @id @default(uuid()) @db.Uuid
+  link          String    @unique @db.VarChar
+  source        String    @default("gupy_api") @db.VarChar(20)
+  company       String    @db.VarChar
+  platform      String    @db.VarChar
+  roleCategory  String?   @map("role_category") @db.VarChar
+  title         String?   @db.VarChar
+  type          String?   @db.VarChar
+  location      String?   @db.VarChar
+  postedAt      String?   @map("posted_at") @db.VarChar
+  description   String?   @db.Text
+  status        String    @default("active") @db.VarChar(20)
+  detectedAt    String?   @map("detected_at") @db.VarChar
+  lastCheckedAt DateTime  @default(now()) @map("last_checked_at")
+  expiresAt     DateTime  @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([status, expiresAt])
+  @@index([roleCategory, status])
+  @@map("public_jobs")
 }
 
 model Session {
@@ -50,9 +119,11 @@ model Profile {
   resumeMarkdown  String?  @map("resume_markdown") @db.Text
   parsedData      Json?    @map("parsed_data")
   profileSource   String?  @default("manual") @map("profile_source") @db.VarChar(20)
+  resumeHash      String?  @map("resume_hash") @db.VarChar(64)
   createdAt       DateTime @default(now()) @map("created_at")
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([resumeHash])
   @@map("profiles")
 }
 
@@ -96,6 +167,7 @@ model Chat {
   updatedAt  DateTime      @updatedAt @map("updated_at")
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages   ChatMessage[]
+  usage      ChatUsage[]
 
   @@unique([userId, externalId])
   @@index([userId, updatedAt])
@@ -113,6 +185,23 @@ model ChatMessage {
 
   @@unique([chatId, position])
   @@map("chat_messages")
+}
+
+model ChatUsage {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  chatId           String?  @map("chat_id") @db.Uuid
+  promptTokens     Int      @map("prompt_tokens")
+  completionTokens Int      @map("completion_tokens")
+  totalTokens      Int      @map("total_tokens")
+  ipHash           String?  @map("ip_hash") @db.VarChar(64)
+  createdAt        DateTime @default(now()) @map("created_at")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat             Chat?    @relation(fields: [chatId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([ipHash, createdAt])
+  @@map("chat_usage")
 }
 
 model GeneratedContentCache {

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { pipelineRunRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
-import { pipelineLimiter } from '@/lib/infrastructure/security/rate-limiter';
+import { pipelineLimiter, pipelineAutoLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { runPipeline, ANONYMOUS_USER_ID } from '@/lib/core/pipeline/pipeline-runner';
+import { pipelineStartSchema } from '@/lib/core/pipeline/pipeline-schema';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,15 +16,25 @@ export async function POST(req: NextRequest) {
       || 'unknown';
     const rateLimitKey = session?.user?.id ? userId : `anon:${ip}`;
 
-    const { allowed, retryAfter } = pipelineLimiter.check(rateLimitKey);
+    const parsed = pipelineStartSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Parâmetros de busca inválidos' },
+        { status: 400 }
+      );
+    }
+    const { companies, queries, auto, discoveryEnabled } = parsed.data;
+
+    // Auto-sync (refresh silencioso) usa limiter próprio e NÃO consome a cota
+    // da busca manual — o usuário pode buscar na hora após entrar no site.
+    const limiter = auto === true ? pipelineAutoLimiter : pipelineLimiter;
+    const { allowed, retryAfter } = limiter.check(rateLimitKey);
     if (!allowed) {
       return NextResponse.json(
         { error: 'Muitas requisições. Aguarde entre execuções.', retryAfter },
         { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
-
-    const { companies, queries } = await req.json();
 
     const runId = crypto.randomUUID();
     const isLoggedIn = !!session?.user?.id;
@@ -33,15 +44,18 @@ export async function POST(req: NextRequest) {
         id: runId,
         userId,
         status: 'running',
-        discoveryEnabled: false,
+        discoveryEnabled,
       });
     }
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });
 
-    runPipeline(runId, userId, companies || [], queries || [], isLoggedIn);
+    runPipeline(runId, userId, companies || [], queries || [], isLoggedIn, { discoveryEnabled });
 
-    return NextResponse.json({ runId, cooldownSeconds: Math.ceil(pipelineLimiter.windowMs / 1000) });
+    return NextResponse.json({
+      runId,
+      cooldownSeconds: auto === true ? 0 : Math.ceil(pipelineLimiter.windowMs / 1000),
+    });
   } catch (error) {
     console.error('[pipeline] Error:', error);
     return NextResponse.json(

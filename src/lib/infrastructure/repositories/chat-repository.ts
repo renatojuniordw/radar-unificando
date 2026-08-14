@@ -1,9 +1,23 @@
 import { prisma } from '@/lib/infrastructure/db/prisma-client';
+import { getMessageText } from '@/lib/utils/chat';
 
 export interface ChatMessageData {
   id: string;
   role: string;
   [key: string]: unknown;
+}
+
+export interface UsageRecord {
+  chatId?: string;
+  promptTokens: number;
+  completionTokens: number;
+  ipHash?: string;
+}
+
+export interface TokenTotals {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
 }
 
 export interface ChatSummary {
@@ -19,14 +33,10 @@ export interface IChatRepository {
   deleteChat(userId: string, externalId: string): Promise<void>;
   listChats(userId: string): Promise<ChatSummary[]>;
   getDailyUserMessageCount(userId: string): Promise<number>;
-}
-
-function extractText(content: unknown): string {
-  const message = content as { parts?: Array<{ type: string; text?: string }> };
-  return (message.parts || [])
-    .filter((p) => p.type === 'text' && p.text)
-    .map((p) => p.text)
-    .join(' ');
+  recordUsage(userId: string, data: UsageRecord): Promise<void>;
+  sumTokensSince(userIds: string[], since: Date): Promise<TokenTotals>;
+  sumTokensSinceByIp(ipHash: string, since: Date): Promise<TokenTotals>;
+  getLastContextTokens(userId: string, chatId?: string | null): Promise<number | null>;
 }
 
 export const chatRepository: IChatRepository = {
@@ -41,7 +51,7 @@ export const chatRepository: IChatRepository = {
 
   async replaceMessages(userId, externalId, messages) {
     const firstUserMsg = messages.find((m) => m.role === 'user');
-    const inferredTitle = firstUserMsg ? extractText(firstUserMsg).trim().slice(0, 40) : null;
+    const inferredTitle = firstUserMsg ? getMessageText(firstUserMsg as { parts?: { type: string; text?: string }[] }).trim().slice(0, 40) : null;
 
     const chat = await prisma.chat.upsert({
       where: { userId_externalId: { userId, externalId } },
@@ -83,7 +93,7 @@ export const chatRepository: IChatRepository = {
     return chats
       .filter((chat) => chat.messages.length > 0)
       .map((chat) => {
-        const lastMessage = extractText(chat.messages[0].content);
+        const lastMessage = getMessageText(chat.messages[0].content as { parts?: { type: string; text?: string }[] });
         return {
           id: chat.externalId,
           title: chat.title || lastMessage.slice(0, 40) || 'Conversa',
@@ -104,5 +114,51 @@ export const chatRepository: IChatRepository = {
         createdAt: { gte: startOfDay },
       },
     });
+  },
+
+  async recordUsage(userId, data) {
+    await prisma.chatUsage.create({
+      data: {
+        userId,
+        chatId: data.chatId,
+        promptTokens: data.promptTokens,
+        completionTokens: data.completionTokens,
+        totalTokens: data.promptTokens + data.completionTokens,
+        ipHash: data.ipHash,
+      },
+    });
+  },
+
+  async sumTokensSince(userIds, since) {
+    const agg = await prisma.chatUsage.aggregate({
+      where: { userId: { in: userIds }, createdAt: { gte: since } },
+      _sum: { promptTokens: true, completionTokens: true, totalTokens: true },
+    });
+    return {
+      promptTokens: agg._sum.promptTokens ?? 0,
+      completionTokens: agg._sum.completionTokens ?? 0,
+      totalTokens: agg._sum.totalTokens ?? 0,
+    };
+  },
+
+  async sumTokensSinceByIp(ipHash, since) {
+    const agg = await prisma.chatUsage.aggregate({
+      where: { ipHash, createdAt: { gte: since } },
+      _sum: { promptTokens: true, completionTokens: true, totalTokens: true },
+    });
+    return {
+      promptTokens: agg._sum.promptTokens ?? 0,
+      completionTokens: agg._sum.completionTokens ?? 0,
+      totalTokens: agg._sum.totalTokens ?? 0,
+    };
+  },
+
+  async getLastContextTokens(userId, chatId?: string | null) {
+    const last = await prisma.chatUsage.findFirst({
+      where: { userId, ...(chatId ? { chatId } : {}) },
+      orderBy: { createdAt: 'desc' },
+      select: { promptTokens: true },
+    });
+    return last?.promptTokens ?? null;
   },
 };

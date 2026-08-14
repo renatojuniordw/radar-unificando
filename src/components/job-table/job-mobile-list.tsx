@@ -12,9 +12,13 @@ interface Props {
   containerRef: RefObject<HTMLDivElement | null>;
   page: number;
   onPageChange: (page: number) => void;
+  canGenerateResume: boolean;
+  onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
-export function JobMobileList({ jobs, containerRef, page, onPageChange }: Props) {
+export function JobMobileList({ jobs, containerRef, page, onPageChange, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
   const totalPages = Math.ceil(jobs.length / ITEMS_PER_PAGE);
 
   function goToPage(newPage: number) {
@@ -27,7 +31,14 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange }: Props)
       {jobs
         .slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
         .map((job, index) => (
-          <JobMobileCard key={job.id || `${job.company}-${job.title}-${index}`} job={job} />
+          <JobMobileCard
+            key={job.id || `${job.company}-${job.title}-${index}`}
+            job={job}
+            canGenerateResume={canGenerateResume}
+            onGenerateResume={onGenerateResume}
+            generatingJobKey={generatingJobKey}
+            onAnalyzeAts={onAnalyzeAts}
+          />
         ))}
 
       {/* Mobile Pagination Navigation Bar */}

@@ -1,21 +1,32 @@
+import { SITE } from '@/lib/core/constants';
+import { toScriptJson } from '@/lib/core/seo/jsonld';
+
 export function StructuredData() {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Radar Unificando",
     alternateName: "Radar de Vagas Gupy & InHire",
-    url: "https://radar.unificando.com.br",
+    url: SITE.url,
     description:
       "Busca automática de vagas em Gupy e InHire em tempo real para cargos de TI, Dados, Marketing e Vendas.",
     inLanguage: "pt-BR",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE.url}/?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Radar Unificando",
-    url: "https://radar.unificando.com.br",
-    logo: "https://radar.unificando.com.br/logo.png",
+    url: SITE.url,
+    logo: SITE.logo,
     sameAs: [],
     description:
       "Plataforma unificada de busca e recomendação inteligente de vagas em tempo real.",
@@ -25,7 +36,7 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Radar Unificando",
-    url: "https://radar.unificando.com.br",
+    url: SITE.url,
     applicationCategory: "BusinessApplication",
     operatingSystem: "All",
     browserRequirements: "Requires JavaScript. Requires HTML5.",
@@ -42,15 +53,15 @@ export function StructuredData() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(websiteSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(organizationSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+        dangerouslySetInnerHTML={{ __html: toScriptJson(webAppSchema) }}
       />
     </>
   );

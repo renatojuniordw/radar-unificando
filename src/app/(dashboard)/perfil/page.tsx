@@ -1,27 +1,36 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Container, Typography } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useRef } from 'react';
+import Link from 'next/link';
+import { Container } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { useProfile, type ProfileField, type ProfileData } from '@/hooks/useProfile';
 import { ProfileCompletionCard } from '@/components/profile/profile-completion-card';
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
+import { AtsAnalysisSection } from '@/components/profile/ats-analysis-section';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ArrowLeft, Loader2, User, Download, Trash2 } from 'lucide-react';
+
+function getInitial(name?: string | null, email?: string | null): string {
+  const source = name?.trim() || email?.trim() || 'U';
+  return source[0]?.toUpperCase() || 'U';
+}
 
 export default function ProfilePage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
   const [showManualForm, setShowManualForm] = useState(false);
+  const importRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const hasResume = !!(profile.resumeText || profile.resumeMarkdown);
   const hasData = hasResume || profile.skills.length > 0;
   const isSetup = !hasData && !showManualForm;
-
-  const hasChanges = profile.fieldOverrides.size > 0 || (!profile.saving && hasData);
 
   const { setField } = profile;
 
@@ -32,15 +41,7 @@ export default function ProfilePage() {
   async function handleSave() {
     const result = await profile.handleSave();
     if (result.success) {
-      const parts = [
-        `${profile.skills.length} skills`,
-        profile.seniority && 'Senioridade',
-        profile.experienceYears > 0 && `${profile.experienceYears}anos`,
-        profile.currentRole && 'Cargo',
-        profile.area && 'Área',
-      ].filter(Boolean);
-      showSnackbar(`Perfil salvo! (${parts.join(' · ')})`, 'success');
-      router.push('/');
+      showSnackbar('Perfil salvo com sucesso!', 'success');
     } else {
       showSnackbar(result.error || 'Erro ao salvar', 'error');
     }
@@ -55,134 +56,262 @@ export default function ProfilePage() {
     }
   }
 
-  return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h1" sx={{ fontWeight: 900, mb: 0.5, textTransform: 'uppercase', letterSpacing: '-0.02em', fontSize: '2rem' }}>
-        MEU PERFIL
-      </Typography>
-      <Typography sx={{ mb: 3, color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-        {session?.user?.email}
-      </Typography>
+  function handleStartImport() {
+    setShowManualForm(true);
+    requestAnimationFrame(() => {
+      importRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
-      {profile.loadError && (
-        <div className="card-brutalist" style={{ padding: 16, marginBottom: 24, borderColor: '#dc2626', background: '#fef2f2' }}>
-          <p style={{ color: '#dc2626', fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', margin: 0 }}>
-            {profile.loadError}
-          </p>
-          <button
-            onClick={() => profile.loadProfile()}
-            style={{
-              marginTop: 8, border: '2px solid #dc2626', background: 'none',
-              fontWeight: 700, padding: '4px 12px', cursor: 'pointer',
-              fontSize: '0.65rem', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace',
-            }}
-          >
-            Tentar novamente
-          </button>
-        </div>
-      )}
+  function handleStartManual() {
+    setShowManualForm(true);
+  }
 
-      {/* Estado setup: sem perfil */}
-      {isSetup && (
-        <div className="card-brutalist" style={{ padding: 32, textAlign: 'center', marginBottom: 24 }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            border: '4px solid #ccff00', backgroundColor: '#ccff00',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#020617" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+  async function handleExportData() {
+    setExporting(true);
+    try {
+      const res = await fetch('/api/export');
+      if (!res.ok) throw new Error('Erro ao exportar');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `radar-unificando-dados-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showSnackbar('Dados exportados com sucesso!', 'success');
+    } catch {
+      showSnackbar('Erro ao exportar dados. Tente novamente.', 'error');
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/auth/account', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Erro ao excluir');
+      showSnackbar('Conta excluída com sucesso.', 'success');
+      // Redireciona para a home após exclusão
+      window.location.href = '/';
+    } catch {
+      showSnackbar('Erro ao excluir conta. Tente novamente.', 'error');
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  }
+
+  const checks = [
+    { label: 'Skills (mín. 3)', done: profile.skills.length >= 3 },
+    { label: 'Senioridade', done: !!profile.seniority },
+    { label: 'Experiência', done: profile.experienceYears > 0 },
+    { label: 'Cargo atual', done: !!profile.currentRole },
+    { label: 'Área', done: !!profile.area },
+    { label: 'Currículo importado', done: (profile.resumeText?.length || 0) > 50 },
+  ];
+
+  const displayName = session?.user?.name?.trim() || session?.user?.email || 'Usuário';
+  const initial = getInitial(session?.user?.name, session?.user?.email);
+
+  if (profile.loading) {
+    return (
+      <div className="bg-white min-h-screen text-[#020617] py-6 sm:py-10">
+        <Container maxWidth="md">
+          <div className="animate-pulse space-y-4" aria-busy="true" aria-label="Carregando perfil">
+            <div className="h-12 w-12 rounded-full bg-slate-200" />
+            <div className="h-8 w-48 bg-slate-200" />
+            <div className="h-4 w-64 bg-slate-200" />
+            <div className="h-24 bg-slate-200" />
+            <div className="h-40 bg-slate-200" />
           </div>
-          <h3 style={{ fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '-0.01em', margin: '0 0 8px' }}>
-            CRIE SEU PERFIL
-          </h3>
-          <p style={{ color: '#64748b', fontFamily: 'ui-monospace, monospace', fontSize: '0.65rem', marginBottom: 24, maxWidth: 360, margin: '0 auto 24px', lineHeight: 1.6 }}>
-            Importe seu currículo do LinkedIn para extrair automaticamente skills, experiência e formação.
-          </p>
-          <button
-            onClick={() => setShowManualForm(true)}
-            style={{
-              backgroundColor: '#020617', color: '#ccff00', fontWeight: 900,
-              padding: '12px 32px', border: '4px solid #020617',
-              boxShadow: '4px 4px 0px #000', cursor: 'pointer',
-              fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em',
-              fontFamily: 'ui-monospace, monospace', marginBottom: 12, display: 'block',
-              width: '100%', maxWidth: 320, margin: '0 auto 12px',
-            }}
-          >
-            COMEÇAR
-          </button>
-          <button
-            onClick={() => setShowManualForm(true)}
-            style={{
-              background: 'none', border: '2px solid #020617', color: '#020617',
-              fontWeight: 700, padding: '10px 24px', cursor: 'pointer',
-              fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em',
-              fontFamily: 'ui-monospace, monospace',
-            }}
-          >
-            Preencher manualmente
-          </button>
+        </Container>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#ffffff] min-h-screen text-[#020617] py-6 sm:py-10">
+      <Container maxWidth="md">
+        {/* Link de voltar */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#64748b] hover:text-[#020617] no-underline mb-6 transition-colors min-h-[44px]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para vagas
+        </Link>
+
+        {/* Cabeçalho da página */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 shrink-0 rounded-full bg-[#ccff00] border-4 border-[#020617] flex items-center justify-center text-[#020617] font-black text-xl shadow-[3px_3px_0px_#000]">
+            {initial}
+          </div>
+          <div className="min-w-0">
+            <h1 className="font-black uppercase tracking-tight text-2xl sm:text-3xl leading-none m-0 text-[#020617]">
+              Meu Perfil
+            </h1>
+            <p className="m-0 font-mono text-xs uppercase tracking-wider text-[#64748b] truncate mt-1">
+              {displayName}
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Estado com dados: formulário de edição */}
-      {!isSetup && (
-        <>
-          <ProfileCompletionCard
-            percent={profile.completionPercent}
-            completedCount={profile.completionScore}
-            totalCount={6}
-            skills={profile.skills}
-          />
-
-          {/* Upload de currículo (se não tem ou quer re-importar) */}
-          {!hasResume && (
-            <ProfileImportSection
-              extracting={profile.extracting}
-              dragOver={profile.dragOver}
-              onDragOver={profile.setDragOver}
-              onExtract={handleExtract}
-            />
-          )}
-
-          <ProfileReviewSection
-            skills={profile.skills}
-            currentRole={profile.currentRole}
-            seniority={profile.seniority}
-            area={profile.area}
-            experienceYears={profile.experienceYears}
-            education={profile.education}
-            onFieldChange={handleFieldChange}
-            onAddSkill={profile.addSkill}
-            onAddSkills={profile.addSkills}
-            onRemoveSkill={profile.removeSkill}
-          />
-
-          {hasResume && (
-            <ProfileImportSection
-              extracting={profile.extracting}
-              dragOver={profile.dragOver}
-              onDragOver={profile.setDragOver}
-              onExtract={handleExtract}
-            />
-          )}
-
-          {hasChanges && (
+        {profile.loadError && (
+          <div className="card-brutalist p-4 mb-6 border-red-600 bg-red-50 text-red-900" role="alert">
+            <p className="font-mono text-xs font-bold m-0">
+              {profile.loadError}
+            </p>
             <button
-              onClick={handleSave}
-              disabled={profile.saving}
-              className="btn-neon"
-              style={{ padding: '14px 48px', fontSize: '0.8rem', width: '100%' }}
+              onClick={() => profile.loadProfile()}
+              className="mt-2 border-2 border-red-700 bg-transparent font-mono text-xs font-black uppercase px-3 py-1 cursor-pointer text-red-900"
             >
-              {profile.saving ? 'SALVANDO...' : 'SALVAR PERFIL'}
+              Tentar novamente
             </button>
-          )}
-        </>
-      )}
-    </Container>
+          </div>
+        )}
+
+        {/* Estado setup: sem perfil */}
+        {isSetup && (
+          <div className="card-brutalist p-8 text-center mb-8">
+            <div className="w-16 h-16 rounded-full border-4 border-[#020617] bg-[#ccff00] flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_#000]">
+              <User className="w-8 h-8 text-[#020617] stroke-[2.5]" />
+            </div>
+            <h3 className="font-black text-xl uppercase tracking-tight text-[#020617] mb-2">
+              CRIE SEU PERFIL
+            </h3>
+            <p className="text-[#64748b] font-mono text-xs mb-6 max-w-md mx-auto leading-relaxed font-bold">
+              Importe seu currículo do LinkedIn em PDF para extrair automaticamente suas habilidades, experiências e nível de senioridade.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+              <button
+                onClick={handleStartImport}
+                className="btn-neon w-full sm:w-auto px-6 py-3 text-xs font-mono font-black uppercase tracking-wider"
+              >
+                IMPORTAR CURRÍCULO
+              </button>
+              <button
+                onClick={handleStartManual}
+                className="btn-dark w-full sm:w-auto px-6 py-3 text-xs font-mono font-black uppercase tracking-wider"
+              >
+                PREENCHER MANUALMENTE
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Estado com dados: formulário de edição */}
+        {!isSetup && (
+          <>
+            <ProfileCompletionCard
+              percent={profile.completionPercent}
+              completedCount={profile.completionScore}
+              totalCount={6}
+              checks={checks}
+            />
+
+            {/* Upload de currículo (se não tem ou quer re-importar) */}
+            {!hasResume && (
+              <div ref={importRef}>
+                <ProfileImportSection
+                  extracting={profile.extracting}
+                  dragOver={profile.dragOver}
+                  onDragOver={profile.setDragOver}
+                  onExtract={handleExtract}
+                />
+              </div>
+            )}
+
+            <ProfileReviewSection
+              skills={profile.skills}
+              currentRole={profile.currentRole}
+              seniority={profile.seniority}
+              area={profile.area}
+              experienceYears={profile.experienceYears}
+              education={profile.education}
+              onFieldChange={handleFieldChange}
+              onAddSkill={profile.addSkill}
+              onAddSkills={profile.addSkills}
+              onRemoveSkill={profile.removeSkill}
+            />
+
+            {hasResume && (
+              <div ref={importRef}>
+                <ProfileImportSection
+                  title="ATUALIZAR CURRÍCULO"
+                  extracting={profile.extracting}
+                  dragOver={profile.dragOver}
+                  onDragOver={profile.setDragOver}
+                  onExtract={handleExtract}
+                />
+              </div>
+            )}
+
+            {hasResume && <AtsAnalysisSection />}
+
+            {/* Botão Salvar Perfil */}
+            <div className="mt-8 mb-4">
+              <button
+                onClick={handleSave}
+                disabled={profile.saving}
+                aria-busy={profile.saving}
+                className="btn-neon w-full py-4 text-base font-mono font-black uppercase tracking-wider shadow-[8px_8px_0px_#000] border-4 border-[#020617]"
+              >
+                {profile.saving ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    SALVANDO PERFIL...
+                  </span>
+                ) : (
+                  'SALVAR PERFIL'
+                )}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Gerenciamento de Conta (LGPD) */}
+        <div className="mt-12 pt-8 border-t-2 border-slate-200">
+          <h2 className="font-black text-sm uppercase tracking-wider text-[#64748b] mb-4">
+            Gerenciamento de Conta
+          </h2>
+          <p className="text-[#94a3b8] text-xs font-mono mb-4">
+            Em conformidade com a LGPD (Lei 13.709/2018), você pode exportar seus dados ou solicitar a exclusão da sua conta e todos os dados pessoais associados.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleExportData}
+              disabled={exporting}
+              className="flex items-center justify-center gap-2 px-5 py-3 text-xs font-mono font-black uppercase tracking-wider border-2 border-[#020617] bg-white text-[#020617] hover:bg-slate-50 cursor-pointer min-h-[44px]"
+            >
+              <Download className="w-4 h-4" />
+              {exporting ? 'Exportando...' : 'Exportar Meus Dados'}
+            </button>
+            <button
+              onClick={() => setDeleteDialogOpen(true)}
+              className="flex items-center justify-center gap-2 px-5 py-3 text-xs font-mono font-black uppercase tracking-wider border-2 border-red-600 bg-transparent text-red-600 hover:bg-red-50 cursor-pointer min-h-[44px]"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir Minha Conta
+            </button>
+          </div>
+        </div>
+
+        {/* Dialog de confirmação de exclusão */}
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          title="Excluir minha conta"
+          message="Esta ação é irreversível. Sua conta e todos os dados pessoais associados (perfil, currículo, histórico de chats, vagas salvas) serão permanentemente excluídos. Você tem certeza?"
+          confirmLabel={deleting ? 'Excluindo...' : 'Sim, excluir minha conta'}
+          cancelLabel="Cancelar"
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setDeleteDialogOpen(false)}
+          severity="error"
+        />
+      </Container>
+    </div>
   );
 }

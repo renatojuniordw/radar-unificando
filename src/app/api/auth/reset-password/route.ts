@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { passwordSchema } from '@/lib/core/auth/password-schema';
 import { hashPasswordResetToken } from '@/lib/core/auth/password-reset-token';
 

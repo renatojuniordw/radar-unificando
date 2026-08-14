@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { API_ENDPOINTS } from '@/lib/core/constants';
 
-const baseURL = process.env.AI_BASE_URL || 'https://api.openai.com/v1';
+const baseURL = process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase;
 const apiKey = process.env.AI_API_KEY || '';
-const modelName = process.env.AI_MODEL || 'deepseek-v4-flash';
+const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
 
 export const LLM_TIMEOUT_MS = 120_000;
 
@@ -11,6 +12,10 @@ const provider = createOpenAICompatible({
   name: 'llm',
   baseURL,
   apiKey,
+  // Exige o chunk final de usage no streaming (stream_options.include_usage).
+  // Sem isso, provedores OpenAI-compatíveis não reportam tokens e o medidor
+  // de consumo do chat fica travado em 0.
+  includeUsage: true,
 });
 
 export const chatLlm = provider.chatModel(modelName);

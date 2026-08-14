@@ -1,8 +1,13 @@
+import { uniqueBy } from '@/lib/utils/array';
+import { API_ENDPOINTS } from '@/lib/core/constants';
+
 interface DiscoveredCompany {
   name: string;
   careersUrl: string;
   source: 'wayback' | 'urlscan' | 'commoncrawl';
 }
+
+export type { DiscoveredCompany };
 
 export class CompanyDiscovery {
   async discover(knownCompanies: string[]): Promise<DiscoveredCompany[]> {
@@ -26,7 +31,7 @@ export class CompanyDiscovery {
 
   private async searchWayback(knownCompanies: string[]): Promise<DiscoveredCompany[]> {
     try {
-      const cdxUrl = 'https://web.archive.org/cdx/search/cdx?output=json&fl=original,timestamp&limit=50';
+      const cdxUrl = API_ENDPOINTS.waybackCdx;
       const targets = this.generateTargetUrls(knownCompanies);
 
       const results: DiscoveredCompany[] = [];
@@ -64,7 +69,7 @@ export class CompanyDiscovery {
 
       for (const company of knownCompanies.slice(0, 5)) {
         try {
-          const searchUrl = `https://urlscan.io/api/v1/search/?q=${encodeURIComponent(company + ' carreiras')}`;
+          const searchUrl = `${API_ENDPOINTS.urlscanSearch}${encodeURIComponent(company + ' carreiras')}`;
           const res = await fetch(searchUrl, {
             headers: { 'Accept': 'application/json' },
             signal: AbortSignal.timeout(5000),
@@ -110,13 +115,7 @@ export class CompanyDiscovery {
   }
 
   private dedup(results: DiscoveredCompany[]): DiscoveredCompany[] {
-    const seen = new Set<string>();
-    return results.filter(r => {
-      const key = r.name.toLowerCase().trim();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    return uniqueBy(results, (r) => r.name.toLowerCase().trim());
   }
 }
 

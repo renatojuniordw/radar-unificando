@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { generatePasswordResetToken } from '@/lib/core/auth/password-reset-token';
 import { sendPasswordResetEmail } from '@/lib/infrastructure/email/email-service';
 

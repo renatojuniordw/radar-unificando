@@ -1,6 +1,8 @@
 // Módulo puro de recomendação por perfil
 // Funções testáveis sem dependência de banco de dados
 
+import { removeAccents } from '@/lib/utils/string';
+
 const STOPWORDS_PT = new Set([
   'de', 'do', 'da', 'dos', 'das', 'em', 'no', 'na', 'nos', 'nas',
   'para', 'por', 'com', 'um', 'uma', 'os', 'as', 'que', 'se', 'não',
@@ -25,10 +27,8 @@ const STOPWORDS_PT = new Set([
  * Normaliza texto: lowercase, remove acentos, remove stopwords PT
  */
 function normalizeText(text: string): string {
-  return text
+  return removeAccents(text)
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
     .split(/\s+/)
     .filter(word => word.length > 2 && !STOPWORDS_PT.has(word))
     .join(' ');
@@ -70,7 +70,7 @@ export function buildProfileTokens(profile: {
  * - Campos: title, companyNameOnPlatform, roleCategory, company
  * - Retorna score 0-1 (proporção de tokens que matcham)
  */
-export function rankJobsByProfile<T extends { title: string | null; companyNameOnPlatform: string | null; roleCategory: string | null; company: string }>(
+export function rankJobsByProfile<T extends { title: string | null; companyNameOnPlatform: string | null; roleCategory: string | null; company: string; postedAt: string | null; detectedAt: string | null }>(
   jobs: T[],
   tokens: string[]
 ): Array<{ job: T; score: number }> {
@@ -102,8 +102,12 @@ export function rankJobsByProfile<T extends { title: string | null; companyNameO
     return { job, score };
   });
 
-  // Filtra jobs com score > 0 e ordena por score desc
+  // Filtra jobs com score > 0 e ordena pela vaga mais nova primeiro
   return ranked
     .filter(r => r.score > 0)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      const dateA = new Date(a.job.postedAt ?? a.job.detectedAt ?? 0).getTime();
+      const dateB = new Date(b.job.postedAt ?? b.job.detectedAt ?? 0).getTime();
+      return dateB - dateA;
+    });
 }

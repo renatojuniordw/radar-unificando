@@ -1,15 +1,19 @@
 'use client';
 
 import { Box, Typography, Tooltip } from '@mui/material';
-import { formatJobDate } from '@/lib/date';
-import { trackJobApply } from '@/lib/analytics';
+import { formatJobDate } from '@/lib/utils/date';
+import { trackJobApply } from '@/lib/utils/analytics';
 import type { Job } from '@/lib/types/job';
 
 interface Props {
   job: Job;
+  canGenerateResume: boolean;
+  onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
-export function JobMobileCard({ job }: Props) {
+export function JobMobileCard({ job, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
   const dateInfo = formatJobDate(job.postedAt, job.detectedAt);
 
   return (
@@ -118,6 +122,81 @@ export function JobMobileCard({ job }: Props) {
           VER VAGA NO {job.platform.toUpperCase()} →
         </Box>
       </a>
+
+      {canGenerateResume && (
+        <Box
+          onClick={() => onAnalyzeAts(job)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onAnalyzeAts(job);
+            }
+          }}
+          sx={{
+            width: '100%',
+            textAlign: 'center',
+            bgcolor: '#ffffff',
+            color: '#020617',
+            fontWeight: 900,
+            fontSize: '0.75rem',
+            py: 1.25,
+            px: 2,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontFamily: 'ui-monospace, monospace',
+            border: '2px solid #020617',
+            boxShadow: '3px 3px 0px #000',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            '&:hover': {
+              bgcolor: '#e2e8f0',
+            },
+          }}
+        >
+          ANALISAR ATS
+        </Box>
+      )}
+
+      {canGenerateResume && (
+        <Box
+          onClick={() => onGenerateResume(job)}
+          role="button"
+          tabIndex={0}
+          aria-disabled={generatingJobKey === `${job.company}|${job.title}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onGenerateResume(job);
+            }
+          }}
+          sx={{
+            width: '100%',
+            textAlign: 'center',
+            bgcolor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : '#ccff00',
+            color: '#020617',
+            fontWeight: 900,
+            fontSize: '0.75rem',
+            py: 1.25,
+            px: 2,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontFamily: 'ui-monospace, monospace',
+            border: '2px solid #020617',
+            boxShadow: '3px 3px 0px #000',
+            cursor: generatingJobKey === `${job.company}|${job.title}` ? 'wait' : 'pointer',
+            transition: 'all 0.15s ease',
+            '&:hover': {
+              bgcolor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : '#b8e600',
+            },
+          }}
+        >
+          {generatingJobKey === `${job.company}|${job.title}`
+            ? 'GERANDO CURRÍCULO...'
+            : 'GERAR CURRÍCULO ADAPTADO'}
+        </Box>
+      )}
     </Box>
   );
 }

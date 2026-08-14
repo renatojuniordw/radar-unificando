@@ -1,13 +1,19 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ChatHeader } from '@/components/chat-assistant/chat-header';
+import { ChatHeader } from '@/components/chat/chat-header';
 
 const baseProps = {
   loading: false,
   messageCount: 2,
   dailyCount: 1,
   dailyLimit: 50,
+  contextTokens: 4200,
+  contextTokenLimit: 16000,
+  dailyTokens: 12480,
+  dailyTokenLimit: 100000,
+  monthlyTokens: 312000,
+  monthlyTokenLimit: 2000000,
   sidebarOpen: false,
   onToggleSidebar: vi.fn(),
   onNewChat: vi.fn(),
@@ -21,8 +27,9 @@ describe('ChatHeader', () => {
 
     expect(screen.getByText('Assistente de Vagas')).toBeTruthy();
     expect(screen.getByLabelText('Online')).toBeTruthy();
-    expect(screen.getByText(/Contexto 2\/25/)).toBeTruthy();
-    expect(screen.getByText(/Hoje 1\/50/)).toBeTruthy();
+    expect(screen.getByText(/Contexto 4,2k\/16k/)).toBeTruthy();
+    expect(screen.getByText(/Hoje 12,5k\/100k/)).toBeTruthy();
+    expect(screen.getByText(/Mês 312k\/2M/)).toBeTruthy();
   });
 
   it('deve_mostrar_digitando_quando_carregando', () => {

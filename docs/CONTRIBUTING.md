@@ -9,7 +9,7 @@ cd radar-unificando
 
 # 2. Env
 cp .env.example .env
-# Preencha DATABASE_URL e AUTH_SECRET
+# Preencha DATABASE_URL e AUTH_SECRET (e EXTENSION_ORIGIN se for usar a extensão Chrome)
 
 # 3. Instalar
 npm install
@@ -28,10 +28,10 @@ npm run dev
 ## Branch Strategy
 
 ```
-main → v2/redesign → fase-{1..5}
+main ← feat/*  (ex.: feat/radar-unificando-extension)
 ```
 
-Toda feature nova começa com um branch a partir de `v2/redesign`.
+Toda feature nova começa com um branch `feat/*` a partir de `main` e volta via PR.
 
 ## Scripts
 
@@ -39,7 +39,7 @@ Toda feature nova começa com um branch a partir de `v2/redesign`.
 |---------|-----------|
 | `npm run dev` | Dev server |
 | `npm run build` | Build produção |
-| `npm run lint` | Lint (precisa de `eslint.config.*` — o repo usa `.eslintrc.json` legado, erro circular pré-existente) |
+| `npm run lint` | Lint (ESLint flat config — `eslint.config.mjs`) |
 | `npm run test` | Suíte Vitest (unit/integration) |
 | `npm run test:e2e` | Playwright (spec em `e2e/`) |
 | `npm run test:coverage` | Cobertura Vitest |

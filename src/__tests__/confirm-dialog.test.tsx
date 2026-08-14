@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ConfirmDialog } from '@/components/confirm-dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 describe('ConfirmDialog', () => {
   it('should_render_title_and_message', () => {

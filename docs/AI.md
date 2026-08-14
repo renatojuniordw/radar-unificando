@@ -1,5 +1,18 @@
 # AI Pipeline — Radar Unificando
 
+## Prompts
+
+O texto de todos os prompts (system prompt do chat, extração de currículo, análise de vaga,
+carta de apresentação, roteiro de entrevista, análise ATS) vive centralizado em
+`src/lib/core/ai/prompts/` — um arquivo por prompt, separado da lógica de validação, cache e
+chamada ao LLM (que permanece nos módulos de origem: `job-analyzer.ts`, `cover-letter-generator.ts`,
+`interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`, `core/ai/ats/ats-analyzer.ts`).
+
+O bloco `REGRAS DE SEGURANÇA (não negociáveis)` (defesa contra prompt injection, presente em
+job-analyzer/cover-letter/interview-questions/ats-analyzer) é gerado por um helper compartilhado em
+`prompts/shared/security-rules.ts`, para evitar que uma correção nessa defesa precise ser replicada
+manualmente em cada prompt.
+
 ## Stack
 
 | Camada | Tecnologia |
@@ -8,7 +21,7 @@
 | SDK | Vercel AI SDK (`ai` + `@ai-sdk/openai-compatible`) |
 | Validação | Zod schemas |
 | Logging | JSON estruturado no stdout (`[AI_LOG]`) |
-| Modelo | `AI_MODEL` (default `deepseek-v4-flash`) |
+| Modelo | `AI_MODEL` (default `gpt-4o-mini`) |
 | Cache | `GeneratedContentCache` (TTL 30 dias, chave SHA-256) |
 
 ## Extração de Currículo
@@ -57,28 +70,60 @@ Chat UI → POST /api/chat (streaming)
   → compare_jobs(2-5 vagas) → comparação lado a lado
 ```
 
-Auxiliares (sem rota própria, usados pelas tools):
+Auxiliares (sem rota própria, usados pelas tools; prompt de cada um em `prompts/<nome>.ts`):
 - `job-analyzer.ts` — `analyzeJobFit()` (limites: resumo 30–15000 chars, descrição ≤ 8000, skills ≤ 60, timeout 20s)
 - `cover-letter-generator.ts` — `generateCoverLetter()` (carta ≤ 3000 chars, ≤ 10 key points)
 - `interview-questions.ts` — `generateInterviewQuestions()` (até 8 perguntas categorizadas)
 
-> A **adaptação de currículo** (`resume_adaptation`) **não foi implementada** — a tool
-> mais próxima é `generate_cover_letter`.
+## Análise ATS Dedicada
+
+Além da análise de fit via chat, existe uma rota dedicada **`POST /api/ats/analyze`**
+(com rate limiting próprio) e a tool **`analyze_ats_score`** no chat:
+
+- Entrada: currículo do perfil + descrição da vaga (opcional).
+- Saída: **score 0-100**, checklist, palavras-chave faltando e recomendações.
+- `ats-analyzer.ts` (LLM) + `ats-heuristics.ts` (heurísticas) + `ats-service.ts` (cache).
+- Superfícies: drawer na `/busca` (botão por vaga), chat (tool), extensão Chrome.
+
+### Adaptação de Currículo (`generate_resume`)
+
+Implementada como tool do chat (`chat-tools.ts`) e como geração de PDF:
+
+- **Tool `generate_resume`** — gera uma versão do currículo adaptada à vaga
+  (título, resumo, skills, experiência) com **veracidade garantida em 3 camadas**:
+  prompt restritivo + input ATS (skills da vaga) + filtro pós-geração que bloqueia
+  skills não presentes no currículo original.
+- **PDF export** — `@react-pdf/renderer` (`lib/pdf/resume-pdf.tsx` +
+  `render-resume-pdf.tsx`); download direto via `POST /api/resume/generate` e botão
+  por vaga na `/busca` (`downloadAdaptedResume`).
+- **Cache** por `resume_adaptation` (cache key) + hash (TTL 30 dias em `GeneratedContentCache`).
 
 ## Chat Assistente
 
 ```
 Chat UI (MUI + @ai-sdk/react) → POST /api/chat (streaming)
-  → LLM com ferramentas: search_jobs, get_my_profile, analyze_job_fit,
-    compare_jobs, generate_cover_letter, get_interview_questions
+  → LLM com ferramentas: search_jobs, get_my_profile, analyze_ats_score,
+    analyze_job_fit, compare_jobs, generate_cover_letter, generate_resume,
+    get_interview_questions, recommend_courses
   → Stream de resposta + logs no onFinish
 ```
 
 Regras do sistema:
 - Persona: consultor sênior de carreira (RH) em PT-BR
-- `search_jobs`: no máximo 2 usos por pergunta do usuário
+- `search_jobs`: no máximo 2 usos por pergunta do usuário (enforcement no código)
 - Modo simulação de entrevista
 - Limites de conversa: **25 mensagens por thread** e **50 interações/dia** (retorno 429/400)
+
+### Métricas e Tetos de Tokens
+
+O custo de IA é medido em tokens reais, capturados do `usage` que o provider devolve no `onFinish` do `streamText` (`promptTokens`/`completionTokens`/`totalTokens`) e persistidos na tabela **`chat_usage`** (por usuário, com hash do IP). Isso alimenta:
+
+- **Header do chat**: Contexto (tokens da última chamada — janela enviada), Hoje e Mês (consumo acumulado), com aviso visual em 80% do teto.
+- **Tetos verificados no início do POST /api/chat** (429 `TOKEN_LIMIT_REACHED`): diário **100k tokens** (`DAILY_TOKEN_LIMIT`), mensal **2M tokens** (`MONTHLY_TOKEN_LIMIT`), por IP **300k/dia** (`IP_DAILY_TOKEN_LIMIT`). A soma considera o grupo de contas com o mesmo `resume_hash` (anti multi-conta).
+- **Custo estimado por chamada** no log `[AI_LOG]` (`estimatedCostUsd`), usando preços do gpt-4o-mini (env `AI_INPUT_PRICE_PER_1M`/`AI_OUTPUT_PRICE_PER_1M`).
+- **Concorrência**: lock no Redis (`chat_lock:{userId}`, TTL 120s) garante 1 resposta em andamento por usuário — evita a race de 2 chamadas passarem o teto juntas.
+
+Janela deslizante: apenas as **15 mensagens mais recentes** (`MAX_CONTEXT_MESSAGES`) são enviadas ao modelo.
 
 ### Formatação das Vagas
 
@@ -123,7 +168,8 @@ O `POST /api/chat` aplica três camadas de proteção:
 | Tool | Campo | Validação |
 |------|-------|-----------|
 | `search_jobs` | query | 2-200 chars, regex `[a-zA-Z0-9\s\-_.]` |
-| `search_jobs` | limit | 1-100 (default 20) |
+| `search_jobs` | limit | 1-20 (default 10) — descrição truncada em 800 chars e embrulhada em `<untrusted_content>`; links mortos (404/410) são filtrados via `job-link-filter` |
+| `analyze_ats_score` | jobDescription | opcional, máx 8000 chars — usa o currículo do perfil (cache por versão) |
 | `analyze_job_fit` | jobTitle | 1-200 chars, trim |
 | `analyze_job_fit` | jobDescription | 10-5000 chars, trim |
 
@@ -134,7 +180,7 @@ O `POST /api/chat` aplica três camadas de proteção:
 AI_BASE_URL=https://code.verboo.ai/router   # Verboo
 # AI_BASE_URL=https://api.openai.com/v1     # OpenAI
 AI_API_KEY=sk-xxx
-AI_MODEL=deepseek-v4-flash
+AI_MODEL=gpt-4o-mini
 ```
 
 > Nota: `.env.example` atual usa `https://code.verboo.ai/router/v1` (com `/v1`).

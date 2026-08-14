@@ -31,14 +31,15 @@ O pipeline busca vagas em Gupy e InHire, processa e salva no PostgreSQL.
 3. **InHire** — `inhire-scraper.ts` (GET `api.inhire.app/job-posts/public/pages`, header `X-Inhire-Client: web-inhire`), só vagas `published`
 4. **Merge + Save** — `DedupEngine.mergeSources` + `dedupByLink`, cap `slice(0, 200)`, `createMany` com `skipDuplicates`
 
-> O `discovery-step.ts` (descoberta de empresas) **existe mas não é chamado** pela rota ativa
-> (`discoveryEnabled: false`). É código preparado para o roadmap v3.
+> O `discovery-step.ts` (descoberta de empresas) **é executado para usuários logados**
+> (`pipeline-runner.ts`: `discoveryEnabled !== false && isLoggedIn`), registrando novas
+> empresas em `NewCompany`/`CompanyPresence`.
 
 ## Rate Limit e Cooldown
 
 - `POST /api/pipeline` retorna `{ runId, cooldownSeconds? }`.
-- Máx. 1 execução a cada 5 min por usuário (ou IP anônimo). Ao exceder, retorna 429 com `retryAfter`.
-- O cooldown é persistido no IndexedDB (`cooldown_end`) e conta regressiva na UI.
+- **Busca manual**: máx. 1 execução a cada 5 min por usuário (ou IP anônimo). Ao exceder, retorna 429 com `retryAfter`. O cooldown é persistido no IndexedDB (`cooldown_end`) e conta regressiva na UI.
+- **Auto-sync** (`auto: true`, refresh silencioso ao entrar): usa limiter próprio (2/5min), retorna `cooldownSeconds: 0` e **não** consome a cota da busca manual — o usuário pode buscar imediatamente. O client pula o auto-sync quando não há filtros salvos.
 
 ## Estrutura
 

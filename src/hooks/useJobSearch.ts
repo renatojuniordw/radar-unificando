@@ -1,15 +1,24 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
 import { useProfile } from "@/hooks/useProfile";
-import { uniqueValues } from "@/lib/array";
-import { trackJobSearch } from "@/lib/analytics";
+import { uniqueValues } from "@/lib/utils/array";
+import { trackJobSearch } from "@/lib/utils/analytics";
+import { useCooldown } from "@/hooks/useCooldown";
+import { useAutoSync } from "@/hooks/useAutoSync";
+import { usePipelineStream } from "@/hooks/usePipelineStream";
 import type { Job } from "@/lib/types/job";
 
-const AUTO_SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
-
+/**
+ * Hook principal de busca de vagas.
+ * Composta por hooks menores com responsabilidades isoladas:
+ * - useCooldown: contagem regressiva entre buscas
+ * - useAutoSync: decide e dispara sincronização automática
+ * - usePipelineStream: gerencia conexão SSE com o pipeline
+ */
 export function useJobSearch() {
   const { data: session } = useSession();
   const profile = useProfile();
@@ -25,77 +34,226 @@ export function useJobSearch() {
     message: string;
     severity: "success" | "error" | "info";
   } | null>(null);
-  const [cooldown, setCooldown] = useState(0);
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
 
-  // Perfil mínimo: skills >= 3 E (currentRole OU area)
+  // Termo `q` da URL (ex: busca da home) — já aplicado ou não.
+  const urlQueryHandledRef = useRef<string | null>(null);
+  // Bloqueia o auto-sync enquanto uma busca vinda da URL estiver em andamento.
+  const autoSyncBlockedRef = useRef(false);
+
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q");
+
+  // --- Derivações de perfil (antes de loadJobs que depende delas) ---
+
   const minimalProfile = useMemo(() => {
-    return profile.skills.length >= 3 && (profile.currentRole || profile.area);
+    return (
+      profile.skills.length >= 3 &&
+      Boolean(profile.currentRole || profile.area)
+    );
   }, [profile.skills.length, profile.currentRole, profile.area]);
 
-  // Modo recomendado é derivado (logado + perfil completo); não é estado.
   const recommendedMode = useMemo(
     () => !!(session && minimalProfile),
     [session, minimalProfile],
   );
 
-  const loadJobs = useCallback(async (filters?: {
-    platform?: string;
-    role?: string;
-    search?: string;
-  }) => {
-    setLoading(true);
-    const params = new URLSearchParams();
+  // --- Composição de hooks extraídos ---
 
-    // Se modo recomendado e logado
-    if (recommendedMode && session) {
-      params.set("recommended", "1");
-    } else {
-      // Filtros normais
-      if (filters?.platform) params.set("platform", filters.platform);
-      if (filters?.role) params.set("role", filters.role);
-      if (filters?.search) params.set("search", filters.search);
-    }
+  const { cooldown, loaded: cooldownLoaded, startCooldown } = useCooldown();
 
-    try {
-      const query = params.toString();
-      const res = await fetch(`/api/vagas${query ? "?" + query : ""}`);
+  const loadJobs = useCallback(
+    async (filters?: {
+      platform?: string;
+      role?: string;
+      search?: string;
+    }) => {
+      setLoading(true);
+      const params = new URLSearchParams();
 
-      if (!res.ok) {
-        if (res.status === 429) {
-          setSnackbar({ message: "Muitas buscas em pouco tempo. Aguarde alguns segundos.", severity: "error" });
-        } else {
-          setSnackbar({ message: "Falha ao carregar vagas. Tente novamente.", severity: "error" });
-        }
-        return;
+      if (recommendedMode && session) {
+        params.set("recommended", "1");
+      } else {
+        if (filters?.platform) params.set("platform", filters.platform);
+        if (filters?.role) params.set("role", filters.role);
+        if (filters?.search) params.set("search", filters.search);
       }
 
-      const data = await res.json();
-      const loadedJobs = Array.isArray(data) ? data : [];
-      setJobs(loadedJobs);
+      try {
+        const query = params.toString();
+        const res = await fetch(`/api/vagas${query ? "?" + query : ""}`);
 
-      if (!session && loadedJobs.length > 0) await browserStorage.setJobs(loadedJobs);
+        if (!res.ok) {
+          if (res.status === 429) {
+            setSnackbar({
+              message: "Muitas buscas em pouco tempo. Aguarde alguns segundos.",
+              severity: "error",
+            });
+          } else {
+            setSnackbar({
+              message: "Falha ao carregar vagas. Tente novamente.",
+              severity: "error",
+            });
+          }
+          return;
+        }
 
-      const uniqueRoleCategories = uniqueValues(loadedJobs.map((j: Job) => j.roleCategory)) as string[];
+        const data = await res.json();
+        const loadedJobs = Array.isArray(data) ? data : [];
+        setJobs(loadedJobs);
+
+        if (!session && loadedJobs.length > 0)
+          await browserStorage.setJobs(loadedJobs);
+
+        const uniqueRoleCategories = uniqueValues(
+          loadedJobs.map((j: Job) => j.roleCategory),
+        ) as string[];
+        setRoleCategories(uniqueRoleCategories);
+      } catch {
+        setSnackbar({
+          message: "Erro de conexão ao carregar vagas.",
+          severity: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [recommendedMode, session],
+  );
+
+  // Callbacks para usePipelineStream
+  const onJobsReceived = useCallback(
+    (completedJobs: Job[]) => {
+      setJobs(completedJobs);
+      const uniqueRoleCategories = uniqueValues(
+        completedJobs.map((j: Job) => j.roleCategory),
+      );
       setRoleCategories(uniqueRoleCategories);
-    } catch {
-      setSnackbar({ message: "Erro de conexão ao carregar vagas.", severity: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, [recommendedMode, session]);
+    },
+    [],
+  );
 
-  // Carregar vagas salvas na montagem (para logados e anônimos)
+  const onReloadNeeded = useCallback(() => {
+    loadJobs().catch(() => {});
+  }, [loadJobs]);
+
+  const onPipelineFinished = useCallback(() => {
+    setRunning(false);
+    setAutoSyncing(false);
+  }, []);
+
+  const showSnackbar = useCallback(
+    (message: string, severity: "success" | "error" | "info") => {
+      setSnackbar({ message, severity });
+    },
+    [],
+  );
+
+  const { connectToPipeline } = usePipelineStream({
+    onJobsReceived,
+    onReloadNeeded,
+    onPipelineFinished,
+    showSnackbar,
+  });
+
+  const handleStart = useCallback(
+    async (options?: {
+      silent?: boolean;
+      queries?: string[];
+      companies?: string[];
+    }) => {
+      const isSilent = options?.silent ?? false;
+      const effectiveQueries = options?.queries ?? roleQueries;
+      const effectiveCompanies = options?.companies ?? companies;
+
+      if (isSilent) {
+        setAutoSyncing(true);
+      } else {
+        setRunning(true);
+        setJobs([]);
+        if (!session) await browserStorage.clear();
+        trackJobSearch({
+          companies: effectiveCompanies,
+          roles: effectiveQueries,
+        });
+      }
+
+      try {
+        const res = await fetch("/api/pipeline", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            companies: effectiveCompanies,
+            queries: effectiveQueries,
+            auto: isSilent,
+          }),
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          if (res.status === 429 && body.retryAfter) {
+            if (!isSilent) {
+              await startCooldown(body.retryAfter);
+              showSnackbar(body.error || "Muitas requisições. Aguarde.", "info");
+            }
+            if (isSilent) {
+              const now = Date.now();
+              setLastRunAt(now);
+              void browserStorage.setLastRunAt(now);
+            }
+          } else if (!isSilent) {
+            showSnackbar(
+              body.error || "Erro ao iniciar a busca de vagas",
+              "error",
+            );
+          }
+          setRunning(false);
+          setAutoSyncing(false);
+          return;
+        }
+
+        const { runId: id, cooldownSeconds: cd } = await res.json();
+        if (cd && !isSilent) {
+          await startCooldown(cd);
+        }
+
+        const now = Date.now();
+        setLastRunAt(now);
+        void browserStorage.setLastRunAt(now);
+
+        connectToPipeline(id, { isSilent, session });
+      } catch {
+        if (!isSilent) {
+          showSnackbar("Erro ao iniciar a busca de vagas", "error");
+        }
+        setRunning(false);
+        setAutoSyncing(false);
+      }
+    },
+    [
+      companies,
+      roleQueries,
+      session,
+      startCooldown,
+      showSnackbar,
+      connectToPipeline,
+    ],
+  );
+
+  // Carregar vagas salvas na montagem
   useEffect(() => {
     if (session) {
-      // Adiado para fora do effect síncrono (evita setState em cascata)
       queueMicrotask(() => {
         void loadJobs();
       });
     } else {
       let cancelled = false;
-      browserStorage.getJobs().then((stored) => {
-        if (!cancelled && stored.length > 0) setJobs(stored as Job[]);
-      }).catch(() => {});
+      browserStorage
+        .getJobs()
+        .then((stored) => {
+          if (!cancelled && stored.length > 0) setJobs(stored as Job[]);
+        })
+        .catch(() => {});
       return () => {
         cancelled = true;
       };
@@ -104,49 +262,34 @@ export function useJobSearch() {
 
   // Carregar timestamp da última busca
   useEffect(() => {
-    browserStorage.getLastRunAt().then((ts) => {
-      if (ts) setLastRunAt(ts);
-    }).catch(() => {});
+    browserStorage
+      .getLastRunAt()
+      .then((ts) => {
+        if (ts) setLastRunAt(ts);
+      })
+      .catch(() => {});
   }, []);
 
-  // Carregar filtros persistidos (companies/roles) na montagem
+  // Carregar filtros persistidos na montagem
   useEffect(() => {
-    browserStorage.getFilters().then((filters) => {
-      if (!filters) return;
-      if (Array.isArray(filters.companies)) setCompanies(filters.companies);
-      if (Array.isArray(filters.roles)) setRoleQueries(filters.roles);
-    }).catch(() => {});
+    browserStorage
+      .getFilters()
+      .then((filters) => {
+        if (filters) {
+          if (Array.isArray(filters.companies)) setCompanies(filters.companies);
+          if (Array.isArray(filters.roles)) setRoleQueries(filters.roles);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setFiltersLoaded(true));
   }, []);
 
   // Persistir filtros a cada alteração
   useEffect(() => {
-    void browserStorage.setFilters({ companies, roles: roleQueries }).catch(() => {});
+    void browserStorage
+      .setFilters({ companies, roles: roleQueries })
+      .catch(() => {});
   }, [companies, roleQueries]);
-
-  useEffect(() => {
-    browserStorage.getCooldownEnd().then((endsAt) => {
-      if (endsAt) {
-        const remaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
-        if (remaining > 0) setCooldown(remaining);
-        else void browserStorage.clearCooldown();
-      }
-    }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const id = setInterval(() => {
-      setCooldown((prev) => {
-        const next = prev - 1;
-        if (next <= 0) {
-          void browserStorage.clearCooldown();
-          return 0;
-        }
-        return next;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [cooldown]);
 
   function addSuggestion(role: string) {
     if (!roleQueries.includes(role)) {
@@ -154,170 +297,47 @@ export function useJobSearch() {
     }
   }
 
-  const handleStart = useCallback(async (options?: { silent?: boolean }) => {
-    const isSilent = options?.silent ?? false;
+  // Auto-sync via useAutoSync
+  useAutoSync({
+    cooldown,
+    running,
+    autoSyncing,
+    cooldownLoaded,
+    filtersLoaded,
+    companies,
+    roleQueries,
+    onAutoSync: () => handleStartRef.current({ silent: true }),
+    blockedRef: autoSyncBlockedRef,
+  });
 
-    if (isSilent) {
-      setAutoSyncing(true);
-    } else {
-      setRunning(true);
-      setJobs([]);
-      if (!session) await browserStorage.clear();
-      trackJobSearch({ companies, roles: roleQueries });
-    }
-
-    try {
-      const res = await fetch("/api/pipeline", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companies, queries: roleQueries }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        if (res.status === 429 && body.retryAfter) {
-          const endsAt = Date.now() + body.retryAfter * 1000;
-          await browserStorage.setCooldownEnd(endsAt);
-          setCooldown(body.retryAfter);
-          if (!isSilent) {
-            setSnackbar({
-              message: body.error || "Muitas requisições. Aguarde.",
-              severity: "info",
-            });
-          }
-        } else if (!isSilent) {
-          setSnackbar({
-            message: body.error || "Erro ao iniciar a busca de vagas",
-            severity: "error",
-          });
-        }
-        setRunning(false);
-        setAutoSyncing(false);
-        return;
-      }
-
-      const { runId: id, cooldownSeconds: cd } = await res.json();
-      if (cd) {
-        const endsAt = Date.now() + cd * 1000;
-        await browserStorage.setCooldownEnd(endsAt);
-        setCooldown(cd);
-      }
-
-      // Marcar timestamp da busca iniciada com sucesso
-      const now = Date.now();
-      setLastRunAt(now);
-      void browserStorage.setLastRunAt(now);
-
-      const evtSource = new EventSource(`/api/pipeline/stream?runId=${id}`);
-
-      // Watchdog: se o stream nunca emitir um evento terminal nem cair com
-      // erro (ex: proxy bufferizando a resposta SSE), evita travar a UI para sempre.
-      const watchdog = setTimeout(() => {
-        evtSource.close();
-        setRunning(false);
-        setAutoSyncing(false);
-        if (!isSilent) {
-          setSnackbar({ message: "A busca demorou mais que o esperado. Tente novamente.", severity: "error" });
-        }
-        loadJobs().catch(() => {});
-      }, 180_000);
-
-      evtSource.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data) as {
-            type: string;
-            message?: string;
-            jobs?: Job[];
-          };
-
-          if (
-            data.type === "pipeline_complete" ||
-            data.type === "pipeline_error" ||
-            data.type === "pipeline_cancelled"
-          ) {
-            clearTimeout(watchdog);
-            evtSource.close();
-            setRunning(false);
-            setAutoSyncing(false);
-
-            if (
-              !session &&
-              data.type === "pipeline_complete" &&
-              Array.isArray(data.jobs)
-            ) {
-              const completedJobs: Job[] = data.jobs.map((j) => ({
-                ...j,
-                detectedAt: j.detectedAt || "",
-              }));
-              setJobs(completedJobs);
-              await browserStorage.setJobs(data.jobs);
-              const uniqueRoleCategories = uniqueValues(
-                completedJobs.map((j: Job) => j.roleCategory),
-              );
-              setRoleCategories(uniqueRoleCategories);
-            } else {
-              loadJobs();
-            }
-
-            if (!isSilent) {
-              setSnackbar({
-                message: data.message || "Busca de vagas concluída!",
-                severity: data.type === "pipeline_complete" ? "success" : "error",
-              });
-            }
-          }
-        } catch {
-          clearTimeout(watchdog);
-          evtSource.close();
-          setRunning(false);
-          setAutoSyncing(false);
-          if (!isSilent) {
-            setSnackbar({ message: "Erro ao processar a busca. Tente novamente.", severity: "error" });
-          }
-        }
-      };
-
-      evtSource.onerror = () => {
-        clearTimeout(watchdog);
-        evtSource.close();
-        setRunning(false);
-        setAutoSyncing(false);
-        if (!isSilent) {
-          setSnackbar({ message: "Falha na conexão com a busca. Tente novamente.", severity: "error" });
-        }
-        loadJobs().catch(() => {});
-      };
-    } catch {
-      if (!isSilent) {
-        setSnackbar({ message: "Erro ao iniciar a busca de vagas", severity: "error" });
-      }
-      setRunning(false);
-      setAutoSyncing(false);
-    }
-  }, [companies, roleQueries, session, loadJobs]);
-
-  // Auto-sync na montagem se o tempo decorrido for > 15min e cooldown for 0
   const handleStartRef = useRef(handleStart);
   useEffect(() => {
     handleStartRef.current = handleStart;
   });
 
+  // Termo `q` vindo da URL
   useEffect(() => {
-    if (cooldown > 0 || running || autoSyncing) return;
+    if (!urlQuery) return;
+    if (!filtersLoaded || !cooldownLoaded) return;
+    if (urlQueryHandledRef.current === urlQuery) return;
+    urlQueryHandledRef.current = urlQuery;
 
-    let cancelled = false;
-    browserStorage.getLastRunAt().then((ts) => {
-      if (cancelled) return;
-      const now = Date.now();
-      if (ts && now - ts > AUTO_SYNC_INTERVAL_MS) {
-        void handleStartRef.current({ silent: true });
-      }
+    autoSyncBlockedRef.current = true;
+
+    queueMicrotask(() => {
+      setRoleQueries([urlQuery]);
+      if (cooldown > 0 || running || autoSyncing) return;
+      void handleStart({ queries: [urlQuery] });
     });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [cooldown, running, autoSyncing]);
+  }, [
+    urlQuery,
+    filtersLoaded,
+    cooldownLoaded,
+    cooldown,
+    running,
+    autoSyncing,
+    handleStart,
+  ]);
 
   return {
     session,

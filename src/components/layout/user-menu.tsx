@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { User, LogOut, ChevronDown, ShieldCheck, Info } from 'lucide-react';
+import { User, LogOut, ChevronDown, ShieldCheck, Puzzle } from 'lucide-react';
 
 /**
  * Safely extracts only the first name of the user.
@@ -92,6 +92,9 @@ export function UserMenu() {
             <img
               src={session.user.image}
               alt={firstName}
+              loading="lazy"
+              width={24}
+              height={24}
               className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-[#ccff00]"
             />
           ) : (
@@ -153,14 +156,13 @@ export function UserMenu() {
               <span>MEU PERFIL</span>
             </Link>
 
-            {/* Quick Link to Sobre on Mobile */}
             <Link
-              href="/sobre"
+              href="/extensao/conectar"
               onClick={() => setIsOpen(false)}
-              className="flex sm:hidden items-center gap-2.5 p-2 text-[#94a3b8] text-xs font-bold font-mono no-underline bg-[#1e293b]/50 border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
+              className="flex items-center gap-2.5 p-2 text-[#f8fafc] text-xs font-bold font-mono no-underline bg-[#1e293b] border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
             >
-              <Info size={14} />
-              <span>SOBRE O RADAR</span>
+              <Puzzle size={14} />
+              <span>CONECTAR EXTENSÃO</span>
             </Link>
 
             <button

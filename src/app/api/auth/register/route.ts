@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { passwordSchema } from '@/lib/core/auth/password-schema';
-
-import { checkRateLimit } from '@/lib/rate-limit';
-
-const registerSchema = z.object({
-  name: z.string().trim().max(80).optional().or(z.literal('')),
-  email: z.string({ message: 'Email é obrigatório' }).trim().email('Email inválido'),
-  password: passwordSchema,
-});
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
+import { registerCredentialsSchema } from '@/lib/core/auth/register-schema';
 
 export async function POST(req: NextRequest) {
   const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
@@ -29,8 +21,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Limite diário de criação de contas por IP (anti multi-conta)
+  const { success: registerDailyOk } = await checkRateLimit(ip, 'register_daily');
+  if (!registerDailyOk) {
+    return NextResponse.json(
+      { error: 'Limite de cadastros por IP atingido. Tente novamente amanhã.' },
+      { status: 429 }
+    );
+  }
+
   try {
-    const parsed = registerSchema.safeParse(await req.json());
+    const parsed = registerCredentialsSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
 
     const existing = await userRepository.findByEmail(email);
     if (existing) {
-      return NextResponse.json({ error: 'Email já cadastrado' }, { status: 409 });
+      // Mensagem unificada (mesma da validação) para não confirmar quais emails
+      // existem no sistema — evita enumeração de contas (relatório item 1.10).
+      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);

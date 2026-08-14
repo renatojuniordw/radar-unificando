@@ -1,12 +1,14 @@
-import { companyDiscovery } from '@/lib/core/discovery/company-discovery';
+import { companyDiscovery, type DiscoveredCompany } from '@/lib/core/discovery/company-discovery';
+import { newCompanyRepository } from '@/lib/infrastructure/repositories';
 import { progressEmitter } from '@/lib/core/pipeline/progress-emitter';
 
 export interface DiscoveryStepOptions {
   companies: string[];
+  userId: string;
 }
 
 export async function runDiscoveryStep(runId: string, options: DiscoveryStepOptions): Promise<number> {
-  const { companies } = options;
+  const { companies, userId } = options;
 
   progressEmitter.emit(runId, {
     type: 'step_start', step: 'Discovery',
@@ -15,8 +17,9 @@ export async function runDiscoveryStep(runId: string, options: DiscoveryStepOpti
 
   try {
     const discovered = await companyDiscovery.discover(companies);
+    const fresh = await persistDiscovered(userId, discovered);
 
-    if (discovered.length === 0) {
+    if (fresh.length === 0) {
       progressEmitter.emit(runId, {
         type: 'step_complete', step: 'Discovery',
         message: 'Nenhuma nova empresa descoberta',
@@ -26,10 +29,10 @@ export async function runDiscoveryStep(runId: string, options: DiscoveryStepOpti
 
     progressEmitter.emit(runId, {
       type: 'step_complete', step: 'Discovery',
-      message: `${discovered.length} novas empresas descobertas`,
+      message: `${fresh.length} novas empresas descobertas`,
     });
 
-    return discovered.length;
+    return fresh.length;
   } catch (error) {
     progressEmitter.emit(runId, {
       type: 'step_warn', step: 'Discovery',
@@ -37,4 +40,17 @@ export async function runDiscoveryStep(runId: string, options: DiscoveryStepOpti
     });
     return 0;
   }
+}
+
+/** Persiste apenas empresas ainda não cadastradas do usuário; retorna as novas. */
+async function persistDiscovered(userId: string, discovered: DiscoveredCompany[]): Promise<DiscoveredCompany[]> {
+  if (discovered.length === 0) return [];
+  const existing = await newCompanyRepository.findExisting(userId, discovered.map((d) => d.name));
+  const fresh = discovered.filter((d) => !existing.has(d.name));
+  await Promise.all(
+    fresh.map((d) =>
+      newCompanyRepository.create({ userId, name: d.name, careersUrl: d.careersUrl }),
+    ),
+  );
+  return fresh;
 }

@@ -3,12 +3,56 @@ import { z } from 'zod';
 import type { Profile } from '@prisma/client';
 import { gupyMcpClient } from '@/lib/core/mcp/gupy-client';
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeJobFit, JOB_ANALYZER_PROMPT_VERSION, type JobAnalysis } from '@/lib/core/ai/job-analyzer';
-import { generateCoverLetter, COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/cover-letter-generator';
-import { generateInterviewQuestions, INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/interview-questions';
+import { analyzeJobFit, type JobAnalysis } from '@/lib/core/ai/job-analyzer';
+import { generateCoverLetter } from '@/lib/core/ai/cover-letter-generator';
+import { generateInterviewQuestions } from '@/lib/core/ai/interview-questions';
+import {
+  generateAdaptedResume,
+  adaptedResumeToMarkdown,
+  type AdaptedResume,
+} from '@/lib/core/ai/resume-adaptation-generator';
+import { enforceVeracity } from '@/lib/core/ai/resume-veracity';
+import { JOB_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/job-analyzer';
+import { COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/prompts/cover-letter';
+import { INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/prompts/interview-questions';
+import { RESUME_ADAPTATION_PROMPT_VERSION } from '@/lib/core/ai/prompts/resume-adaptation';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
+import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
+import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
+import { recommendCourses } from '@/lib/core/courses/course-matcher';
+import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
+import { searchUdemyCourses } from '@/lib/core/courses/impact-client';
+import { debugLog } from '@/lib/utils/debug';
 
 const FIT_RANK: Record<JobAnalysis['overallFit'], number> = { high: 3, medium: 2, low: 1 };
+
+const MAX_SEARCHES_PER_MESSAGE = 2;
+const JOB_DESCRIPTION_LIMIT = 800;
+
+export interface JobLike {
+  title: string;
+  company: string;
+  type: string;
+  location: string;
+  link: string;
+  postedAt?: string | null;
+  description?: string | null;
+}
+
+/** Transforma uma vaga em resultado de tool: trunca a descrição e embrulha em conteúdo não confiável. */
+export function formatJobResult(j: JobLike) {
+  return {
+    titulo: j.title,
+    empresa: j.company,
+    tipo: j.type,
+    local: j.location,
+    link: j.link,
+    publicado: j.postedAt || null,
+    descricao: j.description
+      ? `<untrusted_content>\n${j.description.slice(0, JOB_DESCRIPTION_LIMIT)}\n</untrusted_content>`
+      : '',
+  };
+}
 
 async function analyzeWithCache(
   userId: string,
@@ -54,6 +98,8 @@ async function analyzeWithCache(
 }
 
 export function createChatTools(userId: string) {
+  let searchCount = 0;
+
   return {
     search_jobs: tool({
       description: 'Buscar vagas no Gupy usando uma query de texto. Use palavras-chave como cargo, empresa, ou tecnologia. O resultado inclui a descrição e a data de publicação de cada vaga (quando disponível) — use a descrição diretamente em analyze_job_fit, sem precisar de outra busca, e mencione/priorize vagas mais recentes quando isso for relevante para a pergunta do usuário.',
@@ -63,22 +109,17 @@ export function createChatTools(userId: string) {
           .max(200, 'Query muito longa')
           .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Caracteres não permitidos na query')
           .describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
-        limit: z.number().min(1).max(100).optional().default(20).describe('Máximo de resultados'),
+        limit: z.number().min(1).max(20).optional().default(10).describe('Máximo de resultados (até 20)'),
       }),
       execute: async ({ query, limit }: { query: string; limit?: number }) => {
-        console.log(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
-        const jobs = await gupyMcpClient.searchJobs(query, Math.min(limit || 20, 100));
-        return jobs.map(j => ({
-          titulo: j.title,
-          empresa: j.company,
-          tipo: j.type,
-          local: j.location,
-          link: j.link,
-          publicado: j.postedAt || null,
-          descricao: j.description
-            ? `<untrusted_content>\n${j.description.slice(0, 1200)}\n</untrusted_content>`
-            : '',
-        }));
+        searchCount++;
+        if (searchCount > MAX_SEARCHES_PER_MESSAGE) {
+          return { error: 'Limite de 2 buscas por mensagem atingido. Reformule o pedido.' };
+        }
+        debugLog(`[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`);
+        const jobs = await gupyMcpClient.searchJobs(query, Math.min((limit || 10) * 2, 40));
+        const aliveJobs = await jobLinkFilter.filterAlive(jobs, { concurrency: 5 });
+        return aliveJobs.slice(0, limit || 10).map(formatJobResult);
       },
     }),
 
@@ -86,7 +127,7 @@ export function createChatTools(userId: string) {
       description: 'Obter o perfil do usuário logado (skills, experiência, senioridade, formação).',
       inputSchema: z.object({}),
       execute: async () => {
-        console.log('[chat-tools] get_my_profile chamado');
+        debugLog('[chat-tools] get_my_profile chamado');
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
         return {
@@ -98,6 +139,39 @@ export function createChatTools(userId: string) {
           education: profile.education || [],
           profileSource: profile.profileSource || 'manual',
           resumeMarkdown: profile.resumeMarkdown?.slice(0, 3000) || null,
+        };
+      },
+    }),
+
+    analyze_ats_score: tool({
+      description:
+        'Analisar a compatibilidade do currículo do usuário com sistemas ATS (Applicant Tracking System — filtros automáticos de currículo). Retorna score 0-100, pontos fortes, palavras-chave faltando, problemas de formatação e recomendações. Use quando o usuário perguntar se o currículo passa em filtros automáticos, como otimizar o CV para uma vaga, ou pedir "análise ATS". Se uma descrição de vaga for fornecida, o score considera o keyword match com a vaga.',
+      inputSchema: z.object({
+        jobDescription: z
+          .string()
+          .max(8000)
+          .optional()
+          .describe('Descrição da vaga alvo (opcional). Se fornecida, o score considera o keyword match com a vaga.'),
+      }),
+      execute: async ({ jobDescription }: { jobDescription?: string }) => {
+        debugLog('[chat-tools] analyze_ats_score chamado');
+        const profile = await profileRepository.findByUserId(userId);
+        const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
+        if (!resumeText || resumeText.length < 30) {
+          return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
+        }
+        const result = await analyzeAtsWithCache(userId, resumeText, {
+          jobDescription,
+          traceId: crypto.randomUUID(),
+        });
+        return {
+          score: result.analysis.score,
+          summary: result.analysis.summary,
+          strengths: result.analysis.strengths,
+          missingKeywords: result.analysis.missingKeywords,
+          formattingIssues: result.analysis.formattingIssues,
+          recommendations: result.analysis.recommendations,
+          heuristicChecks: result.heuristics.checks,
         };
       },
     }),
@@ -117,7 +191,7 @@ export function createChatTools(userId: string) {
           .describe('Descrição da vaga (campo "descricao" retornado por search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -136,7 +210,7 @@ export function createChatTools(userId: string) {
         ).min(2, 'Informe pelo menos 2 vagas para comparar').max(5, 'Compare no máximo 5 vagas por vez'),
       }),
       execute: async ({ jobs }: { jobs: { jobTitle: string; jobDescription: string }[] }) => {
-        console.log(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
+        debugLog(`[chat-tools] compare_jobs chamado com ${jobs.length} vagas`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -159,7 +233,7 @@ export function createChatTools(userId: string) {
         jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] generate_cover_letter chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] generate_cover_letter chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -178,6 +252,52 @@ export function createChatTools(userId: string) {
       },
     }),
 
+    generate_resume: tool({
+      description: 'Gerar um currículo adaptado (reescrito) para uma vaga específica, incorporando palavras-chave da vaga sem inventar fatos. Use título e descrição já retornados por search_jobs — não invente dados.',
+      inputSchema: z.object({
+        jobTitle: z.string().min(1).max(200).trim().describe('Título da vaga (campo "titulo" de search_jobs)'),
+        jobDescription: z.string().max(5000).trim().optional().default('').describe('Descrição da vaga (campo "descricao" de search_jobs), se disponível'),
+      }),
+      execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
+        debugLog(`[chat-tools] generate_resume chamado com jobTitle="${jobTitle}"`);
+        const profile = await profileRepository.findByUserId(userId);
+        if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
+
+        const resumeContext = profile.resumeMarkdown || profile.resumeText || '';
+        if (!resumeContext || resumeContext.length < 30) {
+          return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
+        }
+
+        const ats = await analyzeAtsWithCache(userId, resumeContext, {
+          jobDescription,
+          traceId: crypto.randomUUID(),
+        });
+        const atsKeywords = ats.analysis.missingKeywords ?? [];
+
+        const cacheKey = computeCacheKey(RESUME_ADAPTATION_PROMPT_VERSION, [
+          jobTitle,
+          jobDescription,
+          resumeContext,
+          atsKeywords.join('|'),
+        ]);
+        const cached = await getCached<AdaptedResume>(userId, 'resume_adaptation', cacheKey);
+        if (cached) {
+          const verified = enforceVeracity(resumeContext, cached);
+          return { resume: verified.resume, resumeMarkdown: adaptedResumeToMarkdown(verified.resume) };
+        }
+
+        const traceId = crypto.randomUUID();
+        const resume = await generateAdaptedResume(resumeContext, jobTitle, jobDescription, {
+          atsKeywords,
+          traceId,
+        });
+
+        await saveToCache(userId, 'resume_adaptation', cacheKey, resume);
+        const verified = enforceVeracity(resumeContext, resume);
+        return { resume: verified.resume, resumeMarkdown: adaptedResumeToMarkdown(verified.resume) };
+      },
+    }),
+
     get_interview_questions: tool({
       description: 'Gerar um roteiro de perguntas de entrevista personalizadas para uma vaga específica, baseado nos pontos fortes e lacunas do perfil do usuário. Use título e descrição já retornados por search_jobs — não invente dados. Após retornar as perguntas, ofereça-se para conduzir uma simulação de entrevista fazendo uma pergunta de cada vez e dando feedback sobre a resposta do usuário.',
       inputSchema: z.object({
@@ -185,7 +305,7 @@ export function createChatTools(userId: string) {
         jobDescription: z.string().min(10).max(5000).trim().describe('Descrição da vaga (campo "descricao" de search_jobs)'),
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
-        console.log(`[chat-tools] get_interview_questions chamado com jobTitle="${jobTitle}"`);
+        debugLog(`[chat-tools] get_interview_questions chamado com jobTitle="${jobTitle}"`);
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
@@ -209,6 +329,59 @@ export function createChatTools(userId: string) {
 
         await saveToCache(userId, 'interview_questions', cacheKey, questions);
         return questions;
+      },
+    }),
+
+    recommend_courses: tool({
+      description: 'Recomendar cursos de capacitação (Udemy) para skills específicas que faltam no currículo do usuário. Use quando analyze_job_fit ou analyze_ats_score indicar missingSkills/missingKeywords. Retorna até 4 cursos com link de afiliado. Apresente cada curso no formato de bloco de curso (📚) — no máximo 3 blocos por resposta, apenas quando fizer sentido, nunca em toda resposta.',
+      inputSchema: z.object({
+        skills: z
+          .array(z.string().min(1).max(60).trim())
+          .min(1, 'Informe pelo menos 1 skill')
+          .max(6, 'Informe no máximo 6 skills')
+          .describe('Skills/requisitos faltando no currículo (ex: ["Kubernetes", "Excel Avançado"])'),
+      }),
+      execute: async ({ skills }: { skills: string[] }) => {
+        debugLog(`[chat-tools] recommend_courses chamado com skills=${JSON.stringify(skills)}`);
+        const profile = await profileRepository.findByUserId(userId);
+        const area = profile?.area || profile?.currentRole || null;
+        const courses = recommendCourses(skills, area, 4);
+
+        // Enriquecimento: skill sem match no catálogo curado → busca avulsos
+        // na API Impact (Udemy). Limitado a 2 chamadas para não atrasar o chat.
+        const matchedTags = courses.flatMap((c) => c.skillTags);
+        const unmatched = skills.filter(
+          (s) =>
+            !matchedTags.some(
+              (t) =>
+                t.toLowerCase().includes(s.toLowerCase()) ||
+                s.toLowerCase().includes(t.toLowerCase()),
+            ),
+        );
+
+        const merged = [...courses];
+        if (unmatched.length > 0) {
+          const top = unmatched.slice(0, 2);
+          const apiResults = await Promise.all(
+            top.map((skill) => searchUdemyCourses(skill, 2)),
+          );
+          for (const list of apiResults) {
+            for (const c of list) {
+              if (!merged.some((x) => x.id === c.id)) merged.push(c);
+            }
+          }
+        }
+
+        return {
+          cursos: merged.slice(0, 4).map((c) => ({
+            titulo: c.title,
+            plataforma: c.provider === 'alura' ? 'Alura' : 'Udemy',
+            skill: c.skillTags[0],
+            preco: c.priceLabel,
+            // Cursos da API Impact já são rastreados pelo script do site.
+            url: c.id.startsWith('impact-') ? c.url : buildAffiliateUrl(c),
+          })),
+        };
       },
     }),
   };

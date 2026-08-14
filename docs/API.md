@@ -17,8 +17,8 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limit: 5/min (Redis). 409 em e-mail duplicado |
-| POST | `/api/auth/forgot-password` | ❌ | Solicitar link de recuperação (`{email}`). Sempre `{success:true}` (anti-enumeração). Envia e-mail via Resend ou loga no console em dev. Rate limit: 5/min |
+| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limits: 5/min + 3/dia por IP (Redis). 409 em e-mail duplicado |
+| POST | `/api/auth/forgot-password` | ❌ | Solicitar link de recuperação (`{email}`). Sempre `{success:true}` (anti-enumeração). Envia e-mail via Resend ou loga no console em dev. Rate limits: 3/min + 10/dia por IP e 3/hora por e-mail |
 | POST | `/api/auth/reset-password` | ❌ | Redefinir senha (`{token, password}`). 400 se link inválido/expirado. Rate limit: 5/min |
 | POST | `/api/auth/callback/credentials` | ❌ | Login (email, password) — rota do NextAuth |
 | GET | `/api/auth/session` | ❌ | Obter sessão atual — rota do NextAuth |
@@ -28,7 +28,7 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/pipeline` | ❌ | Iniciar pipeline (`{companies[], queries[]}`). Rate limit: 1/5min por usuário (ou IP anônimo). Retorna `{runId, cooldownSeconds?}` |
+| POST | `/api/pipeline` | ❌ | Iniciar pipeline (`{companies[], queries[], auto?}`). `auto:true` = auto-sync silencioso: usa limiter próprio (2/5min) e retorna `cooldownSeconds: 0` (não bloqueia a busca manual). Busca manual: rate limit 1/5min por usuário (ou IP anônimo) e retorna `{runId, cooldownSeconds}`. |
 | GET | `/api/pipeline/stream?runId=` | ❌ | SSE — eventos de progresso em tempo real |
 | GET | `/api/pipeline/:runId` | ❌ | Status de uma execução (404 se não existir) |
 
@@ -49,14 +49,31 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE). Rate limit: 10/min + 50/dia (Redis). Thread: 25 mensagens (400 `THREAD_LIMIT_REACHED`) |
+| POST | `/api/chat` | ✅ | Stream de resposta do assistente (SSE). Rate limits: 10/min + 50/dia (Redis) + tetos de tokens diário/mensal/IP (banco `chat_usage`, 429 `TOKEN_LIMIT_REACHED`) + lock de concorrência (1 resposta ativa). Thread: 25 mensagens (400 `THREAD_LIMIT_REACHED`) |
 | GET | `/api/chat/history?chatId=` | ✅ | Carregar histórico de uma conversa |
 | POST | `/api/chat/history` | ✅ | Salvar histórico (body: `{ chatId, messages }`, PII sanitizado) |
 | DELETE | `/api/chat/history?chatId=` | ✅ | Apagar histórico de uma conversa |
 | GET | `/api/chat/conversations` | ✅ | Listar conversas (id, título, última mensagem, data) |
+| GET | `/api/chat/usage` | ✅ | Uso do usuário: interações do dia + tokens do dia/mês e tetos (`dailyTokens`, `monthlyTokens`, `isTokenLimitReached`, etc.) |
+| GET | `/api/chat/context?chatId=` | ✅ | Tokens de contexto da última chamada (`{ contextTokens }`) — tamanho real da janela enviada |
+| POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo. Rate limit próprio |
+| POST | `/api/courses/search` | ❌ (limitado por IP) | Busca dinâmica de cursos. Body: `{ query }` (1-80 chars). Prioriza a API Impact (Udemy, máx. 12), com cache Redis (1h) e fallback para o catálogo curado local. Retorna `{ courses, source }` (`source` ∈ `impact\|curated`) |
+| POST | `/api/resume/generate` | ✅ | Gera currículo adaptado à vaga em PDF. Body: `{ jobTitle, jobDescription?, jobCompany?, jobLocation? }`. Retorna `{ resume, resumeMarkdown, pdfBase64 }`. Veracidade garantida (`enforceVeracity`). Rate limit diário (`resume_daily`). 400 sem currículo importado |
+
+**Exemplo de resposta do GET `/api/chat/usage`:**
+```json
+{
+  "count": 8, "limit": 50, "remaining": 42, "isDailyLimitReached": false,
+  "dailyTokens": 12480, "dailyTokenLimit": 100000, "dailyTokenRemaining": 87520,
+  "monthlyTokens": 312000, "monthlyTokenLimit": 2000000, "monthlyTokenRemaining": 1688000,
+  "isTokenLimitReached": false
+}
+```
 
 **Segurança do chat:**
 - Rate limits: 10 mensagens/min + 50/dia por usuário (retorna `429` ao exceder)
+- Tetos de tokens: 100k/dia, 2M/mês, 300k/IP/dia — verificados antes da chamada (429 `TOKEN_LIMIT_REACHED`); soma considera contas com o mesmo `resume_hash`
+- Lock de concorrência: 1 resposta em andamento por usuário (429)
 - Input sanitizado (truncado em 2000 chars, tags HTML removidas)
 - Redação de PII (CPF, CNPJ, RG, telefone, cartão) → `[CPF REDIGIDO]`
 - Tentativas de prompt injection geram log `[AI_LOG] suspicious_activity` (400)
@@ -68,6 +85,50 @@ curl -X POST http://localhost:11010/api/chat \
   -H 'Cookie: next-auth.session-token=<token>' \
   -d '{"messages":[{"role":"user","content":"Busque vagas de Data Analyst"}]}'
 ```
+
+### Extensão Chrome
+
+A extensão se autentica com um **token de extensão** (Bearer) — não usa cookie de sessão. O token é gerado na página `/extensao/conectar`, entregue via `launchWebAuthFlow` ou copiado manualmente, e armazenado pela extensão em `chrome.storage.local`. O backend guarda apenas o hash SHA-256 do token. Rate limit compartilhado do perfil `extension`: **20 req/min** por usuário+IP.
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/extension/analyze` | Bearer token | Análise ATS da vaga aberta na extensão. Body: `{ jobDescription, jobTitle? }` (jobDescription truncado em 8000 chars; jobTitle em 200 — melhora o match dos cursos). Retorna `{ heuristics, analysis, cached, courses }`. `courses` é um array (máx. 3) de `{ titulo, plataforma, skill, preco, url }` com links de afiliado (Udemy), presente apenas quando há `missingKeywords` (senão `[]`). 401 token inválido/revogado, 400 sem currículo importado, 429 rate limit |
+| POST | `/api/extension/feedback` | Bearer token | Feedback de utilidade. Body: `{ rating: boolean, comment? }` (comentário truncado em 1000 chars). Retorna `{ ok: true }` |
+| GET | `/api/extensao/status` | Sessão (cookie) | Status de conexão da extensão para o usuário logado: `{ connected: boolean, lastUsedAt: Date \| null }` — usado pelo polling da página `/extensao/conectar` |
+
+### Tracking de cursos (afiliado)
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/track/course-click` | ❌ (público, limitado por IP) | Registra clique em link de curso de afiliado. Body: `{ courseId, skill?, platform?, origin, url? }` — `origin` ∈ `web\|chat\|sidebar\|cursos\|extension`. Grava em `CourseClick` (analytics). Rate limit: perfil `general` (60/min por IP). |
+
+**Exemplo (análise pela extensão):**
+```bash
+curl -X POST http://localhost:11010/api/extension/analyze \
+  -H 'Authorization: Bearer <token-da-extensao>' \
+  -H 'Content-Type: application/json' \
+  -d '{"jobDescription":"Vaga de Desenvolvedor(a) Full Stack..."}'
+```
+
+Resposta (trecho — `courses` só aparece quando há `missingKeywords`):
+```json
+{
+  "heuristics": { "checks": [], "score": 80 },
+  "analysis": { "score": 75, "missingKeywords": ["Kubernetes"], "...": "..." },
+  "cached": false,
+  "courses": [
+    {
+      "titulo": "Docker e Kubernetes na Prática",
+      "plataforma": "Udemy",
+      "skill": "docker",
+      "preco": "R$ 27,90",
+      "url": "https://www.udemy.com/course/docker-e-kubernetes-de-forma-pratica-e-direta/"
+    }
+  ]
+}
+```
+
+> Nota: as chamadas da extensão vêm de `Origin: chrome-extension://<id>`. O `middleware.ts` só aceita a origem se estiver configurada em `EXTENSION_ORIGIN` (nunca refletida).
 
 ### Upload de currículo
 

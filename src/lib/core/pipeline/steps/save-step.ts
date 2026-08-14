@@ -57,6 +57,7 @@ export async function runSaveStep(runId: string, jobs: Job[], options: SaveStepO
     companyNameOnPlatform: job.companyNameOnPlatform,
     postedAt: job.postedAt,
     alert: job.alert || '',
+    description: job.description || null,
     detectedAt: new Date().toISOString(),
     lastCheckedAt: new Date(),
   }));

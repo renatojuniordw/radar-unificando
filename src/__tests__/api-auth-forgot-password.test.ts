@@ -5,7 +5,7 @@ vi.mock('@/lib/infrastructure/repositories', () => ({
   userRepository: { findByEmail: vi.fn(), setResetToken: vi.fn() },
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true, msBeforeNext: 0 }),
 }));
 
@@ -23,7 +23,7 @@ vi.mock('@/lib/infrastructure/email/email-service', () => ({
 
 import { POST } from '@/app/api/auth/forgot-password/route';
 import { userRepository } from '@/lib/infrastructure/repositories';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { generatePasswordResetToken } from '@/lib/core/auth/password-reset-token';
 import { sendPasswordResetEmail } from '@/lib/infrastructure/email/email-service';
 

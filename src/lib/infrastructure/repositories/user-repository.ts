@@ -9,6 +9,7 @@ export interface IUserRepository {
   findByResetTokenHash(hash: string): Promise<User | null>;
   setResetToken(userId: string, hash: string, expiresAt: Date): Promise<void>;
   updatePassword(userId: string, passwordHash: string): Promise<void>;
+  deleteAllUserData(userId: string): Promise<void>;
 }
 
 export const userRepository: IUserRepository = {
@@ -36,6 +37,35 @@ export const userRepository: IUserRepository = {
       data: { passwordHash, resetTokenHash: null, resetTokenExpiresAt: null },
     });
   },
+  async deleteAllUserData(userId) {
+    // Exclui todos os dados do usuário em cascata via transação.
+    // A ordem respeita as dependências de foreign key do schema Prisma.
+    await prisma.$transaction([
+      // 1. Dados derivados de chat (mensagens e uso)
+      prisma.chatMessage.deleteMany({ where: { chat: { userId } } }),
+      prisma.chatUsage.deleteMany({ where: { userId } }),
+      prisma.chat.deleteMany({ where: { userId } }),
+      // 2. Conteúdo gerado por IA
+      prisma.generatedContentCache.deleteMany({ where: { userId } }),
+      // 3. Pipeline e candidaturas
+      prisma.applicationLog.deleteMany({ where: { userId } }),
+      prisma.application.deleteMany({ where: { userId } }),
+      prisma.pipelineRun.deleteMany({ where: { userId } }),
+      prisma.companyPresence.deleteMany({ where: { userId } }),
+      // 4. Vagas e empresas
+      prisma.job.deleteMany({ where: { userId } }),
+      prisma.newCompany.deleteMany({ where: { userId } }),
+      // 5. Extensão e feedback
+      prisma.extensionToken.deleteMany({ where: { userId } }),
+      prisma.extensionFeedback.deleteMany({ where: { userId } }),
+      prisma.courseClick.deleteMany({ where: { userId } }),
+      // 6. Perfil e sessão
+      prisma.profile.deleteMany({ where: { userId } }),
+      prisma.session.deleteMany({ where: { userId } }),
+      // 7. Conta do usuário (último, por ser referenciada por tudo)
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
+  },
 };
 
 type ProfileUpsertData = Omit<Prisma.ProfileUncheckedCreateInput, 'userId'>;
@@ -43,6 +73,7 @@ type ProfileUpsertData = Omit<Prisma.ProfileUncheckedCreateInput, 'userId'>;
 export interface IProfileRepository {
   findByUserId(userId: string): Promise<Profile | null>;
   upsert(userId: string, data: ProfileUpsertData): Promise<void>;
+  findUserIdsByResumeHash(resumeHash: string | null, excludeUserId: string): Promise<string[]>;
 }
 
 export const profileRepository: IProfileRepository = {
@@ -55,5 +86,14 @@ export const profileRepository: IProfileRepository = {
       create: { userId, ...data },
       update: data,
     });
+  },
+  async findUserIdsByResumeHash(resumeHash, excludeUserId) {
+    if (!resumeHash) return [excludeUserId];
+    const profiles = await prisma.profile.findMany({
+      where: { resumeHash },
+      select: { userId: true },
+    });
+    const ids = profiles.map((p) => p.userId);
+    return ids.length > 0 ? ids : [excludeUserId];
   },
 };

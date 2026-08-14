@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE } from "@/lib/core/constants";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -20,6 +21,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/perfil/"],
       },
     ],
-    sitemap: "https://radar.unificando.com.br/sitemap.xml",
+    sitemap: `${SITE.url}/sitemap.xml`,
   };
 }

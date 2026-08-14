@@ -2,7 +2,7 @@
 
 import { memo, useCallback } from "react";
 import { Container, Box, Typography, Chip, CircularProgress } from "@mui/material";
-import { JobTable } from "@/components/job-table";
+import { JobTable } from "@/components/job-table/job-table";
 import type { Job } from "@/lib/types/job";
 
 interface ResultsSectionProps {
@@ -17,6 +17,10 @@ interface ResultsSectionProps {
     role?: string;
     search?: string;
   }) => void;
+  canGenerateResume: boolean;
+  onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
 export const ResultsSection = memo(function ResultsSection({
@@ -27,6 +31,10 @@ export const ResultsSection = memo(function ResultsSection({
   roleCategories,
   areaOrRole,
   onFilterChange,
+  canGenerateResume,
+  onGenerateResume,
+  generatingJobKey,
+  onAnalyzeAts,
 }: ResultsSectionProps) {
   const handleExportCsv = useCallback(() => {
     window.open("/export?format=csv", "_blank");
@@ -45,13 +53,13 @@ export const ResultsSection = memo(function ResultsSection({
                   mb: 1.5,
                   textTransform: "uppercase",
                   letterSpacing: "-0.01em",
-                  color: "#020617",
+                  color: "#f8fafc",
                   fontSize: { xs: "1.25rem", sm: "1.75rem", md: "2.25rem" },
                   lineHeight: 1.15,
                   wordBreak: "break-word",
                 }}
               >
-                RECOMENDADAS PARA VOCÊ · {areaOrRole}
+                RECOMENDADAS PARA VOCÊ · <Box component="span" sx={{ color: "#ccff00" }}>{areaOrRole}</Box>
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                 <Chip
@@ -99,6 +107,10 @@ export const ResultsSection = memo(function ResultsSection({
           roleCategories={roleCategories}
           onExportCsv={handleExportCsv}
           onFilterChange={onFilterChange}
+          canGenerateResume={canGenerateResume}
+          onGenerateResume={onGenerateResume}
+          generatingJobKey={generatingJobKey}
+          onAnalyzeAts={onAnalyzeAts}
         />
       </Container>
     </Box>

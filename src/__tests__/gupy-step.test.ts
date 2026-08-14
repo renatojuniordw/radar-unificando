@@ -92,4 +92,113 @@ describe('GupyStep', () => {
     const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
     expect(result[0].onList).toBe('Não');
   });
+
+  it('should_strip_html_tags_and_decode_entities_from_job_description', async () => {
+    global.fetch = restPage([{
+      careerPageName: 'Co',
+      name: 'Data Analyst',
+      description:
+        '<p>Vaga <strong>pleno</strong> com &amp; benefícios&nbsp;extras &apos;bônus&apos; &lt;3.</p><script>var x = 1;</script>',
+    }]) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result[0].description).toBe("Vaga pleno com & benefícios extras 'bônus' <3.");
+  });
+
+  it('should_preserve_unknown_entities_in_job_description', async () => {
+    global.fetch = restPage([{
+      careerPageName: 'Co',
+      name: 'Data Analyst',
+      description: '<p>Termo &foo; preservado</p>',
+    }]) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result[0].description).toBe('Termo &foo; preservado');
+  });
+
+  it('should_truncate_job_description_to_3000_chars', async () => {
+    global.fetch = restPage([{
+      careerPageName: 'Co',
+      name: 'Data Analyst',
+      description: `<p>${'x'.repeat(4000)}</p>`,
+    }]) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result[0].description).toBe('x'.repeat(3000));
+    expect(result[0].description!.length).toBe(3000);
+  });
+
+  it('should_leave_description_undefined_when_job_has_none', async () => {
+    global.fetch = restPage([{
+      careerPageName: 'Co',
+      name: 'Data Analyst',
+      jobUrl: 'https://co/job/1',
+    }]) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result[0].description).toBeUndefined();
+  });
+
+  it('should_combine_queries_and_companies_into_cartesian_searches', async () => {
+    global.fetch = restPage([{
+      careerPageName: 'Co',
+      name: 'Data Analyst',
+      jobUrl: 'https://co/job/1',
+    }]) as any;
+    const result = await runGupyStep('run-1', {
+      companies: ['Co'],
+      isLoggedIn: false,
+      queries: ['analista', 'dev'],
+    });
+    expect(result.length).toBe(1);
+  });
+
+  it('should_continue_to_next_search_when_fetch_throws', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [{ careerPageName: 'Co', name: 'Analista', jobUrl: 'https://co/1' }] }),
+      })
+      .mockResolvedValue({ ok: true, json: async () => ({ data: [] }) });
+    global.fetch = fetchMock as any;
+    const result = await runGupyStep('run-1', {
+      companies: [],
+      isLoggedIn: false,
+      queries: ['analista', 'dev'],
+    });
+    expect(result.length).toBe(1);
+  });
+
+  it('should_map_job_from_company_name_with_missing_optional_fields', async () => {
+    global.fetch = restPage([{
+      companyName: 'OtherCorp',
+      workplaceType: 'Híbrido',
+      city: 'SP',
+      state: 'SP',
+      country: 'BR',
+      jobUrl: 'https://co/job/2',
+    }]) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result[0].company).toBe('OtherCorp');
+    expect(result[0].title).toBe('');
+    expect(result[0].onList).toBe('Não');
+    expect(result[0].description).toBeUndefined();
+  });
+
+  it('should_filter_out_jobs_not_in_target_company_list', async () => {
+    global.fetch = restPage([{ companyName: 'OtherCorp', name: 'Analista' }]) as any;
+    const result = await runGupyStep('run-1', { companies: ['TargetCo'], isLoggedIn: false });
+    expect(result).toEqual([]);
+  });
+
+  it('should_default_company_to_empty_string_when_job_has_no_company', async () => {
+    global.fetch = restPage([{ name: 'Analista' }]) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result[0].company).toBe('');
+    expect(result[0].link).toBe('');
+  });
+
+  it('should_handle_rest_response_without_data_field', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) }) as any;
+    const result = await runGupyStep('run-1', { companies: [], isLoggedIn: false });
+    expect(result).toEqual([]);
+  });
 });

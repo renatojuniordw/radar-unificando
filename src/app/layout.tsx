@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
 import { AuthProvider } from "@/lib/infrastructure/ui/auth-provider";
 import { SnackbarProvider } from "@/hooks/useSnackbar";
-import { QueryProvider } from "@/lib/infrastructure/ui/query-provider";
 import { ChatAssistantProvider } from "@/contexts/chat-assistant-context";
-import { ChatAssistantMount } from "@/components/chat-assistant-mount";
+import { ChatAssistantMount } from "@/components/chat/chat-mount";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Header, Footer } from "@/components/layout";
+import { PwaRegister } from "@/components/ui/pwa-register";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,9 +19,10 @@ const inter = Inter({
 });
 
 import { StructuredData } from "@/components/seo/structured-data";
+import { SITE, IMPACT } from "@/lib/core/constants";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://radar.unificando.com.br"),
+  metadataBase: new URL(SITE.url),
   title: {
     default: "Radar Unificando — Buscador de Vagas Gupy + InHire em Tempo Real",
     template: "%s | Radar Unificando",
@@ -36,17 +38,21 @@ export const metadata: Metadata = {
     "agregador de vagas",
     "busca de empregos gupy",
     "vagas tecnologia brasil",
+    "extensão chrome",
+    "análise de vaga ats",
+    "dicas de currículo",
+    "score ats",
   ],
   authors: [{ name: "Radar Unificando" }],
   creator: "Radar Unificando",
   publisher: "Radar Unificando",
   alternates: {
-    canonical: "https://radar.unificando.com.br",
+    canonical: SITE.url,
   },
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://radar.unificando.com.br",
+    url: SITE.url,
     siteName: "Radar Unificando",
     title: "Radar Unificando — Vagas Gupy e InHire Unificadas em Tempo Real",
     description:
@@ -80,7 +86,9 @@ export const metadata: Metadata = {
   },
 };
 
-import { ConsoleEasterEgg } from "@/components/console-easter-egg";
+import { ConsoleEasterEgg } from "@/components/ui/console-easter-egg";
+
+import { MobileFloatingBar } from "@/components/layout/mobile-floating-bar";
 
 export default function RootLayout({
   children,
@@ -88,8 +96,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" className={inter.variable} data-scroll-behavior="smooth">
       <head>
+        <meta
+          name="impact-site-verification"
+          content={IMPACT.siteVerification}
+          {...({ value: IMPACT.siteVerification } as Record<string, string>)}
+        />
         <StructuredData />
       </head>
       <body
@@ -98,8 +111,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <SnackbarProvider>
-              <QueryProvider>
-                <ChatAssistantProvider>
+              <ChatAssistantProvider>
                   {/* Skip link for keyboard navigation */}
                   <Box
                     component="a"
@@ -128,13 +140,16 @@ export default function RootLayout({
                     {children}
                   </main>
                   <Footer />
-                  <ChatAssistantMount />
+                  <ErrorBoundary>
+                    <ChatAssistantMount />
+                  </ErrorBoundary>
                 </ChatAssistantProvider>
-              </QueryProvider>
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-CPZPJGTL92"} />
+        <MobileFloatingBar />
+        <PwaRegister />
+        <CookieConsent />
       </body>
     </html>
   );

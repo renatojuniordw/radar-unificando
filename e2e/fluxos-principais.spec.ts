@@ -3,9 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Radar Unificando — Fluxos Principais', () => {
   test('home page carrega e mostra elementos principais', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('RADAR DE VAGAS')).toBeVisible();
-    await expect(page.getByText('EXECUTAR BUSCA')).toBeVisible();
-    await expect(page.getByText('PROGRESSO')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /radar de vagas/i })).toBeVisible();
+    await expect(page.getByText('BUSCAR VAGAS EM TEMPO REAL').first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /sobre/i }).first()).toBeVisible();
   });
 
   test('navegação para login funciona', async ({ page }) => {

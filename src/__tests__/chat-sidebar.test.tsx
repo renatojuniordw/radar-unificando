@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ChatSidebar } from '@/components/chat-sidebar';
+import { ChatSidebar } from '@/components/chat/chat-sidebar';
 
 const conversations = [
   { id: 'chat-1', title: 'Vagas de dados', lastMessage: 'Encontrei 5 vagas...', createdAt: new Date() },

@@ -3,19 +3,26 @@
 import { useRef } from 'react';
 import { Box, Tooltip } from '@mui/material';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { formatJobDate } from '@/lib/date';
-import { trackJobApply } from '@/lib/analytics';
+import { formatJobDate } from '@/lib/utils/date';
+import { trackJobApply } from '@/lib/utils/analytics';
 import type { Job } from '@/lib/types/job';
 
-const GRID_COLUMNS = '180px 120px 140px 1fr 150px 90px';
+const GRID_COLUMNS = '180px 120px 140px 1fr 150px 180px';
 
 interface Props {
   jobs: Job[];
+  canGenerateResume: boolean;
+  onGenerateResume: (job: Job) => void;
+  generatingJobKey: string | null;
+  onAnalyzeAts: (job: Job) => void;
 }
 
-export function JobDesktopTable({ jobs }: Props) {
+export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // TanStack Virtual retorna funções que não podem ser memoizadas com segurança
+  // (API incompatível com o React Compiler). Desabilitado por linha.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: jobs.length,
     getScrollElement: () => parentRef.current,
@@ -114,7 +121,7 @@ export function JobDesktopTable({ jobs }: Props) {
                   </Tooltip>
                 </div>
 
-                <div style={{ padding: '10px 12px' }}>
+                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <a
                     href={job.link}
                     target="_blank"
@@ -134,10 +141,60 @@ export function JobDesktopTable({ jobs }: Props) {
                       fontFamily: 'ui-monospace, monospace',
                       boxShadow: '2px 2px 0px #000',
                       display: 'inline-block',
+                      textAlign: 'center',
                     }}
                   >
                     VER VAGA
                   </a>
+                  {canGenerateResume && (
+                    <button
+                      type="button"
+                      onClick={() => onAnalyzeAts(job)}
+                      aria-label={`Analisar ATS para ${job.title} na ${job.company}`}
+                      style={{
+                        backgroundColor: '#ffffff',
+                        color: '#020617',
+                        fontWeight: 900,
+                        fontSize: '0.6rem',
+                        padding: '5px 10px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        border: '2px solid #020617',
+                        fontFamily: 'ui-monospace, monospace',
+                        boxShadow: '2px 2px 0px #000',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      ANALISAR ATS
+                    </button>
+                  )}
+                  {canGenerateResume && (
+                    <button
+                      type="button"
+                      onClick={() => onGenerateResume(job)}
+                      disabled={generatingJobKey === `${job.company}|${job.title}`}
+                      aria-label={`Gerar currículo adaptado para ${job.title} na ${job.company}`}
+                      style={{
+                        backgroundColor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : '#ccff00',
+                        color: '#020617',
+                        fontWeight: 900,
+                        fontSize: '0.6rem',
+                        padding: '5px 10px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        border: '2px solid #020617',
+                        fontFamily: 'ui-monospace, monospace',
+                        boxShadow: '2px 2px 0px #000',
+                        cursor: generatingJobKey === `${job.company}|${job.title}` ? 'wait' : 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {generatingJobKey === `${job.company}|${job.title}`
+                        ? 'GERANDO...'
+                        : 'GERAR CURRÍCULO'}
+                    </button>
+                  )}
                 </div>
               </div>
             );

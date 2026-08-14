@@ -61,6 +61,7 @@ export const jobRepository: IJobRepository = {
           { company: { contains: token, mode: 'insensitive' } },
         ]),
       },
+      orderBy: { postedAt: 'desc' },
       take: 100, // Busca mais para rankear
     });
 

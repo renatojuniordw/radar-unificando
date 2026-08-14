@@ -18,6 +18,7 @@ function mapJobToApi(j: PrismaJob, score?: number) {
     postedAt: j.postedAt,
     alert: j.alert || '',
     detectedAt: j.detectedAt || '',
+    description: j.description || undefined,
     ...(score !== undefined ? { _score: score } : {}),
   };
 }
