@@ -22,14 +22,18 @@ API Layer (Route Handlers)
         |
 Application/Core Layer
   ├── core/pipeline/        → steps gupy/inhire/save/discovery + progress-emitter
+  │   ├── query-expansion/  → expansão híbrida de queries (mapa curado + IA cacheada)
+  │   ├── relevance-filter  → descarta design físico (moda/industrial)
+  │   └── freshness         → descarta vagas com postedAt > 20 dias
   ├── core/extension/       → extension-token (SHA-256), extension-feedback
   ├── core/upload/          → upload-job-store (in-memory) + upload-processor (background)
   ├── core/parsing/         → pdf-to-markdown + resume-extraction-cache (hash, TTL 1h)
   ├── core/matching/        → recommendation.ts (token overlap)
   ├── core/ai/              → skill-extractor, chat-tools, job-analyzer, cover-letter,
-  │                           interview-questions, pii-redactor, llm-provider, chat-guard
+  │                           interview-questions, query-expansion, pii-redactor,
+  │                           llm-provider, chat-guard
   ├── ats/                  → ats-analyzer (LLM), ats-heuristics, ats-service (cache)
-  ├── core/mcp/             → gupy-client (JSON-RPC)
+  ├── core/mcp/             → gupy-client (JSON-RPC, paginado por offset)
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine
   └── core/discovery/       → company-discovery (executado para usuários logados)
@@ -59,13 +63,16 @@ Infrastructure Layer
 ## Fluxo de Dados
 
 1. Usuário submete `companies` e/ou `queries` → `POST /api/pipeline` (busca manual aplica cooldown de 5 min)
-2. Pipeline roda **Gupy + InHire em paralelo**; logado + queries → MCP Gupy com fallback REST
-3. Eventos SSE emitidos via `ProgressEmitter` (`/api/pipeline/stream`)
-4. Cliente recebe eventos e atualiza UI em tempo real
-5. Resultados deduplicados (por link), cap 200, salvos no PostgreSQL
-6. **Pool público de vagas** (`PublicJob`, dedup por link, TTL 7 dias): alimentado por **toda** execução do pipeline (logada ou anônima) e lido pelas páginas estáticas de SEO `/vagas` e `/vagas/[cargo]`
-7. Usuário visualiza vagas na tabela com filtros e export CSV/JSON
-8. Chat assistente analisa perfil vs vagas via ferramentas IA
+2. Cache SWR consultado (hit fresco devolve; stale revalida em background; expira após 30 min)
+3. Queries são **expandidas** (mapa curado + IA cacheada, dedupe de quase-duplicatas, fail-open)
+4. Pipeline roda **Gupy + InHire em paralelo**; logado + queries → MCP Gupy paginado (offset 0→500) com fallback REST
+5. Filtros de qualidade aplicados: **relevância** (design físico) + **frescor** (postedAt > 20 dias)
+6. Eventos SSE emitidos via `ProgressEmitter` (`/api/pipeline/stream`) — `pipeline_complete` carrega `jobs` para **todos** os usuários
+7. Cliente recebe eventos e atualiza UI em tempo real (logados veem os resultados da busca)
+8. Resultados ordenados por recência, deduplicados (por link), cap 200, salvos no PostgreSQL
+9. **Pool público de vagas** (`PublicJob`, dedup por link, TTL 7 dias): alimentado por **toda** execução do pipeline (logada ou anônima) e lido pelas páginas estáticas de SEO `/vagas` e `/vagas/[cargo]`
+10. Usuário visualiza vagas na tabela com filtros e export CSV/JSON
+11. Chat assistente analisa perfil vs vagas via ferramentas IA
 
 **Auto-sync (refresh silencioso ao entrar no site):** dispara no máximo 1×/15min, só quando há filtros salvos (companies/roles) e cooldown zero. Usa um limiter próprio (`pipelineAutoLimiter`, 2/5min) e **não** consome a cota nem aplica o cooldown da busca manual — o usuário pode buscar na hora. Ver `docs/SECURITY.md`.
 

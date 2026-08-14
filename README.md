@@ -11,6 +11,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 ## Funcionalidades
 
 - **Busca em tempo real** em Gupy e InHire para todas as áreas profissionais — sem base pré-carregada
+- **Busca inteligente** — expansão de queries (sinônimos PT/EN via mapa curado + IA cacheada), dedupe de quase-duplicatas, filtro de relevância (descarta design físico em buscas de design) e de frescor (vagas com mais de 20 dias)
 - **Chat IA** para análise de perfil, recomendação de vagas, carta de apresentação e preparação de entrevistas (com redação de PII e proteção contra prompt injection)
 - **Importação de currículo** — upload PDF do LinkedIn ou texto colado, com extração automática de skills, experiência, cargo e senioridade
 - **Análise de match & ATS** — compara perfil × vaga com score 0-100, skills casadas/faltantes e fit geral
@@ -26,7 +27,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 
 | Categoria | Tecnologia |
 |-----------|-----------|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | UI | MUI 7 + Tailwind v4 |
 | Design | Neo-Brutalism + Premium SaaS |
 | Banco | PostgreSQL via Prisma ORM |

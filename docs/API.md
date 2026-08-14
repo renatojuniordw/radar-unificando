@@ -29,7 +29,7 @@ Base URL local: `http://localhost:11010`.
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
 | POST | `/api/pipeline` | ❌ | Iniciar pipeline (`{companies[], queries[], auto?}`). `auto:true` = auto-sync silencioso: usa limiter próprio (2/5min) e retorna `cooldownSeconds: 0` (não bloqueia a busca manual). Busca manual: rate limit 1/5min por usuário (ou IP anônimo) e retorna `{runId, cooldownSeconds}`. |
-| GET | `/api/pipeline/stream?runId=` | ❌ | SSE — eventos de progresso em tempo real |
+| GET | `/api/pipeline/stream?runId=` | ❌ | SSE — eventos de progresso em tempo real. O evento `pipeline_complete` carrega `jobs` (vagas encontradas) para **todos** os usuários (logados e anônimos) |
 | GET | `/api/pipeline/:runId` | ❌ | Status de uma execução (404 se não existir) |
 
 ### Vagas

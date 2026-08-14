@@ -80,20 +80,25 @@
 **Input → Output/Side-Effect:**
 - If `isLoggedIn`: tries MCP (gupyMcpClient.searchJobs) for each query, falls back to REST on failure.
 - If `!isLoggedIn`: uses REST API directly.
+- Applies `filterByCompany`, `filterIrrelevantDesignJobs` (relevância) e `filterFreshJobs` (frescor).
 - Returns array of JobData.
 
 ### Validations and Rules
-1. **MCP mode**: Iterates GUPY_QUERIES, calls `gupyMcpClient.searchJobs(query, 100)`, emits step_progress for each.
-2. **REST fallback**: If MCP throws, calls `scrapeGupyRest(runId, companies)`.
-3. **REST mode**: Direct fetch to Gupy REST API, filters only remote jobs, maps to JobData format.
-4. **Remote filtering**: Only includes jobs where `j.isRemoteWork === true` or workplaceType includes "remote"/"remoto".
-5. **REST error handling**: Individual query failures caught and skipped (continue). Entire step returns results array even if partially failed.
-6. **inferRole**: Normalizes title (remove accents, lowercase), matches against known role patterns.
+1. **MCP mode**: Iterates queries, calls `gupyMcpClient.searchJobs(query, 100, offset)` **paginado** (offset 0→500, `MAX_PER_SEARCH=500`, `PAGE_SIZE=100`), emitindo step_progress por query. Para de paginar quando a página retorna menos de 100.
+2. **REST fallback**: Se MCP lança, chama `scrapeGupyRest(runId, companies, queries)`.
+3. **REST mode**: Fetch direto à API REST da Gupy, paginado (mesmo `MAX_PER_SEARCH`/`PAGE_SIZE`), mapeia para JobData (`type` derivado de `workplaceType`).
+4. **Filtro de empresa**: `filterByCompany` case-insensitive aplicado como segurança (o `careerPageName` já filtra na API).
+5. **Filtro de relevância**: `filterIrrelevantDesignJobs(jobs, relevanceQueries)` — usa as **queries originais** (não expandidas), para uma alucinação da LLM não destravar vagas de outra área.
+6. **Filtro de frescor**: `filterFreshJobs(jobs)` — descarta vagas com `postedAt` > 20 dias.
+7. **REST error handling**: Falhas individuais de query capturadas e ignoradas (continue). O step retorna o que conseguiu mesmo se parcialmente falhou.
+8. **inferRole**: Normaliza título (remove acentos, minúsculas), casa com padrões de cargo conhecidos.
 
 ### Mapped Edge Cases
 - **All REST queries fail**: Returns empty array.
 - **MCP fails on first query**: Falls back to REST for all queries.
+- **MCP pagina até 500**: 5 chamadas (offset 0/100/200/300/400); se uma página retorna < 100, para.
 - **Company name list filtering**: Jobs from companies in the `companies` array get `na_lista: 'Sim'`, others get 'Não'.
+- **Vaga antiga (> 20 dias)**: descartada pelo filtro de frescor; vaga sem data é mantida.
 
 ---
 
@@ -145,19 +150,88 @@ Deduplicates jobs by link (limit 200), maps to Prisma.JobCreateManyInput, calls 
 ## GupyMcpClient (mcp/gupy-client.ts)
 
 ### Expected Behavior
-- `searchJobs(query, limit)`: Calls Gupy MCP endpoint with JSON-RPC, parses response, normalizes to JobData[].
+- `searchJobs(query, limit, offset)`: Calls Gupy MCP endpoint with JSON-RPC, parses response, normalizes to JobData[].
 
 ### Validations and Rules
-1. **JSON-RPC request**: POST with jsonrpc, method "tools/call", params name "search_jobs", arguments query + limit.
-2. **Response parsing**: Finds text content in result.content array, JSON parses it.
-3. **normalizeJobs**: Maps raw job fields to JobData format using `company || empresa`, `title || name`, etc.
-4. **Error handling**: HTTP error → throw. MCP error → throw. Parse failure → return [].
-5. **inferRole**: Same pattern as gupy-step.
+1. **JSON-RPC request**: POST with jsonrpc, method "tools/call", params name "search_jobs", arguments `{ term: query, limit, offset }`.
+2. **Limite do MCP**: a API da Gupy valida `limit` com máximo 100 (`too_big, maximum: 100`) — acima disso a chamada falha. O step paga via `offset`.
+3. **Response parsing**: Finds text content in result.content array, JSON parses it.
+4. **normalizeJobs**: Maps raw job fields to JobData format using `company || empresa`, `title || name`, etc.
+5. **Error handling**: HTTP error → throw. MCP error → throw. Parse failure → return [].
+6. **inferRole**: Same pattern as gupy-step.
 
 ### Mapped Edge Cases
 - **Empty result content**: Returns [].
 - **No text content entry**: Returns [].
 - **Malformed JSON in content**: Returns [].
+
+---
+
+## RelevanceFilter (pipeline/relevance-filter.ts)
+
+### Expected Behavior
+**Input → Output/Side-Effect:**
+- `isDesignSearch(queries)`: true quando ao menos uma query busca design (`/\b(designer|design|ux|ui|produto)\b/` em texto normalizado).
+- `isOffTopicPhysicalDesign(title, queries)`: true quando o título tem marcador de **design físico** (estamparia, estampa, moda, têxtil, vestuário, roupas, calçados, sapato, joias, joalheria, acessórios, bolsas, industrial, automotivo, mecânica, mobiliário, interiores, embalagem, superfície, embarcações, automóvel) e **nenhuma query** contém aquele marcador.
+- `filterIrrelevantDesignJobs(jobs, queries)`: descarta vagas off-topic; sem gate de design, retorna `jobs` inalterado.
+
+### Validations and Rules
+1. Normalização: remove acentos, minúsculas, tokens ordenados (mesmo padrão do `canonicalQuery`).
+2. Uma vaga só é descartada se o marcador aparecer no título **e** o domínio não foi buscado (ex.: `designer industrial` mantém vagas com "industrial").
+
+### Mapped Edge Cases
+- **Busca não-design** (`vendedor`): nenhum filtro aplicado.
+- **Busca de design + marcador buscado** (`designer de moda`): vaga mantida.
+- **Título sem marcador**: mantido.
+
+### Expected Error Scenarios
+- Nenhum — funções puras.
+
+---
+
+## FreshnessFilter (pipeline/freshness.ts)
+
+### Expected Behavior
+**Input → Output/Side-Effect:**
+- `isFreshJob(job, maxAgeDays=20)`: true quando `postedAt` está dentro de `MAX_JOB_AGE_DAYS` (20) OU a data é ausente/inválida (fail-open).
+- `filterFreshJobs(jobs, maxAgeDays=20)`: mantém apenas vagas frescas.
+
+### Validations and Rules
+1. `ageDays = (Date.now() - postedAt) / (24*60*60*1000)`; mantém se `ageDays <= maxAgeDays`.
+2. Data ausente ou não-parseável (`new Date()` NaN) → mantém.
+
+### Mapped Edge Cases
+- **Vaga exatamente com 20 dias**: mantida (boundary inclusive).
+- **Vaga de 21 dias**: descartada.
+- **Data no futuro**: mantida.
+- **postedAt vazio/inválido**: mantida.
+
+---
+
+## QueryExpansion (pipeline/query-expansion/)
+
+### Expected Behavior
+**Input → Output/Side-Effect:**
+- `expandQueries(queries)`: deduplica a entrada, expande cada query (mapa curado → cache → LLM, fail-open), deduplica o resultado e limita a 30. NUNCA lança.
+- `canonicalQuery(query)` / `dedupeQueries(queries)` (normalize.ts): colapsam quase-duplicatas ("UI/UX Designer" ↔ "UX/UI Designer").
+- `getMapExpansion(query)` (map.ts): variantes curadas de ~15 cargos (chaves via `canonicalQuery` no load).
+- `getExpansion(canonical)` / `setExpansion(canonical, variants)` (cache.ts): Redis global (`query_expansion:v1:<sha256>`, TTL 30 dias) + fallback em memória (cap 500). Fail-open.
+- `generateAiExpansion(query)` (ai/query-expansion.ts): chama a LLM (schema Zod `{variants: 1..6}`); **lança** em erro — o service faz o fail-open.
+- `sanitizeVariants(variants, original)`: descarta variantes vazias, com dígitos (ex.: "2026") ou com token de lixo (vagas/emprego/jobs/hiring/career/etc.) que não está no original.
+
+### Validations and Rules
+1. **Ordem**: mapa → cache → LLM. Mapa é determinístico e não usa cache/LLM.
+2. **Originais sempre preservados**: no corte de 30, originais vêm primeiro (`[...unique, ...variantsOnly].slice(0, 30)`).
+3. **Não cacheia falha**: `setExpansion` só roda quando a LLM retorna com sucesso; variantes limpas vão para o cache.
+4. **Single-flight**: `inFlight: Map<canonical, Promise>` evita chamada dupla à LLM em cache-miss concorrente (busca manual + auto-sync).
+5. **Fail-open por query**: qualquer erro cai para `[query]`; o `expandQueries` inteiro tem try/catch externo que devolve as originais deduplicadas.
+
+### Mapped Edge Cases
+- **Redis fora**: cache em memória; miss → LLM.
+- **LLM fora**: `[query]`, sem cachear.
+- **Query vazia/junk na entrada**: descartada pelo `dedupeQueries`.
+- **Variantes com lixo**: descartadas antes de cachear.
+- **Duas execuções concorrentes da mesma query**: 1 chamada à LLM (single-flight).
 
 ---
 

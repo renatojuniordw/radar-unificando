@@ -3,10 +3,11 @@
 ## Prompts
 
 O texto de todos os prompts (system prompt do chat, extração de currículo, análise de vaga,
-carta de apresentação, roteiro de entrevista, análise ATS) vive centralizado em
-`src/lib/core/ai/prompts/` — um arquivo por prompt, separado da lógica de validação, cache e
-chamada ao LLM (que permanece nos módulos de origem: `job-analyzer.ts`, `cover-letter-generator.ts`,
-`interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`, `core/ai/ats/ats-analyzer.ts`).
+carta de apresentação, roteiro de entrevista, análise ATS, **expansão de queries de busca**)
+vive centralizado em `src/lib/core/ai/prompts/` — um arquivo por prompt, separado da lógica de
+validação, cache e chamada ao LLM (que permanece nos módulos de origem: `job-analyzer.ts`,
+`cover-letter-generator.ts`, `interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`,
+`core/ai/ats/ats-analyzer.ts`, `core/ai/query-expansion.ts`).
 
 O bloco `REGRAS DE SEGURANÇA (não negociáveis)` (defesa contra prompt injection, presente em
 job-analyzer/cover-letter/interview-questions/ats-analyzer) é gerado por um helper compartilhado em
@@ -97,6 +98,26 @@ Implementada como tool do chat (`chat-tools.ts`) e como geração de PDF:
   `render-resume-pdf.tsx`); download direto via `POST /api/resume/generate` e botão
   por vaga na `/busca` (`downloadAdaptedResume`).
 - **Cache** por `resume_adaptation` (cache key) + hash (TTL 30 dias em `GeneratedContentCache`).
+
+## Expansão de Queries de Busca
+
+No pipeline de busca, cada query do usuário é expandida em **variantes de busca** (sinônimos
+PT/EN, cargos equivalentes) para a Gupy buscar por substring no título:
+
+- **Orquestrador**: `core/pipeline/query-expansion/service.ts` — mapa curado → cache → LLM,
+  com dedupe de quase-duplicatas, single-flight e fail-open (a busca nunca quebra se a IA falhar).
+- **Mapa curado**: `core/pipeline/query-expansion/map.ts` (~15 cargos → variantes determinísticas).
+- **Cache global**: `core/pipeline/query-expansion/cache.ts` — Redis (`query_expansion:v1:<sha256>`,
+  TTL 30 dias) + fallback em memória. Cada query expande via LLM uma única vez.
+- **Chamada LLM**: `core/ai/query-expansion.ts` — schema Zod `{variants: 1..6}`; `generate()` com
+  `maxOutputTokens: 300`; **lança** em erro (o service trata).
+- **Prompt**: `prompts/query-expansion.ts` (`QUERY_EXPANSION_PROMPT_VERSION = 'v1'`) — instrui o
+  modelo a devolver só termos-raiz equivalentes (busca é por substring: nada de senioridade),
+  sempre incluir a original e nunca termos de outras áreas (moda, automotivo, etc.), com o bloco
+  `securityRules()` anti prompt-injection padrão.
+- **Sanitização**: `sanitizeVariants` descarta variantes com lixo (vagas/emprego/jobs/hiring/2026).
+
+O fluxo completo e os limites estão em `docs/PIPELINE.md` → "Expansão de Queries".
 
 ## Chat Assistente
 

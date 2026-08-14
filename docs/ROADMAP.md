@@ -25,9 +25,16 @@
 - ✅ Segurança: rate limiting (Redis + in-memory), prompt injection protection, env validation, validação de origem da extensão (`EXTENSION_ORIGIN`)
 - ✅ Persistência anônima em IndexedDB (com auto-sync de 15 min — não consome o cooldown da busca manual; pula quando não há filtros salvos)
 - ✅ PWA instalável (service worker em produção; offline completo ainda não)
-- ✅ Suíte Vitest (82 arquivos · 542 testes passando) + e2e Playwright em `e2e/`
+- ✅ Suíte Vitest (102 arquivos · 727 testes passando) + e2e Playwright em `e2e/`
 - ✅ **Currículo adaptado (PDF)**: tool `generate_resume` no chat + `POST /api/resume/generate` + botão por vaga na `/busca` (download direto), com veracidade garantida em 3 camadas
 - ✅ **Rate limiting da análise ATS** (`/api/ats/analyze`) e da geração de currículo (`resume_daily`)
+- ✅ **Expansão híbrida de queries**: mapa curado + IA cacheada (Redis global) + dedupe de quase-duplicatas, com fail-open e single-flight
+- ✅ **Filtro de relevância**: descarta vagas de design físico (moda/industrial) em buscas de design
+- ✅ **Filtro de frescor**: descarta vagas com `postedAt` > 20 dias
+- ✅ **Paginação do MCP Gupy**: offset 0→500 (antes 1 chamada de 100 por query — logados recebiam menos que anônimos)
+- ✅ **Cache SWR do pipeline** (stale-while-revalidate, 5 min stale / 30 min expire)
+- ✅ **Resultados da busca exibidos para logados**: `pipeline_complete` carrega `jobs` para todos os usuários (antes só anônimos; logados recarregavam a lista recomendada por perfil)
+- ✅ **Ordenação por recência** dos resultados do pipeline (`sortJobsByRecency`)
 - ⏳ Performance audit
 - ⏳ Acessibilidade audit
 
