@@ -121,6 +121,31 @@ describe('runPipeline', () => {
     );
   });
 
+  it('ordena_jobs_da_mais_recente_para_mais_antiga_no_pipeline_complete', async () => {
+    const baseJob = {
+      platform: 'Gupy' as const,
+      onList: 'Não' as const,
+      roleCategory: '',
+      type: 'hybrid',
+      location: 'SP',
+      companyNameOnPlatform: 'CorpA',
+      alert: '',
+    };
+    const oldJob: Job = { ...baseJob, company: 'Antiga', title: 'Antiga', link: 'https://gupy.io/job/old', postedAt: '2024-01-01T00:00:00.000Z' };
+    const newJob: Job = { ...baseJob, company: 'Nova', title: 'Nova', link: 'https://gupy.io/job/new', postedAt: '2026-01-01T00:00:00.000Z' };
+    const midJob: Job = { ...baseJob, company: 'Media', title: 'Media', link: 'https://gupy.io/job/mid', postedAt: '2025-01-01T00:00:00.000Z' };
+
+    vi.mocked(runGupyStep).mockResolvedValue([oldJob, newJob, midJob]);
+    vi.mocked(dedupEngine.mergeSources).mockReturnValue([oldJob, newJob, midJob]);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Designer'], true);
+
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'pipeline_complete', jobs: [newJob, midJob, oldJob] }),
+    );
+  });
+
   it('roda_expansao_tambem_para_usuario_anonimo', async () => {
     mockExpandQueries.mockResolvedValue(['Analista de Dados', 'Data Analyst']);
     await runPipeline('run-1', ANONYMOUS_USER_ID, [], ['Analista de Dados'], false);

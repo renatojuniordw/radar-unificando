@@ -8,6 +8,7 @@ import { runPublicSaveStep } from '@/lib/core/pipeline/steps/public-save-step';
 import { dedupEngine } from '@/lib/core/dedup';
 import { pipelineCache } from '@/lib/infrastructure/cache/pipeline-cache';
 import { expandQueries } from '@/lib/core/pipeline/query-expansion/service';
+import { sortJobsByRecency } from '@/lib/utils/date';
 
 export const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000';
 
@@ -36,7 +37,7 @@ async function fetchFreshJobs(
     discoveryEnabled ? runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
   ]);
 
-  const allJobs = dedupEngine.mergeSources(gupyJobs, inhireJobs);
+  const allJobs = sortJobsByRecency(dedupEngine.mergeSources(gupyJobs, inhireJobs));
   pipelineCache.set(companies, queries, allJobs);
   return {
     allJobs,

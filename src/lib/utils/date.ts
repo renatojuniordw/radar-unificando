@@ -52,3 +52,15 @@ export function formatJobDate(postedAt?: string, detectedAt?: string): JobDateIn
 
   return null;
 }
+
+/**
+ * Ordena vagas da mais recente para a mais antiga, priorizando `postedAt`
+ * (data de publicação na plataforma de origem) e caindo para `detectedAt`.
+ */
+export function sortJobsByRecency<T extends { postedAt?: string; detectedAt?: string }>(jobs: T[]): T[] {
+  return [...jobs].sort((a, b) => {
+    const dateA = new Date(a.postedAt ?? a.detectedAt ?? 0).getTime();
+    const dateB = new Date(b.postedAt ?? b.detectedAt ?? 0).getTime();
+    return dateB - dateA;
+  });
+}
