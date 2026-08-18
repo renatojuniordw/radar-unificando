@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeUntrusted } from './shared/sanitize';
-import { withTimeout } from './shared/with-timeout';
+import { isLlmTimeout, withTimeout } from './shared/with-timeout';
 import { RESUME_ADAPTATION_PROMPT } from './prompts/resume-adaptation';
 
 const LIMITS = {
@@ -193,22 +193,25 @@ ${safeJobDescription}
 ${safeResume}
 </resume>`;
 
-  try {
-    const object = await withTimeout(
+  const runGeneration = () =>
+    withTimeout(
       (signal) => generate(resumeSchema, fullPrompt, { maxOutputTokens: 3000, signal }),
       GENERATE_TIMEOUT_MS,
     );
 
+  const logSuccess = (object: AdaptedResume, retried: boolean) => {
     const latency = (performance.now() - start).toFixed(0);
     logAiEvent('resume_adaptation', {
       traceId: opts?.traceId,
       latencyMs: Number(latency),
       jobTitle: safeJobTitle.slice(0, 300),
       success: true,
+      ...(retried ? { retried: true } : {}),
     });
-
     return object;
-  } catch (err) {
+  };
+
+  const handleFailure = (err: unknown, wasTimeout: boolean): never => {
     const latency = (performance.now() - start).toFixed(0);
     const message = err instanceof Error ? err.message : String(err);
     logAiEvent('resume_adaptation', {
@@ -219,7 +222,28 @@ ${safeResume}
       error: message,
     });
 
-    throw new Error('Não foi possível gerar o currículo adaptado. Tente novamente.');
+    throw new Error(
+      wasTimeout
+        ? 'A geração do currículo demorou mais que o esperado. Tente novamente em instantes.'
+        : 'Não foi possível gerar o currículo adaptado. Tente novamente.',
+    );
+  };
+
+  try {
+    const object = await runGeneration();
+    return logSuccess(object, false);
+  } catch (err) {
+    const isTimeout = isLlmTimeout(err);
+    if (!isTimeout) return handleFailure(err, false);
+
+    // 1 retry específico para timeout, antes de desistir (mesmo padrão de ats-analyzer.ts).
+    try {
+      const object = await runGeneration();
+      return logSuccess(object, true);
+    } catch (retryErr) {
+      const retryIsTimeout = isLlmTimeout(retryErr);
+      return handleFailure(retryErr, retryIsTimeout);
+    }
   }
 }
 

@@ -37,7 +37,11 @@ interface Props {
 
 type Stage = "loading" | "ready" | "error" | "rate-limited";
 
-const FETCH_TIMEOUT_MS = 60_000;
+// Servidor pode levar até ~70-75s no pior caso (2 tentativas de 35s em
+// ats-analyzer.ts::GENERATE_TIMEOUT_MS + overhead). O timeout do cliente
+// precisa ficar acima disso, senão abortamos bem quando o servidor está
+// prestes a responder com sucesso.
+const FETCH_TIMEOUT_MS = 90_000;
 
 /** Formata segundos como "Xh Ymin" / "Xmin Ys" / "Xs" conforme a magnitude. */
 function formatRetryTime(totalSeconds: number): string {
@@ -105,8 +109,13 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
       }
       setResult(data as AtsResult);
       setStage("ready");
-    } catch {
-      setError("Erro de conexão. Tente novamente.");
+    } catch (err) {
+      const isTimeout = err instanceof DOMException && err.name === "AbortError";
+      setError(
+        isTimeout
+          ? "A análise está demorando mais que o esperado. Tente novamente em instantes."
+          : "Erro de conexão. Tente novamente.",
+      );
       setStage("error");
     } finally {
       clearTimeout(timeoutId);

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { StatCard } from '@/components/admin/stat-card';
 import { SeriesChart } from '@/components/admin/charts/series-chart';
 import { CategoryBarChart } from '@/components/admin/charts/category-bar-chart';
-import { TopDataTable } from '@/components/admin/data-table';
 import { AdminDashboardTabs, AdminTab } from '@/components/admin/admin-dashboard-tabs';
 import type { AdminStats } from '@/lib/core/admin/admin-stats';
 
@@ -87,18 +86,6 @@ export function AdminDashboardClient({ stats, budget, periodLabel }: Props) {
             />
             <StatCard label="Buscas com erro hoje" value={stats.summary.failedSearchesToday} />
             <StatCard label="Vagas encontradas hoje" value={stats.summary.jobsFoundToday} />
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-              gap: 24,
-              marginBottom: 24,
-            }}
-          >
-            <TopDataTable title={`Top termos pesquisados (${periodLabel})`} data={stats.top.topTerms} />
-            <TopDataTable title={`Top empresas pesquisadas (${periodLabel})`} data={stats.top.topCompanies} />
           </div>
 
           <div style={{ marginTop: 24 }}>

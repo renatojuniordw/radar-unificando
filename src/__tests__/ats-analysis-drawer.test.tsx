@@ -293,7 +293,7 @@ describe('AtsAnalysisDrawer', () => {
     expect(capturedSignal?.aborted).toBe(true);
   });
 
-  it('should_abort_request_after_fetch_timeout_and_show_connection_error', async () => {
+  it('should_abort_request_after_fetch_timeout_and_show_timeout_message', async () => {
     vi.useFakeTimers();
     mockFetch((_url, init) =>
       new Promise((_resolve, reject) => {
@@ -310,9 +310,11 @@ describe('AtsAnalysisDrawer', () => {
     expect(screen.getByText(/ANALISANDO/)).toBeTruthy();
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(60_000);
+      await vi.advanceTimersByTimeAsync(90_000);
     });
-    expect(screen.getByText('Erro de conexão. Tente novamente.')).toBeTruthy();
+    expect(
+      screen.getByText('A análise está demorando mais que o esperado. Tente novamente em instantes.'),
+    ).toBeTruthy();
   });
 
   it('should_build_job_key_with_empty_company_and_omit_company_suffix_when_company_missing', async () => {

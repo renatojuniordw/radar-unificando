@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { API_ENDPOINTS } from '@/lib/core/constants';
+import { isLlmTimeout } from './shared/with-timeout';
 
 const baseURL = process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase;
 const apiKey = process.env.AI_API_KEY || '';
@@ -40,9 +41,14 @@ export async function generate<T extends z.ZodType>(
     // Retry uma vez com mais espaço e um nudge mais forte antes de desistir.
     // Também retenta em timeout (AbortError) — provedores lentos podem estourar
     // o AbortSignal.timeout em picos de carga, e um único retry costuma passar.
-    const isTimeout = err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError');
+    const isTimeout = isLlmTimeout(err);
     const isMissingJson = err instanceof Error && err.message === 'JSON não encontrado na resposta';
     if (isMissingJson || isTimeout) {
+      // Signal já abortado (ex.: timeout do withTimeout): o retry seria um fetch
+      // que aborta na hora — rethrow para o caller decidir (ele retenta com um
+      // novo withTimeout). O retry interno continua válido para o timeout de 120s,
+      // onde o signal do chamador NÃO está abortado.
+      if (opts?.signal?.aborted) throw err;
       return await callLlm(
         schema,
         prompt +

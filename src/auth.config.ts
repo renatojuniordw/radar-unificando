@@ -10,6 +10,8 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        // Role gravada no sign-in; mudança de role no banco só reflete após
+        // re-login (comportamento aceito — evita SELECT por request).
         token.role = (user as { role?: string }).role;
       }
       return token;

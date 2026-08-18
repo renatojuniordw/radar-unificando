@@ -11,7 +11,7 @@ vi.mock('@/lib/infrastructure/repositories', () => ({
     sumTokensSince: vi.fn(),
     sumTokensSinceByIp: vi.fn(),
     recordUsage: vi.fn(),
-    recordToolCalls: vi.fn(),
+    recordToolCalls: vi.fn().mockResolvedValue(undefined),
     replaceMessages: vi.fn(),
   },
   profileRepository: {

@@ -92,5 +92,24 @@ describe('generateAdaptedResume', () => {
     await expect(
       generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev', {}),
     ).rejects.toThrow('Não foi possível gerar o currículo adaptado. Tente novamente.');
+    expect(generateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should_retry_once_and_succeed_after_llm_timeout', async () => {
+    generateMock
+      .mockRejectedValueOnce(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }))
+      .mockResolvedValueOnce(SAMPLE_RESUME);
+
+    const result = await generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev');
+    expect(result.fullName).toBe('Maria Silva');
+    expect(generateMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should_throw_timeout_message_when_both_attempts_time_out', async () => {
+    generateMock.mockRejectedValue(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }));
+    await expect(
+      generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev'),
+    ).rejects.toThrow('A geração do currículo demorou mais que o esperado. Tente novamente em instantes.');
+    expect(generateMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -254,13 +254,12 @@ export async function POST(req: NextRequest) {
           console.error('[chat] Erro ao registrar usage:', err);
         }
 
-        // Registra as ferramentas de IA usadas (métrica "ferramentas mais utilizadas")
+        // Registra as ferramentas de IA usadas (métrica "ferramentas mais utilizadas").
+        // Fire-and-forget: falha no registro não pode atrasar o fim do stream.
         if (toolNames.length > 0) {
-          try {
-            await chatRepository.recordToolCalls(session.user.id, toolNames);
-          } catch (err) {
+          void chatRepository.recordToolCalls(session.user.id, toolNames).catch((err) => {
             console.error('[chat] Erro ao registrar tool calls:', err);
-          }
+          });
         }
 
         // Soma o custo desta interação no orçamento diário global (fire-and-forget)

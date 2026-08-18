@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
+import { provisionAdmin } from '../src/lib/core/admin/admin-provisioning';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -19,18 +20,18 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
-  const user = await prisma.user.upsert({
-    where: { email: adminEmail.toLowerCase() },
-    update: { role: 'admin', passwordHash },
-    create: {
-      email: adminEmail.toLowerCase(),
-      passwordHash,
-      name: process.env.ADMIN_NAME || 'Admin',
-      role: 'admin',
-    },
+  // Cria o admin se não existir; se existir, garante apenas role='admin'.
+  // Nunca sobrescreve a senha de um admin existente (troca feita pelo app
+  // sobrevive a deploys).
+  const result = await provisionAdmin(prisma, {
+    email: adminEmail,
+    passwordHash,
+    name: process.env.ADMIN_NAME || 'Admin',
   });
 
-  console.log('Seed concluído: admin', user.email);
+  console.log(
+    `Seed concluído: admin ${result.email} ${result.created ? 'criado' : 'já existia (role garantida)'}`,
+  );
 }
 
 main()

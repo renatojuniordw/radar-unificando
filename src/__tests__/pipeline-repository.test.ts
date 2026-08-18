@@ -40,16 +40,11 @@ describe('pipelineRunRepository', () => {
     expect(mocked.update).toHaveBeenCalledWith({ where: { id: 'run-1' }, data: { status: 'failed' } });
   });
 
-  it('should_create_run_for_anonymous_user_with_queries_and_companies', async () => {
+  it('should_create_run_for_anonymous_user', async () => {
     mocked.create.mockResolvedValue({ id: 'run-2', status: 'running' } as any);
-    await pipelineRunRepository.create({
-      id: 'run-2',
-      userId: null,
-      queries: ['Analista de Dados'],
-      companies: ['CorpA'],
-    });
+    await pipelineRunRepository.create({ id: 'run-2', userId: null });
     expect(mocked.create).toHaveBeenCalledWith({
-      data: { id: 'run-2', userId: null, queries: ['Analista de Dados'], companies: ['CorpA'] },
+      data: { id: 'run-2', userId: null },
     });
   });
 });

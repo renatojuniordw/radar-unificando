@@ -59,7 +59,7 @@ describe('analyzeJobFit', () => {
 
   it('should_retry_once_on_timeout_and_succeed', async () => {
     generateMock
-      .mockRejectedValueOnce(new Error('LLM_TIMEOUT'))
+      .mockRejectedValueOnce(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }))
       .mockResolvedValueOnce(ANALYSIS);
     const result = await analyzeJobFit(RESUME, 'Dev', 'Vaga', ['React'], 5, 'pleno', []);
     expect(result.overallFit).toBe('high');
@@ -67,7 +67,7 @@ describe('analyzeJobFit', () => {
   });
 
   it('should_throw_timeout_error_after_two_timeouts', async () => {
-    generateMock.mockRejectedValue(new Error('LLM_TIMEOUT'));
+    generateMock.mockRejectedValue(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }));
     await expect(
       analyzeJobFit(RESUME, 'Dev', 'Vaga', ['React'], 5, 'pleno', []),
     ).rejects.toThrow(

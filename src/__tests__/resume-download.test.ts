@@ -44,6 +44,7 @@ describe('downloadAdaptedResume', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/resume/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: expect.any(AbortSignal),
       body: JSON.stringify({
         jobTitle: 'Dev React',
         jobDescription: 'Vaga',
@@ -81,10 +82,17 @@ describe('downloadAdaptedResume', () => {
     ).rejects.toThrow('Erro ao gerar o currículo.');
   });
 
-  it('should_throw_when_fetch_fails', async () => {
+  it('should_throw_connection_error_when_fetch_fails', async () => {
     fetchMock.mockRejectedValue(new Error('network down'));
     await expect(
       downloadAdaptedResume({ title: 'Dev', company: 'ACME' }),
-    ).rejects.toThrow('network down');
+    ).rejects.toThrow('Erro de conexão. Tente novamente.');
+  });
+
+  it('should_throw_timeout_message_when_fetch_is_aborted', async () => {
+    fetchMock.mockRejectedValue(new DOMException('Aborted', 'AbortError'));
+    await expect(
+      downloadAdaptedResume({ title: 'Dev', company: 'ACME' }),
+    ).rejects.toThrow('A geração está demorando mais que o esperado. Tente novamente em instantes.');
   });
 });

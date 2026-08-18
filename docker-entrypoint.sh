@@ -10,8 +10,9 @@ if [ -f "./node_modules/.bin/prisma" ]; then
 fi
 
 # Garante o usuário admin a partir de ADMIN_EMAIL/ADMIN_PASSWORD do .env.
-# Idempotente (upsert): cria se não existir, sincroniza role/senha se existir;
-# avisa e pula se as variáveis não estiverem definidas.
+# Idempotente: cria se não existir; se existir, garante apenas role='admin'
+# (nunca sobrescreve a senha trocada pelo app); avisa e pula se as variáveis
+# não estiverem definidas.
 echo "[entrypoint] Garantindo usuário admin (seed)..."
 if [ -f "./node_modules/.bin/tsx" ]; then
   ./node_modules/.bin/tsx prisma/seed.ts

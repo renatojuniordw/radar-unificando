@@ -8,7 +8,7 @@ import { z } from "zod";
 import { generate } from "../llm-provider";
 import { logAiEvent } from "../ai-logger";
 import { normalizeKeyword } from "./normalize";
-import { withTimeout } from "../shared/with-timeout";
+import { isLlmTimeout, withTimeout } from "../shared/with-timeout";
 import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
 
 const LIMITS = {
@@ -131,7 +131,7 @@ ${opts.jobDescription}
     const raw = await runAnalysis();
     return logSuccess(raw, false);
   } catch (err) {
-    const isTimeout = err instanceof Error && err.message === "LLM_TIMEOUT";
+    const isTimeout = isLlmTimeout(err);
     if (!isTimeout) return handleFailure(err, false);
 
     // 1 retry específico para timeout, antes de desistir.
@@ -139,7 +139,7 @@ ${opts.jobDescription}
       const raw = await runAnalysis();
       return logSuccess(raw, true);
     } catch (retryErr) {
-      const retryIsTimeout = retryErr instanceof Error && retryErr.message === "LLM_TIMEOUT";
+      const retryIsTimeout = isLlmTimeout(retryErr);
       return handleFailure(retryErr, retryIsTimeout);
     }
   }

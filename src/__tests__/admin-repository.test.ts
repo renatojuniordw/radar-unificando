@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/infrastructure/db/prisma-client', () => ({
   prisma: {
+    $queryRaw: vi.fn(),
     user: { count: vi.fn(), findMany: vi.fn() },
     pipelineRun: { count: vi.fn(), aggregate: vi.fn(), findMany: vi.fn(), groupBy: vi.fn() },
     chatMessage: { count: vi.fn() },
@@ -121,16 +122,22 @@ describe('adminRepository', () => {
     ]);
   });
 
-  it('should_cast_search_log_json_arrays', async () => {
-    pipelineRun.findMany.mockResolvedValue([
-      { queries: ['A'], companies: ['B'] },
-      { queries: null, companies: null },
-    ] as any);
-    const result = await adminRepository.searchLogSince(new Date());
-    expect(result).toEqual([
-      { queries: ['A'], companies: ['B'] },
-      { queries: null, companies: null },
+  it('should_aggregate_daily_counts_via_raw_sql', async () => {
+    (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { dateKey: '2026-08-17', count: 3 },
     ]);
+    const since = new Date('2026-08-15T03:00:00Z');
+    const result = await adminRepository.dailyCountsSince('users_created', since);
+    expect(result).toEqual([{ dateKey: '2026-08-17', count: 3 }]);
+    expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+  });
+
+  it('should_reject_unknown_daily_count_table', async () => {
+    // allowlist: tabela fora do union não mapeia para query → TypeError.
+    await expect(
+      adminRepository.dailyCountsSince('users' as any, new Date()),
+    ).rejects.toThrow(TypeError);
+    expect(prisma.$queryRaw).not.toHaveBeenCalled();
   });
 
   it('should_order_users_by_created_at_desc', async () => {

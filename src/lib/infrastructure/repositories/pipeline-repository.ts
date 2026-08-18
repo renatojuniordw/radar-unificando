@@ -8,8 +8,6 @@ export interface IPipelineRunRepository {
     userId: string | null;
     status?: string;
     discoveryEnabled?: boolean;
-    queries?: string[];
-    companies?: string[];
   }): Promise<PipelineRun>;
   update(id: string, data: { status?: string; totalJobs?: number; gupyJobs?: number; inhireJobs?: number; newCompaniesFound?: number; finishedAt?: Date }): Promise<PipelineRun>;
 }

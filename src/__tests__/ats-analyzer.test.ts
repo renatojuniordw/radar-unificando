@@ -50,7 +50,7 @@ describe('analyzeAts', () => {
 
   it('should_retry_once_on_timeout_and_succeed', async () => {
     generateMock
-      .mockRejectedValueOnce(new Error('LLM_TIMEOUT'))
+      .mockRejectedValueOnce(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }))
       .mockResolvedValueOnce({
         score: 72,
         summary: 'Bom',
@@ -65,7 +65,7 @@ describe('analyzeAts', () => {
   });
 
   it('should_throw_timeout_error_after_two_timeouts', async () => {
-    generateMock.mockRejectedValue(new Error('LLM_TIMEOUT'));
+    generateMock.mockRejectedValue(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }));
     await expect(analyzeAts(RESUME)).rejects.toThrow(
       'A análise ATS demorou mais que o esperado. Tente novamente em instantes.',
     );

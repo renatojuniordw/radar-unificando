@@ -55,12 +55,12 @@ describe('Pipeline API', () => {
       const body = await res.json();
       expect(body).toHaveProperty('runId');
       expect(pipelineRunRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 'user-1',
-          queries: ['Analista'],
-          companies: ['CorpA'],
-        }),
+        expect.objectContaining({ userId: 'user-1' }),
       );
+      // Termos de busca não são persistidos (volume + LGPD).
+      const createCall = vi.mocked(pipelineRunRepository.create).mock.calls[0][0] as Record<string, unknown>;
+      expect(createCall).not.toHaveProperty('queries');
+      expect(createCall).not.toHaveProperty('companies');
     });
 
     it('should_use_anonymous_user_when_not_logged_in', async () => {
@@ -70,8 +70,11 @@ describe('Pipeline API', () => {
       const res = await PipelinePOST(makeRequest({ companies: ['CorpA'] }));
       expect(res.status).toBe(200);
       expect(pipelineRunRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: null, companies: ['CorpA'] }),
+        expect.objectContaining({ userId: null }),
       );
+      const createCall = vi.mocked(pipelineRunRepository.create).mock.calls[0][0] as Record<string, unknown>;
+      expect(createCall).not.toHaveProperty('queries');
+      expect(createCall).not.toHaveProperty('companies');
     });
 
     it('should_not_consume_manual_slot_on_auto_sync', async () => {

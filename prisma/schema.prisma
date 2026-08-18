@@ -283,8 +283,6 @@ model PipelineRun {
   id                String    @id @default(uuid()) @db.Uuid
   userId            String?   @map("user_id") @db.Uuid
   status            String    @default("pending") @db.VarChar(20)
-  queries           Json?
-  companies         Json?
   totalJobs         Int?      @default(0) @map("total_jobs")
   gupyJobs          Int?      @default(0) @map("gupy_jobs")
   inhireJobs        Int?      @default(0) @map("inhire_jobs")

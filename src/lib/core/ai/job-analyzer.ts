@@ -3,7 +3,7 @@ import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
 import { sanitizeUntrusted } from './shared/sanitize';
-import { withTimeout } from './shared/with-timeout';
+import { isLlmTimeout, withTimeout } from './shared/with-timeout';
 import { JOB_ANALYZER_PROMPT } from './prompts/job-analyzer';
 
 // ---------------------------------------------------------------------------
@@ -158,7 +158,7 @@ ${safeResume}
     logSuccess(object, false);
     return object;
   } catch (err) {
-    const isTimeout = err instanceof Error && err.message === 'LLM_TIMEOUT';
+    const isTimeout = isLlmTimeout(err);
     if (!isTimeout) return handleFailure(err, false);
 
     // 1 retry específico para timeout, antes de desistir.
@@ -167,7 +167,7 @@ ${safeResume}
       logSuccess(object, true);
       return object;
     } catch (retryErr) {
-      const retryIsTimeout = retryErr instanceof Error && retryErr.message === 'LLM_TIMEOUT';
+      const retryIsTimeout = isLlmTimeout(retryErr);
       return handleFailure(retryErr, retryIsTimeout);
     }
   }

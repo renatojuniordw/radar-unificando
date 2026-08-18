@@ -1,12 +1,16 @@
 import type { Job as PrismaJob } from '@prisma/client';
-import type { Job } from '@/lib/types/job';
+import type { Job, Platform } from '@/lib/types/job';
+
+const PLATFORMS: readonly Platform[] = ['Gupy', 'InHire'];
+const ON_LIST: readonly NonNullable<Job['onList']>[] = ['Sim', 'Não'];
 
 export function mapJobToApi(j: PrismaJob, score?: number): Job & { _score?: number } {
   return {
     id: j.id,
     company: j.company,
-    platform: j.platform as Job['platform'],
-    onList: (j.onList as Job['onList']) || 'Não',
+    // Valores fora do union (dados legados/inconsistentes) caem no fallback seguro.
+    platform: PLATFORMS.includes(j.platform as Platform) ? (j.platform as Platform) : 'Gupy',
+    onList: ON_LIST.includes(j.onList as NonNullable<Job['onList']>) ? (j.onList as Job['onList']) : 'Não',
     roleCategory: j.roleCategory || '',
     title: j.title || '',
     type: j.type || '',

@@ -41,13 +41,12 @@ export async function POST(req: NextRequest) {
 
     // Registra toda execução (logada ou anônima) para métricas do painel admin.
     // userId null para anônimos — evita o UUID zero (sem linha em users).
+    // Termos de busca (queries/companies) NÃO são persistidos (volume + LGPD).
     await pipelineRunRepository.create({
       id: runId,
       userId: isLoggedIn ? userId : null,
       status: 'running',
       discoveryEnabled,
-      queries: queries || [],
-      companies: companies || [],
     });
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });

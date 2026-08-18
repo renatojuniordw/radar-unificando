@@ -10,7 +10,7 @@ vi.mock('@/lib/core/ai/job-analyzer', () => ({
 }));
 
 import { formatJobResult, analyzeWithCache } from '@/lib/core/ai/tools/shared';
-import { withTimeout } from '@/lib/core/ai/shared/with-timeout';
+import { isLlmTimeout, withTimeout } from '@/lib/core/ai/shared/with-timeout';
 import { analyzeJobFit } from '@/lib/core/ai/job-analyzer';
 import { getCached, saveToCache, computeCacheKey } from '@/lib/core/ai/generated-content-cache';
 import { JOB_ANALYZER_PROMPT_VERSION } from '@/lib/core/ai/prompts/job-analyzer';
@@ -208,14 +208,14 @@ describe('withTimeout', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('should_abort_signal_and_reject_with_llm_timeout_on_timeout', async () => {
+  it('should_abort_signal_and_reject_with_abort_error_on_timeout', async () => {
     const state: { signal: AbortSignal | null } = { signal: null };
     const promise = withTimeout((signal) => {
       state.signal = signal;
       return new Promise<string>(() => {});
     }, 1000);
 
-    const assertion = expect(promise).rejects.toThrow('LLM_TIMEOUT');
+    const assertion = expect(promise).rejects.toMatchObject({ name: 'AbortError' });
     await vi.advanceTimersByTimeAsync(1000);
     await assertion;
     expect(state.signal?.aborted).toBe(true);
@@ -230,9 +230,25 @@ describe('withTimeout', () => {
 
   it('should_clear_timer_after_timeout', async () => {
     const promise = withTimeout(() => new Promise<string>(() => {}), 1000);
-    const assertion = expect(promise).rejects.toThrow('LLM_TIMEOUT');
+    const assertion = expect(promise).rejects.toMatchObject({ name: 'AbortError' });
     await vi.advanceTimersByTimeAsync(1000);
     await assertion;
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe('isLlmTimeout', () => {
+  it('should_return_true_for_abort_and_timeout_errors', () => {
+    expect(isLlmTimeout(new DOMException('aborted', 'AbortError'))).toBe(true);
+    expect(isLlmTimeout(new DOMException('timeout', 'TimeoutError'))).toBe(true);
+    expect(isLlmTimeout(Object.assign(new Error('x'), { name: 'AbortError' }))).toBe(true);
+  });
+
+  it('should_return_false_for_other_errors', () => {
+    expect(isLlmTimeout(new Error('LLM_TIMEOUT'))).toBe(false);
+    expect(isLlmTimeout(new Error('UPSTREAM'))).toBe(false);
+    expect(isLlmTimeout('string')).toBe(false);
+    expect(isLlmTimeout(null)).toBe(false);
+    expect(isLlmTimeout(undefined)).toBe(false);
   });
 });

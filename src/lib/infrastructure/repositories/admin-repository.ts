@@ -5,10 +5,16 @@ export interface ToolCallCount {
   count: number;
 }
 
-export interface SearchLogRow {
-  queries: string[] | null;
-  companies: string[] | null;
+/** Contagem agregada por dia (fuso America/Sao_Paulo). */
+export interface DayCountRow {
+  dateKey: string;
+  count: number;
 }
+
+/** Tabelas/colunas suportadas pela agregação diária (allowlist — identifiers
+ * de SQL não são parametrizáveis, então cada entrada mapeia para uma query
+ * estática e segura). */
+export type DailyCountTable = 'users_created' | 'users_login' | 'pipeline_runs';
 
 export interface AdminUserBasic {
   id: string;
@@ -42,11 +48,8 @@ export interface IAdminRepository {
   sumTokensSince(since: Date): Promise<number>;
   countCourseClicksSince(since: Date): Promise<number>;
   countExtensionTokens(): Promise<number>;
-  usersSince(since: Date): Promise<{ createdAt: Date }[]>;
-  loginsSince(since: Date): Promise<{ lastLoginAt: Date | null }[]>;
-  searchesSince(since: Date): Promise<{ startedAt: Date | null }[]>;
+  dailyCountsSince(table: DailyCountTable, since: Date): Promise<DayCountRow[]>;
   toolCallsSince(since: Date): Promise<ToolCallCount[]>;
-  searchLogSince(since: Date): Promise<SearchLogRow[]>;
   listUsers(): Promise<AdminUserBasic[]>;
   chatUsageByUser(): Promise<ChatUsageByUser[]>;
   pipelineRunsByUser(): Promise<UserAggregate[]>;
@@ -54,6 +57,32 @@ export interface IAdminRepository {
   courseClicksByUser(): Promise<UserAggregate[]>;
   extensionTokensByUser(): Promise<UserAggregate[]>;
 }
+
+// Agregação diária no Postgres (fuso America/Sao_Paulo). Colunas são
+// TIMESTAMP(3) naive em UTC; `col AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo'`
+// interpreta como UTC e converte para horário local SP — equivalente ao
+// toDayKey (Intl) do admin-stats. Queries estáticas (identifiers não são
+// parametrizáveis) e indexadas por DailyCountTable.
+const DAILY_COUNT_QUERIES: Record<DailyCountTable, (since: Date) => Promise<DayCountRow[]>> = {
+  users_created: (since) => prisma.$queryRaw`
+    SELECT to_char(date_trunc('day', "created_at" AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo'), 'YYYY-MM-DD') AS "dateKey",
+           COUNT(*)::int AS "count"
+    FROM "users"
+    WHERE "created_at" >= ${since}
+    GROUP BY 1`,
+  users_login: (since) => prisma.$queryRaw`
+    SELECT to_char(date_trunc('day', "last_login_at" AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo'), 'YYYY-MM-DD') AS "dateKey",
+           COUNT(*)::int AS "count"
+    FROM "users"
+    WHERE "last_login_at" >= ${since}
+    GROUP BY 1`,
+  pipeline_runs: (since) => prisma.$queryRaw`
+    SELECT to_char(date_trunc('day', "started_at" AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo'), 'YYYY-MM-DD') AS "dateKey",
+           COUNT(*)::int AS "count"
+    FROM "pipeline_runs"
+    WHERE "started_at" >= ${since}
+    GROUP BY 1`,
+};
 
 export const adminRepository: IAdminRepository = {
   async countUsers() {
@@ -112,25 +141,8 @@ export const adminRepository: IAdminRepository = {
     return prisma.extensionToken.count({ where: { revokedAt: null } });
   },
 
-  async usersSince(since) {
-    return prisma.user.findMany({
-      where: { createdAt: { gte: since } },
-      select: { createdAt: true },
-    });
-  },
-
-  async loginsSince(since) {
-    return prisma.user.findMany({
-      where: { lastLoginAt: { gte: since } },
-      select: { lastLoginAt: true },
-    });
-  },
-
-  async searchesSince(since) {
-    return prisma.pipelineRun.findMany({
-      where: { startedAt: { gte: since } },
-      select: { startedAt: true },
-    });
+  async dailyCountsSince(table, since) {
+    return DAILY_COUNT_QUERIES[table](since);
   },
 
   async toolCallsSince(since) {
@@ -142,18 +154,7 @@ export const adminRepository: IAdminRepository = {
     return grouped.map((row) => ({ toolName: row.toolName, count: row._count._all }));
   },
 
-  async searchLogSince(since) {
-    const rows = await prisma.pipelineRun.findMany({
-      where: { startedAt: { gte: since } },
-      select: { queries: true, companies: true },
-    });
-    return rows.map((row) => ({
-      queries: (row.queries as string[] | null) ?? null,
-      companies: (row.companies as string[] | null) ?? null,
-    }));
-  },
-
-  async listUsers() {
+async listUsers() {
     return prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       select: {

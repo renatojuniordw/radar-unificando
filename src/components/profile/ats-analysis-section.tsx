@@ -28,6 +28,9 @@ function scoreLabel(score: number): string {
   return "Ótimo";
 }
 
+// Mantido em sincronia com FETCH_TIMEOUT_MS de ats-analysis-drawer.tsx.
+const FETCH_TIMEOUT_MS = 90_000;
+
 export function AtsAnalysisSection() {
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,10 +41,15 @@ export function AtsAnalysisSection() {
     setLoading(true);
     setError("");
     setResult(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
     try {
       const res = await fetch("/api/ats/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           jobDescription: jobDescription.trim() || undefined,
         }),
@@ -52,9 +60,15 @@ export function AtsAnalysisSection() {
         return;
       }
       setResult(await res.json());
-    } catch {
-      setError("Erro de conexão. Tente novamente.");
+    } catch (err) {
+      const isTimeout = err instanceof DOMException && err.name === "AbortError";
+      setError(
+        isTimeout
+          ? "A análise está demorando mais que o esperado. Tente novamente em instantes."
+          : "Erro de conexão. Tente novamente.",
+      );
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }

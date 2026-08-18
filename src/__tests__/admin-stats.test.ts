@@ -13,11 +13,8 @@ const { adminRepository: mockAdminRepository } = vi.hoisted(() => ({
     sumTokensSince: vi.fn(),
     countCourseClicksSince: vi.fn(),
     countExtensionTokens: vi.fn(),
-    usersSince: vi.fn(),
-    loginsSince: vi.fn(),
-    searchesSince: vi.fn(),
+    dailyCountsSince: vi.fn(),
     toolCallsSince: vi.fn(),
-    searchLogSince: vi.fn(),
   },
 }));
 
@@ -27,8 +24,7 @@ vi.mock('@/lib/infrastructure/repositories', () => ({
 
 import {
   getAdminStats,
-  bucketByDay,
-  countOccurrences,
+  fillDayCounts,
   toDayKey,
   parseDayKey,
   rangeFromDays,
@@ -50,11 +46,8 @@ describe('admin-stats', () => {
     mockAdminRepository.sumTokensSince.mockResolvedValue(0);
     mockAdminRepository.countCourseClicksSince.mockResolvedValue(0);
     mockAdminRepository.countExtensionTokens.mockResolvedValue(0);
-    mockAdminRepository.usersSince.mockResolvedValue([]);
-    mockAdminRepository.loginsSince.mockResolvedValue([]);
-    mockAdminRepository.searchesSince.mockResolvedValue([]);
+    mockAdminRepository.dailyCountsSince.mockResolvedValue([]);
     mockAdminRepository.toolCallsSince.mockResolvedValue([]);
-    mockAdminRepository.searchLogSince.mockResolvedValue([]);
   });
 
   describe('toDayKey', () => {
@@ -65,14 +58,11 @@ describe('admin-stats', () => {
     });
   });
 
-  describe('bucketByDay', () => {
+  describe('fillDayCounts', () => {
     it('should_fill_empty_days_with_zero', () => {
       const since = new Date('2026-08-15T03:00:00Z'); // 2026-08-15 00:00 em SP
-      const rows = [
-        { date: new Date('2026-08-15T10:00:00Z') },
-        { date: new Date('2026-08-15T12:00:00Z') },
-      ];
-      const result = bucketByDay(rows, 3, since);
+      const rows = [{ dateKey: '2026-08-15', count: 2 }];
+      const result = fillDayCounts(rows, 3, since);
       expect(result).toEqual([
         { date: '2026-08-15', count: 2 },
         { date: '2026-08-16', count: 0 },
@@ -82,21 +72,11 @@ describe('admin-stats', () => {
 
     it('should_ignore_rows_outside_window', () => {
       const since = new Date('2026-08-15T03:00:00Z');
-      const rows = [{ date: new Date('2026-08-14T10:00:00Z') }]; // antes da janela
-      const result = bucketByDay(rows, 2, since);
+      const rows = [{ dateKey: '2026-08-14', count: 5 }]; // antes da janela
+      const result = fillDayCounts(rows, 2, since);
       expect(result).toEqual([
         { date: '2026-08-15', count: 0 },
         { date: '2026-08-16', count: 0 },
-      ]);
-    });
-  });
-
-  describe('countOccurrences', () => {
-    it('should_count_and_sort_by_frequency_ignoring_blanks', () => {
-      const result = countOccurrences(['Analista', 'Dev', 'Analista', '  ', 'Dev', 'Dev']);
-      expect(result).toEqual([
-        { name: 'Dev', count: 3 },
-        { name: 'Analista', count: 2 },
       ]);
     });
   });
@@ -117,6 +97,13 @@ describe('admin-stats', () => {
 
     it('should_use_from_to_when_provided', () => {
       const range = resolveAdminRange({ from: '2026-08-01', to: '2026-08-10' });
+      expect(range.from.getTime()).toBe(rangeFromDates('2026-08-01', '2026-08-10').from.getTime());
+      expect(range.to.getTime()).toBe(rangeFromDates('2026-08-01', '2026-08-10').to.getTime());
+    });
+
+    it('should_swap_from_to_when_reversed', () => {
+      // URL direta com from > to — normaliza com swap.
+      const range = resolveAdminRange({ from: '2026-08-10', to: '2026-08-01' });
       expect(range.from.getTime()).toBe(rangeFromDates('2026-08-01', '2026-08-10').from.getTime());
       expect(range.to.getTime()).toBe(rangeFromDates('2026-08-01', '2026-08-10').to.getTime());
     });
@@ -161,14 +148,11 @@ describe('admin-stats', () => {
       mockAdminRepository.sumTokensSince.mockResolvedValue(500);
       mockAdminRepository.countCourseClicksSince.mockResolvedValue(1);
       mockAdminRepository.countExtensionTokens.mockResolvedValue(2);
-      mockAdminRepository.usersSince.mockResolvedValue([{ createdAt: new Date('2026-08-17T10:00:00Z') }]);
-      mockAdminRepository.loginsSince.mockResolvedValue([]);
-      mockAdminRepository.searchesSince.mockResolvedValue([{ startedAt: new Date('2026-08-17T10:00:00Z') }]);
+      mockAdminRepository.dailyCountsSince
+        .mockResolvedValueOnce([{ dateKey: '2026-08-17', count: 1 }]) // users_created
+        .mockResolvedValueOnce([]) // users_login
+        .mockResolvedValueOnce([{ dateKey: '2026-08-17', count: 1 }]); // pipeline_runs
       mockAdminRepository.toolCallsSince.mockResolvedValue([{ toolName: 'search_jobs', count: 5 }]);
-      mockAdminRepository.searchLogSince.mockResolvedValue([
-        { queries: ['Analista', 'Dev'], companies: ['iFood'] },
-        { queries: ['Analista'], companies: ['iFood', 'Nubank'] },
-      ]);
 
       const stats = await getAdminStats(rangeFromDays(30));
 
@@ -186,16 +170,10 @@ describe('admin-stats', () => {
         extensionTokens: 2,
       });
       expect(stats.timeSeries.usersPerDay).toHaveLength(30);
+      expect(stats.timeSeries.usersPerDay.find((d) => d.date === '2026-08-17')?.count).toBe(1);
       expect(stats.timeSeries.searchesPerDay).toHaveLength(30);
+      expect(stats.timeSeries.loginsPerDay.every((d) => d.count === 0)).toBe(true);
       expect(stats.top.toolUsage).toEqual([{ name: 'search_jobs', count: 5 }]);
-      expect(stats.top.topTerms).toEqual([
-        { name: 'Analista', count: 2 },
-        { name: 'Dev', count: 1 },
-      ]);
-      expect(stats.top.topCompanies).toEqual([
-        { name: 'iFood', count: 2 },
-        { name: 'Nubank', count: 1 },
-      ]);
     });
 
     it('should_return_zeros_when_no_data', async () => {
@@ -214,27 +192,7 @@ describe('admin-stats', () => {
         extensionTokens: 0,
       });
       expect(stats.top.toolUsage).toEqual([]);
-      expect(stats.top.topTerms).toEqual([]);
-      expect(stats.top.topCompanies).toEqual([]);
-    });
-
-    it('should_discard_null_timestamps_from_time_series', async () => {
-      mockAdminRepository.loginsSince.mockResolvedValue([{ lastLoginAt: null }]);
-      mockAdminRepository.searchesSince.mockResolvedValue([
-        { startedAt: null },
-        { startedAt: new Date('2026-08-17T10:00:00Z') },
-      ]);
-      const stats = await getAdminStats(rangeFromDays(3));
-      expect(stats.timeSeries.loginsPerDay.every((d) => d.count === 0)).toBe(true);
-      const withEvent = stats.timeSeries.searchesPerDay.filter((d) => d.count > 0);
-      expect(withEvent).toHaveLength(1);
-    });
-
-    it('should_limit_top_terms_and_companies_to_50', async () => {
-      const manyQueries = Array.from({ length: 60 }, (_, i) => ({ queries: [`termo-${i}`], companies: [] }));
-      mockAdminRepository.searchLogSince.mockResolvedValue(manyQueries as any);
-      const stats = await getAdminStats(rangeFromDays(30));
-      expect(stats.top.topTerms).toHaveLength(50);
+      expect(stats.timeSeries.usersPerDay.every((d) => d.count === 0)).toBe(true);
     });
   });
 });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { AtsAnalysisSection } from '@/components/profile/ats-analysis-section';
 
 const RESULT = {
@@ -26,6 +26,7 @@ describe('AtsAnalysisSection', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it('should_render_title_and_analyze_button', () => {
@@ -87,6 +88,27 @@ describe('AtsAnalysisSection', () => {
     render(<AtsAnalysisSection />);
     fireEvent.click(screen.getByText('ANALISAR COMPATIBILIDADE ATS'));
     expect(await screen.findByText('Erro de conexão. Tente novamente.')).toBeTruthy();
+  });
+
+  it('should_show_timeout_message_when_fetch_is_aborted', async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementation((_url: RequestInfo | URL, init?: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () =>
+          reject(new DOMException('Aborted', 'AbortError')),
+        );
+      }),
+    );
+    render(<AtsAnalysisSection />);
+    fireEvent.click(screen.getByText('ANALISAR COMPATIBILIDADE ATS'));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(90_000);
+    });
+
+    expect(
+      screen.getByText('A análise está demorando mais que o esperado. Tente novamente em instantes.'),
+    ).toBeTruthy();
   });
 
   it('should_label_low_score_as_needs_improvement', async () => {

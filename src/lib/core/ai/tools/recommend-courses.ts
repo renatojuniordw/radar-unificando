@@ -2,6 +2,10 @@ import { tool } from "ai";
 import { z } from "zod";
 import { recommendCourses } from "@/lib/core/courses/course-matcher";
 import { buildAffiliateUrl } from "@/lib/core/courses/course-provider";
+import {
+  findUnmatchedSkills,
+  mergeCourseRecommendations,
+} from "@/lib/core/courses/course-recommendation-merge";
 import { searchUdemyCourses } from "@/lib/core/courses/impact-client";
 import { profileRepository } from "@/lib/infrastructure/repositories";
 import { debugLog } from "@/lib/utils/debug";
@@ -29,31 +33,17 @@ export function createRecommendCoursesTool(userId: string) {
 
       // Enriquecimento: skill sem match no catálogo curado → busca avulsos
       // na API Impact (Udemy). Limitado a 2 chamadas para não atrasar o chat.
-      const matchedTags = courses.flatMap((c) => c.skillTags);
-      const unmatched = skills.filter(
-        (s) =>
-          !matchedTags.some(
-            (t) =>
-              t.toLowerCase().includes(s.toLowerCase()) ||
-              s.toLowerCase().includes(t.toLowerCase()),
-          ),
+      const unmatched = findUnmatchedSkills(skills, courses);
+      const searchedSkills = unmatched.slice(0, 2);
+      const apiResults = await Promise.all(
+        searchedSkills.map((skill) => searchUdemyCourses(skill, 2)),
       );
-
-      const merged = [...courses];
-      if (unmatched.length > 0) {
-        const top = unmatched.slice(0, 2);
-        const apiResults = await Promise.all(
-          top.map((skill) => searchUdemyCourses(skill, 2)),
-        );
-        for (const list of apiResults) {
-          for (const c of list) {
-            if (!merged.some((x) => x.id === c.id)) merged.push(c);
-          }
-        }
-      }
+      // O merge reserva slots para os cursos da API (cobertura de skills) e
+      // preenche o restante com o catálogo curado — sem cortar o enriquecimento.
+      const merged = mergeCourseRecommendations(courses, searchedSkills, apiResults, 4);
 
       return {
-        cursos: merged.slice(0, 4).map((c) => ({
+        cursos: merged.map((c) => ({
           titulo: c.title,
           plataforma: "Udemy",
           skill: c.skillTags[0],

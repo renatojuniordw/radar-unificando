@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
+import { withTimeout } from './shared/with-timeout';
 import { COVER_LETTER_PROMPT } from './prompts/cover-letter';
 
 const LIMITS = {
@@ -29,15 +30,6 @@ export type CoverLetter = z.infer<typeof coverLetterSchema>;
 const PROMPT = COVER_LETTER_PROMPT;
 
 const GENERATE_TIMEOUT_MS = 20_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('LLM_TIMEOUT')), ms),
-    ),
-  ]);
-}
 
 export async function generateCoverLetter(
   resumeText: string,
@@ -81,7 +73,7 @@ ${safeResume}
 
   try {
     const object = await withTimeout(
-      generate(coverLetterSchema, fullPrompt, { maxOutputTokens: 1500 }),
+      (signal) => generate(coverLetterSchema, fullPrompt, { maxOutputTokens: 1500, signal }),
       GENERATE_TIMEOUT_MS,
     );
 

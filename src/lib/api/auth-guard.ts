@@ -37,6 +37,10 @@ export async function requireAuth(): Promise<AuthResult> {
 /**
  * Exige autenticação E role de admin. Usado em APIs administrativas —
  * responde 403 para usuários logados sem privilégio de admin.
+ *
+ * NOTA: a role vem do JWT (gravada no sign-in em auth.config.ts). Uma mudança
+ * de role no banco só reflete após o usuário re-logar — comportamento aceito
+ * (evita um SELECT de role por request em toda chamada autenticada).
  */
 export async function requireAdmin(): Promise<AuthResult> {
   const { session, response } = await requireAuth();

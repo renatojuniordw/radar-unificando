@@ -18,7 +18,7 @@ export function createSearchJobsTool(_userId: string) {
         .string()
         .min(2, "Query muito curta")
         .max(200, "Query muito longa")
-        .regex(/^[a-zA-Z0-9\s\-_.]+$/, "Caracteres não permitidos na query")
+        .regex(/^[\p{L}\p{N}\s\-_.]+$/u, "Caracteres não permitidos na query")
         .describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
       limit: z
         .number()

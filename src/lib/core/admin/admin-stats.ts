@@ -1,4 +1,5 @@
 import { adminRepository } from '@/lib/infrastructure/repositories';
+import type { DayCountRow } from '@/lib/infrastructure/repositories/admin-repository';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 // Brasil não adota horário de verão desde 2019 — offset fixo UTC-3.
@@ -58,7 +59,9 @@ const DAY_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
  */
 export function resolveAdminRange(params: { days?: string; from?: string; to?: string }): AdminDateRange {
   if (params.from && params.to && DAY_KEY_RE.test(params.from) && DAY_KEY_RE.test(params.to)) {
-    return rangeFromDates(params.from, params.to);
+    // URL direta pode trazer from > to — normaliza com swap em vez de devolver range inválido.
+    const [from, to] = params.from <= params.to ? [params.from, params.to] : [params.to, params.from];
+    return rangeFromDates(from, to);
   }
   const days = Number(params.days);
   if (Number.isInteger(days) && days >= 1 && days <= 3650) return rangeFromDays(days);
@@ -71,43 +74,23 @@ export interface DayCount {
 }
 
 /**
- * Agrupa timestamps por dia (fuso America/Sao_Paulo) preenchendo dias vazios com 0.
- * `since` deve ser o início da janela; a janela cobre `days` dias a partir dele.
+ * Preenche a série de `days` dias (a partir de `since`, fuso America/Sao_Paulo)
+ * com as contagens já agregadas no Postgres (dailyCountsSince), zerando dias
+ * sem ocorrências.
  */
-export function bucketByDay(rows: { date: Date }[], days: number, since: Date): DayCount[] {
-  const counts = new Map<string, number>();
+export function fillDayCounts(rows: DayCountRow[], days: number, since: Date): DayCount[] {
+  const counts = new Map<string, number>(rows.map((r) => [r.dateKey, r.count]));
+  const result: DayCount[] = [];
   for (let i = 0; i < days; i++) {
-    counts.set(toDayKey(new Date(since.getTime() + i * DAY_MS)), 0);
+    const key = toDayKey(new Date(since.getTime() + i * DAY_MS));
+    result.push({ date: key, count: counts.get(key) ?? 0 });
   }
-  for (const row of rows) {
-    const key = toDayKey(row.date);
-    if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
-  }
-  return Array.from(counts, ([date, count]) => ({ date, count }));
+  return result;
 }
 
 export interface NameCount {
   name: string;
   count: number;
-}
-
-/** Converte linhas do repositório em { date } descartando timestamps nulos. */
-function toDayRows<T>(rows: T[], pick: (row: T) => Date | null): { date: Date }[] {
-  return rows.flatMap((row) => {
-    const date = pick(row);
-    return date ? [{ date }] : [];
-  });
-}
-
-/** Conta ocorrências (ex.: termos/empresas buscados) e ordena por frequência desc. */
-export function countOccurrences(values: string[]): NameCount[] {
-  const counts = new Map<string, number>();
-  for (const value of values) {
-    const trimmed = value.trim();
-    if (!trimmed) continue;
-    counts.set(trimmed, (counts.get(trimmed) ?? 0) + 1);
-  }
-  return Array.from(counts, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
 }
 
 export interface AdminStats {
@@ -131,8 +114,6 @@ export interface AdminStats {
   };
   top: {
     toolUsage: NameCount[];
-    topTerms: NameCount[];
-    topCompanies: NameCount[];
   };
 }
 
@@ -154,11 +135,10 @@ export async function getAdminStats(range: AdminDateRange): Promise<AdminStats> 
     tokensToday,
     courseClicksToday,
     extensionTokens,
-    userRows,
-    loginRows,
-    searchRows,
+    userDayRows,
+    loginDayRows,
+    searchDayRows,
     toolCalls,
-    searchLog,
   ] = await Promise.all([
     adminRepository.countUsers(),
     adminRepository.countUsersSince(today),
@@ -171,15 +151,11 @@ export async function getAdminStats(range: AdminDateRange): Promise<AdminStats> 
     adminRepository.sumTokensSince(today),
     adminRepository.countCourseClicksSince(today),
     adminRepository.countExtensionTokens(),
-    adminRepository.usersSince(since),
-    adminRepository.loginsSince(since),
-    adminRepository.searchesSince(since),
+    adminRepository.dailyCountsSince('users_created', since),
+    adminRepository.dailyCountsSince('users_login', since),
+    adminRepository.dailyCountsSince('pipeline_runs', since),
     adminRepository.toolCallsSince(since),
-    adminRepository.searchLogSince(since),
   ]);
-
-  const terms = searchLog.flatMap((row) => row.queries ?? []);
-  const companies = searchLog.flatMap((row) => row.companies ?? []);
 
   return {
     summary: {
@@ -196,14 +172,12 @@ export async function getAdminStats(range: AdminDateRange): Promise<AdminStats> 
       extensionTokens,
     },
     timeSeries: {
-      usersPerDay: bucketByDay(toDayRows(userRows, (r) => r.createdAt), days, since),
-      loginsPerDay: bucketByDay(toDayRows(loginRows, (r) => r.lastLoginAt), days, since),
-      searchesPerDay: bucketByDay(toDayRows(searchRows, (r) => r.startedAt), days, since),
+      usersPerDay: fillDayCounts(userDayRows, days, since),
+      loginsPerDay: fillDayCounts(loginDayRows, days, since),
+      searchesPerDay: fillDayCounts(searchDayRows, days, since),
     },
     top: {
       toolUsage: toolCalls.map((t) => ({ name: t.toolName, count: t.count })),
-      topTerms: countOccurrences(terms).slice(0, 50),
-      topCompanies: countOccurrences(companies).slice(0, 50),
     },
   };
 }

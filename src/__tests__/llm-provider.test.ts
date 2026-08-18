@@ -93,6 +93,19 @@ describe('llm-provider.generate', () => {
     expect(signal.aborted).toBe(true);
   });
 
+  it('should_not_retry_when_external_signal_is_already_aborted', async () => {
+    // Simula o timeout do withTimeout: o signal do chamador aborta, o fetch
+    // rejeita com AbortError e o retry interno NÃO deve disparar (seria um
+    // fetch que aborta na hora). O caller decide o retry com um novo withTimeout.
+    fetchMock.mockRejectedValue(new DOMException('aborted', 'AbortError'));
+    const controller = new AbortController();
+    controller.abort();
+    await expect(generate(scoreSchema, 'x', { signal: controller.signal })).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('should_scale_max_output_tokens_by_three_min_8000_on_retry', async () => {
     fetchMock
       .mockResolvedValueOnce(jsonResponse('texto sem json nenhum'))
