@@ -68,7 +68,6 @@ const JOBS: Job[] = [
 const BASE = {
   loading: false,
   roleCategories: ['Tecnologia'],
-  onExportCsv: vi.fn(),
   onFilterChange: vi.fn(),
   canGenerateResume: false,
   onGenerateResume: vi.fn(),
@@ -77,8 +76,18 @@ const BASE = {
 };
 
 describe('JobTable', () => {
+  const createObjectUrlMock = vi.fn(() => 'blob:fake');
+  const revokeObjectUrlMock = vi.fn();
+  const clickMock = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    createObjectUrlMock.mockClear();
+    revokeObjectUrlMock.mockClear();
+    clickMock.mockClear();
+    URL.createObjectURL = createObjectUrlMock;
+    URL.revokeObjectURL = revokeObjectUrlMock;
+    HTMLAnchorElement.prototype.click = clickMock;
   });
 
   it('should_render_loading_skeleton_when_loading', () => {
@@ -101,7 +110,9 @@ describe('JobTable', () => {
     render(<JobTable {...BASE} jobs={JOBS} />);
     fireEvent.click(screen.getByText('EXPORTAR CSV'));
     expect(trackExportCsv).toHaveBeenCalledWith(2);
-    expect(BASE.onExportCsv).toHaveBeenCalled();
+    expect(createObjectUrlMock).toHaveBeenCalled();
+    expect(clickMock).toHaveBeenCalled();
+    expect(revokeObjectUrlMock).toHaveBeenCalled();
   });
 
   it('should_render_job_titles', () => {
