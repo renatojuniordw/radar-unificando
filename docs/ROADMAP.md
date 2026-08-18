@@ -35,6 +35,7 @@
 - ✅ **Cache SWR do pipeline** (stale-while-revalidate, 5 min stale / 30 min expire)
 - ✅ **Resultados da busca exibidos para logados**: `pipeline_complete` carrega `jobs` para todos os usuários (antes só anônimos; logados recarregavam a lista recomendada por perfil)
 - ✅ **Ordenação por recência** dos resultados do pipeline (`sortJobsByRecency`)
+- ✅ **Painel admin** (`/admin`, role `admin` no User): métricas de usuários, logins, buscas (termos/empresas), ferramentas de chat, tokens e cursos por dia (Recharts)
 - ⏳ Performance audit
 - ⏳ Acessibilidade audit
 

@@ -46,7 +46,7 @@ export async function generate<T extends z.ZodType>(
         schema,
         prompt +
           '\n\nIMPORTANTE: não pense em voz alta nem explique seu raciocínio. Responda IMEDIATAMENTE apenas com o JSON, sem nenhum texto antes.',
-        { maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 2, 4000) },
+        { maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 3, 8000) },
       );
     }
     throw err;
@@ -63,6 +63,12 @@ async function callLlm<T extends z.ZodType>(
     messages: [{ role: 'user', content: prompt }],
     stream: false,
     response_format: { type: 'json_object' },
+    // Alguns provedores roteiam para modelos de raciocínio que narram
+    // chain-of-thought antes do JSON. Esses campos pedem para pular o
+    // raciocínio quando o provedor os suporta; se não suportar, são
+    // ignorados silenciosamente (compatível com a spec OpenAI).
+    reasoning_effort: 'low',
+    chat_template_kwargs: { enable_thinking: false },
     ...(opts?.maxOutputTokens ? { max_tokens: opts.maxOutputTokens } : {}),
   };
 
@@ -97,6 +103,7 @@ async function callLlm<T extends z.ZodType>(
 
   const data = await res.json();
   const choice = data.choices?.[0]?.message;
+  const finishReason: string | undefined = data.choices?.[0]?.finish_reason;
   const content: string = choice?.content || choice?.reasoning_content || '';
 
   if (!content) {
@@ -111,6 +118,7 @@ async function callLlm<T extends z.ZodType>(
   } catch (err) {
     console.error('[llm-provider] Erro ao analisar JSON da LLM:', {
       error: err instanceof Error ? err.message : String(err),
+      finishReason,
       rawContentSnippet: content.slice(0, 300),
     });
     throw err instanceof Error ? err : new Error(String(err));

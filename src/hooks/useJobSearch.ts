@@ -19,7 +19,7 @@ import type { Job } from "@/lib/types/job";
  * - useAutoSync: decide e dispara sincronização automática
  * - usePipelineStream: gerencia conexão SSE com o pipeline
  */
-export function useJobSearch() {
+export function useJobSearch(initialJobs: Job[] = []) {
   const { data: session } = useSession();
   const profile = useProfile();
   const [companies, setCompanies] = useState<string[]>([]);
@@ -27,7 +27,7 @@ export function useJobSearch() {
   const [running, setRunning] = useState(false);
   const [autoSyncing, setAutoSyncing] = useState(false);
   const [lastRunAt, setLastRunAt] = useState<number | null>(null);
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [loading, setLoading] = useState(false);
   const [roleCategories, setRoleCategories] = useState<string[]>([]);
   const [snackbar, setSnackbar] = useState<{

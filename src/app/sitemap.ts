@@ -48,18 +48,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
-    {
-      url: `${base}/login`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${base}/register`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
   ];
 
   // Rotas de cursos por skill (páginas estáticas indexáveis — SEO de afiliado)

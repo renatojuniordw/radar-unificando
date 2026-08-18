@@ -165,6 +165,17 @@ export function UserMenu() {
               <span>CONECTAR EXTENSÃO</span>
             </Link>
 
+            {(session.user as { role?: string }).role === 'admin' && (
+              <Link
+                href="/admin"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2.5 p-2 text-[#ccff00] text-xs font-bold font-mono no-underline bg-[#1e293b] border border-[#ccff00]/30 transition-all hover:bg-[#ccff00] hover:text-[#020617]"
+              >
+                <ShieldCheck size={14} />
+                <span>PAINEL ADMIN</span>
+              </Link>
+            )}
+
             <button
               onClick={() => {
                 setIsOpen(false);

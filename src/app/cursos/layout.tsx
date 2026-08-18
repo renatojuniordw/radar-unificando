@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { SITE } from '@/lib/core/constants';
 
 export const metadata: Metadata = {
-  title: 'Cursos para fechar seus gaps — Udemy | Radar Unificando',
+  title: { absolute: 'Cursos para Fechar Gaps do Currículo | Radar Unificando' },
   description:
     'Cursos recomendados da Udemy com base nas skills exigidas pelas vagas que você busca. Feche as lacunas do currículo com cursos avulsos baratos.',
   alternates: { canonical: `${SITE.url}/cursos` },

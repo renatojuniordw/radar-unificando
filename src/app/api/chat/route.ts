@@ -228,12 +228,14 @@ export async function POST(req: NextRequest) {
           (usage.promptTokens / 1_000_000) * INPUT_PRICE_PER_1M +
           (usage.completionTokens / 1_000_000) * OUTPUT_PRICE_PER_1M;
 
+        const toolNames = event.steps?.flatMap((s) => s.toolCalls?.map((t) => t.toolName) || []) || [];
+
         logAiEvent('chat_interaction', {
           traceId,
           messageCount: messages.length,
           textLength: event.text?.length || 0,
           finishReason: event.finishReason,
-          toolCalls: event.steps?.flatMap((s) => s.toolCalls?.map((t) => t.toolName) || []),
+          toolCalls: toolNames,
           promptTokens: usage.promptTokens,
           completionTokens: usage.completionTokens,
           totalTokens: usage.totalTokens,
@@ -250,6 +252,15 @@ export async function POST(req: NextRequest) {
           });
         } catch (err) {
           console.error('[chat] Erro ao registrar usage:', err);
+        }
+
+        // Registra as ferramentas de IA usadas (métrica "ferramentas mais utilizadas")
+        if (toolNames.length > 0) {
+          try {
+            await chatRepository.recordToolCalls(session.user.id, toolNames);
+          } catch (err) {
+            console.error('[chat] Erro ao registrar tool calls:', err);
+          }
         }
 
         // Soma o custo desta interação no orçamento diário global (fire-and-forget)

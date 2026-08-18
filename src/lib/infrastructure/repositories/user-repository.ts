@@ -6,6 +6,7 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
   create(data: { email: string; passwordHash: string; name?: string | null }): Promise<User>;
+  updateLastLogin(userId: string): Promise<void>;
   findByResetTokenHash(hash: string): Promise<User | null>;
   setResetToken(userId: string, hash: string, expiresAt: Date): Promise<void>;
   updatePassword(userId: string, passwordHash: string): Promise<void>;
@@ -21,6 +22,9 @@ export const userRepository: IUserRepository = {
   },
   async create(data) {
     return prisma.user.create({ data: { ...data, email: data.email.toLowerCase() } });
+  },
+  async updateLastLogin(userId) {
+    await prisma.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
   },
   async findByResetTokenHash(hash) {
     return prisma.user.findFirst({ where: { resetTokenHash: hash } });

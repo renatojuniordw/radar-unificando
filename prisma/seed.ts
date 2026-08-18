@@ -7,19 +7,30 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const passwordHash = await bcrypt.hash('admin123', 12);
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminEmail || !adminPassword) {
+    console.warn(
+      'Seed: ADMIN_EMAIL/ADMIN_PASSWORD não definidos no .env — usuário admin não criado.',
+    );
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   const user = await prisma.user.upsert({
-    where: { email: 'admin@radarunificando.com.br' },
-    update: {},
+    where: { email: adminEmail.toLowerCase() },
+    update: { role: 'admin', passwordHash },
     create: {
-      email: 'admin@radarunificando.com.br',
+      email: adminEmail.toLowerCase(),
       passwordHash,
-      name: 'Admin',
+      name: process.env.ADMIN_NAME || 'Admin',
+      role: 'admin',
     },
   });
 
-  console.log('Seed concluído:', user.email);
+  console.log('Seed concluído: admin', user.email);
 }
 
 main()

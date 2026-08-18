@@ -35,6 +35,22 @@ export async function requireAuth(): Promise<AuthResult> {
 }
 
 /**
+ * Exige autenticação E role de admin. Usado em APIs administrativas —
+ * responde 403 para usuários logados sem privilégio de admin.
+ */
+export async function requireAdmin(): Promise<AuthResult> {
+  const { session, response } = await requireAuth();
+  if (response) return { session: null, response };
+  if ((session.user as { role?: string }).role !== 'admin') {
+    return {
+      session: null,
+      response: NextResponse.json({ error: 'Não autorizado' }, { status: 403 }),
+    };
+  }
+  return { session, response: null };
+}
+
+/**
  * Extrai o token Bearer do header Authorization de uma NextRequest.
  * Centralizado para evitar duplicação entre rotas de extensão.
  */

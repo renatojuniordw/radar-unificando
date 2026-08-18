@@ -37,10 +37,13 @@ describe('runPipeline', () => {
     mockExpandQueries.mockImplementation(async (queries: string[]) => [...queries]);
   });
 
-  it('nao_roda_discovery_para_usuario_anonimo_e_nao_grava_run', async () => {
+  it('nao_roda_discovery_para_usuario_anonimo_mas_grava_run_completo', async () => {
     await runPipeline('run-1', ANONYMOUS_USER_ID, ['CorpA'], [], false);
     expect(mockDiscovery).not.toHaveBeenCalled();
-    expect(pipelineRunRepository.update).not.toHaveBeenCalled();
+    expect(pipelineRunRepository.update).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ status: 'completed' }),
+    );
     expect(progressEmitter.emit).toHaveBeenCalledWith(
       'run-1',
       expect.objectContaining({ type: 'pipeline_complete', jobs: [] }),

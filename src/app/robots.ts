@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/perfil/", "/export/"],
+        disallow: ["/api/", "/perfil/", "/admin/", "/export/"],
       },
       {
         userAgent: [
@@ -18,7 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           "Google-Extended",
         ],
         allow: "/",
-        disallow: ["/api/", "/perfil/"],
+        disallow: ["/api/", "/perfil/", "/admin/"],
       },
     ],
     sitemap: `${SITE.url}/sitemap.xml`,

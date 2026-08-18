@@ -24,11 +24,11 @@ import { SITE, IMPACT } from "@/lib/core/constants";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Radar Unificando — Buscador de Vagas Gupy + InHire em Tempo Real",
+    default: "Radar Unificando — Vagas Gupy e InHire em Tempo Real",
     template: "%s | Radar Unificando",
   },
   description:
-    "Buscador e agregador de vagas em tempo real para as plataformas Gupy e InHire. Encontre vagas em Dados, BI, Produto, Vendas, RH e Tecnologia sem cadastro obrigatório.",
+    "Assistente de carreira com IA que consolida vagas de Gupy e InHire em tempo real, analisa seu currículo (score ATS) e recomenda cursos para fechar suas gaps.",
   keywords: [
     "vagas gupy",
     "vagas inhire",

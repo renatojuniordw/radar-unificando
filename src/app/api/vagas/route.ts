@@ -1,27 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import type { Job as PrismaJob } from '@prisma/client';
 import { jobRepository, profileRepository } from '@/lib/infrastructure/repositories';
-
-function mapJobToApi(j: PrismaJob, score?: number) {
-  return {
-    id: j.id,
-    company: j.company,
-    platform: j.platform,
-    onList: j.onList || 'Não',
-    roleCategory: j.roleCategory,
-    title: j.title,
-    type: j.type,
-    location: j.location,
-    link: j.link,
-    companyNameOnPlatform: j.companyNameOnPlatform,
-    postedAt: j.postedAt,
-    alert: j.alert || '',
-    detectedAt: j.detectedAt || '',
-    description: j.description || undefined,
-    ...(score !== undefined ? { _score: score } : {}),
-  };
-}
+import { mapJobToApi } from '@/lib/core/jobs/map-job';
 
 export async function GET(req: NextRequest) {
   try {

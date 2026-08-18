@@ -51,17 +51,27 @@ describe('Pipeline API', () => {
       mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
       vi.mocked(pipelineLimiter.check).mockReturnValue({ allowed: true, remaining: 0, resetAt: Date.now() + 300_000, retryAfter: 0 });
       vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-123' } as any);
-      const res = await PipelinePOST(makeRequest({ companies: ['CorpA'] }));
+      const res = await PipelinePOST(makeRequest({ companies: ['CorpA'], queries: ['Analista'] }));
       const body = await res.json();
       expect(body).toHaveProperty('runId');
+      expect(pipelineRunRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-1',
+          queries: ['Analista'],
+          companies: ['CorpA'],
+        }),
+      );
     });
 
     it('should_use_anonymous_user_when_not_logged_in', async () => {
       mockAuth.mockResolvedValue(null);
       vi.mocked(pipelineLimiter.check).mockReturnValue({ allowed: true, remaining: 0, resetAt: Date.now() + 300_000, retryAfter: 0 });
-      vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-456', userId: '00000000-0000-0000-0000-000000000000' } as any);
-      const res = await PipelinePOST(makeRequest({}));
+      vi.mocked(pipelineRunRepository.create).mockResolvedValue({ id: 'run-456', userId: null } as any);
+      const res = await PipelinePOST(makeRequest({ companies: ['CorpA'] }));
       expect(res.status).toBe(200);
+      expect(pipelineRunRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: null, companies: ['CorpA'] }),
+      );
     });
 
     it('should_not_consume_manual_slot_on_auto_sync', async () => {

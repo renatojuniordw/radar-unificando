@@ -109,6 +109,13 @@ describe('Middleware', () => {
     expect(res.url).toContain(encodeURIComponent('/perfil'));
   });
 
+  it('should_redirect_unauthenticated_user_from_admin_path_to_login', async () => {
+    const res = await middleware(makeReq({ path: '/admin' }));
+    expect(res.status).toBe(302);
+    expect(res.url).toContain('/login');
+    expect(res.url).toContain(encodeURIComponent('/admin'));
+  });
+
   it('should_allow_authenticated_user_on_protected_path', async () => {
     const res = await middleware(makeReq({ path: '/perfil', auth: { user: { id: '1' } } }));
     expect(res.status).toBe(200);

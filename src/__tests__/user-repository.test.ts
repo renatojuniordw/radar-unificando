@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/infrastructure/db/prisma-client', () => ({
   prisma: {
-    user: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn() },
+    user: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
     profile: { findFirst: vi.fn(), upsert: vi.fn(), findMany: vi.fn() },
   },
 }));
@@ -34,6 +34,15 @@ describe('userRepository', () => {
     user.create.mockResolvedValue({ id: 'u1' } as any);
     await userRepository.create({ email: 'Foo@Bar.com', passwordHash: 'hash' });
     expect(user.create).toHaveBeenCalledWith({ data: { email: 'foo@bar.com', passwordHash: 'hash' } });
+  });
+
+  it('updateLastLogin_atualiza_timestamp', async () => {
+    user.update.mockResolvedValue({} as any);
+    await userRepository.updateLastLogin('u1');
+    expect(user.update).toHaveBeenCalledWith({
+      where: { id: 'u1' },
+      data: { lastLoginAt: expect.any(Date) },
+    });
   });
 });
 
