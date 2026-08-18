@@ -4,6 +4,8 @@ import { BuscaClient } from "./busca-client";
 
 const ANONYMOUS_USER_ID = "00000000-0000-0000-0000-000000000000";
 
+export const dynamic = "force-dynamic";
+
 // Pré-carrega as primeiras vagas no servidor para que o conteúdo principal
 // da página exista no HTML inicial (rastreável sem depender de hidratação JS).
 // O client component refina/substitui esses dados conforme sessão e filtros.
