@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
-import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
+import { analyzeAtsWithCache, buildAtsResumeInput } from '@/lib/core/ai/ats/ats-service';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 const MAX_JOB_DESCRIPTION = 8000;
@@ -44,13 +44,14 @@ export async function POST(req: NextRequest) {
     const jobKey = typeof body?.jobKey === 'string' ? body.jobKey.slice(0, 300) : undefined;
 
     const profile = await profileRepository.findByUserId(session.user.id);
-    const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
-    if (!resumeText || resumeText.length < 30) {
+    const rawResumeText = profile?.resumeText || profile?.resumeMarkdown || '';
+    if (!rawResumeText || rawResumeText.length < 30) {
       return NextResponse.json(
         { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' },
         { status: 400 }
       );
     }
+    const resumeText = buildAtsResumeInput(profile!);
 
     const result = await analyzeAtsWithCache(session.user.id, resumeText, {
       jobDescription,

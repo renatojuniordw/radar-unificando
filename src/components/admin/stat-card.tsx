@@ -14,11 +14,11 @@ export function StatCard({ label, value, detail, progress }: StatCardProps) {
       <p
         style={{
           fontFamily: 'ui-monospace, monospace',
-          fontSize: '0.65rem',
+          fontSize: '0.75rem',
           fontWeight: 800,
-          letterSpacing: '0.1em',
+          letterSpacing: '0.05em',
           textTransform: 'uppercase',
-          color: '#64748b',
+          color: '#475569',
           margin: 0,
         }}
       >
@@ -36,12 +36,20 @@ export function StatCard({ label, value, detail, progress }: StatCardProps) {
         {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
       </p>
       {clamped !== undefined && (
-        <div style={{ height: 8, backgroundColor: '#e2e8f0', marginTop: 12 }}>
+        <div
+          role="progressbar"
+          aria-valuenow={Math.round(clamped)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={label}
+          style={{ height: 8, backgroundColor: '#e2e8f0', marginTop: 12, border: '1px solid #020617' }}
+        >
           <div
             style={{
               width: `${clamped}%`,
               height: '100%',
               backgroundColor: clamped >= 80 ? '#ef4444' : '#ccff00',
+              transition: 'width 0.3s ease',
             }}
           />
         </div>
@@ -50,9 +58,9 @@ export function StatCard({ label, value, detail, progress }: StatCardProps) {
         <p
           style={{
             fontFamily: 'ui-monospace, monospace',
-            fontSize: '0.65rem',
+            fontSize: '0.7rem',
             fontWeight: 700,
-            color: '#64748b',
+            color: '#475569',
             margin: '8px 0 0',
           }}
         >

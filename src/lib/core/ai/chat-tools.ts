@@ -17,7 +17,7 @@ import { COVER_LETTER_PROMPT_VERSION } from '@/lib/core/ai/prompts/cover-letter'
 import { INTERVIEW_QUESTIONS_PROMPT_VERSION } from '@/lib/core/ai/prompts/interview-questions';
 import { RESUME_ADAPTATION_PROMPT_VERSION } from '@/lib/core/ai/prompts/resume-adaptation';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
-import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
+import { analyzeAtsWithCache, buildAtsResumeInput } from '@/lib/core/ai/ats/ats-service';
 import { jobLinkFilter } from '@/lib/core/pipeline/job-link-filter';
 import { recommendCourses } from '@/lib/core/courses/course-matcher';
 import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
@@ -178,10 +178,11 @@ export function createChatTools(userId: string) {
       execute: async ({ jobDescription }: { jobDescription?: string }) => {
         debugLog('[chat-tools] analyze_ats_score chamado');
         const profile = await profileRepository.findByUserId(userId);
-        const resumeText = profile?.resumeText || profile?.resumeMarkdown || '';
-        if (!resumeText || resumeText.length < 30) {
+        const rawResumeText = profile?.resumeText || profile?.resumeMarkdown || '';
+        if (!rawResumeText || rawResumeText.length < 30) {
           return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
         }
+        const resumeText = buildAtsResumeInput(profile!);
         const result = await analyzeAtsWithCache(userId, resumeText, {
           jobDescription,
           traceId: crypto.randomUUID(),
@@ -300,7 +301,7 @@ export function createChatTools(userId: string) {
           return { error: 'Nenhum currículo encontrado. Importe seu currículo primeiro.' };
         }
 
-        const ats = await analyzeAtsWithCache(userId, resumeContext, {
+        const ats = await analyzeAtsWithCache(userId, buildAtsResumeInput(profile), {
           jobDescription,
           traceId: crypto.randomUUID(),
         });

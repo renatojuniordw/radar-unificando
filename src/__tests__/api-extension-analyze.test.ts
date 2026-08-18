@@ -10,7 +10,8 @@ vi.mock('@/lib/core/extension/extension-token', () => ({
 vi.mock('@/lib/infrastructure/repositories', () => ({
   profileRepository: { findByUserId: vi.fn() },
 }));
-vi.mock('@/lib/core/ai/ats/ats-service', () => ({
+vi.mock('@/lib/core/ai/ats/ats-service', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/core/ai/ats/ats-service')>()),
   analyzeAtsWithCache: vi.fn(),
 }));
 vi.mock('@/lib/infrastructure/rate-limit', () => ({

@@ -202,8 +202,8 @@ export async function getAdminStats(range: AdminDateRange): Promise<AdminStats> 
     },
     top: {
       toolUsage: toolCalls.map((t) => ({ name: t.toolName, count: t.count })),
-      topTerms: countOccurrences(terms).slice(0, 10),
-      topCompanies: countOccurrences(companies).slice(0, 10),
+      topTerms: countOccurrences(terms).slice(0, 50),
+      topCompanies: countOccurrences(companies).slice(0, 50),
     },
   };
 }
