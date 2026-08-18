@@ -62,12 +62,13 @@ const PROMPT = ATS_ANALYZER_PROMPT;
 const GENERATE_TIMEOUT_MS = 25_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error("LLM_TIMEOUT")), ms),
-    ),
-  ]);
+  let timerId: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timerId = setTimeout(() => reject(new Error("LLM_TIMEOUT")), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timerId);
+  });
 }
 
 export interface AnalyzeAtsOptions {
@@ -101,26 +102,55 @@ ${opts.jobDescription}
     : ""
 }`;
 
-  try {
-    const raw = await withTimeout(
+  const runAnalysis = () =>
+    withTimeout(
       generate(atsSchema, prompt, { maxOutputTokens: 3500 }),
       GENERATE_TIMEOUT_MS,
     );
+
+  const logSuccess = (raw: AtsAnalysis, retried: boolean) => {
     const analysis = normalizeAnalysis(raw);
     logAiEvent("ats_analysis", {
       traceId: opts?.traceId,
       score: analysis.score,
       success: true,
+      ...(retried ? { retried: true } : {}),
     });
     return analysis;
-  } catch (err) {
+  };
+
+  // Nunca propague err.message pro chamador: pode conter detalhes internos do
+  // provedor de LLM (endpoints, chaves parciais, stack). Loga completo
+  // internamente, mas quem chama só vê mensagem genérica (diferenciada por causa).
+  const handleFailure = (err: unknown, wasTimeout: boolean): never => {
     const message = err instanceof Error ? err.message : String(err);
     logAiEvent("ats_analysis", {
       traceId: opts?.traceId,
       success: false,
       error: message,
     });
-    throw err;
+    throw new Error(
+      wasTimeout
+        ? "A análise ATS demorou mais que o esperado. Tente novamente em instantes."
+        : "Não foi possível analisar o currículo. Tente novamente.",
+    );
+  };
+
+  try {
+    const raw = await runAnalysis();
+    return logSuccess(raw, false);
+  } catch (err) {
+    const isTimeout = err instanceof Error && err.message === "LLM_TIMEOUT";
+    if (!isTimeout) return handleFailure(err, false);
+
+    // 1 retry específico para timeout, antes de desistir.
+    try {
+      const raw = await runAnalysis();
+      return logSuccess(raw, true);
+    } catch (retryErr) {
+      const retryIsTimeout = retryErr instanceof Error && retryErr.message === "LLM_TIMEOUT";
+      return handleFailure(retryErr, retryIsTimeout);
+    }
   }
 }
 
