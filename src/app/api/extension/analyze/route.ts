@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         ? recommendCourses(courseTerms, profile?.area ?? null, 3).map(
             (c) => ({
               titulo: c.title,
-              plataforma: c.provider === 'alura' ? 'Alura' : 'Udemy',
+              plataforma: 'Udemy',
               skill: c.skillTags[0],
               preco: c.priceLabel,
               url: buildAffiliateUrl(c),

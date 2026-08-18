@@ -1,14 +1,13 @@
-// Domínio de cursos de afiliados. Catálogo atual é 100% Udemy — Alura fica
-// suportada pelo tipo CourseProviderId mas sem entradas até a afiliação ser
-// aprovada. A interface CourseProvider permite plugar fontes dinâmicas
-// (ex.: busca avulsa via API da Impact, ver impact-client.ts).
-// Hoje a implementação padrão é o catálogo curado local (CuratedCatalogProvider).
+// Domínio de cursos de afiliados. Único provider hoje: Udemy. A interface
+// CourseProvider permite plugar fontes dinâmicas (ex.: busca avulsa via API
+// da Impact, ver impact-client.ts). A implementação padrão é o catálogo
+// curado local (CuratedCatalogProvider).
 
 import { COURSES } from './course-catalog';
 import { expandTokens } from './course-matcher';
 import { removeAccents } from '@/lib/utils/string';
 
-export type CourseProviderId = 'alura' | 'udemy';
+export type CourseProviderId = 'udemy';
 
 export interface Course {
   id: string;
@@ -34,7 +33,6 @@ export interface CourseProvider {
 
 /**
  * Adiciona o parâmetro de tracking de afiliado aos links da Udemy.
- * Alura usa URL fixa de afiliado (Awin) — retorna como está.
  */
 export function buildAffiliateUrl(course: Course): string {
   if (course.provider !== 'udemy') return course.url;

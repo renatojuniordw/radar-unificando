@@ -119,7 +119,7 @@ describe('Extension Analyze API', () => {
     expect(body.courses.length).toBeLessThanOrEqual(3);
     for (const curso of body.courses) {
       expect(typeof curso.titulo).toBe('string');
-      expect(['Alura', 'Udemy']).toContain(curso.plataforma);
+      expect(curso.plataforma).toBe('Udemy');
       expect(typeof curso.skill).toBe('string');
       expect(typeof curso.preco).toBe('string');
       expect(curso.url.startsWith('https://')).toBe(true);

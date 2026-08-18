@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
+import { sanitizeUntrusted } from './shared/sanitize';
 import { withTimeout } from './shared/with-timeout';
 import { JOB_ANALYZER_PROMPT } from './prompts/job-analyzer';
 
@@ -86,13 +87,20 @@ export async function analyzeJobFit(
 
   const { safeResume, safeJobDescription, safeJobTitle } = sanitizeAnalysisInput(parsedInput.data);
 
+  // Skills/senioridade/formação vêm do perfil do usuário (texto livre) — sanitizar
+  // e delimitar como <profile> evita que sejam interpretados como instrução.
+  const safeSkills = parsedInput.data.skills.map((s) => sanitizeUntrusted(s, 'profile')).join(', ');
+  const safeSeniority = sanitizeUntrusted(parsedInput.data.seniority, 'profile');
+  const safeEducation = parsedInput.data.education.map((e) => sanitizeUntrusted(e, 'profile')).join(', ');
+
   const fullPrompt = `${PROMPT}
 
-PERFIL:
-- Skills: ${parsedInput.data.skills.join(', ')}
+<profile>
+- Skills: ${safeSkills}
 - Experiência: ${parsedInput.data.experienceYears} anos
-- Senioridade: ${parsedInput.data.seniority}
-- Formação: ${parsedInput.data.education.join(', ')}
+- Senioridade: ${safeSeniority}
+- Formação: ${safeEducation}
+</profile>
 
 <job_title>
 ${safeJobTitle}

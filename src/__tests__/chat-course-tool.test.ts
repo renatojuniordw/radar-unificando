@@ -34,7 +34,7 @@ describe('createChatTools.recommend_courses', () => {
     expect(result.cursos.length).toBeLessThanOrEqual(4);
     for (const curso of result.cursos) {
       expect(curso.titulo).toBeTruthy();
-      expect(['Alura', 'Udemy']).toContain(curso.plataforma);
+      expect(curso.plataforma).toBe('Udemy');
       expect(curso.preco).toBeTruthy();
       expect(curso.url.startsWith('https://')).toBe(true);
     }

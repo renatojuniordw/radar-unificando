@@ -43,12 +43,12 @@ describe('recordCourseClick', () => {
   it('usa_null_para_campos_opcionais_ausentes', async () => {
     mockedCreate.mockResolvedValue({ id: 'cc-2' } as any);
 
-    await recordCourseClick({ courseId: 'alura-java', origin: 'sidebar' });
+    await recordCourseClick({ courseId: 'udemy-java', origin: 'sidebar' });
 
     expect(mockedCreate).toHaveBeenCalledWith({
       data: {
         userId: null,
-        courseId: 'alura-java',
+        courseId: 'udemy-java',
         skill: null,
         platform: null,
         origin: 'sidebar',

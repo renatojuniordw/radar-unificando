@@ -10,7 +10,7 @@ export interface ParsedJob {
 
 export interface ParsedCourse {
   title: string;
-  provider?: string; // "Alura" | "Udemy" (após " — " no título)
+  provider?: string; // "Udemy" (após " — " no título, se presente)
   skill?: string; // texto após "Skill:" na linha 📌
   price?: string; // texto da linha 💰
   link?: string; // URL extraída da linha 🔗
