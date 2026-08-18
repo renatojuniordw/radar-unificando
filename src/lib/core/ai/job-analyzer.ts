@@ -46,7 +46,7 @@ export type JobAnalysis = z.infer<typeof analysisSchema>;
 
 const PROMPT = JOB_ANALYZER_PROMPT;
 
-const GENERATE_TIMEOUT_MS = 20_000;
+const GENERATE_TIMEOUT_MS = 25_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -114,38 +114,61 @@ ${safeJobDescription}
 ${safeResume}
 </resume>`;
 
-  try {
-    const object = await withTimeout(
-      generate(analysisSchema, fullPrompt, { maxOutputTokens: 2000 }),
+  const runAnalysis = () =>
+    withTimeout(
+      generate(analysisSchema, fullPrompt, { maxOutputTokens: 3500 }),
       GENERATE_TIMEOUT_MS,
     );
 
-    const latency = (performance.now() - start).toFixed(0);
+  const logSuccess = (object: JobAnalysis, retried: boolean) => {
     logAiEvent('job_analysis', {
       traceId,
-      latencyMs: Number(latency),
+      latencyMs: Number((performance.now() - start).toFixed(0)),
       jobTitle: safeJobTitle.slice(0, 300),
       matchedCount: object.matchedSkills.length,
       missingCount: object.missingSkills.length,
       overallFit: object.overallFit,
       success: true,
+      ...(retried ? { retried: true } : {}),
     });
+  };
 
-    return object;
-  } catch (err) {
-    const latency = (performance.now() - start).toFixed(0);
-    // Nunca propague err.message pro chamador: pode conter detalhes internos
-    // do provedor de LLM (endpoints, chaves parciais, stack). Loga completo
-    // internamente, mas o usuário só vê mensagem genérica.
+  // Nunca propague err.message pro chamador: pode conter detalhes internos do
+  // provedor de LLM (endpoints, chaves parciais, stack). Loga completo
+  // internamente, mas o usuário só vê mensagem genérica (diferenciada por causa).
+  const handleFailure = (err: unknown, wasTimeout: boolean): never => {
     const message = err instanceof Error ? err.message : String(err);
     logAiEvent('job_analysis', {
       traceId,
-      latencyMs: Number(latency),
+      latencyMs: Number((performance.now() - start).toFixed(0)),
       jobTitle: safeJobTitle.slice(0, 300),
       success: false,
       error: message,
     });
 
-    throw new Error('Não foi possível analisar a vaga. Tente novamente.');
+    throw new Error(
+      wasTimeout
+        ? 'A análise da vaga demorou mais que o esperado. Tente novamente em instantes.'
+        : 'Não foi possível analisar a vaga. Tente novamente.',
+    );
+  };
+
+  try {
+    const object = await runAnalysis();
+    logSuccess(object, false);
+    return object;
+  } catch (err) {
+    const isTimeout = err instanceof Error && err.message === 'LLM_TIMEOUT';
+    if (!isTimeout) return handleFailure(err, false);
+
+    // 1 retry específico para timeout, antes de desistir.
+    try {
+      const object = await runAnalysis();
+      logSuccess(object, true);
+      return object;
+    } catch (retryErr) {
+      const retryIsTimeout = retryErr instanceof Error && retryErr.message === 'LLM_TIMEOUT';
+      return handleFailure(retryErr, retryIsTimeout);
+    }
   }
 }

@@ -54,6 +54,12 @@ export function formatJobResult(j: JobLike) {
   };
 }
 
+// Chamadas concorrentes (mesmo usuário+vaga+perfil) aguardam a mesma Promise
+// em vez de disparar novas chamadas ao LLM — o cache em `generatedContentCache`
+// só é escrito depois que a análise termina, então sem isso, chamadas próximas
+// no tempo sempre dão cache-miss.
+const inFlightAnalyses = new Map<string, Promise<JobAnalysis>>();
+
 async function analyzeWithCache(
   userId: string,
   profile: Profile,
@@ -81,24 +87,40 @@ async function analyzeWithCache(
   const cached = await getCached<JobAnalysis>(userId, 'fit_analysis', cacheKey);
   if (cached) return cached;
 
-  const traceId = crypto.randomUUID();
-  const analysis = await analyzeJobFit(
-    resumeContext,
-    jobTitle,
-    jobDescription,
-    skills,
-    experienceYears,
-    seniority,
-    education,
-    traceId,
-  );
+  const dedupeKey = `${userId}:${cacheKey}`;
+  const inFlight = inFlightAnalyses.get(dedupeKey);
+  if (inFlight) return inFlight;
 
-  await saveToCache(userId, 'fit_analysis', cacheKey, analysis);
-  return analysis;
+  const promise = (async () => {
+    try {
+      const traceId = crypto.randomUUID();
+      const analysis = await analyzeJobFit(
+        resumeContext,
+        jobTitle,
+        jobDescription,
+        skills,
+        experienceYears,
+        seniority,
+        education,
+        traceId,
+      );
+
+      await saveToCache(userId, 'fit_analysis', cacheKey, analysis);
+      return analysis;
+    } finally {
+      inFlightAnalyses.delete(dedupeKey);
+    }
+  })();
+
+  inFlightAnalyses.set(dedupeKey, promise);
+  return promise;
 }
 
 export function createChatTools(userId: string) {
   let searchCount = 0;
+  // Dedup por turno: evita reprocessar a mesma vaga se o modelo chamar
+  // analyze_job_fit mais de uma vez no mesmo turno (múltiplos steps).
+  const turnAnalysisCache = new Map<string, Promise<JobAnalysis>>();
 
   return {
     search_jobs: tool({
@@ -192,10 +214,20 @@ export function createChatTools(userId: string) {
       }),
       execute: async ({ jobTitle, jobDescription }: { jobTitle: string; jobDescription: string }) => {
         debugLog(`[chat-tools] analyze_job_fit chamado com jobTitle="${jobTitle}"`);
+
+        const turnKey = `${jobTitle.trim().toLowerCase()}|${jobDescription.trim().toLowerCase()}`;
+        const existing = turnAnalysisCache.get(turnKey);
+        if (existing) {
+          debugLog(`[chat-tools] analyze_job_fit: reaproveitando resultado do turno para "${jobTitle}"`);
+          return existing;
+        }
+
         const profile = await profileRepository.findByUserId(userId);
         if (!profile) return { error: 'Perfil não encontrado. Crie seu perfil primeiro.' };
 
-        return analyzeWithCache(userId, profile, jobTitle, jobDescription);
+        const promise = analyzeWithCache(userId, profile, jobTitle, jobDescription);
+        turnAnalysisCache.set(turnKey, promise);
+        return promise;
       },
     }),
 
