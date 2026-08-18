@@ -86,4 +86,51 @@ describe('GupyMcpClient', () => {
     expect(result[0].company).toBe('Startup');
     expect(result[0].title).toBe('Dev');
   });
+
+  it('should_return_empty_array_when_response_has_no_content', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ jsonrpc: '2.0', id: '1', result: {} }),
+    }) as any;
+    const result = await client.searchJobs('test', 10);
+    expect(result).toEqual([]);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('should_throw_when_tool_reports_is_error', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        jsonrpc: '2.0',
+        id: '1',
+        result: { isError: true, content: [{ type: 'text', text: 'Ferramenta indisponível' }] },
+      }),
+    }) as any;
+    await expect(client.searchJobs('test', 10)).rejects.toThrow('MCP tool error: Ferramenta indisponível');
+  });
+
+  it('should_parse_sse_streaming_response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/event-stream' }),
+      text: async () =>
+        'event: message\ndata: {"jsonrpc":"2.0","id":"1","result":{"content":[{"type":"text","text":"{\\"jobs\\":[{\\"title\\":\\"Dev\\",\\"company\\":\\"CorpA\\"}]}"}]}}\n\n',
+    }) as any;
+    const result = await client.searchJobs('test', 10);
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Dev');
+  });
+
+  it('should_throw_when_sse_response_has_no_data_line', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/event-stream' }),
+      text: async () => 'event: message\n: keepalive\n\n',
+    }) as any;
+    await expect(client.searchJobs('test', 10)).rejects.toThrow('MCP: resposta SSE sem dados');
+  });
 });

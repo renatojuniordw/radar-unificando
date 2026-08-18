@@ -99,4 +99,43 @@ describe('ProgressEmitter', () => {
     emitter.emit('new-run', { type: 'step_start', step: 'Test', message: 'no listeners' });
     expect(true).toBe(true);
   });
+
+  it('should_log_error_events_to_console_error', () => {
+    const emitter = new ProgressEmitter();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    emitter.emit('run-err', { type: 'pipeline_error', step: 'gupy', message: 'falhou' });
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it('should_cleanup_stale_runs_after_ttl', () => {
+    vi.useFakeTimers();
+    try {
+      const emitter = new ProgressEmitter();
+      const listener = vi.fn();
+      emitter.on('run-old', listener);
+      emitter.emit('run-old', { type: 'step_progress', step: 'gupy', message: 'buffered' });
+      // limpeza roda em ticks de 60s; TTL é 10min → precisa de um tick além dos 600s
+      vi.advanceTimersByTime(11 * 60 * 1000 + 1000);
+      emitter.emit('run-old', { type: 'step_progress', step: 'gupy', message: 'after ttl' });
+      // run removido pela limpeza — novo evento não chega ao listener antigo
+      expect(listener).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('should_not_cleanup_fresh_runs', () => {
+    vi.useFakeTimers();
+    try {
+      const emitter = new ProgressEmitter();
+      const listener = vi.fn();
+      emitter.on('run-fresh', listener);
+      vi.advanceTimersByTime(5 * 60 * 1000);
+      emitter.emit('run-fresh', { type: 'step_progress', step: 'gupy', message: 'still fresh' });
+      expect(listener).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

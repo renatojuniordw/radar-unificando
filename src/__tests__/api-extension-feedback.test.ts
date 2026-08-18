@@ -74,4 +74,20 @@ describe('Extension Feedback API', () => {
       comment: 'Muito útil',
     });
   });
+
+  it('should_return_500_when_token_validation_fails', async () => {
+    mockFindUser.mockRejectedValue(new Error('redis down'));
+    const res = await POST(makeRequest('Bearer valid-token', { rating: true }));
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe('Erro ao validar token');
+  });
+
+  it('should_return_500_when_feedback_persistence_fails', async () => {
+    mockFindUser.mockResolvedValue('user-1');
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true } as any);
+    vi.mocked(recordFeedback).mockRejectedValue(new Error('db down'));
+    const res = await POST(makeRequest('Bearer valid-token', { rating: true }));
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe('Erro ao registrar feedback');
+  });
 });

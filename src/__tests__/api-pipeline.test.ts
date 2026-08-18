@@ -133,6 +133,23 @@ describe('Pipeline API', () => {
       expect(res.status).toBe(200);
       expect(body.cooldownSeconds).toBe(60);
     });
+
+    it('should_return_400_when_queries_and_companies_invalid', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
+      const res = await PipelinePOST(makeRequest({ queries: 123 }));
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe('Parâmetros de busca inválidos');
+      expect(pipelineRunRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('should_return_500_when_pipeline_start_fails', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
+      vi.mocked(pipelineLimiter.check).mockReturnValue({ allowed: true, remaining: 0, resetAt: Date.now() + 300_000, retryAfter: 0 });
+      vi.mocked(pipelineRunRepository.create).mockRejectedValue(new Error('db down'));
+      const res = await PipelinePOST(makeRequest({ companies: ['CorpA'] }));
+      expect(res.status).toBe(500);
+      expect((await res.json()).error).toBe('Erro ao iniciar pipeline');
+    });
   });
 
   describe('GET /api/pipeline/[runId]', () => {
@@ -162,6 +179,14 @@ describe('Pipeline API', () => {
       vi.mocked(pipelineRunRepository.findById).mockResolvedValue({ id: 'run-1', status: 'completed', userId: 'other-user' } as any);
       const res = await PipelineGetRun({} as any, { params: Promise.resolve({ runId: 'run-1' }) });
       expect(res.status).toBe(404);
+    });
+
+    it('should_return_500_when_run_lookup_fails', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as any);
+      vi.mocked(pipelineRunRepository.findById).mockRejectedValue(new Error('db down'));
+      const res = await PipelineGetRun({} as any, { params: Promise.resolve({ runId: 'run-1' }) });
+      expect(res.status).toBe(500);
+      expect((await res.json()).error).toBe('Erro ao consultar a execução');
     });
   });
 });

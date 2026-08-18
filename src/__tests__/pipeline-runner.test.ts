@@ -158,4 +158,36 @@ describe('runPipeline', () => {
       expect.objectContaining({ queries: ['Analista de Dados', 'Data Analyst'] }),
     );
   });
+
+  it('should_use_cached_jobs_when_cache_hits', async () => {
+    const cachedJob = { id: 'job-cached', title: 'Dev', company: 'CorpA' } as Job;
+    pipelineCache.set(['CorpA'], ['Analista'], [cachedJob]);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Analista'], true);
+
+    expect(runGupyStep).not.toHaveBeenCalled();
+    expect(runInHireStep).not.toHaveBeenCalled();
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'step_complete', step: 'Cache' }),
+    );
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'pipeline_complete', jobs: [cachedJob] }),
+    );
+  });
+
+  it('should_revalidate_in_background_when_cache_is_stale', async () => {
+    const cachedJob = { id: 'job-cached', title: 'Dev', company: 'CorpA' } as Job;
+    pipelineCache.set(['CorpA'], ['Analista'], [cachedJob], -1000);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Analista'], true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(runGupyStep).toHaveBeenCalled();
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'pipeline_complete', jobs: [cachedJob] }),
+    );
+  });
 });

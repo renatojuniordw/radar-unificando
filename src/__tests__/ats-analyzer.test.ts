@@ -79,4 +79,19 @@ describe('analyzeAts', () => {
     );
     await expect(analyzeAts(RESUME)).rejects.not.toThrow('UPSTREAM_SECRET_ENDPOINT');
   });
+
+  it('should_deduplicate_missing_keywords_and_skill_scores', async () => {
+    generateMock.mockResolvedValue({
+      score: 70,
+      summary: 'resumo',
+      missingKeywords: ['AWS', 'AWS', ''],
+      strengths: [],
+      formattingIssues: [],
+      recommendations: [],
+      skillScores: [{ skill: 'Python' }, { skill: 'Python' }, { skill: '' }],
+    });
+    const result = await analyzeAts(RESUME);
+    expect(result.missingKeywords).toEqual(['AWS']);
+    expect(result.skillScores).toEqual([{ skill: 'Python' }]);
+  });
 });

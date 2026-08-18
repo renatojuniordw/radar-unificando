@@ -65,6 +65,7 @@ describe('Resume Generate API', () => {
       remainingPoints: 9,
       msBeforeNext: 0,
     } as any);
+    vi.mocked(getCached).mockResolvedValue(null);
     vi.mocked(profileRepository.findByUserId).mockResolvedValue({
       resumeMarkdown: 'Currículo com experiência em desenvolvimento por mais de trinta caracteres.',
     } as any);
@@ -136,5 +137,15 @@ describe('Resume Generate API', () => {
     expect(res.status).toBe(200);
     expect(generateAdaptedResume).not.toHaveBeenCalled();
     expect(renderResumePdf).toHaveBeenCalledTimes(1);
+  });
+
+  it('should_return_500_with_limited_error_detail_when_generation_fails', async () => {
+    vi.mocked(getCached).mockResolvedValue(null);
+    vi.mocked(generateAdaptedResume).mockRejectedValue(new Error('UPSTREAM_SECRET_ENDPOINT'));
+    const res = await POST(makeRequest({ jobTitle: 'Dev', jobDescription: 'Vaga de dev' }));
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toContain('Erro ao gerar o currículo');
+    expect(body.error).toContain('UPSTREAM_SECRET_ENDPOINT');
   });
 });

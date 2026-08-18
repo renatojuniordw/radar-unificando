@@ -86,4 +86,11 @@ describe('generateAdaptedResume', () => {
     expect(md).toContain('## Formação');
     expect(md).toContain('## Idiomas');
   });
+
+  it('should_throw_generic_error_when_llm_fails', async () => {
+    generateMock.mockRejectedValue(new Error('UPSTREAM_SECRET_ENDPOINT'));
+    await expect(
+      generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev', {}),
+    ).rejects.toThrow('Não foi possível gerar o currículo adaptado. Tente novamente.');
+  });
 });

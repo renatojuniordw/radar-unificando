@@ -82,5 +82,21 @@ describe('Profile API', () => {
         area: 'Dados',
       });
     });
+
+    it('should_return_400_when_profile_payload_invalid', async () => {
+      mockSession();
+      const res = await PUT({ json: async () => ({ skills: 'não-é-array' }) } as any);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe('Dados do perfil inválidos');
+      expect(profileRepository.upsert).not.toHaveBeenCalled();
+    });
+
+    it('should_return_500_when_profile_save_fails', async () => {
+      mockSession();
+      vi.mocked(profileRepository.upsert).mockRejectedValue(new Error('db down'));
+      const res = await PUT({ json: async () => ({ skills: ['python'] }) } as any);
+      expect(res.status).toBe(500);
+      expect((await res.json()).error).toBe('Erro ao salvar perfil');
+    });
   });
 });

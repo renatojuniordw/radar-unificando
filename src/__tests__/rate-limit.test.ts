@@ -1,8 +1,18 @@
-import { describe, it, expect } from 'vitest';
-import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
+import { describe, it, expect, vi } from 'vitest';
 
-// Caminho em memória: no ambiente de teste o Redis não está pronto (lazyConnect),
-// então checkRateLimit cai no fallback RateLimiterMemory.
+// Redis mockado como indisponível → checkRateLimit cai no fallback RateLimiterMemory
+// sem disparar o connect assíncrono do client real (que causava race no teardown).
+vi.mock('@/lib/infrastructure/redis/client', () => ({
+  redisClient: {
+    status: 'close',
+    get: vi.fn(),
+    incrbyfloat: vi.fn(),
+    expire: vi.fn(),
+  },
+  isRedisReady: vi.fn(() => false),
+}));
+
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 describe('checkRateLimit (memory fallback)', () => {
   it('should_allow_first_request_within_limit', async () => {
