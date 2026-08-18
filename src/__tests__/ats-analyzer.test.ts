@@ -47,4 +47,36 @@ describe('analyzeAts', () => {
     await expect(analyzeAts(RESUME, { jobDescription: huge })).rejects.toThrow('Descrição muito longa');
     expect(generateMock).not.toHaveBeenCalled();
   });
+
+  it('should_retry_once_on_timeout_and_succeed', async () => {
+    generateMock
+      .mockRejectedValueOnce(new Error('LLM_TIMEOUT'))
+      .mockResolvedValueOnce({
+        score: 72,
+        summary: 'Bom',
+        strengths: [],
+        missingKeywords: [],
+        formattingIssues: [],
+        recommendations: [],
+      });
+    const result = await analyzeAts(RESUME);
+    expect(result.score).toBe(72);
+    expect(generateMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should_throw_timeout_error_after_two_timeouts', async () => {
+    generateMock.mockRejectedValue(new Error('LLM_TIMEOUT'));
+    await expect(analyzeAts(RESUME)).rejects.toThrow(
+      'A análise ATS demorou mais que o esperado. Tente novamente em instantes.',
+    );
+    expect(generateMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should_throw_generic_error_without_leaking_llm_message', async () => {
+    generateMock.mockRejectedValue(new Error('UPSTREAM_SECRET_ENDPOINT'));
+    await expect(analyzeAts(RESUME)).rejects.toThrow(
+      'Não foi possível analisar o currículo. Tente novamente.',
+    );
+    await expect(analyzeAts(RESUME)).rejects.not.toThrow('UPSTREAM_SECRET_ENDPOINT');
+  });
 });

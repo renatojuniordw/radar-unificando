@@ -30,6 +30,7 @@ import {
   bucketByDay,
   countOccurrences,
   toDayKey,
+  parseDayKey,
   rangeFromDays,
   rangeFromDates,
   resolveAdminRange,
@@ -57,7 +58,7 @@ describe('admin-stats', () => {
   });
 
   describe('toDayKey', () => {
-    it('formata_data_no_fuso_sao_paulo', () => {
+    it('should_format_date_in_sao_paulo_timezone', () => {
       // 2026-08-17T02:59:00Z = 2026-08-16 23:59 em São Paulo
       expect(toDayKey(new Date('2026-08-17T02:59:00Z'))).toBe('2026-08-16');
       expect(toDayKey(new Date('2026-08-17T03:00:00Z'))).toBe('2026-08-17');
@@ -65,7 +66,7 @@ describe('admin-stats', () => {
   });
 
   describe('bucketByDay', () => {
-    it('preenche_dias_vazios_com_zero', () => {
+    it('should_fill_empty_days_with_zero', () => {
       const since = new Date('2026-08-15T03:00:00Z'); // 2026-08-15 00:00 em SP
       const rows = [
         { date: new Date('2026-08-15T10:00:00Z') },
@@ -79,7 +80,7 @@ describe('admin-stats', () => {
       ]);
     });
 
-    it('ignora_linhas_fora_da_janela', () => {
+    it('should_ignore_rows_outside_window', () => {
       const since = new Date('2026-08-15T03:00:00Z');
       const rows = [{ date: new Date('2026-08-14T10:00:00Z') }]; // antes da janela
       const result = bucketByDay(rows, 2, since);
@@ -91,7 +92,7 @@ describe('admin-stats', () => {
   });
 
   describe('countOccurrences', () => {
-    it('conta_e_ordena_por_frequencia_ignorando_vazios', () => {
+    it('should_count_and_sort_by_frequency_ignoring_blanks', () => {
       const result = countOccurrences(['Analista', 'Dev', 'Analista', '  ', 'Dev', 'Dev']);
       expect(result).toEqual([
         { name: 'Dev', count: 3 },
@@ -100,32 +101,55 @@ describe('admin-stats', () => {
     });
   });
 
+  describe('parseDayKey', () => {
+    it('should_parse_day_key_to_sao_paulo_midnight', () => {
+      // '2026-08-17' → meia-noite em SP = 2026-08-17T03:00:00Z
+      expect(parseDayKey('2026-08-17').toISOString()).toBe('2026-08-17T03:00:00.000Z');
+    });
+  });
+
   describe('resolveAdminRange', () => {
-    it('usa_days_quando_informado', () => {
+    it('should_use_days_when_provided', () => {
       const range = resolveAdminRange({ days: '15' });
       expect(range.to.getTime()).toBe(rangeFromDays(15).to.getTime());
       expect(range.from.getTime()).toBe(rangeFromDays(15).from.getTime());
     });
 
-    it('usa_from_to_quando_informados', () => {
+    it('should_use_from_to_when_provided', () => {
       const range = resolveAdminRange({ from: '2026-08-01', to: '2026-08-10' });
       expect(range.from.getTime()).toBe(rangeFromDates('2026-08-01', '2026-08-10').from.getTime());
       expect(range.to.getTime()).toBe(rangeFromDates('2026-08-01', '2026-08-10').to.getTime());
     });
 
-    it('ignora_days_invalido_e_usa_default_30', () => {
+    it('should_fallback_to_30_days_for_invalid_days', () => {
       const range = resolveAdminRange({ days: 'abc' });
       expect(range.from.getTime()).toBe(rangeFromDays(30).from.getTime());
     });
 
-    it('ignora_from_sem_to', () => {
+    it('should_ignore_from_without_to', () => {
       const range = resolveAdminRange({ from: '2026-08-01' });
       expect(range.from.getTime()).toBe(rangeFromDays(30).from.getTime());
+    });
+
+    it('should_ignore_malformed_from_to_pairs', () => {
+      const range = resolveAdminRange({ from: '2026-08-01', to: '10/08/2026' });
+      expect(range.from.getTime()).toBe(rangeFromDays(30).from.getTime());
+    });
+
+    it('should_accept_days_boundary_values_1_and_3650', () => {
+      expect(resolveAdminRange({ days: '1' }).from.getTime()).toBe(rangeFromDays(1).from.getTime());
+      expect(resolveAdminRange({ days: '3650' }).from.getTime()).toBe(rangeFromDays(3650).from.getTime());
+    });
+
+    it('should_reject_days_outside_1_to_3650_and_use_default_30', () => {
+      expect(resolveAdminRange({ days: '0' }).from.getTime()).toBe(rangeFromDays(30).from.getTime());
+      expect(resolveAdminRange({ days: '3651' }).from.getTime()).toBe(rangeFromDays(30).from.getTime());
+      expect(resolveAdminRange({ days: '15.5' }).from.getTime()).toBe(rangeFromDays(30).from.getTime());
     });
   });
 
   describe('getAdminStats', () => {
-    it('monta_summary_series_e_top', async () => {
+    it('should_build_summary_series_and_top', async () => {
       mockAdminRepository.countUsers.mockResolvedValue(10);
       mockAdminRepository.countUsersSince.mockResolvedValue(1);
       mockAdminRepository.countLoginsSince.mockResolvedValue(2);
@@ -174,7 +198,7 @@ describe('admin-stats', () => {
       ]);
     });
 
-    it('retorna_zeros_quando_sem_dados', async () => {
+    it('should_return_zeros_when_no_data', async () => {
       const stats = await getAdminStats(rangeFromDays(30));
       expect(stats.summary).toEqual({
         totalUsers: 0,
@@ -192,6 +216,25 @@ describe('admin-stats', () => {
       expect(stats.top.toolUsage).toEqual([]);
       expect(stats.top.topTerms).toEqual([]);
       expect(stats.top.topCompanies).toEqual([]);
+    });
+
+    it('should_discard_null_timestamps_from_time_series', async () => {
+      mockAdminRepository.loginsSince.mockResolvedValue([{ lastLoginAt: null }]);
+      mockAdminRepository.searchesSince.mockResolvedValue([
+        { startedAt: null },
+        { startedAt: new Date('2026-08-17T10:00:00Z') },
+      ]);
+      const stats = await getAdminStats(rangeFromDays(3));
+      expect(stats.timeSeries.loginsPerDay.every((d) => d.count === 0)).toBe(true);
+      const withEvent = stats.timeSeries.searchesPerDay.filter((d) => d.count > 0);
+      expect(withEvent).toHaveLength(1);
+    });
+
+    it('should_limit_top_terms_and_companies_to_50', async () => {
+      const manyQueries = Array.from({ length: 60 }, (_, i) => ({ queries: [`termo-${i}`], companies: [] }));
+      mockAdminRepository.searchLogSince.mockResolvedValue(manyQueries as any);
+      const stats = await getAdminStats(rangeFromDays(30));
+      expect(stats.top.topTerms).toHaveLength(50);
     });
   });
 });

@@ -17,7 +17,7 @@ describe('createChatTools.recommend_courses', () => {
     profileMock.mockReset();
   });
 
-  it('deve_retornar_cursos_estruturados_para_skills_tech', async () => {
+  it('should_return_structured_udemy_courses_for_tech_skills', async () => {
     profileMock.mockResolvedValue({
       area: 'Desenvolvimento',
       currentRole: 'Dev',
@@ -40,7 +40,7 @@ describe('createChatTools.recommend_courses', () => {
     }
   });
 
-  it('deve_retornar_cursos_udemy_para_skill_de_area_geral', async () => {
+  it('should_return_udemy_courses_for_general_area_skill', async () => {
     profileMock.mockResolvedValue({
       area: 'Administrativo',
       currentRole: 'Assistente',
@@ -57,7 +57,7 @@ describe('createChatTools.recommend_courses', () => {
     expect(result.cursos[0].plataforma).toBe('Udemy');
   });
 
-  it('deve_funcionar_sem_perfil_logado', async () => {
+  it('should_work_without_logged_in_profile', async () => {
     profileMock.mockResolvedValue(null);
 
     const tools = createChatTools('user-1');

@@ -85,4 +85,21 @@ describe('extractSkillsFromResume', () => {
       'Não foi possível extrair as skills',
     );
   });
+
+  it('should replace resume text placeholder in prompt', async () => {
+    vi.mocked(generate).mockResolvedValueOnce({
+      skills: ['Python'],
+      experienceYears: null,
+      seniority: null,
+      education: [],
+      currentRole: null,
+      area: null,
+      extractionError: null,
+    });
+
+    await extractSkillsFromResume('## Skills\nPython');
+    const prompt = vi.mocked(generate).mock.calls[0][1] as string;
+    expect(prompt).not.toContain('{{RESUME_TEXT}}');
+    expect(prompt).toContain('## Skills\nPython');
+  });
 });

@@ -20,7 +20,7 @@ import { getAdminUsers } from '@/lib/core/admin/admin-users';
 describe('getAdminUsers', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('combina_usuarios_com_consumo', async () => {
+  it('should_combine_users_with_consumption', async () => {
     mockAdminRepository.listUsers.mockResolvedValue([
       { id: 'u1', email: 'a@b.com', name: 'A', role: 'admin', createdAt: new Date(), lastLoginAt: new Date() },
       { id: 'u2', email: 'c@d.com', name: null, role: 'user', createdAt: new Date(), lastLoginAt: null },
