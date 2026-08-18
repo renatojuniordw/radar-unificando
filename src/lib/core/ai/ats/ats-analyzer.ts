@@ -59,6 +59,17 @@ export type AtsAnalysis = z.infer<typeof atsSchema>;
 
 const PROMPT = ATS_ANALYZER_PROMPT;
 
+const GENERATE_TIMEOUT_MS = 25_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("LLM_TIMEOUT")), ms),
+    ),
+  ]);
+}
+
 export interface AnalyzeAtsOptions {
   jobDescription?: string;
   traceId?: string;
@@ -90,14 +101,27 @@ ${opts.jobDescription}
     : ""
 }`;
 
-  const raw = await generate(atsSchema, prompt, { maxOutputTokens: 1200 });
-  const analysis = normalizeAnalysis(raw);
-  logAiEvent("ats_analysis", {
-    traceId: opts?.traceId,
-    score: analysis.score,
-    success: true,
-  });
-  return analysis;
+  try {
+    const raw = await withTimeout(
+      generate(atsSchema, prompt, { maxOutputTokens: 3500 }),
+      GENERATE_TIMEOUT_MS,
+    );
+    const analysis = normalizeAnalysis(raw);
+    logAiEvent("ats_analysis", {
+      traceId: opts?.traceId,
+      score: analysis.score,
+      success: true,
+    });
+    return analysis;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logAiEvent("ats_analysis", {
+      traceId: opts?.traceId,
+      success: false,
+      error: message,
+    });
+    throw err;
+  }
 }
 
 /** Deduplica keywords e skillScores por forma normalizada (sinônimos/variações). */

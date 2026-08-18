@@ -3,12 +3,9 @@ import { getAdminStats, resolveAdminRange } from '@/lib/core/admin/admin-stats';
 import { formatDayShort } from '@/lib/core/admin/date-format';
 import { getGlobalBudgetStatus } from '@/lib/infrastructure/redis/global-budget';
 import { SectionEyebrow } from '@/components/ui/section-eyebrow';
-import { StatCard } from '@/components/admin/stat-card';
 import { AutoRefresh } from '@/components/admin/auto-refresh';
 import { DateRangeFilter } from '@/components/admin/date-range-filter';
-import { SeriesChart } from '@/components/admin/charts/series-chart';
-import { CategoryBarChart } from '@/components/admin/charts/category-bar-chart';
-import { TopDataTable } from '@/components/admin/data-table';
+import { AdminDashboardClient } from '@/components/admin/admin-dashboard-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,14 +27,6 @@ export default async function AdminDashboardPage({
   const params = await searchParams;
   const range = resolveAdminRange(params);
   const [stats, budget] = await Promise.all([getAdminStats(range), getGlobalBudgetStatus()]);
-
-  const { anonymousSearchesToday, searchesToday } = stats.summary;
-  const loggedSearchesToday = searchesToday - anonymousSearchesToday;
-
-  const searchesPerDay = stats.timeSeries.searchesPerDay.map((d) => ({
-    name: d.date,
-    count: d.count,
-  }));
 
   const periodLabel =
     params.from && params.to
@@ -61,60 +50,7 @@ export default async function AdminDashboardPage({
 
       <DateRangeFilter days={Number(params.days) || 30} from={params.from} to={params.to} />
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-          gap: 16,
-          marginBottom: 24,
-        }}
-      >
-        <StatCard label="Usuários totais" value={stats.summary.totalUsers} />
-        <StatCard label="Cadastros hoje" value={stats.summary.usersToday} />
-        <StatCard label="Logins hoje" value={stats.summary.loginsToday} />
-        <StatCard
-          label="Buscas hoje"
-          value={searchesToday}
-          detail={`${anonymousSearchesToday} anônimas · ${loggedSearchesToday} logadas`}
-        />
-        <StatCard label="Buscas com erro hoje" value={stats.summary.failedSearchesToday} />
-        <StatCard label="Vagas encontradas hoje" value={stats.summary.jobsFoundToday} />
-        <StatCard label="Mensagens chat hoje" value={stats.summary.chatMessagesToday} />
-        <StatCard label="Tokens usados hoje" value={stats.summary.tokensToday} />
-        <StatCard
-          label="Custo IA hoje"
-          value={`$${budget.usedUsd.toFixed(2)}`}
-          detail={`de $${budget.limitUsd.toFixed(2)}`}
-          progress={budget.ratio * 100}
-        />
-        <StatCard label="Cliques em cursos hoje" value={stats.summary.courseClicksToday} />
-        <StatCard label="Tokens de extensão" value={stats.summary.extensionTokens} />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 24,
-          marginBottom: 24,
-        }}
-      >
-        <SeriesChart title={`Usuários por dia (${periodLabel})`} data={stats.timeSeries.usersPerDay} />
-        <SeriesChart title={`Logins por dia (${periodLabel})`} data={stats.timeSeries.loginsPerDay} />
-        <CategoryBarChart title={`Buscas por dia (${periodLabel})`} data={searchesPerDay} dateLabels />
-        <CategoryBarChart title="Ferramentas do chat mais usadas" data={stats.top.toolUsage} horizontal />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 24,
-        }}
-      >
-        <TopDataTable title={`Top termos pesquisados (${periodLabel})`} data={stats.top.topTerms} />
-        <TopDataTable title={`Top empresas pesquisadas (${periodLabel})`} data={stats.top.topCompanies} />
-      </div>
+      <AdminDashboardClient stats={stats} budget={budget} periodLabel={periodLabel} />
 
       <AutoRefresh />
     </>
