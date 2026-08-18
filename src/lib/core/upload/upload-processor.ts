@@ -27,6 +27,11 @@ export async function processUploadJob(
       resumeExtractionCache.set(hash, extracted);
     }
 
+    if (extracted.extractionError) {
+      uploadJobStore.fail(jobId, `Não foi possível extrair os dados do currículo: ${extracted.extractionError}`);
+      return;
+    }
+
     const result: UploadJobResult = {
       skills: extracted.skills,
       experienceYears: extracted.experienceYears,

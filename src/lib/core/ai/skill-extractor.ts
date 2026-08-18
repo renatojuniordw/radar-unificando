@@ -14,9 +14,13 @@ export async function extractSkillsFromResume(
   const start = performance.now();
 
   try {
+    const promptText = EXTRACT_PROMPT.includes('{{RESUME_TEXT}}')
+      ? EXTRACT_PROMPT.replace('{{RESUME_TEXT}}', markdownText.slice(0, MAX_RESUME_CHARS))
+      : EXTRACT_PROMPT + '\n\n' + markdownText.slice(0, MAX_RESUME_CHARS);
+
     const object = await generate(
       resumeExtractionSchema,
-      EXTRACT_PROMPT + '\n\n' + markdownText.slice(0, MAX_RESUME_CHARS),
+      promptText,
       { maxOutputTokens: 4000 },
     );
 
@@ -28,7 +32,8 @@ export async function extractSkillsFromResume(
       experienceYears: object.experienceYears,
       seniority: object.seniority,
       education: object.education,
-      success: true,
+      extractionError: object.extractionError,
+      success: !object.extractionError,
     });
 
     return object;

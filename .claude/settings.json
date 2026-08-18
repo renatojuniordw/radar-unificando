@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(curl -s http://localhost:11010/cursos/python -o /tmp/skill.html)"
-    ]
-  }
-}
