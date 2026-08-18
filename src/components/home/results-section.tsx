@@ -3,6 +3,7 @@
 import { memo, useCallback } from "react";
 import { Container, Box, Typography, Chip, CircularProgress } from "@mui/material";
 import { JobTable } from "@/components/job-table/job-table";
+import { useSnackbar } from "@/hooks/useSnackbar";
 import type { Job } from "@/lib/types/job";
 
 interface ResultsSectionProps {
@@ -23,6 +24,31 @@ interface ResultsSectionProps {
   onAnalyzeAts: (job: Job) => void;
 }
 
+async function exportCsv(showSnackbar: (message: string, severity: "success" | "error") => void) {
+  try {
+    const res = await fetch("/export?format=csv");
+    if (res.status === 401) {
+      showSnackbar("Você precisa estar logado para exportar as vagas.", "error");
+      return;
+    }
+    if (!res.ok) {
+      showSnackbar("Erro ao exportar vagas. Tente novamente.", "error");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `radar-unificando-vagas-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    showSnackbar("Erro ao exportar vagas. Tente novamente.", "error");
+  }
+}
+
 export const ResultsSection = memo(function ResultsSection({
   recommendedMode,
   jobs,
@@ -36,9 +62,11 @@ export const ResultsSection = memo(function ResultsSection({
   generatingJobKey,
   onAnalyzeAts,
 }: ResultsSectionProps) {
-  const handleExportCsv = useCallback(() => {
-    window.open("/export?format=csv", "_blank");
-  }, []);
+  const { show: showSnackbar } = useSnackbar();
+
+  const handleExportCsv = useCallback(async () => {
+    await exportCsv(showSnackbar);
+  }, [showSnackbar]);
 
   return (
     <Box className="section-white">

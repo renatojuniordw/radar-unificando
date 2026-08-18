@@ -21,7 +21,7 @@ interface Props {
   jobs: Job[];
   loading: boolean;
   roleCategories: string[];
-  onExportCsv: () => void;
+  onExportCsv: () => Promise<void>;
   onFilterChange: (filters: { platform?: string; role?: string; search?: string }) => void;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;
@@ -53,12 +53,15 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
     handleSearch,
   } = useJobFilters({ onFilterChange });
 
-  function handleExport() {
+  async function handleExport() {
     if (exporting) return;
     setExporting(true);
     trackExportCsv(jobs.length);
-    onExportCsv();
-    setTimeout(() => setExporting(false), 2000);
+    try {
+      await onExportCsv();
+    } finally {
+      setExporting(false);
+    }
   }
 
   // Reset mobile page when filters or search change
