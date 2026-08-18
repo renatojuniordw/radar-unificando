@@ -4,7 +4,8 @@
 > As seções originais de `ScoringEngine`, `SkillTaxonomy` e `State Machine`
 > foram removidas — esses módulos **não foram implementados** na v2/redesign.
 > O matching atual é `src/lib/core/matching/recommendation.ts` (token overlap) e a análise
-> de fit é feita via chat IA (`job-analyzer.ts`). A **adaptação de currículo** (`ResumeAdapter`)
+> de fit é feita via chat IA (`job-analyzer.ts`, chamado pela tool `tools/analyze-job-fit.ts`).
+> A **adaptação de currículo** (`ResumeAdapter`)
 > foi re-implementada como tool `generate_resume` + `POST /api/resume/generate` (PDF).
 > Os modelos `Application`/`ApplicationLog` existem apenas no schema Prisma, sem API nem UI.
 

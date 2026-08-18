@@ -9,6 +9,30 @@ validação, cache e chamada ao LLM (que permanece nos módulos de origem: `job-
 `cover-letter-generator.ts`, `interview-questions.ts`, `skill-extractor.ts`, `chat/route.ts`,
 `core/ai/ats/ats-analyzer.ts`, `core/ai/query-expansion.ts`).
 
+### Ferramentas do chat (`tools/`)
+
+As tools do assistente foram extraídas de `chat-tools.ts` para `src/lib/core/ai/tools/` — um
+arquivo por tool, com `chat-tools.ts` virando apenas um **agregador fino** (`createChatTools`)
+que monta o objeto de tools a partir dos módulos:
+
+| Tool | Módulo |
+|------|--------|
+| `search_jobs` | `tools/search-jobs.ts` |
+| `get_my_profile` | `tools/get-my-profile.ts` |
+| `analyze_ats_score` | `tools/analyze-ats-score.ts` |
+| `analyze_job_fit` | `tools/analyze-job-fit.ts` |
+| `compare_jobs` | `tools/compare-jobs.ts` |
+| `generate_cover_letter` | `tools/generate-cover-letter.ts` |
+| `generate_resume` | `tools/generate-resume.ts` |
+| `get_interview_questions` | `tools/get-interview-questions.ts` |
+| `recommend_courses` | `tools/recommend-courses.ts` |
+| helpers (cache, formatação, dedup in-flight) | `tools/shared.ts` |
+
+Cada tool declara seu próprio schema Zod (validação de input) e usa os módulos de domínio
+(`job-analyzer.ts`, `cover-letter-generator.ts`, `interview-questions.ts`,
+`resume-adaptation-generator.ts`, `ats/ats-service.ts`, `courses/`) — a separação segue o
+mesmo princípio dos prompts: lógica de negócio fora do arquivo da tool.
+
 O bloco `REGRAS DE SEGURANÇA (não negociáveis)` (defesa contra prompt injection, presente em
 job-analyzer/cover-letter/interview-questions/ats-analyzer) é gerado por um helper compartilhado em
 `prompts/shared/security-rules.ts`, para evitar que uma correção nessa defesa precise ser replicada
@@ -45,7 +69,8 @@ Limite de input: `MAX_RESUME_CHARS = 12000`.
 ### Robustez do LLM (`llm-provider.ts`)
 
 - **Retry automático** em `JSON não encontrado na resposta` **e** em timeout (`AbortError`/`TimeoutError`): uma segunda chamada com mais tokens (`*2`, mín. 4000) e um nudge mais forte ("responda IMEDIATAMENTE apenas com o JSON").
-- **Timeout**: `LLM_TIMEOUT_MS = 120_000` via `AbortSignal.timeout`.
+- **Timeout global**: `LLM_TIMEOUT_MS = 120_000` via `AbortSignal.timeout` no `generate()` (default de rede).
+- **Timeouts por módulo** (`shared/with-timeout.ts`): módulos com latência crítica aplicam um timeout **menor** que o global, passando um `AbortSignal` ao `generate()` — quando estoura, o fetch subjacente é **realmente abortado** (não apenas a promise abandonada). Usado no ATS (35s, com 1 retry), `resume-adaptation-generator` e `interview-questions` (20s).
 - **Cache**: `resume-extraction-cache.ts` — SHA-256 do markdown, TTL 1h, máx. 200 entradas in-memory.
 
 ### Campos Extraídos do Currículo
@@ -71,7 +96,9 @@ Chat UI → POST /api/chat (streaming)
   → compare_jobs(2-5 vagas) → comparação lado a lado
 ```
 
-Auxiliares (sem rota própria, usados pelas tools; prompt de cada um em `prompts/<nome>.ts`):
+Auxiliares (sem rota própria, chamados pelas tools `tools/analyze-job-fit.ts`,
+`tools/generate-cover-letter.ts` e `tools/get-interview-questions.ts`; prompt de cada um
+em `prompts/<nome>.ts`):
 - `job-analyzer.ts` — `analyzeJobFit()` (limites: resumo 30–15000 chars, descrição ≤ 8000, skills ≤ 60, timeout 20s)
 - `cover-letter-generator.ts` — `generateCoverLetter()` (carta ≤ 3000 chars, ≤ 10 key points)
 - `interview-questions.ts` — `generateInterviewQuestions()` (até 8 perguntas categorizadas)
@@ -86,9 +113,27 @@ Além da análise de fit via chat, existe uma rota dedicada **`POST /api/ats/ana
 - `ats-analyzer.ts` (LLM) + `ats-heuristics.ts` (heurísticas) + `ats-service.ts` (cache).
 - Superfícies: drawer na `/busca` (botão por vaga), chat (tool), extensão Chrome.
 
+**Prompt v4** (`prompts/ats-analyzer.ts`, `ATS_ANALYZER_PROMPT_VERSION = 'v4'`):
+- **Não-discriminação obrigatória**: nome, gênero, idade/faixa etária inferida, estado civil,
+  nacionalidade, foto ou endereço **nunca** influenciam score/strengths/missingKeywords/
+  recommendations/skillScores — a avaliação é estritamente por mérito técnico. Foto/dados
+  demográficos podem ser citados apenas em `formattingIssues` como boa prática de ATS.
+- **Casos degenerados**: texto não reconhecível como currículo → `score: 0`, `summary`
+  explicando e listas vazias.
+- **Rubrica**: pesos fixos (keywords 30, resultados 20, formatação 20, contato 15, estrutura e
+  densidade 10, e-mail 5); "estrutura e densidade" substituiu "comprimento em páginas" (o
+  modelo não deve inferir número de páginas).
+- **Robustez**: `ats-analyzer.ts` usa `shared/with-timeout.ts` (35s) com **1 retry** em timeout
+  e mensagens de erro genéricas ao chamador (o `err.message` do provider nunca vaza).
+- **Cache**: `ats-service.ts` — `buildAtsResumeInput(profile)` combina o currículo bruto com os
+  campos estruturados do perfil (skills, senioridade, cargo, área, formação, experiência), de
+  modo que edições na tela de perfil mudem a chave de cache (não serve resultado obsoleto);
+  `inFlightAnalyses` deduplica chamadas concorrentes (mesmo usuário+currículo+vaga aguardam a
+  mesma Promise).
+
 ### Adaptação de Currículo (`generate_resume`)
 
-Implementada como tool do chat (`chat-tools.ts`) e como geração de PDF:
+Implementada como tool do chat (`tools/generate-resume.ts`) e como geração de PDF:
 
 - **Tool `generate_resume`** — gera uma versão do currículo adaptada à vaga
   (título, resumo, skills, experiência) com **veracidade garantida em 3 camadas**:
@@ -190,7 +235,7 @@ O `POST /api/chat` aplica três camadas de proteção:
 |------|-------|-----------|
 | `search_jobs` | query | 2-200 chars, regex `[a-zA-Z0-9\s\-_.]` |
 | `search_jobs` | limit | 1-20 (default 10) — descrição truncada em 800 chars e embrulhada em `<untrusted_content>`; links mortos (404/410) são filtrados via `job-link-filter` |
-| `analyze_ats_score` | jobDescription | opcional, máx 8000 chars — usa o currículo do perfil (cache por versão) |
+| `analyze_ats_score` | jobDescription | opcional, máx 8000 chars — usa `buildAtsResumeInput` (currículo + campos do perfil; cache por versão) |
 | `analyze_job_fit` | jobTitle | 1-200 chars, trim |
 | `analyze_job_fit` | jobDescription | 10-5000 chars, trim |
 

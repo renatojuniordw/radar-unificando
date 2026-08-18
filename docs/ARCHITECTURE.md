@@ -30,10 +30,12 @@ Application/Core Layer
   ├── core/upload/          → upload-job-store (in-memory) + upload-processor (background)
   ├── core/parsing/         → pdf-to-markdown + resume-extraction-cache (hash, TTL 1h)
   ├── core/matching/        → recommendation.ts (token overlap)
-  ├── core/ai/              → skill-extractor, chat-tools, job-analyzer, cover-letter,
-  │                           interview-questions, query-expansion, pii-redactor,
-  │                           llm-provider, chat-guard
-  ├── ats/                  → ats-analyzer (LLM), ats-heuristics, ats-service (cache)
+  ├── core/ai/              → skill-extractor, chat-tools (agregador), tools/ (9 tools),
+  │                           job-analyzer, cover-letter, interview-questions,
+  │                           resume-adaptation-generator, query-expansion, pii-redactor,
+  │                           llm-provider, chat-guard, shared/with-timeout (AbortSignal)
+  ├── ats/                  → ats-analyzer (LLM v4), ats-heuristics, ats-service (cache,
+  │                           buildAtsResumeInput, in-flight dedup)
   ├── core/mcp/             → gupy-client (JSON-RPC, paginado por offset)
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine

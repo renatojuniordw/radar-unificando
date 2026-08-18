@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
+import { withTimeout } from './shared/with-timeout';
 import { INTERVIEW_QUESTIONS_PROMPT } from './prompts/interview-questions';
 
 const LIMITS = {
@@ -33,15 +34,6 @@ export type InterviewQuestions = z.infer<typeof questionsSchema>;
 const PROMPT = INTERVIEW_QUESTIONS_PROMPT;
 
 const GENERATE_TIMEOUT_MS = 20_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('LLM_TIMEOUT')), ms),
-    ),
-  ]);
-}
 
 export async function generateInterviewQuestions(
   resumeText: string,
@@ -87,7 +79,7 @@ ${safeResume}
 
   try {
     const object = await withTimeout(
-      generate(questionsSchema, fullPrompt, { maxOutputTokens: 1800 }),
+      (signal) => generate(questionsSchema, fullPrompt, { maxOutputTokens: 1800, signal }),
       GENERATE_TIMEOUT_MS,
     );
 

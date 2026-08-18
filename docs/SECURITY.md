@@ -13,7 +13,7 @@
 | SQL Injection | Prevenido pelo Prisma ORM (queries parametrizadas) |
 | Validação de Upload | `api/upload/route.ts` — magic bytes `%PDF-` (rejeita arquivo renomeado), tamanho ≤ 5MB, arquivo vazio |
 | Prompt Injection | `api/chat/route.ts` — sanitização de input + detecção de padrões + hardening do prompt |
-| Validação de Tools | `chat-tools.ts` — Zod schema com limites de tamanho e regex |
+| Validação de Tools | `src/lib/core/ai/tools/` — Zod schema por tool com limites de tamanho e regex |
 | Token de Extensão | `extension-token.ts` — token 64-hex entregue 1x, apenas SHA-256 armazenado (`ExtensionToken`) |
 | Origem da Extensão | `middleware.ts` — `Origin: chrome-extension://<id>` aceita somente se igual a `EXTENSION_ORIGIN` (nunca refletida) |
 
@@ -66,9 +66,9 @@ Aplicada no `POST /api/chat` (`src/app/api/chat/route.ts`):
 1. **Sanitização de input**: mensagens truncadas em 2000 chars, tags HTML (`<>`) removidas
 2. **Detecção de padrões suspeitos**: regex para tentativas de jailbreak em PT e EN (`ignore instructions`, `system prompt`, `you are now`, `act as`, `developer mode`, etc. — `src/lib/core/ai/chat-guard.ts`). Gera log `[AI_LOG] suspicious_activity`
 3. **Hardening do system prompt**: seção `SEGURANÇA E LIMITES` que proíbe revelar instruções internas, executar bypass e desviar do foco
-4. **Validação de inputs das tools** via Zod (`src/lib/core/ai/chat-tools.ts`):
+4. **Validação de inputs das tools** via Zod (um schema por tool em `src/lib/core/ai/tools/`):
    - `search_jobs.query`: 2-200 chars, regex `[a-zA-Z0-9\s\-_.]`
-   - `search_jobs`: máx 2 chamadas por mensagem (enforcement no closure do `createChatTools`)
+   - `search_jobs`: máx 2 chamadas por mensagem (enforcement no closure do `createSearchJobsTool`)
    - `analyze_job_fit.jobTitle`: 1-200 chars
    - `analyze_job_fit.jobDescription`: 10-5000 chars
 5. **Dados externos como dados**: descrições de vaga são truncadas em 800 chars e embrulhadas em `<untrusted_content>...</untrusted_content>` — o system prompt instrui tratá-las como conteúdo, nunca como comando.

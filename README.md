@@ -20,6 +20,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Análise ATS dedicada** — score 0-100 do currículo × vaga, com palavras-chave faltando e recomendações
 - **Currículo adaptado (PDF)** — gera uma versão do seu currículo adaptada à vaga, com download direto em PDF
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
+- **Painel Admin** — métricas de usuários, buscas e uso de IA com gráficos (Recharts), filtro por período, tabela de usuários e auto-refresh — acesso restrito a `role=admin`
 - **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Status: EM BREVE** — em homologação na Chrome Web Store
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
@@ -97,19 +98,23 @@ src/
   app/
     (auth)/        → Login e registro
     (dashboard)/   → Perfil do usuário, conexão da extensão (/extensao/conectar)
+    admin/         → Painel admin (métricas, usuários) — restrito por role, noindex
     api/           → API routes (pipeline, chat, profile, vagas, upload, ats, courses, resume, extension…)
+    busca/         → Busca com resultados e análise ATS (busca-client.tsx, client-side)
     export/        → Export CSV/JSON
     extensao/      → Página pública da extensão (marketing)
     termos/        → Termos LGPD
   components/
     home/          → Hero, WhyUse, FAQ, Results, Loading
+    busca/         → Busca header, recomendações de curso lateral
     profile/       → Import, Review, Completion
     layout/        → Header, Footer, UserMenu
-    seo/           → Structured data, JobPosting schema
+    seo/           → Structured data, JobPosting schema, Breadcrumb schema
   contexts/        → Chat assistant context
-  hooks/           → Custom hooks (useJobSearch, useProfile)
+  hooks/           → Custom hooks (useJobSearch, useProfile, useChatConversation)
   lib/
-    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI, extension, ats)
+    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI com tools/ e
+                     prompts/, extension, ats, admin)
     infrastructure/ → Infra (db, repositories, redis, storage, security, ui)
 ```
 

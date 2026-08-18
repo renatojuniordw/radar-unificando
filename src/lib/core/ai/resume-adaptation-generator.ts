@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeUntrusted } from './shared/sanitize';
+import { withTimeout } from './shared/with-timeout';
 import { RESUME_ADAPTATION_PROMPT } from './prompts/resume-adaptation';
 
 const LIMITS = {
@@ -131,15 +132,6 @@ export type AdaptedResume = z.infer<typeof resumeSchema>;
 
 const GENERATE_TIMEOUT_MS = 20_000;
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('LLM_TIMEOUT')), ms),
-    ),
-  ]);
-}
-
 export interface GenerateAdaptedResumeOptions {
   jobCompany?: string;
   jobLocation?: string;
@@ -203,7 +195,7 @@ ${safeResume}
 
   try {
     const object = await withTimeout(
-      generate(resumeSchema, fullPrompt, { maxOutputTokens: 3000 }),
+      (signal) => generate(resumeSchema, fullPrompt, { maxOutputTokens: 3000, signal }),
       GENERATE_TIMEOUT_MS,
     );
 
