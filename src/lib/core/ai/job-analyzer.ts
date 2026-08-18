@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
+import { withTimeout } from './shared/with-timeout';
 import { JOB_ANALYZER_PROMPT } from './prompts/job-analyzer';
 
 // ---------------------------------------------------------------------------
@@ -46,16 +47,7 @@ export type JobAnalysis = z.infer<typeof analysisSchema>;
 
 const PROMPT = JOB_ANALYZER_PROMPT;
 
-const GENERATE_TIMEOUT_MS = 25_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('LLM_TIMEOUT')), ms),
-    ),
-  ]);
-}
+const GENERATE_TIMEOUT_MS = 35_000;
 
 export async function analyzeJobFit(
   resumeText: string,
@@ -116,7 +108,7 @@ ${safeResume}
 
   const runAnalysis = () =>
     withTimeout(
-      generate(analysisSchema, fullPrompt, { maxOutputTokens: 3500 }),
+      (signal) => generate(analysisSchema, fullPrompt, { maxOutputTokens: 3500, signal }),
       GENERATE_TIMEOUT_MS,
     );
 

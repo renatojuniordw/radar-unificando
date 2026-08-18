@@ -24,6 +24,7 @@ export const chatLlm = provider.chatModel(modelName);
 
 interface LlmOptions {
   maxOutputTokens?: number;
+  signal?: AbortSignal;
 }
 
 export async function generate<T extends z.ZodType>(
@@ -46,7 +47,10 @@ export async function generate<T extends z.ZodType>(
         schema,
         prompt +
           '\n\nIMPORTANTE: não pense em voz alta nem explique seu raciocínio. Responda IMEDIATAMENTE apenas com o JSON, sem nenhum texto antes.',
-        { maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 3, 8000) },
+        {
+          maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 3, 8000),
+          signal: opts?.signal,
+        },
       );
     }
     throw err;
@@ -79,7 +83,9 @@ async function callLlm<T extends z.ZodType>(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(bodyPayload),
-    signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+    signal: opts?.signal
+      ? AbortSignal.any([opts.signal, AbortSignal.timeout(LLM_TIMEOUT_MS)])
+      : AbortSignal.timeout(LLM_TIMEOUT_MS),
   });
 
   // Fallback if provider doesn't support response_format
@@ -92,7 +98,9 @@ async function callLlm<T extends z.ZodType>(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(bodyPayload),
-      signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+      signal: opts?.signal
+      ? AbortSignal.any([opts.signal, AbortSignal.timeout(LLM_TIMEOUT_MS)])
+      : AbortSignal.timeout(LLM_TIMEOUT_MS),
     });
   }
 

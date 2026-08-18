@@ -8,6 +8,7 @@ import { z } from "zod";
 import { generate } from "../llm-provider";
 import { logAiEvent } from "../ai-logger";
 import { normalizeKeyword } from "./normalize";
+import { withTimeout } from "../shared/with-timeout";
 import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
 
 const LIMITS = {
@@ -59,17 +60,7 @@ export type AtsAnalysis = z.infer<typeof atsSchema>;
 
 const PROMPT = ATS_ANALYZER_PROMPT;
 
-const GENERATE_TIMEOUT_MS = 25_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  let timerId: NodeJS.Timeout;
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    timerId = setTimeout(() => reject(new Error("LLM_TIMEOUT")), ms);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    clearTimeout(timerId);
-  });
-}
+const GENERATE_TIMEOUT_MS = 35_000;
 
 export interface AnalyzeAtsOptions {
   jobDescription?: string;
@@ -104,7 +95,7 @@ ${opts.jobDescription}
 
   const runAnalysis = () =>
     withTimeout(
-      generate(atsSchema, prompt, { maxOutputTokens: 3500 }),
+      (signal) => generate(atsSchema, prompt, { maxOutputTokens: 3500, signal }),
       GENERATE_TIMEOUT_MS,
     );
 
