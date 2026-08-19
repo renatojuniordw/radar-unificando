@@ -128,6 +128,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
           onClick={() => onAnalyzeAts(job)}
           role="button"
           tabIndex={0}
+          aria-label={`Analisar ATS para ${job.title}`}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -164,6 +165,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
           onClick={() => onGenerateResume(job)}
           role="button"
           tabIndex={0}
+          aria-label={`Gerar currículo para ${job.title}`}
           aria-disabled={generatingJobKey === `${job.company}|${job.title}`}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
