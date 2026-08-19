@@ -18,14 +18,19 @@ export async function processUploadJob(
   userId: string,
   input: { rawText: string; markdown: string; traceId?: string; profileSource?: string },
 ): Promise<void> {
+  const start = performance.now();
   try {
     const hash = hashContent(input.markdown);
 
     let extracted: ResumeExtractionResult | null = resumeExtractionCache.get(hash);
+    const fromCache = !!extracted;
     if (!extracted) {
       extracted = await extractSkillsFromResume(input.markdown, input.traceId);
       resumeExtractionCache.set(hash, extracted);
     }
+
+    const latency = (performance.now() - start).toFixed(0);
+    console.log(`[upload] job=${jobId} cache=${fromCache} latency=${latency}ms skills=${extracted.skills?.length}`);
 
     if (extracted.extractionError) {
       uploadJobStore.fail(jobId, `Não foi possível extrair os dados do currículo: ${extracted.extractionError}`);
@@ -60,7 +65,8 @@ export async function processUploadJob(
 
     uploadJobStore.complete(jobId, result);
   } catch (error) {
-    console.error('[upload] AI extraction failed:', error);
+    const latency = (performance.now() - start).toFixed(0);
+    console.error(`[upload] AI extraction failed (${latency}ms):`, error);
     const message = error instanceof Error ? error.message : 'Falha ao extrair skills via IA';
     uploadJobStore.fail(jobId, message);
   }

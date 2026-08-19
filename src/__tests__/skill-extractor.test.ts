@@ -98,8 +98,9 @@ describe('extractSkillsFromResume', () => {
     });
 
     await extractSkillsFromResume('## Skills\nPython');
-    const prompt = vi.mocked(generate).mock.calls[0][1] as string;
-    expect(prompt).not.toContain('{{RESUME_TEXT}}');
-    expect(prompt).toContain('## Skills\nPython');
+    const prompt = vi.mocked(generate).mock.calls[0][1] as { system: string; user: string };
+    expect(typeof prompt).toBe('object');
+    expect(prompt.user).not.toContain('{{RESUME_TEXT}}');
+    expect(prompt.user).toContain('## Skills\nPython');
   });
 });

@@ -9,6 +9,9 @@ const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
 
 export const LLM_TIMEOUT_MS = 120_000;
 
+/** Prompt como string única ou separado em system + user. */
+export type LlmPrompt = string | { system: string; user: string };
+
 const provider = createOpenAICompatible({
   name: 'llm',
   baseURL,
@@ -26,11 +29,13 @@ export const chatLlm = provider.chatModel(modelName);
 interface LlmOptions {
   maxOutputTokens?: number;
   signal?: AbortSignal;
+  /** Override do timeout interno (default: LLM_TIMEOUT_MS). */
+  timeoutMs?: number;
 }
 
 export async function generate<T extends z.ZodType>(
   schema: T,
-  prompt: string,
+  prompt: LlmPrompt,
   opts?: LlmOptions,
 ): Promise<z.infer<T>> {
   try {
@@ -43,18 +48,21 @@ export async function generate<T extends z.ZodType>(
     // o AbortSignal.timeout em picos de carga, e um único retry costuma passar.
     const isTimeout = isLlmTimeout(err);
     const isMissingJson = err instanceof Error && err.message === 'JSON não encontrado na resposta';
-    if (isMissingJson || isTimeout) {
+    const isTokenLimit = err instanceof Error && err.message === 'LLM_TOKEN_LIMIT';
+    if (isMissingJson || isTimeout || isTokenLimit) {
       // Signal já abortado (ex.: timeout do withTimeout): o retry seria um fetch
       // que aborta na hora — rethrow para o caller decidir (ele retenta com um
       // novo withTimeout). O retry interno continua válido para o timeout de 120s,
       // onde o signal do chamador NÃO está abortado.
       if (opts?.signal?.aborted) throw err;
+      const retryPrompt = isTokenLimit
+        ? buildRetryPrompt(prompt, 'CRITICAL: Start your response with "{" immediately. No reasoning, no explanation, no thinking aloud — ONLY the raw JSON object.')
+        : buildRetryPrompt(prompt, 'não pense em voz alta nem explique seu raciocínio. Responda IMEDIATAMENTE apenas com o JSON, sem nenhum texto antes.');
       return await callLlm(
         schema,
-        prompt +
-          '\n\nIMPORTANTE: não pense em voz alta nem explique seu raciocínio. Responda IMEDIATAMENTE apenas com o JSON, sem nenhum texto antes.',
+        retryPrompt,
         {
-          maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 3, 8000),
+          maxOutputTokens: Math.max((opts?.maxOutputTokens ?? 1500) * 2, 4000),
           signal: opts?.signal,
         },
       );
@@ -65,12 +73,19 @@ export async function generate<T extends z.ZodType>(
 
 async function callLlm<T extends z.ZodType>(
   schema: T,
-  prompt: string,
+  prompt: LlmPrompt,
   opts?: LlmOptions,
 ): Promise<z.infer<T>> {
+  const messages = typeof prompt === 'string'
+    ? [{ role: 'user', content: prompt }]
+    : [
+        { role: 'system', content: prompt.system },
+        { role: 'user', content: prompt.user },
+      ];
+
   const bodyPayload: Record<string, unknown> = {
     model: modelName,
-    messages: [{ role: 'user', content: prompt }],
+    messages,
     stream: false,
     response_format: { type: 'json_object' },
     // Alguns provedores roteiam para modelos de raciocínio que narram
@@ -79,8 +94,12 @@ async function callLlm<T extends z.ZodType>(
     // ignorados silenciosamente (compatível com a spec OpenAI).
     reasoning_effort: 'low',
     chat_template_kwargs: { enable_thinking: false },
-    ...(opts?.maxOutputTokens ? { max_tokens: opts.maxOutputTokens } : {}),
+    // max_completion_tokens inclui reasoning tokens no limite (OpenAI spec).
+    // max_tokens pode não limitar reasoning tokens em modelos deepseek.
+    ...(opts?.maxOutputTokens ? { max_completion_tokens: opts.maxOutputTokens } : {}),
   };
+
+  const timeoutMs = opts?.timeoutMs ?? LLM_TIMEOUT_MS;
 
   let res = await fetch(`${baseURL}/chat/completions`, {
     method: 'POST',
@@ -90,12 +109,14 @@ async function callLlm<T extends z.ZodType>(
     },
     body: JSON.stringify(bodyPayload),
     signal: opts?.signal
-      ? AbortSignal.any([opts.signal, AbortSignal.timeout(LLM_TIMEOUT_MS)])
-      : AbortSignal.timeout(LLM_TIMEOUT_MS),
+      ? AbortSignal.any([opts.signal, AbortSignal.timeout(timeoutMs)])
+      : AbortSignal.timeout(timeoutMs),
   });
 
-  // Fallback if provider doesn't support response_format
-  if (!res.ok && res.status === 400) {
+  // Fallback if provider doesn't support response_format (400 or 403)
+  if (!res.ok && (res.status === 400 || res.status === 403)) {
+    const errBody = await res.text().catch(() => '');
+    console.warn(`[llm-provider] ${res.status} — retrying without response_format:`, errBody.slice(0, 200));
     delete bodyPayload.response_format;
     res = await fetch(`${baseURL}/chat/completions`, {
       method: 'POST',
@@ -105,8 +126,8 @@ async function callLlm<T extends z.ZodType>(
       },
       body: JSON.stringify(bodyPayload),
       signal: opts?.signal
-      ? AbortSignal.any([opts.signal, AbortSignal.timeout(LLM_TIMEOUT_MS)])
-      : AbortSignal.timeout(LLM_TIMEOUT_MS),
+        ? AbortSignal.any([opts.signal, AbortSignal.timeout(timeoutMs)])
+        : AbortSignal.timeout(timeoutMs),
     });
   }
 
@@ -120,9 +141,33 @@ async function callLlm<T extends z.ZodType>(
   const finishReason: string | undefined = data.choices?.[0]?.finish_reason;
   const content: string = choice?.content || choice?.reasoning_content || '';
 
+  // Log token usage para calibrar timeouts e max_tokens
+  const usage = data.usage;
+  if (usage) {
+    console.log('[llm-provider] token_usage:', JSON.stringify({
+      model: modelName,
+      prompt_tokens: usage.prompt_tokens,
+      completion_tokens: usage.completion_tokens,
+      total_tokens: usage.total_tokens,
+      finish_reason: finishReason,
+      max_completion_tokens: opts?.maxOutputTokens,
+    }));
+  }
+
   if (!content) {
     console.error('[llm-provider] Resposta vazia da LLM:', data);
     throw new Error('Resposta vazia da LLM');
+  }
+
+  // Fast-fail: modelo queimou todos os tokens em raciocínio sem gerar JSON
+  if (finishReason === 'length') {
+    console.error('[llm-provider] finishReason=length — tokens esgotados sem gerar JSON:', {
+      model: modelName,
+      maxTokens: opts?.maxOutputTokens,
+      contentLength: content.length,
+      snippet: content.slice(0, 200),
+    });
+    throw new Error('LLM_TOKEN_LIMIT');
   }
 
   try {
@@ -199,4 +244,15 @@ function findBalancedObjects(text: string): string[] {
   }
 
   return results;
+}
+
+/** Adiciona nudge de retry ao prompt, preservando a separação system/user. */
+function buildRetryPrompt(prompt: LlmPrompt, nudge: string): LlmPrompt {
+  if (typeof prompt === 'string') {
+    return prompt + '\n\nIMPORTANTE: ' + nudge;
+  }
+  return {
+    system: prompt.system + '\n\nIMPORTANTE: ' + nudge,
+    user: prompt.user,
+  };
 }

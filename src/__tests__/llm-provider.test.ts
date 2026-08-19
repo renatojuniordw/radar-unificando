@@ -106,15 +106,15 @@ describe('llm-provider.generate', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should_scale_max_output_tokens_by_three_min_8000_on_retry', async () => {
+  it('should_scale_max_output_tokens_by_two_min_4000_on_retry', async () => {
     fetchMock
       .mockResolvedValueOnce(jsonResponse('texto sem json nenhum'))
       .mockResolvedValueOnce(jsonResponse('{"score": 87}'));
     await generate(scoreSchema, 'x', { maxOutputTokens: 1000 });
     const firstBody = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     const retryBody = JSON.parse(fetchMock.mock.calls[1][1].body as string);
-    expect(firstBody.max_tokens).toBe(1000);
-    expect(retryBody.max_tokens).toBe(8000);
+    expect(firstBody.max_completion_tokens).toBe(1000);
+    expect(retryBody.max_completion_tokens).toBe(4000);
   });
 
   it('should_include_reasoning_effort_and_thinking_disable_fields', async () => {
