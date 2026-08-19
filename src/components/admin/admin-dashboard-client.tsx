@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { StatCard } from '@/components/admin/stat-card';
-import { SeriesChart } from '@/components/admin/charts/series-chart';
-import { CategoryBarChart } from '@/components/admin/charts/category-bar-chart';
 import { AdminDashboardTabs, AdminTab } from '@/components/admin/admin-dashboard-tabs';
 import type { AdminStats } from '@/lib/core/admin/admin-stats';
+
+const SeriesChart = dynamic(() => import('@/components/admin/charts/series-chart').then(m => ({ default: m.SeriesChart })), { ssr: false });
+const CategoryBarChart = dynamic(() => import('@/components/admin/charts/category-bar-chart').then(m => ({ default: m.CategoryBarChart })), { ssr: false });
 
 interface Props {
   stats: AdminStats;
@@ -23,10 +25,14 @@ export function AdminDashboardClient({ stats, budget, periodLabel }: Props) {
   const { anonymousSearchesToday, searchesToday } = stats.summary;
   const loggedSearchesToday = searchesToday - anonymousSearchesToday;
 
-  const searchesPerDay = stats.timeSeries.searchesPerDay.map((d) => ({
-    name: d.date,
-    count: d.count,
-  }));
+  const searchesPerDay = useMemo(
+    () =>
+      stats.timeSeries.searchesPerDay.map((d) => ({
+        name: d.date,
+        count: d.count,
+      })),
+    [stats.timeSeries.searchesPerDay],
+  );
 
   return (
     <div>

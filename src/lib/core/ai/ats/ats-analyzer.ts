@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 import { normalizeKeyword } from "./normalize";
+import type { AtsHeuristic } from "./ats-heuristics";
 import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
 import { llmCall } from "../shared/llm-call";
 
@@ -55,6 +56,12 @@ const atsSchema = z.object({
 });
 
 export type AtsAnalysis = z.infer<typeof atsSchema>;
+
+export interface AtsResult {
+  heuristics: AtsHeuristic;
+  analysis: AtsAnalysis;
+  cached: boolean;
+}
 
 const PROMPT = ATS_ANALYZER_PROMPT;
 

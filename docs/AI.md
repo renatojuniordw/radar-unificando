@@ -68,6 +68,8 @@ Limite de input: `MAX_RESUME_CHARS = 12000`.
 
 ### Robustez do LLM (`llm-provider.ts`)
 
+Padrão centralizado: **`llmCall()`** (`shared/llm-call.ts`) — wrapper genérico que separa system/user prompts, aplica timeout, retry e validação Zod. Todos os callers usam `llmCall()` (exceto `skill-extractor`).
+
 - **Retry automático** em `JSON não encontrado na resposta` **e** em timeout (`AbortError`/`TimeoutError`): uma segunda chamada com mais tokens (`*2`, mín. 4000) e um nudge mais forte ("responda IMEDIATAMENTE apenas com o JSON").
 - **Timeout global**: `LLM_TIMEOUT_MS = 120_000` via `AbortSignal.timeout` no `generate()` (default de rede).
 - **Timeouts por módulo** (`shared/with-timeout.ts`): módulos com latência crítica aplicam um timeout **menor** que o global, passando um `AbortSignal` ao `generate()` — quando estoura, o fetch subjacente é **realmente abortado** (não apenas a promise abandonada). Usado no ATS (35s, com 1 retry), `resume-adaptation-generator` e `interview-questions` (20s).

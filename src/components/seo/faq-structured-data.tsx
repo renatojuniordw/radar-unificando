@@ -1,5 +1,3 @@
-'use client';
-
 import { FAQ_ITEMS } from "@/lib/constants/home";
 import { toScriptJson } from "@/lib/core/seo/jsonld";
 

@@ -32,6 +32,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 | UI | MUI 7 + Tailwind v4 |
 | Design | Neo-Brutalism + Premium SaaS |
 | Banco | PostgreSQL via Prisma ORM |
+| Cache/Fila | Redis (rate limiting, cache, locks) |
 | Auth | Auth.js v5 (credentials + JWT + bcrypt) |
 | Scraper Gupy | MCP oficial + REST fallback |
 | AI | Vercel AI SDK (OpenAI-compatible) |
@@ -125,7 +126,7 @@ src/
     termos/        → Termos LGPD
   components/
     admin/         → Dashboard admin, gráficos (Recharts), tabela de usuários
-    ats/           → Drawer de análise ATS
+    ats/           → Drawer de análise ATS + AtsResultsContent (compartilhado)
     busca/         → Busca header, recomendações de curso lateral
     chat/          → UI do assistente (sidebar, bolhas, sugestões, cards)
     cursos/        → Cards de cursos, grade de recomendação
