@@ -116,7 +116,7 @@ async function callLlm<T extends z.ZodType>(
   // Fallback if provider doesn't support response_format (400 or 403)
   if (!res.ok && (res.status === 400 || res.status === 403)) {
     const errBody = await res.text().catch(() => '');
-    console.warn(`[llm-provider] ${res.status} — retrying without response_format`);
+    console.warn(`[llm-provider] ${res.status} — retrying without response_format`, errBody);
     delete bodyPayload.response_format;
     delete bodyPayload.reasoning_effort;
     delete bodyPayload.chat_template_kwargs;

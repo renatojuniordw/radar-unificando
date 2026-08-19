@@ -5,7 +5,6 @@
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
-import { logAiEvent } from "../ai-logger";
 import { normalizeKeyword } from "./normalize";
 import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
 import { llmCall } from "../shared/llm-call";

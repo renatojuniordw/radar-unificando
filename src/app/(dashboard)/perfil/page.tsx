@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Container } from '@mui/material';
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/hooks/useSnackbar';
@@ -19,6 +20,7 @@ function getInitial(name?: string | null, email?: string | null): string {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
@@ -96,7 +98,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error('Erro ao excluir');
       showSnackbar('Conta excluída com sucesso.', 'success');
       // Redireciona para a home após exclusão
-      window.location.href = '/';
+      router.push('/');
     } catch {
       showSnackbar('Erro ao excluir conta. Tente novamente.', 'error');
     } finally {

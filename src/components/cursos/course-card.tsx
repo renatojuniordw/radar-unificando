@@ -13,7 +13,7 @@ interface Props {
   origin?: 'cursos' | 'sidebar';
 }
 
-function ProviderBadge({ provider }: { provider: Course['provider'] }) {
+function ProviderBadge() {
   return (
     <Box
       sx={{
@@ -61,7 +61,7 @@ export function CourseCard({ course, compact = false, origin = 'cursos' }: Props
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-        <ProviderBadge provider={course.provider} />
+        <ProviderBadge />
         {course.rating && (
           <Typography
             sx={{

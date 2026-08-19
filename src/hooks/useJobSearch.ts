@@ -333,9 +333,11 @@ export function useJobSearch(initialJobs: Job[] = []) {
       .filter((s) => s.length > 0);
 
     if (parsedQueries.length > 0) {
-      setRoleQueries(parsedQueries);
-      if (cooldown > 0 || running || autoSyncing) return;
-      void handleStart({ queries: parsedQueries });
+      queueMicrotask(() => {
+        setRoleQueries(parsedQueries);
+        if (cooldown > 0 || running || autoSyncing) return;
+        void handleStart({ queries: parsedQueries });
+      });
     }
   }, [
     urlQuery,
