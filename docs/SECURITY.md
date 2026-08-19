@@ -40,6 +40,7 @@ Dois sistemas:
 | Análise ATS (`/api/ats/analyze`) | 24 h | 10 | Redis | user_id |
 | Currículo adaptado (`/api/resume/generate`) | 24 h | 10 | Redis | user_id + IP |
 | Busca de cursos (`/api/courses/search`) | 1 min | 60 | Redis | IP |
+| Histórico chat (`/api/chat/history`) | 1 min | 60 | Redis | user_id |
 
 ## Limites de Conversa (Chat)
 

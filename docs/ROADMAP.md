@@ -36,6 +36,7 @@
 - ✅ **Resultados da busca exibidos para logados**: `pipeline_complete` carrega `jobs` para todos os usuários (antes só anônimos; logados recarregavam a lista recomendada por perfil)
 - ✅ **Ordenação por recência** dos resultados do pipeline (`sortJobsByRecency`)
 - ✅ **Painel admin** (`/admin`, role `admin` no User): métricas de usuários, logins, buscas (termos/empresas), ferramentas de chat, tokens e cursos por dia (Recharts)
+- ✅ **Refatoração fasedada** (branch `feat/refactor`): `AtsResultsContent` compartilhado, Zod validation em chat/history, rate limiting em chat/history, dynamic imports para Recharts (~200KB), `useMemo` em admin dashboard, `aria-label` em botões de ação, Server Component para FaqStructuredData
 - ⏳ Performance audit
 - ⏳ Acessibilidade audit
 

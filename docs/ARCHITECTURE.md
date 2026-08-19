@@ -40,7 +40,7 @@ Application/Core Layer
   │                           resume-adaptation-generator, query-expansion, pii-redactor,
   │                           llm-provider, chat-guard, shared/with-timeout (AbortSignal)
   ├── ats/                  → ats-analyzer (LLM v4), ats-heuristics, ats-service (cache,
-  │                           buildAtsResumeInput, in-flight dedup)
+  │                           buildAtsResumeInput, in-flight dedup), AtsResult type
   ├── core/mcp/             → gupy-client (JSON-RPC, paginado por offset)
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine
