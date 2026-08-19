@@ -116,7 +116,7 @@ async function callLlm<T extends z.ZodType>(
   // Fallback if provider doesn't support response_format (400 or 403)
   if (!res.ok && (res.status === 400 || res.status === 403)) {
     const errBody = await res.text().catch(() => '');
-    console.warn(`[llm-provider] ${res.status} — retrying without response_format:`, errBody.slice(0, 200));
+    console.warn(`[llm-provider] ${res.status} — retrying without response_format`);
     delete bodyPayload.response_format;
     delete bodyPayload.reasoning_effort;
     delete bodyPayload.chat_template_kwargs;
@@ -157,7 +157,7 @@ async function callLlm<T extends z.ZodType>(
   }
 
   if (!content) {
-    console.error('[llm-provider] Resposta vazia da LLM:', data);
+    console.error('[llm-provider] Resposta vazia da LLM (choices vazia ou content ausente)');
     throw new Error('Resposta vazia da LLM');
   }
 
@@ -167,7 +167,6 @@ async function callLlm<T extends z.ZodType>(
       model: modelName,
       maxTokens: opts?.maxOutputTokens,
       contentLength: content.length,
-      snippet: content.slice(0, 200),
     });
     throw new Error('LLM_TOKEN_LIMIT');
   }
@@ -180,7 +179,7 @@ async function callLlm<T extends z.ZodType>(
     console.error('[llm-provider] Erro ao analisar JSON da LLM:', {
       error: err instanceof Error ? err.message : String(err),
       finishReason,
-      rawContentSnippet: content.slice(0, 300),
+      contentLength: content.length,
     });
     throw err instanceof Error ? err : new Error(String(err));
   }

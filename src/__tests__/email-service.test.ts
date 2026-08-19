@@ -25,14 +25,18 @@ describe('sendPasswordResetEmail', () => {
     ENV_KEYS.forEach((key) => delete process.env[key]);
   });
 
-  it('should_log_link_and_not_send_when_no_api_key', async () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+  it('should_warn_without_exposing_token_when_no_api_key', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await sendPasswordResetEmail(TO, RESET_URL);
 
-    expect(logSpy).toHaveBeenCalledWith(`[PASSWORD_RESET] ${TO} ${RESET_URL}`);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('RESEND_API_KEY não configurada'),
+    );
+    expect(warnSpy.mock.calls[0][0]).not.toContain(RESET_URL);
+    expect(warnSpy.mock.calls[0][0]).not.toContain(TO);
     expect(sendMock).not.toHaveBeenCalled();
-    logSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 
   it('should_send_email_with_correct_payload', async () => {

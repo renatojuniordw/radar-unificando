@@ -35,7 +35,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const ip = getClientIp(request);
         const { success, msBeforeNext } = await checkRateLimit(`${ip}:${email}`, 'auth');
         if (!success) {
-          console.warn(`[auth] Login rate limit atingido para ${email} (retry em ${Math.ceil(msBeforeNext / 1000)}s)`);
+          const masked = email.replace(/(.{2}).*(@.*)/, '$1***$2');
+          console.warn(`[auth] Login rate limit atingido para ${masked} (retry em ${Math.ceil(msBeforeNext / 1000)}s)`);
           throw new RateLimitedError();
         }
 

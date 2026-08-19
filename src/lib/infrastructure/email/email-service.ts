@@ -14,8 +14,8 @@ function getClient() {
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
-    // Fallback de desenvolvimento: sem chave configurada, loga o link no console.
-    console.log(`[PASSWORD_RESET] ${to} ${resetUrl}`);
+    // Fallback de desenvolvimento: sem chave configurada, loga aviso sem expor o token.
+    console.warn('[PASSWORD_RESET] RESEND_API_KEY não configurada — email de reset NÃO enviado. Configure a env var em produção.');
     return;
   }
 

@@ -65,7 +65,7 @@ export class GupyMcpClient {
     }
 
     if (!data.result?.content) {
-      console.warn('[gupy-client] resposta sem content:', JSON.stringify(data).slice(0, 500));
+      console.warn('[gupy-client] resposta sem content (MCP retornou struct inesperada)');
       return [];
     }
 
@@ -83,7 +83,7 @@ export class GupyMcpClient {
       debugLog(`[gupy-client] query="${query}" -> ${jobs.length} vagas`);
       return jobs;
     } catch (err) {
-      console.warn(`[gupy-client] falha ao parsear content para query="${query}":`, textContent.text.slice(0, 500), err);
+      console.warn(`[gupy-client] falha ao parsear content para query="${query}": ${err instanceof Error ? err.message : String(err)}`);
       return [];
     }
   }
