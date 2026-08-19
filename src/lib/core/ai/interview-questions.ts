@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
-import { withTimeout } from './shared/with-timeout';
 import { INTERVIEW_QUESTIONS_PROMPT } from './prompts/interview-questions';
+import { llmCall } from './shared/llm-call';
 
 const LIMITS = {
   resumeText: { min: 30, max: 15000 },
@@ -43,8 +42,6 @@ export async function generateInterviewQuestions(
   missingSkills: string[],
   traceId?: string,
 ): Promise<InterviewQuestions> {
-  const start = performance.now();
-
   const parsedInput = inputSchema.safeParse({ resumeText, jobTitle, jobDescription, matchedSkills, missingSkills });
 
   if (!parsedInput.success) {
@@ -60,9 +57,7 @@ export async function generateInterviewQuestions(
 
   const { safeResume, safeJobDescription, safeJobTitle } = sanitizeAnalysisInput(parsedInput.data);
 
-  const fullPrompt = `${PROMPT}
-
-MATCHED_SKILLS: ${parsedInput.data.matchedSkills.join(', ') || 'nenhuma identificada'}
+  const userPrompt = `MATCHED_SKILLS: ${parsedInput.data.matchedSkills.join(', ') || 'nenhuma identificada'}
 MISSING_SKILLS: ${parsedInput.data.missingSkills.join(', ') || 'nenhuma identificada'}
 
 <job_title>
@@ -77,33 +72,14 @@ ${safeJobDescription}
 ${safeResume}
 </resume>`;
 
-  try {
-    const object = await withTimeout(
-      (signal) => generate(questionsSchema, fullPrompt, { maxOutputTokens: 1800, signal }),
-      GENERATE_TIMEOUT_MS,
-    );
-
-    const latency = (performance.now() - start).toFixed(0);
-    logAiEvent('interview_questions_generation', {
-      traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      questionCount: object.questions.length,
-      success: true,
-    });
-
-    return object;
-  } catch (err) {
-    const latency = (performance.now() - start).toFixed(0);
-    const message = err instanceof Error ? err.message : String(err);
-    logAiEvent('interview_questions_generation', {
-      traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      success: false,
-      error: message,
-    });
-
-    throw new Error('Não foi possível gerar as perguntas de entrevista. Tente novamente.');
-  }
+  return llmCall(questionsSchema, PROMPT, userPrompt, {
+    maxOutputTokens: 1800,
+    timeoutMs: GENERATE_TIMEOUT_MS,
+    eventName: 'interview_questions_generation',
+    traceId,
+    timeoutErrorMessage: 'A geração das perguntas demorou mais que o esperado. Tente novamente em instantes.',
+    genericErrorMessage: 'Não foi possível gerar as perguntas de entrevista. Tente novamente.',
+    logData: { jobTitle: safeJobTitle.slice(0, 300) },
+    formatLogData: (r) => ({ questionCount: r.questions.length }),
+  });
 }

@@ -5,11 +5,10 @@
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
-import { generate } from "../llm-provider";
 import { logAiEvent } from "../ai-logger";
 import { normalizeKeyword } from "./normalize";
-import { isLlmTimeout, withTimeout } from "../shared/with-timeout";
 import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
+import { llmCall } from "../shared/llm-call";
 
 const LIMITS = {
   resumeText: { min: 30, max: 15000 },
@@ -60,8 +59,6 @@ export type AtsAnalysis = z.infer<typeof atsSchema>;
 
 const PROMPT = ATS_ANALYZER_PROMPT;
 
-const GENERATE_TIMEOUT_MS = 35_000;
-
 export interface AnalyzeAtsOptions {
   jobDescription?: string;
   traceId?: string;
@@ -79,12 +76,9 @@ export async function analyzeAts(
     throw new Error(parsed.error.issues[0]?.message || "Input inválido");
   }
 
-  const prompt = `${PROMPT}
-
-<resume>
+  const userPrompt = `<resume>
 ${resumeText}
-</resume>
-${
+</resume>${
   opts?.jobDescription
     ? `
 <job_description>
@@ -93,56 +87,18 @@ ${opts.jobDescription}
     : ""
 }`;
 
-  const runAnalysis = () =>
-    withTimeout(
-      (signal) => generate(atsSchema, prompt, { maxOutputTokens: 3500, signal }),
-      GENERATE_TIMEOUT_MS,
-    );
+  const raw = await llmCall(atsSchema, PROMPT, userPrompt, {
+    maxOutputTokens: 3500,
+    timeoutMs: 35_000,
+    retriesOnTimeout: 1,
+    eventName: 'ats_analysis',
+    traceId: opts?.traceId,
+    timeoutErrorMessage: 'A análise ATS demorou mais que o esperado. Tente novamente em instantes.',
+    genericErrorMessage: 'Não foi possível analisar o currículo. Tente novamente.',
+    formatLogData: (r) => ({ score: normalizeAnalysis(r).score }),
+  });
 
-  const logSuccess = (raw: AtsAnalysis, retried: boolean) => {
-    const analysis = normalizeAnalysis(raw);
-    logAiEvent("ats_analysis", {
-      traceId: opts?.traceId,
-      score: analysis.score,
-      success: true,
-      ...(retried ? { retried: true } : {}),
-    });
-    return analysis;
-  };
-
-  // Nunca propague err.message pro chamador: pode conter detalhes internos do
-  // provedor de LLM (endpoints, chaves parciais, stack). Loga completo
-  // internamente, mas quem chama só vê mensagem genérica (diferenciada por causa).
-  const handleFailure = (err: unknown, wasTimeout: boolean): never => {
-    const message = err instanceof Error ? err.message : String(err);
-    logAiEvent("ats_analysis", {
-      traceId: opts?.traceId,
-      success: false,
-      error: message,
-    });
-    throw new Error(
-      wasTimeout
-        ? "A análise ATS demorou mais que o esperado. Tente novamente em instantes."
-        : "Não foi possível analisar o currículo. Tente novamente.",
-    );
-  };
-
-  try {
-    const raw = await runAnalysis();
-    return logSuccess(raw, false);
-  } catch (err) {
-    const isTimeout = isLlmTimeout(err);
-    if (!isTimeout) return handleFailure(err, false);
-
-    // 1 retry específico para timeout, antes de desistir.
-    try {
-      const raw = await runAnalysis();
-      return logSuccess(raw, true);
-    } catch (retryErr) {
-      const retryIsTimeout = isLlmTimeout(retryErr);
-      return handleFailure(retryErr, retryIsTimeout);
-    }
-  }
+  return normalizeAnalysis(raw);
 }
 
 /** Deduplica keywords e skillScores por forma normalizada (sinônimos/variações). */

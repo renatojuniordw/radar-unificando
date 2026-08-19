@@ -47,22 +47,22 @@ describe('generateAdaptedResume', () => {
       jobLocation: 'SP',
       atsKeywords: ['React', 'TypeScript'],
     });
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('<job_title>');
-    expect(prompt).toContain('<job_description>');
-    expect(prompt).toContain('<job_company>');
-    expect(prompt).toContain('<job_location>');
-    expect(prompt).toContain('<ats_keywords>');
-    expect(prompt).toContain('React, TypeScript');
-    expect(prompt).toContain('<resume>');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('<job_title>');
+    expect(prompt.user).toContain('<job_description>');
+    expect(prompt.user).toContain('<job_company>');
+    expect(prompt.user).toContain('<job_location>');
+    expect(prompt.user).toContain('<ats_keywords>');
+    expect(prompt.user).toContain('React, TypeScript');
+    expect(prompt.user).toContain('<resume>');
   });
 
   it('should_omit_ats_keywords_block_when_empty', async () => {
     await generateAdaptedResume(RESUME, 'Dev', 'Vaga');
-    const prompt = generateMock.mock.calls[0][1] as string;
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
     // O bloco de dados <ats_keywords>...</ats_keywords> não deve ser adicionado
     // quando não há keywords (a tag só aparece nas regras do prompt base).
-    expect(prompt).not.toMatch(/<ats_keywords>\s*\n\s*<\/ats_keywords>/);
+    expect(prompt.user).not.toMatch(/<ats_keywords>\s*\n\s*<\/ats_keywords>/);
   });
 
   it('should_throw_on_short_resume', async () => {

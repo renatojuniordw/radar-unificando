@@ -36,16 +36,16 @@ describe('generateInterviewQuestions', () => {
 
   it('should_include_matched_and_missing_skills_in_prompt', async () => {
     await generateInterviewQuestions(RESUME, 'Dev', 'Vaga', ['React', 'TypeScript'], ['GraphQL', 'AWS']);
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('MATCHED_SKILLS: React, TypeScript');
-    expect(prompt).toContain('MISSING_SKILLS: GraphQL, AWS');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('MATCHED_SKILLS: React, TypeScript');
+    expect(prompt.user).toContain('MISSING_SKILLS: GraphQL, AWS');
   });
 
   it('should_use_fallback_label_when_skills_are_empty', async () => {
     await generateInterviewQuestions(RESUME, 'Dev', 'Vaga', [], []);
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('MATCHED_SKILLS: nenhuma identificada');
-    expect(prompt).toContain('MISSING_SKILLS: nenhuma identificada');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('MATCHED_SKILLS: nenhuma identificada');
+    expect(prompt.user).toContain('MISSING_SKILLS: nenhuma identificada');
   });
 
   it('should_throw_on_short_resume', async () => {

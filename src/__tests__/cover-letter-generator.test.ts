@@ -30,10 +30,10 @@ describe('generateCoverLetter', () => {
 
   it('should_include_skills_and_sanitized_content_in_prompt', async () => {
     await generateCoverLetter(RESUME, 'Dev', 'Vaga', ['React', 'TypeScript']);
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('SKILLS DO CANDIDATO: React, TypeScript');
-    expect(prompt).toContain('<job_title>');
-    expect(prompt).toContain('<resume>');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('SKILLS DO CANDIDATO: React, TypeScript');
+    expect(prompt.user).toContain('<job_title>');
+    expect(prompt.user).toContain('<resume>');
   });
 
   it('should_throw_without_calling_llm_on_invalid_input', async () => {

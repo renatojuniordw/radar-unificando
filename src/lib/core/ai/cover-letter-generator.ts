@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
-import { withTimeout } from './shared/with-timeout';
 import { COVER_LETTER_PROMPT } from './prompts/cover-letter';
+import { llmCall } from './shared/llm-call';
 
 const LIMITS = {
   resumeText: { min: 30, max: 15000 },
@@ -38,8 +37,6 @@ export async function generateCoverLetter(
   skills: string[],
   traceId?: string,
 ): Promise<CoverLetter> {
-  const start = performance.now();
-
   const parsedInput = inputSchema.safeParse({ resumeText, jobTitle, jobDescription, skills });
 
   if (!parsedInput.success) {
@@ -55,9 +52,7 @@ export async function generateCoverLetter(
 
   const { safeResume, safeJobDescription, safeJobTitle } = sanitizeAnalysisInput(parsedInput.data);
 
-  const fullPrompt = `${PROMPT}
-
-SKILLS DO CANDIDATO: ${parsedInput.data.skills.join(', ')}
+  const userPrompt = `SKILLS DO CANDIDATO: ${parsedInput.data.skills.join(', ')}
 
 <job_title>
 ${safeJobTitle}
@@ -71,32 +66,13 @@ ${safeJobDescription}
 ${safeResume}
 </resume>`;
 
-  try {
-    const object = await withTimeout(
-      (signal) => generate(coverLetterSchema, fullPrompt, { maxOutputTokens: 1500, signal }),
-      GENERATE_TIMEOUT_MS,
-    );
-
-    const latency = (performance.now() - start).toFixed(0);
-    logAiEvent('cover_letter_generation', {
-      traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      success: true,
-    });
-
-    return object;
-  } catch (err) {
-    const latency = (performance.now() - start).toFixed(0);
-    const message = err instanceof Error ? err.message : String(err);
-    logAiEvent('cover_letter_generation', {
-      traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      success: false,
-      error: message,
-    });
-
-    throw new Error('Não foi possível gerar a carta de apresentação. Tente novamente.');
-  }
+  return llmCall(coverLetterSchema, PROMPT, userPrompt, {
+    maxOutputTokens: 1500,
+    timeoutMs: GENERATE_TIMEOUT_MS,
+    eventName: 'cover_letter_generation',
+    traceId,
+    timeoutErrorMessage: 'A geração da carta demorou mais que o esperado. Tente novamente em instantes.',
+    genericErrorMessage: 'Não foi possível gerar a carta de apresentação. Tente novamente.',
+    logData: { jobTitle: safeJobTitle.slice(0, 300) },
+  });
 }

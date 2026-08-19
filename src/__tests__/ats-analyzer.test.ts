@@ -32,9 +32,9 @@ describe('analyzeAts', () => {
 
   it('should_include_job_description_in_prompt_when_provided', async () => {
     await analyzeAts(RESUME, { jobDescription: 'Vaga de desenvolvedor React' });
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('<job_description>');
-    expect(prompt).toContain('Vaga de desenvolvedor React');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('<job_description>');
+    expect(prompt.user).toContain('Vaga de desenvolvedor React');
   });
 
   it('should_throw_on_short_resume', async () => {

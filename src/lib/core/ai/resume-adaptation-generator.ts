@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeUntrusted } from './shared/sanitize';
-import { isLlmTimeout, withTimeout } from './shared/with-timeout';
 import { RESUME_ADAPTATION_PROMPT } from './prompts/resume-adaptation';
+import { llmCall } from './shared/llm-call';
 
 const LIMITS = {
   resumeText: { min: 30, max: 15000 },
@@ -130,7 +129,7 @@ const resumeSchema = z.object({
 
 export type AdaptedResume = z.infer<typeof resumeSchema>;
 
-const GENERATE_TIMEOUT_MS = 20_000;
+const PROMPT = RESUME_ADAPTATION_PROMPT;
 
 export interface GenerateAdaptedResumeOptions {
   jobCompany?: string;
@@ -146,8 +145,6 @@ export async function generateAdaptedResume(
   jobDescription: string,
   opts?: GenerateAdaptedResumeOptions,
 ): Promise<AdaptedResume> {
-  const start = performance.now();
-
   const parsedInput = inputSchema.safeParse({
     resumeText,
     jobTitle,
@@ -179,9 +176,7 @@ export async function generateAdaptedResume(
       ? `\n<ats_keywords>\n${atsKeywords.join(', ')}\n</ats_keywords>`
       : '';
 
-  const fullPrompt = `${RESUME_ADAPTATION_PROMPT}
-
-<job_title>
+  const userPrompt = `<job_title>
 ${safeJobTitle}
 </job_title>
 
@@ -193,58 +188,16 @@ ${safeJobDescription}
 ${safeResume}
 </resume>`;
 
-  const runGeneration = () =>
-    withTimeout(
-      (signal) => generate(resumeSchema, fullPrompt, { maxOutputTokens: 3000, signal }),
-      GENERATE_TIMEOUT_MS,
-    );
-
-  const logSuccess = (object: AdaptedResume, retried: boolean) => {
-    const latency = (performance.now() - start).toFixed(0);
-    logAiEvent('resume_adaptation', {
-      traceId: opts?.traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      success: true,
-      ...(retried ? { retried: true } : {}),
-    });
-    return object;
-  };
-
-  const handleFailure = (err: unknown, wasTimeout: boolean): never => {
-    const latency = (performance.now() - start).toFixed(0);
-    const message = err instanceof Error ? err.message : String(err);
-    logAiEvent('resume_adaptation', {
-      traceId: opts?.traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      success: false,
-      error: message,
-    });
-
-    throw new Error(
-      wasTimeout
-        ? 'A geração do currículo demorou mais que o esperado. Tente novamente em instantes.'
-        : 'Não foi possível gerar o currículo adaptado. Tente novamente.',
-    );
-  };
-
-  try {
-    const object = await runGeneration();
-    return logSuccess(object, false);
-  } catch (err) {
-    const isTimeout = isLlmTimeout(err);
-    if (!isTimeout) return handleFailure(err, false);
-
-    // 1 retry específico para timeout, antes de desistir (mesmo padrão de ats-analyzer.ts).
-    try {
-      const object = await runGeneration();
-      return logSuccess(object, true);
-    } catch (retryErr) {
-      const retryIsTimeout = isLlmTimeout(retryErr);
-      return handleFailure(retryErr, retryIsTimeout);
-    }
-  }
+  return llmCall(resumeSchema, PROMPT, userPrompt, {
+    maxOutputTokens: 3000,
+    timeoutMs: 20_000,
+    retriesOnTimeout: 1,
+    eventName: 'resume_adaptation',
+    traceId: opts?.traceId,
+    timeoutErrorMessage: 'A geração do currículo demorou mais que o esperado. Tente novamente em instantes.',
+    genericErrorMessage: 'Não foi possível gerar o currículo adaptado. Tente novamente.',
+    logData: { jobTitle: safeJobTitle.slice(0, 300) },
+  });
 }
 
 /** Converte o currículo estruturado em markdown (função pura — sem imports node). */

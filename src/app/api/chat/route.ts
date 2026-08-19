@@ -186,8 +186,8 @@ export async function POST(req: NextRequest) {
       system: CHAT_SYSTEM_PROMPT,
       // Orçamento global perto do limite: respostas mais curtas em vez de bloquear todo mundo.
       maxOutputTokens: globalBudget.degraded
-        ? Math.ceil(Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2000) / 2)
-        : Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2000),
+        ? Math.ceil(Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 3500) / 2)
+        : Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 3500),
       onFinish: async (event: {
         text?: string;
         finishReason: unknown;

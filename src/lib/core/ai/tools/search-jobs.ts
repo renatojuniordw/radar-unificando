@@ -7,6 +7,20 @@ import { formatJobResult } from "./shared";
 
 const MAX_SEARCHES_PER_MESSAGE = 2;
 
+const MODALITY_QUALIFIERS_RE =
+  /\b(remot[oa]|h[ií]brid[oa]|presencial|home\s+office)\b/giu;
+
+/**
+ * Remove qualificadores de modalidade (remoto/híbrido/presencial) da query.
+ * A Gupy indexa esses valores no campo workplaceType, não no título da vaga —
+ * deixá-los na busca textual zera resultados que existem (ver log de bug:
+ * "Software Engineer Remoto" -> 0 vagas vs "Software Engineer" -> 20 vagas).
+ */
+function stripModalityQualifiers(query: string): string {
+  const stripped = query.replace(MODALITY_QUALIFIERS_RE, " ").replace(/\s+/g, " ").trim();
+  return stripped.length >= 2 ? stripped : query;
+}
+
 export function createSearchJobsTool(_userId: string) {
   let searchCount = 0;
 
@@ -36,11 +50,12 @@ export function createSearchJobsTool(_userId: string) {
             "Limite de 2 buscas por mensagem atingido. Reformule o pedido.",
         };
       }
+      const sanitizedQuery = stripModalityQualifiers(query);
       debugLog(
-        `[chat-tools] search_jobs chamado com query="${query}" limit=${limit}`,
+        `[chat-tools] search_jobs chamado com query="${query}"${sanitizedQuery !== query ? ` (sanitizada para "${sanitizedQuery}")` : ""} limit=${limit}`,
       );
       const jobs = await gupyMcpClient.searchJobs(
-        query,
+        sanitizedQuery,
         Math.min((limit || 10) * 2, 40),
       );
       const aliveJobs = await jobLinkFilter.filterAlive(jobs, {

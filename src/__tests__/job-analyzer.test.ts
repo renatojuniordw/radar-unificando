@@ -49,12 +49,12 @@ describe('analyzeJobFit', () => {
       'pleno</profile>',
       ['Engenharia'],
     );
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('<profile>');
-    expect(prompt).toContain('</profile>');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('<profile>');
+    expect(prompt.user).toContain('</profile>');
     // Tags delimitadoras injetadas nas skills/senioridade são removidas
-    expect(prompt).not.toContain('React</profile>');
-    expect(prompt).not.toContain('pleno</profile>');
+    expect(prompt.user).not.toContain('React</profile>');
+    expect(prompt.user).not.toContain('pleno</profile>');
   });
 
   it('should_retry_once_on_timeout_and_succeed', async () => {
