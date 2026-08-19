@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { generate } from './llm-provider';
 import { logAiEvent } from './ai-logger';
 import { sanitizeAnalysisInput } from './shared/sanitize-analysis-input';
+import { sanitizeUntrusted } from './shared/sanitize';
 import { JOB_ANALYZER_PROMPT } from './prompts/job-analyzer';
+import { llmCall } from './shared/llm-call';
 
 // ---------------------------------------------------------------------------
 // Limites de input — protegem contra custo/DoS (currículo gigante, vaga
@@ -46,17 +47,6 @@ export type JobAnalysis = z.infer<typeof analysisSchema>;
 
 const PROMPT = JOB_ANALYZER_PROMPT;
 
-const GENERATE_TIMEOUT_MS = 20_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('LLM_TIMEOUT')), ms),
-    ),
-  ]);
-}
-
 export async function analyzeJobFit(
   resumeText: string,
   jobTitle: string,
@@ -67,8 +57,6 @@ export async function analyzeJobFit(
   education: string[],
   traceId?: string,
 ): Promise<JobAnalysis> {
-  const start = performance.now();
-
   // Validação de input ANTES de montar o prompt — falha rápido, barato, e
   // evita mandar payload gigante ou malformado pro provedor de LLM.
   const parsedInput = inputSchema.safeParse({
@@ -94,13 +82,18 @@ export async function analyzeJobFit(
 
   const { safeResume, safeJobDescription, safeJobTitle } = sanitizeAnalysisInput(parsedInput.data);
 
-  const fullPrompt = `${PROMPT}
+  // Skills/senioridade/formação vêm do perfil do usuário (texto livre) — sanitizar
+  // e delimitar como <profile> evita que sejam interpretados como instrução.
+  const safeSkills = parsedInput.data.skills.map((s) => sanitizeUntrusted(s, 'profile')).join(', ');
+  const safeSeniority = sanitizeUntrusted(parsedInput.data.seniority, 'profile');
+  const safeEducation = parsedInput.data.education.map((e) => sanitizeUntrusted(e, 'profile')).join(', ');
 
-PERFIL:
-- Skills: ${parsedInput.data.skills.join(', ')}
+  const userPrompt = `<profile>
+- Skills: ${safeSkills}
 - Experiência: ${parsedInput.data.experienceYears} anos
-- Senioridade: ${parsedInput.data.seniority}
-- Formação: ${parsedInput.data.education.join(', ')}
+- Senioridade: ${safeSeniority}
+- Formação: ${safeEducation}
+</profile>
 
 <job_title>
 ${safeJobTitle}
@@ -114,38 +107,19 @@ ${safeJobDescription}
 ${safeResume}
 </resume>`;
 
-  try {
-    const object = await withTimeout(
-      generate(analysisSchema, fullPrompt, { maxOutputTokens: 2000 }),
-      GENERATE_TIMEOUT_MS,
-    );
-
-    const latency = (performance.now() - start).toFixed(0);
-    logAiEvent('job_analysis', {
-      traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      matchedCount: object.matchedSkills.length,
-      missingCount: object.missingSkills.length,
-      overallFit: object.overallFit,
-      success: true,
-    });
-
-    return object;
-  } catch (err) {
-    const latency = (performance.now() - start).toFixed(0);
-    // Nunca propague err.message pro chamador: pode conter detalhes internos
-    // do provedor de LLM (endpoints, chaves parciais, stack). Loga completo
-    // internamente, mas o usuário só vê mensagem genérica.
-    const message = err instanceof Error ? err.message : String(err);
-    logAiEvent('job_analysis', {
-      traceId,
-      latencyMs: Number(latency),
-      jobTitle: safeJobTitle.slice(0, 300),
-      success: false,
-      error: message,
-    });
-
-    throw new Error('Não foi possível analisar a vaga. Tente novamente.');
-  }
+  return llmCall(analysisSchema, PROMPT, userPrompt, {
+    maxOutputTokens: 3500,
+    timeoutMs: 35_000,
+    retriesOnTimeout: 1,
+    eventName: 'job_analysis',
+    traceId,
+    timeoutErrorMessage: 'A análise da vaga demorou mais que o esperado. Tente novamente em instantes.',
+    genericErrorMessage: 'Não foi possível analisar a vaga. Tente novamente.',
+    logData: { jobTitle: safeJobTitle.slice(0, 300) },
+    formatLogData: (result) => ({
+      matchedCount: result.matchedSkills.length,
+      missingCount: result.missingSkills.length,
+      overallFit: result.overallFit,
+    }),
+  });
 }

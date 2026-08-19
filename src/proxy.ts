@@ -79,8 +79,8 @@ export default auth((req) => {
     }
   }
 
-  // Protect dashboard routes
-  const protectedPaths = ['/perfil'];
+  // Protect dashboard and admin routes (role é validado no layout server-side)
+  const protectedPaths = ['/perfil', '/admin'];
   if (protectedPaths.some(p => path.startsWith(p)) && !req.auth) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', path);

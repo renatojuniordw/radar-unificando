@@ -20,6 +20,7 @@ export interface ResumeExtractionResult {
   education: string[];
   currentRole: string | null;
   area: string | null;
+  extractionError?: string | null;
 }
 
 const TTL_MS = 60 * 60 * 1000; // 1 hora

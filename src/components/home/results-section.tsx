@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { Container, Box, Typography, Chip, CircularProgress } from "@mui/material";
 import { JobTable } from "@/components/job-table/job-table";
 import type { Job } from "@/lib/types/job";
@@ -36,10 +36,6 @@ export const ResultsSection = memo(function ResultsSection({
   generatingJobKey,
   onAnalyzeAts,
 }: ResultsSectionProps) {
-  const handleExportCsv = useCallback(() => {
-    window.open("/export?format=csv", "_blank");
-  }, []);
-
   return (
     <Box className="section-white">
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 }, px: { xs: 2, sm: 3 } }}>
@@ -105,7 +101,6 @@ export const ResultsSection = memo(function ResultsSection({
           jobs={jobs}
           loading={loading}
           roleCategories={roleCategories}
-          onExportCsv={handleExportCsv}
           onFilterChange={onFilterChange}
           canGenerateResume={canGenerateResume}
           onGenerateResume={onGenerateResume}

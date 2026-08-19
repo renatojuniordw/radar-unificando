@@ -34,6 +34,7 @@ export interface IChatRepository {
   listChats(userId: string): Promise<ChatSummary[]>;
   getDailyUserMessageCount(userId: string): Promise<number>;
   recordUsage(userId: string, data: UsageRecord): Promise<void>;
+  recordToolCalls(userId: string, toolNames: string[]): Promise<void>;
   sumTokensSince(userIds: string[], since: Date): Promise<TokenTotals>;
   sumTokensSinceByIp(ipHash: string, since: Date): Promise<TokenTotals>;
   getLastContextTokens(userId: string, chatId?: string | null): Promise<number | null>;
@@ -126,6 +127,13 @@ export const chatRepository: IChatRepository = {
         totalTokens: data.promptTokens + data.completionTokens,
         ipHash: data.ipHash,
       },
+    });
+  },
+
+  async recordToolCalls(userId, toolNames) {
+    if (toolNames.length === 0) return;
+    await prisma.chatToolCall.createMany({
+      data: toolNames.map((toolName) => ({ userId, toolName })),
     });
   },
 

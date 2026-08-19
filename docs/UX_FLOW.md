@@ -108,6 +108,19 @@ Fluxo automático (launchWebAuthFlow):
 FAQ: como funciona, segurança do token, revogação
 ```
 
+### Painel Admin (`/admin`) — requer `role=admin`
+```
+Acesso: guardado no layout server-side (role admin) + auth-guard; noindex no robots.txt
+Dashboard client-side (admin-dashboard-client.tsx) com sub-abas:
+  ├── 📊 Visão Geral → stat cards (usuários, buscas, análises ATS, uso de IA)
+  │                    + gráficos de série (Recharts) por período
+  ├── 🔍 Buscas & Engajamento → categorias mais buscadas (bar chart), engajamento
+  └── ⚡ Infraestrutura & Custos → métricas de infra/custo
+Filtro de período: 15 / 30 / 365 dias ou intervalo custom (from/to)
+Tabela de usuários (/admin/usuarios): nome, email, role, criado em, último acesso
+Auto-refresh: a cada 60s (auto-refresh.tsx)
+```
+
 ## Feedback Matrix
 
 | Operação | Loading | Success | Empty | Error |

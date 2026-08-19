@@ -9,7 +9,7 @@ import {
 } from '@/lib/core/ai/resume-adaptation-generator';
 import { RESUME_ADAPTATION_PROMPT_VERSION } from '@/lib/core/ai/prompts/resume-adaptation';
 import { computeCacheKey, getCached, saveToCache } from '@/lib/core/ai/generated-content-cache';
-import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
+import { analyzeAtsWithCache, buildAtsResumeInput } from '@/lib/core/ai/ats/ats-service';
 import { enforceVeracity } from '@/lib/core/ai/resume-veracity';
 import { renderResumePdf } from '@/lib/pdf/render-resume-pdf';
 
@@ -75,7 +75,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Análise ATS (com cache próprio) para guiar a adaptação com dados reais.
-    const ats = await analyzeAtsWithCache(session.user.id, resumeContext, {
+    // Usa o texto enriquecido com os campos estruturados do perfil (skills,
+    // cargo, senioridade...) para que edições no perfil sem reenvio do
+    // currículo mudem a chave de cache em vez de servir um resultado obsoleto.
+    const ats = await analyzeAtsWithCache(session.user.id, buildAtsResumeInput(profile!), {
       jobDescription,
       traceId: crypto.randomUUID(),
     });

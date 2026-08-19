@@ -37,17 +37,20 @@ describe('runPipeline', () => {
     mockExpandQueries.mockImplementation(async (queries: string[]) => [...queries]);
   });
 
-  it('nao_roda_discovery_para_usuario_anonimo_e_nao_grava_run', async () => {
+  it('should_skip_discovery_for_anonymous_user_but_record_completed_run', async () => {
     await runPipeline('run-1', ANONYMOUS_USER_ID, ['CorpA'], [], false);
     expect(mockDiscovery).not.toHaveBeenCalled();
-    expect(pipelineRunRepository.update).not.toHaveBeenCalled();
+    expect(pipelineRunRepository.update).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ status: 'completed' }),
+    );
     expect(progressEmitter.emit).toHaveBeenCalledWith(
       'run-1',
       expect.objectContaining({ type: 'pipeline_complete', jobs: [] }),
     );
   });
 
-  it('roda_discovery_para_usuario_logado_por_padrao_e_persiste_contagem', async () => {
+  it('should_run_discovery_for_logged_user_by_default_and_persist_count', async () => {
     await runPipeline('run-1', 'user-1', ['CorpA'], [], true);
     expect(mockDiscovery).toHaveBeenCalledWith('run-1', { companies: ['CorpA'], userId: 'user-1' });
     expect(pipelineRunRepository.update).toHaveBeenCalledWith(
@@ -56,7 +59,7 @@ describe('runPipeline', () => {
     );
   });
 
-  it('nao_roda_discovery_quando_discoveryEnabled_false', async () => {
+  it('should_skip_discovery_when_discovery_disabled', async () => {
     await runPipeline('run-1', 'user-1', ['CorpA'], [], true, { discoveryEnabled: false });
     expect(mockDiscovery).not.toHaveBeenCalled();
     expect(pipelineRunRepository.update).toHaveBeenCalledWith(
@@ -65,7 +68,7 @@ describe('runPipeline', () => {
     );
   });
 
-  it('grava_status_failed_quando_step_lanca_erro', async () => {
+  it('should_record_failed_status_when_step_throws', async () => {
     vi.mocked(runGupyStep).mockRejectedValue(new Error('MCP fora do ar'));
     await runPipeline('run-1', 'user-1', ['CorpA'], [], true);
     expect(pipelineRunRepository.update).toHaveBeenCalledWith(
@@ -78,7 +81,7 @@ describe('runPipeline', () => {
     );
   });
 
-  it('passa_consultas_expandidas_para_gupy_e_originais_para_inhire', async () => {
+  it('should_pass_expanded_queries_to_gupy_and_original_to_inhire', async () => {
     mockExpandQueries.mockResolvedValue(['Analista de Dados', 'Data Analyst']);
     await runPipeline('run-1', 'user-1', ['CorpA'], ['Analista de Dados'], true);
     expect(runGupyStep).toHaveBeenCalledWith(
@@ -94,7 +97,7 @@ describe('runPipeline', () => {
     );
   });
 
-  it('emite_jobs_no_pipeline_complete_para_usuario_logado', async () => {
+  it('should_emit_jobs_on_pipeline_complete_for_logged_user', async () => {
     const jobs: Job[] = [
       {
         company: 'iFood',
@@ -121,7 +124,7 @@ describe('runPipeline', () => {
     );
   });
 
-  it('ordena_jobs_da_mais_recente_para_mais_antiga_no_pipeline_complete', async () => {
+  it('should_sort_jobs_newest_first_on_pipeline_complete', async () => {
     const baseJob = {
       platform: 'Gupy' as const,
       onList: 'Não' as const,
@@ -146,13 +149,45 @@ describe('runPipeline', () => {
     );
   });
 
-  it('roda_expansao_tambem_para_usuario_anonimo', async () => {
+  it('should_run_query_expansion_for_anonymous_user', async () => {
     mockExpandQueries.mockResolvedValue(['Analista de Dados', 'Data Analyst']);
     await runPipeline('run-1', ANONYMOUS_USER_ID, [], ['Analista de Dados'], false);
     expect(mockExpandQueries).toHaveBeenCalledWith(['Analista de Dados']);
     expect(runGupyStep).toHaveBeenCalledWith(
       'run-1',
       expect.objectContaining({ queries: ['Analista de Dados', 'Data Analyst'] }),
+    );
+  });
+
+  it('should_use_cached_jobs_when_cache_hits', async () => {
+    const cachedJob = { id: 'job-cached', title: 'Dev', company: 'CorpA' } as Job;
+    pipelineCache.set(['CorpA'], ['Analista'], [cachedJob]);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Analista'], true);
+
+    expect(runGupyStep).not.toHaveBeenCalled();
+    expect(runInHireStep).not.toHaveBeenCalled();
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'step_complete', step: 'Cache' }),
+    );
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'pipeline_complete', jobs: [cachedJob] }),
+    );
+  });
+
+  it('should_revalidate_in_background_when_cache_is_stale', async () => {
+    const cachedJob = { id: 'job-cached', title: 'Dev', company: 'CorpA' } as Job;
+    pipelineCache.set(['CorpA'], ['Analista'], [cachedJob], -1000);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Analista'], true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(runGupyStep).toHaveBeenCalled();
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ type: 'pipeline_complete', jobs: [cachedJob] }),
     );
   });
 });

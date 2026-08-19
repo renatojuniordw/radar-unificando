@@ -16,6 +16,7 @@ vi.mock('@/lib/infrastructure/rate-limit', () => ({
 
 import { POST } from '@/app/api/auth/register/route';
 import { userRepository } from '@/lib/infrastructure/repositories';
+import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 
 function makeRequest(body: any): NextRequest {
   return {
@@ -27,6 +28,24 @@ function makeRequest(body: any): NextRequest {
 describe('POST /api/auth/register', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true, msBeforeNext: 0 } as any);
+  });
+
+  it('should_return_429_when_rate_limited', async () => {
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({ success: false, msBeforeNext: 30000 } as any);
+    const res = await POST(makeRequest({ email: 'test@test.com', password: 'ValidP@ssword123' }));
+    expect(res.status).toBe(429);
+    expect(res.headers.get('Retry-After')).toBe('30');
+    expect((await res.json()).error).toContain('30 segundos');
+  });
+
+  it('should_return_429_when_daily_register_limit_reached', async () => {
+    vi.mocked(checkRateLimit)
+      .mockResolvedValueOnce({ success: true, msBeforeNext: 0 } as any)
+      .mockResolvedValueOnce({ success: false, msBeforeNext: 0 } as any);
+    const res = await POST(makeRequest({ email: 'test@test.com', password: 'ValidP@ssword123' }));
+    expect(res.status).toBe(429);
+    expect((await res.json()).error).toContain('Limite de cadastros por IP');
   });
 
   it('should_return_400_when_email_missing', async () => {

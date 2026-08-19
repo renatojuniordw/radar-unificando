@@ -53,7 +53,7 @@ function CourseCardComponent({ course }: Props) {
                 fontWeight: 800,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
-                color: provider === 'ALURA' ? 'success.main' : 'primary.main',
+                color: 'primary.main',
               }}
             >
               {provider}

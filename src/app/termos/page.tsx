@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SITE } from '@/lib/core/constants';
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso e Privacidade',
+  title: { absolute: 'Termos de Uso, Privacidade e LGPD | Radar Unificando' },
   description: 'Política de privacidade, conformidade com a LGPD e termos de uso do Radar Unificando.',
+  alternates: { canonical: `${SITE.url}/termos` },
 };
 
 export default function TermosPage() {

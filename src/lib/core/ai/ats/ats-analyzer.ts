@@ -5,10 +5,10 @@
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
-import { generate } from "../llm-provider";
 import { logAiEvent } from "../ai-logger";
 import { normalizeKeyword } from "./normalize";
 import { ATS_ANALYZER_PROMPT } from "../prompts/ats-analyzer";
+import { llmCall } from "../shared/llm-call";
 
 const LIMITS = {
   resumeText: { min: 30, max: 15000 },
@@ -76,12 +76,9 @@ export async function analyzeAts(
     throw new Error(parsed.error.issues[0]?.message || "Input inválido");
   }
 
-  const prompt = `${PROMPT}
-
-<resume>
+  const userPrompt = `<resume>
 ${resumeText}
-</resume>
-${
+</resume>${
   opts?.jobDescription
     ? `
 <job_description>
@@ -90,14 +87,18 @@ ${opts.jobDescription}
     : ""
 }`;
 
-  const raw = await generate(atsSchema, prompt, { maxOutputTokens: 1200 });
-  const analysis = normalizeAnalysis(raw);
-  logAiEvent("ats_analysis", {
+  const raw = await llmCall(atsSchema, PROMPT, userPrompt, {
+    maxOutputTokens: 3500,
+    timeoutMs: 35_000,
+    retriesOnTimeout: 1,
+    eventName: 'ats_analysis',
     traceId: opts?.traceId,
-    score: analysis.score,
-    success: true,
+    timeoutErrorMessage: 'A análise ATS demorou mais que o esperado. Tente novamente em instantes.',
+    genericErrorMessage: 'Não foi possível analisar o currículo. Tente novamente.',
+    formatLogData: (r) => ({ score: normalizeAnalysis(r).score }),
   });
-  return analysis;
+
+  return normalizeAnalysis(raw);
 }
 
 /** Deduplica keywords e skillScores por forma normalizada (sinônimos/variações). */

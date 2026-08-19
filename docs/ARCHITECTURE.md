@@ -7,6 +7,7 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── /            → home (hero, resultados, why-use, FAQ)
   ├── (auth)/      → login/register
   ├── (dashboard)/ → logado (perfil, /extensao/conectar) — guarded no layout server-side
+  ├── /admin       → painel admin (métricas) — guarded por role no layout; noindex
   ├── /extensao    → página pública da extensão (marketing, JSON-LD)
   ├── /termos      → termos LGPD
   └── components/  → home/, profile/, layout/ (header, footer, UserMenu), seo/, chat
@@ -29,14 +30,17 @@ Application/Core Layer
   ├── core/upload/          → upload-job-store (in-memory) + upload-processor (background)
   ├── core/parsing/         → pdf-to-markdown + resume-extraction-cache (hash, TTL 1h)
   ├── core/matching/        → recommendation.ts (token overlap)
-  ├── core/ai/              → skill-extractor, chat-tools, job-analyzer, cover-letter,
-  │                           interview-questions, query-expansion, pii-redactor,
-  │                           llm-provider, chat-guard
-  ├── ats/                  → ats-analyzer (LLM), ats-heuristics, ats-service (cache)
+  ├── core/ai/              → skill-extractor, chat-tools (agregador), tools/ (9 tools),
+  │                           job-analyzer, cover-letter, interview-questions,
+  │                           resume-adaptation-generator, query-expansion, pii-redactor,
+  │                           llm-provider, chat-guard, shared/with-timeout (AbortSignal)
+  ├── ats/                  → ats-analyzer (LLM v4), ats-heuristics, ats-service (cache,
+  │                           buildAtsResumeInput, in-flight dedup)
   ├── core/mcp/             → gupy-client (JSON-RPC, paginado por offset)
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine
-  └── core/discovery/       → company-discovery (executado para usuários logados)
+  ├── core/discovery/       → company-discovery (executado para usuários logados)
+  └── core/admin/           → admin-stats (summary, séries diárias, top termos/empresas/ferramentas)
         |
 Domain Types
   ├── types/index.ts        → JobData, Platform, ProgressEvent
@@ -44,7 +48,7 @@ Domain Types
         |
 Infrastructure Layer
   ├── db/ (Prisma ORM + PostgreSQL + adapter-pg)
-  ├── repositories/         → user, job, pipeline, chat
+  ├── repositories/         → user, job, pipeline, chat, admin
   ├── redis/                → client, chat-lock, global-budget (orçamento diário USD)
   ├── storage/              → browser-storage.ts (IndexedDB via idb)
   ├── security/             → rate-limiter.ts (in-memory), rate-limit.ts (Redis)
@@ -114,3 +118,37 @@ Monetização via indicação de capacitação. Domínio em `src/lib/core/course
 - Anônimos: vagas, cooldown, `last_run_at`, filtros, chat id/histórico → **IndexedDB**
   (`browser-storage.ts`, DB `radar-unificando`, store `kv`). Auto-sync de 15 min.
 - Logados: tudo no PostgreSQL.
+
+## Painel Admin (`/admin`)
+
+Área restrita a usuários com `role = 'admin'` (campo `User.role`, default `user`; o seed
+cria o admin a partir de `ADMIN_EMAIL`/`ADMIN_PASSWORD` do `.env` — sem credenciais no
+código). Proteção em 3 camadas: middleware (`/admin` em
+`protectedPaths` → login), layout server-side (`auth()` + role → `notFound()` para não-admin)
+e `requireAdmin()` para APIs administrativas futuras. `robots.txt` bloqueia `/admin/` e o
+layout emite `noindex, nofollow`.
+
+- **Server-rendered** (`force-dynamic`), sem API route: as páginas chamam os serviços de
+  `core/admin/` direto (`admin-stats.ts`, `admin-users.ts`).
+- **Menu**: `components/admin/admin-nav.tsx` (Dashboard `/admin` + Usuários `/admin/usuarios`),
+  renderizado no layout admin.
+- **Filtro de período** no dashboard: presets 15/30/365 dias ou intervalo personalizado
+  (`?days=N` ou `?from=YYYY-MM-DD&to=YYYY-MM-DD`), resolvido por `resolveAdminRange` em
+  `core/admin/admin-stats.ts`; `components/admin/date-range-filter.tsx` navega via query
+  params.
+- **Dados**: `repositories/admin-repository.ts` (contadores, séries, `groupBy` de
+  `ChatToolCall`, log de buscas, consumo por usuário) + agregação em JS (`bucketByDay` em
+  America/Sao_Paulo, `countOccurrences`).
+- **Tracking que alimenta as métricas**: `User.lastLoginAt` (atualizado no login),
+  `PipelineRun` gravado em **toda** busca (anônimos com `userId` `null`, incluindo
+  `queries`/`companies`), `ChatToolCall` (ferramentas de IA usadas no chat).
+- **Métricas extras**: custo de IA do dia + orçamento global (via `getGlobalBudgetStatus`
+  do Redis), buscas com erro (`status = 'failed'`) e split anônimo × logado
+  (`userId null` vs não-nulo).
+- **Datas**: chaves de dia `YYYY-MM-DD` (fuso SP); exibição pt-BR via
+  `core/admin/date-format.ts` (`formatDayShort`/`formatDayFull` nos gráficos,
+  `formatDateTimeSp` nas tabelas).
+- **UI**: stat cards (com barra de progresso do orçamento) + gráficos Recharts
+  (`components/admin/charts/`) + tabelas (`data-table.tsx`, `users-table.tsx`), seguindo o
+  design system brutalist. `components/admin/auto-refresh.tsx` re-renderiza a página a cada
+  60s via `router.refresh()` (monitoramento ao vivo).

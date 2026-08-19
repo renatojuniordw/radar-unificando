@@ -360,7 +360,7 @@ describe('useProfile', () => {
     });
 
     expect(res!.success).toBe(false);
-    expect(res!.error).toContain('demorou demais');
+    expect(res!.error).toContain('demorou mais que o esperado');
   });
 
   it('trata_abort_do_upload_como_timeout', async () => {

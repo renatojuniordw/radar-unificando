@@ -31,7 +31,7 @@ function ProviderBadge({ provider }: { provider: Course['provider'] }) {
         alignSelf: 'flex-start',
       }}
     >
-      {provider === 'alura' ? 'Alura' : 'Udemy'}
+      {'Udemy'}
     </Box>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { EXTENSION_FEATURES } from "@/lib/constants/home";
 import { toScriptJson } from "@/lib/core/seo/jsonld";
+import { SITE } from "@/lib/core/constants";
 import {
   Gauge,
   RefreshCw,
@@ -20,10 +21,10 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title:
-    "Extensão Chrome Radar Unificando — Análise de Vagas e Score ATS Grátis",
+  title: { absolute: "Extensão Chrome — Score ATS e Vagas | Radar Unificando" },
   description:
     "Analise vagas de emprego no Gupy, LinkedIn e InHire em tempo real. Veja seu score ATS, palavras-chave de IA faltando no seu currículo e dicas de otimização direto no painel lateral do Chrome.",
+  alternates: { canonical: `${SITE.url}/extensao` },
   keywords: [
     "Extensão Chrome",
     "Score ATS",

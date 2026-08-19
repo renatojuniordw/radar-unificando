@@ -15,7 +15,7 @@ vi.mock('@/lib/core/ai/ats/ats-analyzer', () => ({
   analyzeAts: (resume: string, opts?: unknown) => analyzeAtsMock(resume, opts),
 }));
 
-import { analyzeAtsWithCache } from '@/lib/core/ai/ats/ats-service';
+import { analyzeAtsWithCache, buildAtsResumeInput } from '@/lib/core/ai/ats/ats-service';
 
 const RESUME = 'Maria Silva\nExperiencia\nAumentei a conversao em 30%.\nHabilidades\nReact, TypeScript';
 const ANALYSIS = {
@@ -51,5 +51,74 @@ describe('analyzeAtsWithCache', () => {
     expect(result.cached).toBe(false);
     expect(analyzeAtsMock).toHaveBeenCalledWith(RESUME, { jobDescription: 'Vaga React' });
     expect(saveToCacheMock).toHaveBeenCalledWith('user-1', 'ats_analysis', expect.any(String), ANALYSIS);
+  });
+
+  it('should_deduplicate_concurrent_calls_with_same_key', async () => {
+    getCachedMock.mockResolvedValue(null);
+    analyzeAtsMock.mockResolvedValue(ANALYSIS);
+    const [a, b] = await Promise.all([
+      analyzeAtsWithCache('user-1', RESUME),
+      analyzeAtsWithCache('user-1', RESUME),
+    ]);
+    expect(analyzeAtsMock).toHaveBeenCalledTimes(1);
+    expect(a.analysis).toEqual(b.analysis);
+    expect(a.cached).toBe(false);
+  });
+});
+
+describe('buildAtsResumeInput', () => {
+  it('should_combine_resume_with_structured_profile_fields', () => {
+    const input = buildAtsResumeInput({
+      resumeText: 'Currículo bruto',
+      currentRole: 'Dev',
+      seniority: 'pleno',
+      area: 'Tecnologia',
+      experienceYears: 5,
+      skills: ['React'],
+      education: ['Engenharia'],
+    });
+    expect(input).toContain('Currículo bruto');
+    expect(input).toContain('Cargo atual: Dev');
+    expect(input).toContain('Senioridade: pleno');
+    expect(input).toContain('Área: Tecnologia');
+    expect(input).toContain('Experiência: 5 anos');
+    expect(input).toContain('Skills: React');
+    expect(input).toContain('Formação: Engenharia');
+  });
+
+  it('should_return_base_resume_when_no_structured_fields', () => {
+    expect(buildAtsResumeInput({ resumeMarkdown: 'Só o currículo' })).toBe('Só o currículo');
+  });
+
+  it('should_skip_null_and_empty_structured_fields', () => {
+    const input = buildAtsResumeInput({
+      resumeText: 'Base',
+      currentRole: null,
+      seniority: '',
+      area: null,
+      experienceYears: 0,
+      skills: [],
+      education: null,
+    });
+    expect(input).toBe('Base');
+  });
+
+  it('should_ignore_non_array_skills_and_education', () => {
+    const input = buildAtsResumeInput({
+      resumeText: 'Base',
+      skills: 'React',
+      education: 'Engenharia',
+    });
+    expect(input).toBe('Base');
+  });
+
+  it('should_prefer_resume_text_over_resume_markdown', () => {
+    const input = buildAtsResumeInput({
+      resumeText: 'texto',
+      resumeMarkdown: 'markdown',
+      currentRole: 'Dev',
+    });
+    expect(input).toContain('texto');
+    expect(input).not.toContain('markdown');
   });
 });

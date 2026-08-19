@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ResumeExtractionCache, hashContent } from '@/lib/core/parsing/resume-extraction-cache';
 
 describe('hashContent', () => {
@@ -71,5 +71,28 @@ describe('ResumeExtractionCache', () => {
     expect(cache.get('hash-0')).toBeNull();
     // As mais recentes continuam
     expect(cache.get('hash-209')).toEqual(result);
+  });
+
+  it('should purge expired entries on the cleanup interval', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-01T00:00:00Z'));
+    const cache = new ResumeExtractionCache();
+    const result = {
+      skills: ['Python'],
+      experienceYears: null,
+      seniority: null,
+      education: [],
+      currentRole: null,
+      area: null,
+    };
+    cache.set('hash-a', result);
+    cache.set('hash-b', result);
+
+    vi.setSystemTime(new Date('2026-08-01T02:00:00Z'));
+    vi.advanceTimersByTime(10 * 60 * 1000);
+
+    expect(cache.get('hash-a')).toBeNull();
+    expect(cache.get('hash-b')).toBeNull();
+    vi.useRealTimers();
   });
 });

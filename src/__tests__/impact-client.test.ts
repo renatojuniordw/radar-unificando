@@ -9,7 +9,7 @@ import {
 import { IMPACT } from '@/lib/core/constants';
 
 describe('mapImpactItemToCourse', () => {
-  it('deve_mapear_item_do_impact_para_course', () => {
+  it('should_map_impact_item_to_course', () => {
     const course = mapImpactItemToCourse(
       {
         ItemSID: '1234',
@@ -33,21 +33,21 @@ describe('mapImpactItemToCourse', () => {
     expect(course!.skillTags).toEqual(['python']);
   });
 
-  it('deve_retornar_null_para_item_sem_url_ou_titulo', () => {
+  it('should_return_null_for_item_without_url_or_title', () => {
     expect(mapImpactItemToCourse({ ItemSID: '1' }, 'python')).toBeNull();
     expect(mapImpactItemToCourse({ Url: 'https://x' }, 'python')).toBeNull();
   });
 });
 
 describe('scoreImpactItem', () => {
-  it('deve_pontuar_match_no_titulo', () => {
+  it('should_score_title_match', () => {
     const score = scoreImpactItem({ Name: 'Curso de Python Completo' }, ['python']);
     expect(score.titleMatches).toBe(1);
     expect(score.total).toBeGreaterThanOrEqual(3);
     expect(isImpactMatch(score)).toBe(true);
   });
 
-  it('um_match_so_na_descricao_nao_e_relevante', () => {
+  it('should_not_match_on_single_description_hit', () => {
     const score = scoreImpactItem(
       { Name: 'Programação Web', Description: 'Aprenda Python' },
       ['python'],
@@ -57,7 +57,7 @@ describe('scoreImpactItem', () => {
     expect(isImpactMatch(score)).toBe(false);
   });
 
-  it('dois_matches_na_descricao_sao_relevantes', () => {
+  it('should_match_on_two_description_hits', () => {
     const score = scoreImpactItem(
       { Name: 'Programação Web', Description: 'Python para análise de dados' },
       ['python', 'dados'],
@@ -66,19 +66,19 @@ describe('scoreImpactItem', () => {
     expect(isImpactMatch(score)).toBe(true);
   });
 
-  it('deve_normalizar_acentos_na_query_e_no_titulo', () => {
+  it('should_normalize_accents_in_query_and_title', () => {
     expect(tokenizeImpactText('tráfego')).toEqual(['trafego']);
     const score = scoreImpactItem({ Name: 'Tráfego Pago para Iniciantes' }, ['trafego']);
     expect(score.titleMatches).toBe(1);
   });
 
-  it('deve_aplicar_boost_pt_por_palavra_e_por_acento', () => {
+  it('should_apply_pt_boost_per_word_and_accent', () => {
     expect(scoreImpactItem({ Name: 'Curso de Excel Completo' }, ['excel']).ptBoost).toBe(2);
     expect(scoreImpactItem({ Name: 'Excel Avançado' }, ['excel']).ptBoost).toBe(2);
     expect(scoreImpactItem({ Name: 'Data Science Masterclass' }, ['data']).ptBoost).toBe(0);
   });
 
-  it('deve_descartar_titulo_em_script_nao_latino', () => {
+  it('should_penalize_non_latin_script_titles', () => {
     const score = scoreImpactItem({ Name: 'دورة بايثون كاملة' }, ['python']);
     expect(score.nonLatinPenalty).toBeLessThan(0);
     expect(isImpactMatch(score)).toBe(false);
@@ -98,20 +98,20 @@ describe('searchUdemyCourses (fail-open)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('deve_retornar_vazio_sem_chaves_configuradas', async () => {
+  it('should_return_empty_without_configured_keys', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', '');
     vi.stubEnv('IMPACT_AUTH_TOKEN', '');
     await expect(searchUdemyCourses('python', 5)).resolves.toEqual([]);
   });
 
-  it('deve_retornar_vazio_para_query_sem_tokens', async () => {
+  it('should_return_empty_for_query_without_tokens', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
     vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
     vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
     await expect(searchUdemyCourses('!!!', 5)).resolves.toEqual([]);
   });
 
-  it('deve_paginar_filtrar_e_ordenar_por_score', async () => {
+  it('should_paginate_filter_and_sort_by_score', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
     vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
     vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
@@ -143,7 +143,7 @@ describe('searchUdemyCourses (fail-open)', () => {
     expect(courses.every((c) => c.title !== 'Emotional Intelligence')).toBe(true);
   });
 
-  it('deve_parar_cedo_quando_ja_tem_candidatos_suficientes', async () => {
+  it('should_stop_early_when_enough_candidates', async () => {
     vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
     vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
     vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
@@ -165,5 +165,81 @@ describe('searchUdemyCourses (fail-open)', () => {
     const courses = await searchUdemyCourses('python', 2);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(courses).toHaveLength(2);
+  });
+
+  it('should_return_empty_when_impact_api_fails', async () => {
+    vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
+    vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
+    const fetchMock = vi.fn().mockRejectedValue(new Error('api down'));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(searchUdemyCourses('python', 5)).resolves.toEqual([]);
+  });
+
+  it('should_return_empty_when_impact_responds_with_error_status', async () => {
+    vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
+    vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', IMPACT.udemyCatalogId);
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 401 });
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(searchUdemyCourses('python', 5)).resolves.toEqual([]);
+  });
+});
+
+describe('getUdemyCatalogId', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  async function freshModule() {
+    vi.resetModules();
+    const mod = await import('@/lib/core/courses/impact-client');
+    return mod.getUdemyCatalogId;
+  }
+
+  it('should_use_env_override_when_set', async () => {
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', 'catalog-123');
+    expect(await (await freshModule())()).toBe('catalog-123');
+  });
+
+  it('should_return_null_when_not_configured', async () => {
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '');
+    vi.stubEnv('IMPACT_ACCOUNT_SID', '');
+    vi.stubEnv('IMPACT_AUTH_TOKEN', '');
+    expect(await (await freshModule())()).toBeNull();
+  });
+
+  it('should_discover_udemy_catalog_from_api', async () => {
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '');
+    vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
+    vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ Catalogs: [{ Id: '111', Name: 'Courses' }, { Id: '26324', Name: 'Udemy Online Courses' }] }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await (await freshModule())()).toBe('26324');
+  });
+
+  it('should_return_null_when_no_udemy_catalog_found', async () => {
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '');
+    vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
+    vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ Catalogs: [{ Id: '111', Name: 'Courses' }] }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await (await freshModule())()).toBeNull();
+  });
+
+  it('should_return_null_when_catalog_discovery_fails', async () => {
+    vi.stubEnv('IMPACT_UDEMY_CATALOG_ID', '');
+    vi.stubEnv('IMPACT_ACCOUNT_SID', 'sid');
+    vi.stubEnv('IMPACT_AUTH_TOKEN', 'token');
+    const fetchMock = vi.fn().mockRejectedValue(new Error('api down'));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await (await freshModule())()).toBeNull();
   });
 });

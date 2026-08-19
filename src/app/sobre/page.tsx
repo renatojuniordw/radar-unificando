@@ -12,14 +12,15 @@ import {
   Rocket,
 } from 'lucide-react';
 import { SupportSection } from '@/components/shared/support-section';
-import { LINKS } from '@/lib/core/constants';
+import { LINKS, SITE } from '@/lib/core/constants';
 
 export const metadata: Metadata = {
-  title: 'Sobre — Radar Unificando',
+  title: { absolute: 'Sobre — Nossa Missão e Como Funciona | Radar Unificando' },
   description:
     'Conheça o Radar Unificando: a ferramenta inteligente que consolida vagas de emprego de grandes portais (como Gupy e InHire) em tempo real.',
+  alternates: { canonical: `${SITE.url}/sobre` },
   openGraph: {
-    title: 'Sobre — Radar Unificando',
+    title: 'Sobre o Radar Unificando — Nossa Missão e Como Funciona',
     description:
       'Conheça o Radar Unificando: a ferramenta inteligente que consolida vagas de emprego de grandes portais em tempo real.',
   },

@@ -1,5 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Redis mockado como indisponível → evita o connect assíncrono do client real
+// que logava no teardown e causava "Closing rpc while onUserConsoleLog was pending".
+vi.mock('@/lib/infrastructure/redis/client', () => ({
+  redisClient: {
+    status: 'close',
+    get: vi.fn(),
+    incrbyfloat: vi.fn(),
+    expire: vi.fn(),
+  },
+  isRedisReady: vi.fn(() => false),
+}));
+
 // Mocka rate-limiter-flexible para controlar o objeto de rejeição (RateLimiterRes)
 // e validar a propagação dos campos no caso de limite excedido.
 const { consumeMock } = vi.hoisted(() => ({ consumeMock: vi.fn() }));

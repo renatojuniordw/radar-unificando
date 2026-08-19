@@ -1,8 +1,4 @@
-// Catálogo curado de cursos de afiliados (Udemy).
-//
-// Alura removido temporariamente: afiliação ainda não aprovada. Reintroduzir
-// quando aprovada — o tipo CourseProviderId em course-provider.ts já suporta
-// 'alura', só falta adicionar as entradas de volta aqui.
+// Catálogo curado de cursos de afiliados. Único provider: Udemy.
 //
 // IMPORTANTE: as URLs abaixo são páginas canônicas REAIS dos cursos (verificadas).
 // O tracking de afiliado é feito pelo script da Impact carregado no client via

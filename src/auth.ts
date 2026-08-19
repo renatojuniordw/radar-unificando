@@ -1,4 +1,4 @@
-import NextAuth, { CredentialsSignin } from 'next-auth';
+import NextAuth, { CredentialsSignin, type User } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { userRepository } from '@/lib/infrastructure/repositories';
@@ -35,7 +35,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const ip = getClientIp(request);
         const { success, msBeforeNext } = await checkRateLimit(`${ip}:${email}`, 'auth');
         if (!success) {
-          console.warn(`[auth] Login rate limit atingido para ${email} (retry em ${Math.ceil(msBeforeNext / 1000)}s)`);
+          const masked = email.replace(/(.{2}).*(@.*)/, '$1***$2');
+          console.warn(`[auth] Login rate limit atingido para ${masked} (retry em ${Math.ceil(msBeforeNext / 1000)}s)`);
           throw new RateLimitedError();
         }
 
@@ -46,11 +47,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const isValid = await bcrypt.compare(password, user.passwordHash);
           if (!isValid) return null;
 
+          // Registra o último login (fire-and-forget; falha não bloqueia o login)
+          void userRepository.updateLastLogin(user.id).catch(() => {});
+
           return {
             id: user.id,
             email: user.email,
             name: user.name,
-          };
+            role: user.role,
+          } as User & { role: string };
         } catch {
           return null;
         }

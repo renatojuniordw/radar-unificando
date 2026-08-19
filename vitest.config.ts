@@ -7,6 +7,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    // next-auth importa 'next/server' via ESM nativo; sem exports map no next,
+    // o Node não resolve quando o next-auth é externalizado. Inline faz o Vite
+    // transformar o next-auth e resolver 'next/server' corretamente.
+    server: {
+      deps: {
+        inline: ['next-auth'],
+      },
+    },
     exclude: ['e2e/**', 'node_modules/**', '.agents/**', 'src/__tests__/coverage/**'],
     coverage: {
       provider: 'v8',

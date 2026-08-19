@@ -61,8 +61,11 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     globalBudget: { usedUsd: 0, limitUsd: 0.95, ratio: 0, degraded: false, exhausted: false },
   });
 
+  // Throttle mais alto reduz a frequência de re-render em respostas com
+  // muitas tool-result parts chegando em rajada (ex: várias análises de
+  // vaga no mesmo turno), mitigando risco de "Maximum update depth exceeded".
   const { messages, sendMessage, status: chatStatus, setMessages, regenerate } = useChat({
-    throttle: 100,
+    throttle: 250,
   });
 
   const loading = chatStatus === 'submitted' || chatStatus === 'streaming';

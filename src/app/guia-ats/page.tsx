@@ -9,7 +9,7 @@ import { toScriptJson } from '@/lib/core/seo/jsonld';
 export const revalidate = 86400; // ISR diário
 
 export const metadata: Metadata = {
-  title: 'Análise ATS de Currículo: o que é e como passar nos filtros automáticos',
+  title: { absolute: 'Guia ATS: Passe no Filtro Automático | Radar Unificando' },
   description:
     'Entenda o que é ATS (Applicant Tracking System), por que currículos são rejeitados automaticamente e as boas práticas para seu CV passar nos filtros — com análise gratuita no Radar Unificando.',
   alternates: { canonical: `${SITE.url}/guia-ats` },

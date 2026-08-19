@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseJobCards } from '@/components/chat/job-card-parser';
 
 describe('parseJobCards', () => {
-  it('deve_parsear_formato_documentado_com_blank_entre_vagas_preservando_prosa', () => {
+  it('should_parse_documented_format_with_blank_lines_preserving_prose', () => {
     const text = [
       'Encontrei estas vagas:',
       '',
@@ -46,7 +46,7 @@ describe('parseJobCards', () => {
     expect(segments[3]).toEqual({ type: 'markdown', text: 'Quer que eu analise alguma?' });
   });
 
-  it('deve_parsear_bloco_com_quebras_de_linha_simples_sem_linhas_em_branco', () => {
+  it('should_parse_block_with_single_line_breaks', () => {
     const text = [
       '🏢 **Front-end Engineer** — Acme',
       '📍 São Paulo | Remoto',
@@ -70,7 +70,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_parse_metadata_fora_de_ordem', () => {
+  it('should_parse_metadata_out_of_order', () => {
     const text = [
       '🏢 **Dev** — Acme',
       '🔗 https://acme.gupy.io/jobs/2',
@@ -91,7 +91,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_omitir_date_quando_linha_calendario_ausente', () => {
+  it('should_omit_date_when_calendar_line_missing', () => {
     const text = '🏢 **Dev** — Acme\n📍 São Paulo | Remoto\n🔗 https://acme.gupy.io/jobs/3';
 
     const segments = parseJobCards(text);
@@ -108,7 +108,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_tratar_header_sem_empresa', () => {
+  it('should_handle_header_without_company', () => {
     const text = '🏢 **Backend Developer**\n📍 São Paulo | Remoto\n🔗 https://acme.gupy.io/jobs/4';
 
     const segments = parseJobCards(text);
@@ -124,7 +124,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_preservar_titulo_hifenizado_ao_separar_empresa', () => {
+  it('should_preserve_hyphenated_title_when_splitting_company', () => {
     const text = '🏢 **Front-end** — Acme\n🔗 https://acme.gupy.io/jobs/5';
 
     const segments = parseJobCards(text);
@@ -135,7 +135,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_capturar_descricao_multilinha_com_quebra_de_paragrafo', () => {
+  it('should_capture_multiline_description_with_paragraph_break', () => {
     const text = [
       '🏢 **Dev** — Acme',
       '📍 São Paulo | Remoto',
@@ -160,7 +160,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_capturar_variantes_de_rotulo_de_descricao_sem_vazar_o_rotulo', () => {
+  it('should_capture_description_label_variants_without_leaking_label', () => {
     const variants = ['Descrição:', '**Descrição:**', '**Descrição**'];
 
     for (const label of variants) {
@@ -178,7 +178,7 @@ describe('parseJobCards', () => {
     }
   });
 
-  it('nao_deve_capturar_prosa_sem_rotulo_apos_o_link', () => {
+  it('should_not_capture_unlabeled_prose_after_link', () => {
     const text = '🏢 **Dev** — Acme\n🔗 https://acme.gupy.io/jobs/8\nProsa solta sem rótulo.';
 
     const segments = parseJobCards(text);
@@ -191,7 +191,7 @@ describe('parseJobCards', () => {
     expect(segments[1]).toEqual({ type: 'markdown', text: 'Prosa solta sem rótulo.' });
   });
 
-  it('deve_intercalar_varias_vagas_com_prosa_entre_elas', () => {
+  it('should_interleave_multiple_jobs_with_prose', () => {
     const text = [
       '🏢 **A** — Co',
       '🔗 https://a.gupy.io/jobs/1',
@@ -210,7 +210,7 @@ describe('parseJobCards', () => {
     expect(segments[2]).toEqual({ type: 'job', job: { title: 'B', company: 'Co', link: 'https://b.gupy.io/jobs/2' } });
   });
 
-  it('deve_retornar_segmento_markdown_unico_quando_nao_ha_vaga', () => {
+  it('should_return_single_markdown_segment_when_no_jobs', () => {
     const text = 'Apenas um texto sem vagas.';
 
     const segments = parseJobCards(text);
@@ -218,7 +218,7 @@ describe('parseJobCards', () => {
     expect(segments).toEqual([{ type: 'markdown', text: 'Apenas um texto sem vagas.' }]);
   });
 
-  it('deve_fazer_fallback_para_markdown_em_bloco_ambiguo_sem_link_ou_local', () => {
+  it('should_fall_back_to_markdown_for_ambiguous_block', () => {
     const text = '🏢 **Dev** — Acme\nAlguma prosa sobre o projeto.';
 
     const segments = parseJobCards(text);
@@ -226,7 +226,7 @@ describe('parseJobCards', () => {
     expect(segments).toEqual([{ type: 'markdown', text: '🏢 **Dev** — Acme\nAlguma prosa sobre o projeto.' }]);
   });
 
-  it('deve_extrair_url_de_link_markdown_e_ignorar_link_malformado', () => {
+  it('should_extract_url_from_markdown_link_and_ignore_malformed', () => {
     const mdLink = '🏢 **Dev** — Acme\n🔗 [Ver Vaga](https://acme.gupy.io/jobs/9)';
     expect(parseJobCards(mdLink)[0]).toEqual({
       type: 'job',
@@ -240,7 +240,7 @@ describe('parseJobCards', () => {
     ]);
   });
 
-  it('deve_detectar_header_com_variation_selector', () => {
+  it('should_detect_header_with_variation_selector', () => {
     const text = '🏢️ **Dev** — Acme\n🔗 https://acme.gupy.io/jobs/10';
 
     const segments = parseJobCards(text);
@@ -251,7 +251,7 @@ describe('parseJobCards', () => {
     });
   });
 
-  it('deve_ignorar_placeholder_de_data', () => {
+  it('should_ignore_date_placeholder', () => {
     const text = '🏢 **Dev** — Acme\n📅 Publicada em [data]\n🔗 https://acme.gupy.io/jobs/11';
 
     const segments = parseJobCards(text);
@@ -259,6 +259,45 @@ describe('parseJobCards', () => {
     expect(segments[0]).toEqual({
       type: 'job',
       job: { title: 'Dev', company: 'Acme', link: 'https://acme.gupy.io/jobs/11' },
+    });
+  });
+
+  it('should_split_company_with_spaced_hyphen', () => {
+    const text = '🏢 **Front-end** - **Nubank**\n🔗 https://nubank.gupy.io/jobs/12';
+    const segments = parseJobCards(text);
+    expect(segments[0]).toEqual({
+      type: 'job',
+      job: { title: 'Front-end', company: 'Nubank', link: 'https://nubank.gupy.io/jobs/12' },
+    });
+  });
+
+  it('should_parse_course_card_with_metadata', () => {
+    const text = [
+      '📚 **Curso de Python** — Udemy',
+      '📌 Skill: python',
+      '💰 R$ 29,90',
+      '🔗 https://udemy.com/course/python',
+    ].join('\n');
+    const segments = parseJobCards(text);
+    expect(segments).toHaveLength(1);
+    expect(segments[0]).toEqual({
+      type: 'course',
+      course: {
+        title: 'Curso de Python',
+        provider: 'Udemy',
+        skill: 'python',
+        price: 'R$ 29,90',
+        link: 'https://udemy.com/course/python',
+      },
+    });
+  });
+
+  it('should_parse_course_card_without_provider_or_skill', () => {
+    const text = '📚 **Curso Avulso**\n💰 R$ 19,90\n🔗 https://udemy.com/course/x';
+    const segments = parseJobCards(text);
+    expect(segments[0]).toEqual({
+      type: 'course',
+      course: { title: 'Curso Avulso', price: 'R$ 19,90', link: 'https://udemy.com/course/x' },
     });
   });
 });

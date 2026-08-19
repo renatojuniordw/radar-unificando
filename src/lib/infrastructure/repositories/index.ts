@@ -10,3 +10,10 @@ export { newCompanyRepository } from './new-company-repository';
 export type { INewCompanyRepository } from './new-company-repository';
 export { chatRepository } from './chat-repository';
 export type { IChatRepository, ChatMessageData } from './chat-repository';
+export { adminRepository } from './admin-repository';
+export type {
+  IAdminRepository,
+  ToolCallCount,
+  DailyCountTable,
+  DayCountRow,
+} from './admin-repository';

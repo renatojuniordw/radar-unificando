@@ -10,7 +10,8 @@ vi.mock('@/lib/core/extension/extension-token', () => ({
 vi.mock('@/lib/infrastructure/repositories', () => ({
   profileRepository: { findByUserId: vi.fn() },
 }));
-vi.mock('@/lib/core/ai/ats/ats-service', () => ({
+vi.mock('@/lib/core/ai/ats/ats-service', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/core/ai/ats/ats-service')>()),
   analyzeAtsWithCache: vi.fn(),
 }));
 vi.mock('@/lib/infrastructure/rate-limit', () => ({
@@ -118,7 +119,7 @@ describe('Extension Analyze API', () => {
     expect(body.courses.length).toBeLessThanOrEqual(3);
     for (const curso of body.courses) {
       expect(typeof curso.titulo).toBe('string');
-      expect(['Alura', 'Udemy']).toContain(curso.plataforma);
+      expect(curso.plataforma).toBe('Udemy');
       expect(typeof curso.skill).toBe('string');
       expect(typeof curso.preco).toBe('string');
       expect(curso.url.startsWith('https://')).toBe(true);
@@ -148,5 +149,26 @@ describe('Extension Analyze API', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.courses).toEqual([]);
+  });
+
+  it('should_return_500_when_token_validation_fails', async () => {
+    mockFindUser.mockRejectedValue(new Error('redis down'));
+    const res = await POST(makeRequest('Bearer valid-token'));
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe('Erro ao validar token');
+  });
+
+  it('should_return_500_with_limited_error_detail_when_analysis_fails', async () => {
+    mockFindUser.mockResolvedValue('user-1');
+    vi.mocked(checkRateLimit).mockResolvedValue({ success: true } as any);
+    vi.mocked(profileRepository.findByUserId).mockResolvedValue({
+      resumeText: 'Currículo com experiência em desenvolvimento de software por mais de trinta caracteres.',
+    } as any);
+    vi.mocked(analyzeAtsWithCache).mockRejectedValue(new Error('UPSTREAM_SECRET_ENDPOINT'));
+    const res = await POST(makeRequest('Bearer valid-token', { jobDescription: 'Vaga' }));
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toContain('Erro ao analisar o currículo');
+    expect(body.error).toContain('UPSTREAM_SECRET_ENDPOINT');
   });
 });

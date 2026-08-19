@@ -6,10 +6,10 @@ describe('parseJobCards — bloco de curso (📚)', () => {
     const text = [
       'Para cobrir esse gap, recomendo:',
       '',
-      '📚 **Formação DevOps** — Alura',
+      '📚 **Formação DevOps** — Udemy',
       '📌 Skill: Kubernetes',
-      '💰 Assinatura a partir de R$ 99/mês',
-      '🔗 https://www.alura.com.br/formacao-devops',
+      '💰 R$ 99,90',
+      '🔗 https://www.udemy.com/course/formacao-devops',
       '',
       'Indicação via link de afiliado — sem custo extra pra você.',
     ].join('\n');
@@ -22,10 +22,10 @@ describe('parseJobCards — bloco de curso (📚)', () => {
       type: 'course',
       course: {
         title: 'Formação DevOps',
-        provider: 'Alura',
+        provider: 'Udemy',
         skill: 'Kubernetes',
-        price: 'Assinatura a partir de R$ 99/mês',
-        link: 'https://www.alura.com.br/formacao-devops',
+        price: 'R$ 99,90',
+        link: 'https://www.udemy.com/course/formacao-devops',
       },
     });
     expect(segments[2]).toEqual({
@@ -65,10 +65,10 @@ describe('parseJobCards — bloco de curso (📚)', () => {
 
   it('deve_intercalar_curso_e_vaga_no_mesmo_texto', () => {
     const text = [
-      '📚 **Formação Python** — Alura',
+      '📚 **Formação Python** — Udemy',
       '📌 Skill: Python',
-      '💰 Assinatura',
-      '🔗 https://www.alura.com.br/formacao-python',
+      '💰 R$ 49,90',
+      '🔗 https://www.udemy.com/course/formacao-python',
       '',
       '🏢 **Dev** — Acme',
       '🔗 https://acme.gupy.io/jobs/1',

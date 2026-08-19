@@ -14,19 +14,19 @@ const mocked = vi.mocked(prisma.pipelineRun);
 describe('pipelineRunRepository', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('findById_retorna_run_encontrado', async () => {
+  it('should_return_run_by_id', async () => {
     mocked.findFirst.mockResolvedValue({ id: 'run-1', status: 'completed' } as any);
     const run = await pipelineRunRepository.findById('run-1');
     expect(run?.id).toBe('run-1');
     expect(mocked.findFirst).toHaveBeenCalledWith({ where: { id: 'run-1' } });
   });
 
-  it('findById_retorna_null_quando_nao_existe', async () => {
+  it('should_return_null_when_run_missing', async () => {
     mocked.findFirst.mockResolvedValue(null);
     expect(await pipelineRunRepository.findById('missing')).toBeNull();
   });
 
-  it('create_persiste_run', async () => {
+  it('should_create_run', async () => {
     mocked.create.mockResolvedValue({ id: 'run-1', status: 'running' } as any);
     await pipelineRunRepository.create({ id: 'run-1', userId: 'user-1', status: 'running', discoveryEnabled: true });
     expect(mocked.create).toHaveBeenCalledWith({
@@ -34,9 +34,17 @@ describe('pipelineRunRepository', () => {
     });
   });
 
-  it('update_parcial_atualiza_apenas_campos_enviados', async () => {
+  it('should_partially_update_only_provided_fields', async () => {
     mocked.update.mockResolvedValue({ id: 'run-1' } as any);
     await pipelineRunRepository.update('run-1', { status: 'failed' });
     expect(mocked.update).toHaveBeenCalledWith({ where: { id: 'run-1' }, data: { status: 'failed' } });
+  });
+
+  it('should_create_run_for_anonymous_user', async () => {
+    mocked.create.mockResolvedValue({ id: 'run-2', status: 'running' } as any);
+    await pipelineRunRepository.create({ id: 'run-2', userId: null });
+    expect(mocked.create).toHaveBeenCalledWith({
+      data: { id: 'run-2', userId: null },
+    });
   });
 });

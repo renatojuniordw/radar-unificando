@@ -39,14 +39,15 @@ export async function POST(req: NextRequest) {
     const runId = crypto.randomUUID();
     const isLoggedIn = !!session?.user?.id;
 
-    if (isLoggedIn) {
-      await pipelineRunRepository.create({
-        id: runId,
-        userId,
-        status: 'running',
-        discoveryEnabled,
-      });
-    }
+    // Registra toda execução (logada ou anônima) para métricas do painel admin.
+    // userId null para anônimos — evita o UUID zero (sem linha em users).
+    // Termos de busca (queries/companies) NÃO são persistidos (volume + LGPD).
+    await pipelineRunRepository.create({
+      id: runId,
+      userId: isLoggedIn ? userId : null,
+      status: 'running',
+      discoveryEnabled,
+    });
 
     progressEmitter.emit(runId, { type: 'step_start', step: 'Pipeline', message: 'Iniciando pipeline...' });
 

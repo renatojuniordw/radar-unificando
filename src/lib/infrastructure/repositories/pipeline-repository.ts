@@ -3,7 +3,12 @@ import type { PipelineRun } from '@prisma/client';
 
 export interface IPipelineRunRepository {
   findById(id: string): Promise<PipelineRun | null>;
-  create(data: { id: string; userId: string; status?: string; discoveryEnabled?: boolean }): Promise<PipelineRun>;
+  create(data: {
+    id: string;
+    userId: string | null;
+    status?: string;
+    discoveryEnabled?: boolean;
+  }): Promise<PipelineRun>;
   update(id: string, data: { status?: string; totalJobs?: number; gupyJobs?: number; inhireJobs?: number; newCompaniesFound?: number; finishedAt?: Date }): Promise<PipelineRun>;
 }
 

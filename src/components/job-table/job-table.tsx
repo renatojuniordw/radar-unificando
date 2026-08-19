@@ -21,7 +21,6 @@ interface Props {
   jobs: Job[];
   loading: boolean;
   roleCategories: string[];
-  onExportCsv: () => void;
   onFilterChange: (filters: { platform?: string; role?: string; search?: string }) => void;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;
@@ -29,7 +28,42 @@ interface Props {
   onAnalyzeAts: (job: Job) => void;
 }
 
-export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, onExportCsv, onFilterChange, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
+function escapeCsv(value: string): string {
+  const s = String(value || '');
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
+
+function downloadJobsCsv(jobsToExport: Job[]) {
+  const headers = [
+    'Empresa', 'Plataforma', 'Na sua lista?', 'Categoria do Cargo',
+    'Titulo da Vaga', 'Tipo', 'Local', 'Link', 'Nome na Plataforma',
+    'Publicado', 'Alerta', 'Detectada em',
+  ];
+
+  const csvRows = jobsToExport.map(j => [
+    escapeCsv(j.company), j.platform, j.onList || '',
+    escapeCsv(j.roleCategory || ''), escapeCsv(j.title || ''),
+    escapeCsv(j.type || ''), escapeCsv(j.location || ''), j.link,
+    escapeCsv(j.companyNameOnPlatform || ''), j.postedAt || '',
+    escapeCsv(j.alert || ''), j.detectedAt || '',
+  ].join(','));
+
+  const csv = '﻿' + [headers.join(','), ...csvRows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `radar-unificando-vagas-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, onFilterChange, canGenerateResume, onGenerateResume, generatingJobKey, onAnalyzeAts }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobilePage, setMobilePage] = useState(1);
   const [exporting, setExporting] = useState(false);
@@ -53,14 +87,6 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
     handleSearch,
   } = useJobFilters({ onFilterChange });
 
-  function handleExport() {
-    if (exporting) return;
-    setExporting(true);
-    trackExportCsv(jobs.length);
-    onExportCsv();
-    setTimeout(() => setExporting(false), 2000);
-  }
-
   // Reset mobile page when filters or search change
   useEffect(() => {
     setMobilePage(1);
@@ -80,6 +106,14 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
     if (typeFilter && normalizeJobType(j.type) !== typeFilter) return false;
     return true;
   }), [jobs, companyFilter, typeFilter]);
+
+  function handleExport() {
+    if (exporting) return;
+    setExporting(true);
+    trackExportCsv(filteredJobs.length);
+    downloadJobsCsv(filteredJobs);
+    setExporting(false);
+  }
 
   return (
     <>

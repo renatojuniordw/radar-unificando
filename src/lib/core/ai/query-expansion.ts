@@ -6,9 +6,9 @@
 // ---------------------------------------------------------------------------
 
 import { z } from 'zod';
-import { generate } from './llm-provider';
 import { removeAccents } from '@/lib/utils/string';
 import { QUERY_EXPANSION_PROMPT } from './prompts/query-expansion';
+import { llmCall } from './shared/llm-call';
 
 export const expansionSchema = z.object({
   variants: z
@@ -51,12 +51,11 @@ export function sanitizeVariants(variants: string[], original: string): string[]
 
 /** Chama a LLM para gerar variantes da query. Lança em erro (o service trata). */
 export async function generateAiExpansion(query: string): Promise<string[]> {
-  const prompt = `${QUERY_EXPANSION_PROMPT}
+  const userPrompt = `<query>\n${query}\n</query>`;
 
-<query>
-${query}
-</query>`;
-
-  const raw = await generate(expansionSchema, prompt, { maxOutputTokens: 300 });
+  const raw = await llmCall(expansionSchema, QUERY_EXPANSION_PROMPT, userPrompt, {
+    maxOutputTokens: 300,
+    eventName: 'query_expansion',
+  });
   return raw.variants;
 }

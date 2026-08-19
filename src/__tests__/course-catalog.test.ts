@@ -26,26 +26,23 @@ describe('course-catalog', () => {
     }
   });
 
-  it('deve_ter_apenas_provider_udemy_ate_afiliacao_alura_ser_aprovada', () => {
-    expect(COURSES.some((c) => c.provider === 'udemy')).toBe(true);
-    expect(COURSES.every((c) => c.provider === 'udemy')).toBe(true);
-  });
-
   it('deve_ter_pelo_menos_um_featured_para_fallback', () => {
     expect(COURSES.some((c) => c.featured)).toBe(true);
   });
 
-  it('buildAffiliateUrl_nao_altera_url_de_provider_nao_udemy', () => {
-    const alura: Course = {
-      id: 'fixture-alura',
-      provider: 'alura',
+  it('buildAffiliateUrl_nao_altera_url_de_provider_desconhecido', () => {
+    // Fixture com provider inválido (unsafe cast) para exercitar o guard
+    // defensivo de buildAffiliateUrl contra valores fora do tipo esperado.
+    const other = {
+      id: 'fixture-other',
+      provider: 'other',
       title: 'Curso fixture',
       description: '',
       skillTags: ['fixture'],
       priceLabel: 'R$ 0',
-      url: 'https://www.alura.com.br/fixture',
-    };
-    expect(buildAffiliateUrl(alura)).toBe(alura.url);
+      url: 'https://example.com/fixture',
+    } as unknown as Course;
+    expect(buildAffiliateUrl(other)).toBe(other.url);
   });
 
   it('buildAffiliateUrl_adiciona_ref_da_udemy_quando_env_definido', () => {

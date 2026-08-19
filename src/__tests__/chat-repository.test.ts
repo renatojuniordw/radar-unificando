@@ -6,6 +6,7 @@ vi.mock('@/lib/infrastructure/db/prisma-client', () => ({
     chat: { findUnique: vi.fn(), upsert: vi.fn(), update: vi.fn(), deleteMany: vi.fn(), findMany: vi.fn() },
     chatMessage: { deleteMany: vi.fn(), createMany: vi.fn(), count: vi.fn() },
     chatUsage: { create: vi.fn(), aggregate: vi.fn(), findFirst: vi.fn() },
+    chatToolCall: { createMany: vi.fn() },
   },
 }));
 
@@ -102,6 +103,22 @@ describe('chatRepository', () => {
         ipHash: 'hash',
       },
     });
+  });
+
+  it('recordToolCalls_grava_uma_linha_por_ferramenta', async () => {
+    (prisma.chatToolCall.createMany as any).mockResolvedValue({ count: 2 });
+    await chatRepository.recordToolCalls('u1', ['search_jobs', 'analyze_ats_score']);
+    expect(prisma.chatToolCall.createMany).toHaveBeenCalledWith({
+      data: [
+        { userId: 'u1', toolName: 'search_jobs' },
+        { userId: 'u1', toolName: 'analyze_ats_score' },
+      ],
+    });
+  });
+
+  it('recordToolCalls_ignora_lista_vazia', async () => {
+    await chatRepository.recordToolCalls('u1', []);
+    expect(prisma.chatToolCall.createMany).not.toHaveBeenCalled();
   });
 
   it('sumTokensSince_trata_somas_nulas_como_zero', async () => {

@@ -220,7 +220,7 @@
 - **Aplicável:** Sim
 - **Status:** Conforme
 - **Evidência:** `src/app/api/auth/register/route.ts:52`, `src/auth.ts:46` (bcrypt cost 12)
-- **Problema:** Nenhum. (Seed `admin123` só em dev, via comando manual.)
+- **Problema:** Nenhum. (Admin criado pelo seed a partir de `ADMIN_EMAIL`/`ADMIN_PASSWORD` do `.env` — sem credenciais no código.)
 - **Sugestão de correção:** Nenhuma.
 
 ---
@@ -420,7 +420,7 @@
 - **Aplicável:** Sim
 - **Status:** Parcialmente conforme
 - **Severidade:** Baixo
-- **Evidência:** `docker-entrypoint.sh:6-9` (agora `prisma migrate deploy`, não mais `db push --accept-data-loss`)
+- **Evidência:** `docker-entrypoint.sh` (agora `prisma migrate deploy`, não mais `db push --accept-data-loss`; em seguida roda o seed para garantir o usuário admin a partir de `ADMIN_EMAIL`/`ADMIN_PASSWORD` do `.env`)
 - **Problema:** A parte verificável no repositório foi corrigida (eliminado o risco de perda de dados por `--accept-data-loss`). A estratégia de deploy/rollback na VPS (blue-green, `docker-compose down/up`, snapshots antes de deploy) permanece **não verificável no repositório**.
 - **Sugestão de correção:** verificar/implementar na VPS: backup/snapshot antes de cada deploy e procedimento de rollback documentado.
 

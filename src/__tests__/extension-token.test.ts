@@ -16,6 +16,7 @@ import {
   hashExtensionToken,
   createExtensionToken,
   findUserIdByExtensionToken,
+  getExtensionStatusForUser,
 } from '@/lib/core/extension/extension-token';
 
 const HEX_64 = /^[0-9a-f]{64}$/;
@@ -79,6 +80,24 @@ describe('ExtensionToken', () => {
       vi.mocked(prisma.extensionToken.findFirst).mockResolvedValue(null);
       const userId = await findUserIdByExtensionToken('revoked-token');
       expect(userId).toBeNull();
+    });
+  });
+
+  describe('getExtensionStatusForUser', () => {
+    it('should_report_connected_with_last_used_at', async () => {
+      const lastUsedAt = new Date('2026-08-01');
+      vi.mocked(prisma.extensionToken.findFirst).mockResolvedValue({ lastUsedAt } as any);
+      const status = await getExtensionStatusForUser('user-1');
+      expect(status).toEqual({ connected: true, lastUsedAt });
+      expect(prisma.extensionToken.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'user-1', revokedAt: null, lastUsedAt: { not: null } },
+        orderBy: { lastUsedAt: 'desc' },
+      });
+    });
+
+    it('should_report_not_connected_when_no_used_token', async () => {
+      vi.mocked(prisma.extensionToken.findFirst).mockResolvedValue(null);
+      expect(await getExtensionStatusForUser('user-1')).toEqual({ connected: false, lastUsedAt: null });
     });
   });
 });

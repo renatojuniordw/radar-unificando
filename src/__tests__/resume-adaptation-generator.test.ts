@@ -47,22 +47,22 @@ describe('generateAdaptedResume', () => {
       jobLocation: 'SP',
       atsKeywords: ['React', 'TypeScript'],
     });
-    const prompt = generateMock.mock.calls[0][1] as string;
-    expect(prompt).toContain('<job_title>');
-    expect(prompt).toContain('<job_description>');
-    expect(prompt).toContain('<job_company>');
-    expect(prompt).toContain('<job_location>');
-    expect(prompt).toContain('<ats_keywords>');
-    expect(prompt).toContain('React, TypeScript');
-    expect(prompt).toContain('<resume>');
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
+    expect(prompt.user).toContain('<job_title>');
+    expect(prompt.user).toContain('<job_description>');
+    expect(prompt.user).toContain('<job_company>');
+    expect(prompt.user).toContain('<job_location>');
+    expect(prompt.user).toContain('<ats_keywords>');
+    expect(prompt.user).toContain('React, TypeScript');
+    expect(prompt.user).toContain('<resume>');
   });
 
   it('should_omit_ats_keywords_block_when_empty', async () => {
     await generateAdaptedResume(RESUME, 'Dev', 'Vaga');
-    const prompt = generateMock.mock.calls[0][1] as string;
+    const prompt = generateMock.mock.calls[0][1] as { system: string; user: string };
     // O bloco de dados <ats_keywords>...</ats_keywords> não deve ser adicionado
     // quando não há keywords (a tag só aparece nas regras do prompt base).
-    expect(prompt).not.toMatch(/<ats_keywords>\s*\n\s*<\/ats_keywords>/);
+    expect(prompt.user).not.toMatch(/<ats_keywords>\s*\n\s*<\/ats_keywords>/);
   });
 
   it('should_throw_on_short_resume', async () => {
@@ -85,5 +85,31 @@ describe('generateAdaptedResume', () => {
     expect(md).toContain('## Experiência');
     expect(md).toContain('## Formação');
     expect(md).toContain('## Idiomas');
+  });
+
+  it('should_throw_generic_error_when_llm_fails', async () => {
+    generateMock.mockRejectedValue(new Error('UPSTREAM_SECRET_ENDPOINT'));
+    await expect(
+      generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev', {}),
+    ).rejects.toThrow('Não foi possível gerar o currículo adaptado. Tente novamente.');
+    expect(generateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should_retry_once_and_succeed_after_llm_timeout', async () => {
+    generateMock
+      .mockRejectedValueOnce(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }))
+      .mockResolvedValueOnce(SAMPLE_RESUME);
+
+    const result = await generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev');
+    expect(result.fullName).toBe('Maria Silva');
+    expect(generateMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should_throw_timeout_message_when_both_attempts_time_out', async () => {
+    generateMock.mockRejectedValue(Object.assign(new Error('LLM_TIMEOUT'), { name: 'AbortError' }));
+    await expect(
+      generateAdaptedResume(RESUME, 'Dev', 'Vaga de dev'),
+    ).rejects.toThrow('A geração do currículo demorou mais que o esperado. Tente novamente em instantes.');
+    expect(generateMock).toHaveBeenCalledTimes(2);
   });
 });

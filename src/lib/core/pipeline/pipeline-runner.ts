@@ -96,16 +96,15 @@ export async function runPipeline(
       });
     }
 
-    if (isLoggedIn) {
-      await pipelineRunRepository.update(runId, {
-        status: 'completed',
-        totalJobs: allJobs.length,
-        gupyJobs: gupyCount,
-        inhireJobs: inhireCount,
-        newCompaniesFound,
-        finishedAt: new Date(),
-      });
-    }
+    // Atualiza também runs anônimos (registrados para métricas do painel admin)
+    await pipelineRunRepository.update(runId, {
+      status: 'completed',
+      totalJobs: allJobs.length,
+      gupyJobs: gupyCount,
+      inhireJobs: inhireCount,
+      newCompaniesFound,
+      finishedAt: new Date(),
+    });
 
     progressEmitter.emit(runId, {
       type: 'pipeline_complete',
@@ -120,11 +119,9 @@ export async function runPipeline(
     });
     progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
 
-    if (isLoggedIn) {
-      await pipelineRunRepository.update(runId, {
-        status: 'failed',
-        finishedAt: new Date(),
-      });
-    }
+    await pipelineRunRepository.update(runId, {
+      status: 'failed',
+      finishedAt: new Date(),
+    });
   }
 }

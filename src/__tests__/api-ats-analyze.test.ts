@@ -9,7 +9,8 @@ vi.mock('@/lib/infrastructure/repositories', () => ({
 vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn(),
 }));
-vi.mock('@/lib/core/ai/ats/ats-service', () => ({
+vi.mock('@/lib/core/ai/ats/ats-service', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/core/ai/ats/ats-service')>()),
   analyzeAtsWithCache: vi.fn(),
 }));
 
@@ -99,5 +100,14 @@ describe('ATS Analyze API', () => {
       expect.stringContaining('Currículo'),
       expect.objectContaining({ jobDescription: undefined }),
     );
+  });
+
+  it('should_return_500_without_leaking_error_details_when_analysis_fails', async () => {
+    vi.mocked(analyzeAtsWithCache).mockRejectedValue(new Error('UPSTREAM_SECRET_ENDPOINT'));
+    const res = await POST(makeRequest({ jobDescription: 'Vaga' }));
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe('Erro ao analisar o currículo.');
+    expect(JSON.stringify(body)).not.toContain('UPSTREAM_SECRET_ENDPOINT');
   });
 });

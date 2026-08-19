@@ -28,9 +28,14 @@ vi.mock('@/lib/core/parsing/pdf-to-markdown', () => ({
   textToMarkdown: vi.fn((t) => t),
 }));
 
+vi.mock('pdfjs-dist/legacy/build/pdf.mjs', () => ({
+  getDocument: vi.fn(),
+}));
+
 import { requireAuth } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
+import { uploadLimiter } from '@/lib/infrastructure/security/rate-limiter';
 import { POST } from '@/app/api/upload/route';
 import { GET as GET_JOB } from '@/app/api/upload/[jobId]/route';
 import { uploadJobStore } from '@/lib/core/upload/upload-job-store';
@@ -67,9 +72,17 @@ function waitForJob(jobId: string, attempts = 50): Promise<Response> {
 }
 
 describe('POST /api/upload', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     authOk();
+    vi.mocked(uploadLimiter.check).mockReturnValue({ allowed: true } as any);
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    vi.mocked(pdfjs.getDocument).mockImplementation(() => ({
+      promise: Promise.resolve({
+        numPages: 1,
+        getPage: async () => ({ getTextContent: async () => ({ items: [{ str: 'Experiencia' }, { str: 'Desenvolvedor com mais de vinte caracteres' }] }) }),
+      }),
+    }) as any);
   });
 
   it('should return 401 response if user is unauthenticated', async () => {
@@ -164,6 +177,82 @@ describe('POST /api/upload', () => {
     const jobBody = await jobRes.json();
     expect(jobBody.status).toBe('failed');
     expect(jobBody.error).toContain('LLM fora do ar');
+  });
+
+  it('should return 429 when upload rate limited', async () => {
+    vi.mocked(uploadLimiter.check).mockReturnValue({ allowed: false } as any);
+    const formData = new FormData();
+    formData.append('text', 'currículo com mais de vinte caracteres');
+    const req = new Request('http://localhost/api/upload', { method: 'POST', body: formData });
+    const res = await POST(req as any);
+    expect(res.status).toBe(429);
+    expect((await res.json()).error).toContain('Muitos uploads');
+  });
+
+  it('should return 400 when file exceeds 5MB', async () => {
+    const formData = new FormData();
+    const big = new Blob([new Uint8Array(5 * 1024 * 1024 + 1)], { type: 'text/plain' });
+    formData.append('file', big, 'resume.txt');
+    const req = new Request('http://localhost/api/upload', { method: 'POST', body: formData });
+    const res = await POST(req as any);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('5MB');
+  });
+
+  it('should return 400 when pdf parsing fails', async () => {
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    vi.mocked(pdfjs.getDocument).mockImplementation(() => ({
+      promise: Promise.reject(new Error('corrupt pdf')),
+    }) as any);
+    const formData = new FormData();
+    formData.append('file', new Blob(['%PDF-1.4 fake'], { type: 'application/pdf' }), 'Profile.pdf');
+    const req = new Request('http://localhost/api/upload', { method: 'POST', body: formData });
+    const res = await POST(req as any);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('Não foi possível ler o PDF');
+  });
+
+  it('should return 400 when pasted text is too short', async () => {
+    const formData = new FormData();
+    formData.append('text', 'curto');
+    const req = new Request('http://localhost/api/upload', { method: 'POST', body: formData });
+    const res = await POST(req as any);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain('Texto muito curto');
+  });
+
+  it('should process pasted text with manual source', async () => {
+    const formData = new FormData();
+    formData.append('text', 'Desenvolvedor com 5 anos em React e TypeScript.');
+    formData.append('source', 'manual');
+    const req = new Request('http://localhost/api/upload', { method: 'POST', body: formData });
+    const res = await POST(req as any);
+    expect(res.status).toBe(200);
+  });
+
+  it('should process valid pdf and infer linkedin source', async () => {
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    vi.mocked(pdfjs.getDocument).mockImplementation(() => ({
+      promise: Promise.resolve({
+        numPages: 1,
+        getPage: async () => ({ getTextContent: async () => ({ items: [{ str: 'Experiencia' }, { str: 'Desenvolvedor com mais de vinte caracteres' }] }) }),
+      }),
+    }) as any);
+    const formData = new FormData();
+    formData.append('file', new Blob(['%PDF-1.4 real'], { type: 'application/pdf' }), 'Profile.pdf');
+    const req = new Request('http://localhost/api/upload', { method: 'POST', body: formData });
+    const res = await POST(req as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    const jobRes = await waitForJob(body.jobId);
+    const jobBody = await jobRes.json();
+    expect(jobBody.status).toBe('completed');
+  });
+
+  it('should return 500 when form data parsing fails', async () => {
+    const req = { formData: vi.fn().mockRejectedValue(new Error('bad form')) } as any;
+    const res = await POST(req as any);
+    expect(res.status).toBe(500);
   });
 });
 

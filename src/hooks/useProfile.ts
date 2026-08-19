@@ -195,11 +195,17 @@ export function useProfile() {
    * job falhou/timeout. Lança erro com a mensagem do servidor quando falha.
    */
   async function pollUploadJob(jobId: string): Promise<UploadResponse | null> {
-    const POLL_INTERVAL_MS = 2000;
-    const MAX_ATTEMPTS = 75; // ~150s máximo, cobre extrações lentas da LLM
+    const BASE_INTERVAL_MS = 1000;
+    const MAX_INTERVAL_MS = 4000;
+    const MAX_ATTEMPTS = 30; // ~50s total com backoff
+    const TOTAL_TIMEOUT_MS = 60_000;
+    const startTime = Date.now();
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+      const delay = Math.min(BASE_INTERVAL_MS * Math.pow(1.5, attempt), MAX_INTERVAL_MS);
+      await new Promise(r => setTimeout(r, delay));
+
+      if (Date.now() - startTime > TOTAL_TIMEOUT_MS) return null;
 
       let statusRes: Response;
       try {
@@ -242,7 +248,7 @@ export function useProfile() {
       // Timeout explícito: a extração via LLM pode levar ~30-90s. Sem isso o usuário
       // ficaria esperando para sempre se o servidor travar ou o nginx cortar a conexão.
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 120_000);
+      const timer = setTimeout(() => controller.abort(), 30_000);
 
       let res: Response;
       try {
@@ -262,7 +268,7 @@ export function useProfile() {
 
       const data = await pollUploadJob(jobId);
       if (!data) {
-        return { success: false, error: 'O processamento demorou demais. Tente novamente.' };
+        return { success: false, error: 'A extração demorou mais que o esperado. Tente novamente ou cole o texto do currículo diretamente.' };
       }
 
       setState(prev => {
