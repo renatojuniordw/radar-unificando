@@ -6,6 +6,11 @@ import { isLlmTimeout } from './shared/with-timeout';
 const baseURL = process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase;
 const apiKey = process.env.AI_API_KEY || '';
 const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
+// `reasoning_effort`/`chat_template_kwargs` são extensões OpenAI-compatíveis
+// de backends tipo vLLM/SGLang para modelos de raciocínio — provedores OpenAI
+// reais (ex. gpt-4o-mini) rejeitam esses campos com 400. Só envia quando o
+// deploy aponta explicitamente para um backend que os suporta.
+const supportsReasoningKwargs = process.env.AI_SUPPORTS_REASONING_KWARGS === 'true';
 
 export const LLM_TIMEOUT_MS = 120_000;
 
@@ -90,10 +95,10 @@ async function callLlm<T extends z.ZodType>(
     response_format: { type: 'json_object' },
     // Alguns provedores roteiam para modelos de raciocínio que narram
     // chain-of-thought antes do JSON. Esses campos pedem para pular o
-    // raciocínio quando o provedor os suporta; se não suportar, são
-    // ignorados silenciosamente (compatível com a spec OpenAI).
-    reasoning_effort: 'low',
-    chat_template_kwargs: { enable_thinking: false },
+    // raciocínio, mas só são enviados quando o backend é conhecido por
+    // suportá-los (ver AI_SUPPORTS_REASONING_KWARGS) — provedores OpenAI
+    // reais rejeitam com 400 em vez de ignorar silenciosamente.
+    ...(supportsReasoningKwargs ? { reasoning_effort: 'low', chat_template_kwargs: { enable_thinking: false } } : {}),
     // max_completion_tokens inclui reasoning tokens no limite (OpenAI spec).
     // max_tokens pode não limitar reasoning tokens em modelos deepseek.
     ...(opts?.maxOutputTokens ? { max_completion_tokens: opts.maxOutputTokens } : {}),

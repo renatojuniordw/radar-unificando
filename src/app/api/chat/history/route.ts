@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { requireAuth } from '@/lib/api/auth-guard';
+import { isForeignKeyViolation, requireAuth, staleSessionResponse } from '@/lib/api/auth-guard';
 import { chatRepository } from '@/lib/infrastructure/repositories';
 import { sanitizePiiInObject } from '@/lib/core/ai/pii-redactor';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
     await chatRepository.replaceMessages(session.user.id, chatId, sanitizedMessages);
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (isForeignKeyViolation(error)) return staleSessionResponse();
     console.error('[chat-history] Error saving:', error);
     return NextResponse.json({ error: 'Erro ao salvar' }, { status: 500 });
   }

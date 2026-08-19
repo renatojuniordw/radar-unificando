@@ -117,11 +117,24 @@ describe('llm-provider.generate', () => {
     expect(retryBody.max_completion_tokens).toBe(4000);
   });
 
-  it('should_include_reasoning_effort_and_thinking_disable_fields', async () => {
+  it('should_omit_reasoning_kwargs_by_default', async () => {
     fetchMock.mockResolvedValue(jsonResponse('{"score": 87}'));
     await generate(scoreSchema, 'x');
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body.reasoning_effort).toBeUndefined();
+    expect(body.chat_template_kwargs).toBeUndefined();
+  });
+
+  it('should_include_reasoning_kwargs_when_backend_supports_them', async () => {
+    vi.resetModules();
+    vi.stubEnv('AI_SUPPORTS_REASONING_KWARGS', 'true');
+    const { generate: generateWithReasoning } = await import('@/lib/core/ai/llm-provider');
+    fetchMock.mockResolvedValue(jsonResponse('{"score": 87}'));
+    await generateWithReasoning(scoreSchema, 'x');
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body.reasoning_effort).toBe('low');
     expect(body.chat_template_kwargs).toEqual({ enable_thinking: false });
+    vi.unstubAllEnvs();
+    vi.resetModules();
   });
 });
