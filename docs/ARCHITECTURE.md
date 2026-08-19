@@ -9,8 +9,13 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── (dashboard)/ → logado (perfil, /extensao/conectar) — guarded no layout server-side
   ├── /admin       → painel admin (métricas) — guarded por role no layout; noindex
   ├── /extensao    → página pública da extensão (marketing, JSON-LD)
+  ├── /cursos      → hub de cursos + /cursos/[skill] (SSG, 71 skills)
+  ├── /guia-ats    → guia de boas práticas ATS
+  ├── /sobre       → página institucional
+  ├── /doar        → página de doação (PIX)
   ├── /termos      → termos LGPD
-  └── components/  → home/, profile/, layout/ (header, footer, UserMenu), seo/, chat
+  └── components/  → home/, busca/, profile/, layout/ (header, footer, UserMenu), seo/,
+                     chat/, admin/, ats/, cursos/, job-table/, shared/, ui/
         |
 API Layer (Route Handlers)
   ├── /api/pipeline (+ /stream, /:runId)

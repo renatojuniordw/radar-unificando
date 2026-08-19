@@ -96,26 +96,86 @@ npm run dev
 ```
 src/
   app/
-    (auth)/        → Login e registro
+    (auth)/        → Login, register, forgot-password, reset-password
     (dashboard)/   → Perfil do usuário, conexão da extensão (/extensao/conectar)
     admin/         → Painel admin (métricas, usuários) — restrito por role, noindex
-    api/           → API routes (pipeline, chat, profile, vagas, upload, ats, courses, resume, extension…)
+    api/
+      ats/         → Análise ATS dedicada
+      auth/        → NextAuth + registro + recuperação de senha
+      chat/        → Chat IA (streaming, histórico, conversas, uso)
+      courses/     → Busca de cursos (Impact/Udemy)
+      cron/        → Rotina de retenção LGPD
+      export/      → Export CSV/JSON
+      extensao/    → Status de conexão da extensão
+      extension/   → Análise + feedback da extensão Chrome
+      health/      → Health check
+      pipeline/    → Pipeline de busca (+ /stream, /:runId)
+      profile/     → CRUD de perfil
+      resume/      → Geração de currículo adaptado (PDF)
+      track/       → Tracking de cliques em cursos
+      upload/      → Upload de currículo (async)
+      vagas/       → Listagem de vagas
     busca/         → Busca com resultados e análise ATS (busca-client.tsx, client-side)
+    cursos/        → Hub de cursos + /cursos/[skill] (SSG, 71 skills)
+    doar/          → Página de doação (PIX)
     export/        → Export CSV/JSON
     extensao/      → Página pública da extensão (marketing)
+    guia-ats/      → Guia de boas práticas ATS
+    sobre/         → Página institucional
     termos/        → Termos LGPD
   components/
-    home/          → Hero, WhyUse, FAQ, Results, Loading
+    admin/         → Dashboard admin, gráficos (Recharts), tabela de usuários
+    ats/           → Drawer de análise ATS
     busca/         → Busca header, recomendações de curso lateral
-    profile/       → Import, Review, Completion
+    chat/          → UI do assistente (sidebar, bolhas, sugestões, cards)
+    cursos/        → Cards de cursos, grade de recomendação
+    home/          → Hero, WhyUse, FAQ, Results, Loading
+    job-table/     → Tabela de vagas (desktop/mobile/filtros)
     layout/        → Header, Footer, UserMenu
+    profile/       → Import, Review, Completion
     seo/           → Structured data, JobPosting schema, Breadcrumb schema
+    shared/        → Componentes reutilizáveis (support-section, etc.)
+    ui/            → Cookie consent, PWA register, error boundary
   contexts/        → Chat assistant context
-  hooks/           → Custom hooks (useJobSearch, useProfile, useChatConversation)
+  hooks/           → Custom hooks (useJobSearch, useProfile, useChatConversation, etc.)
   lib/
-    core/          → Domínio (matching, pipeline, upload, parsing, scrapers, AI com tools/ e
-                     prompts/, extension, ats, admin)
-    infrastructure/ → Infra (db, repositories, redis, storage, security, ui)
+    core/
+      admin/       → Estatísticas do admin (métricas, séries, top termos)
+      ai/          → IA: prompts, tools (9), chat-guard, pii-redactor, llm-provider
+        ats/       → Análise ATS (analyzer, heuristics, service)
+        prompts/   → System prompts (um por feature)
+        shared/    → Helpers compartilhados (with-timeout, security-rules)
+        tools/     → 9 tools do chat (search-jobs, analyze-ats-score, etc.)
+      auth/        → Auth.js config
+      courses/     → Catálogo Udemy, matcher, Impact client, recomendação
+      dedup/       → DedupEngine
+      discovery/   → CompanyDiscovery (Wayback/Urlscan)
+      extension/   → Token SHA-256, feedback
+      jobs/        → Lógica de vagas
+      matching/    → Recomendação por perfil (token overlap)
+      mcp/         → Cliente MCP da Gupy (JSON-RPC)
+      parsing/     → PDF→markdown + cache de extração
+      pipeline/    → Pipeline de busca (steps, query-expansion, filtros)
+      profile/     → Lógica de perfil
+      scrapers/    → InHire scraper
+      seo/         → Sitemap, robots, structured data
+      upload/      → Upload assíncrono (store + processor)
+      vagas/       → Lógica de listagem de vagas
+    infrastructure/
+      cache/       → Cache Redis
+      cleanup/     → Retenção LGPD
+      db/          → Prisma client
+      email/       → Resend
+      redis/       → Redis client, chat-lock, global-budget
+      repositories/→ Repositórios (user, job, pipeline, chat, admin, etc.)
+      security/    → Rate limiter, env validation
+      storage/     → IndexedDB (browser)
+      ui/          → Theme, providers (MUI, Auth, Query)
+    pdf/           → Geração de PDF (currículo adaptado)
+    types/         → Tipos do domínio
+    utils/         → Utilitários gerais
+  __tests__/       → Testes unitários (Vitest)
+  __mocks__/       → Mocks para testes
 ```
 
 ## Documentação

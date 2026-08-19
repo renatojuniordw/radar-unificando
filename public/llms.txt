@@ -8,7 +8,7 @@
 - **Assistente de Carreira com IA**: Consultor virtual sênior de recrutamento para análise de currículo, diagnósticos de compatibilidade com vagas e mentorias profissionais.
 - **Análise ATS**: Score 0-100 do currículo com heurísticas determinísticas + IA, checklist de boas práticas e keywords faltando — disponível no site e na extensão Chrome.
 - **Extensão Chrome (Side Panel)**: Analisa a vaga aberta no navegador (LinkedIn, Gupy, InHire e sites genéricos) em tempo real, mostrando score ATS, skills por vaga, cursos recomendados e histórico local.
-- **Cursos Recomendados**: Recomendações personalizadas de capacitação em Alura e Udemy com base nas lacunas técnicas identificadas no currículo.
+- **Cursos Recomendados**: Recomendações personalizadas de capacitação em Udemy com base nas lacunas técnicas identificadas no currículo.
 - **Simulação de Entrevistas**: Treinamento interativo com perguntas comportamentais e técnicas específicas para diversas áreas do mercado.
 - **Privacidade & LGPD**: Anonimização automática (PII Redactor) de dados sensíveis (CPF, RG, telefones) tanto na transmissão quanto no armazenamento de dados.
 

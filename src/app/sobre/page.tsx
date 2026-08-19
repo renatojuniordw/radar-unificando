@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 const TECH_STACK = [
   'IA Generativa & LLMs',
-  'Next.js 15',
+  'Next.js 16',
   'TypeScript',
   'React 19',
   'Prisma ORM',

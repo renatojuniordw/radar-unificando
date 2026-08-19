@@ -25,7 +25,7 @@
 - ✅ Segurança: rate limiting (Redis + in-memory), prompt injection protection, env validation, validação de origem da extensão (`EXTENSION_ORIGIN`)
 - ✅ Persistência anônima em IndexedDB (com auto-sync de 15 min — não consome o cooldown da busca manual; pula quando não há filtros salvos)
 - ✅ PWA instalável (service worker em produção; offline completo ainda não)
-- ✅ Suíte Vitest (102 arquivos · 727 testes passando) + e2e Playwright em `e2e/`
+- ✅ Suíte Vitest (178 arquivos · 1344 testes passando) + e2e Playwright em `e2e/`
 - ✅ **Currículo adaptado (PDF)**: tool `generate_resume` no chat + `POST /api/resume/generate` + botão por vaga na `/busca` (download direto), com veracidade garantida em 3 camadas
 - ✅ **Rate limiting da análise ATS** (`/api/ats/analyze`) e da geração de currículo (`resume_daily`)
 - ✅ **Expansão híbrida de queries**: mapa curado + IA cacheada (Redis global) + dedupe de quase-duplicatas, com fail-open e single-flight
