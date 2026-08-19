@@ -118,6 +118,8 @@ async function callLlm<T extends z.ZodType>(
     const errBody = await res.text().catch(() => '');
     console.warn(`[llm-provider] ${res.status} — retrying without response_format:`, errBody.slice(0, 200));
     delete bodyPayload.response_format;
+    delete bodyPayload.reasoning_effort;
+    delete bodyPayload.chat_template_kwargs;
     res = await fetch(`${baseURL}/chat/completions`, {
       method: 'POST',
       headers: {
