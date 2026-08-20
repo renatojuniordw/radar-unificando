@@ -11,7 +11,9 @@ const securityHeaders = [
   // CSP redundante (defense-in-depth): o nginx já define um CSP, mas esta camada
   // garante proteção quando a app é servida sem o proxy (dev local, outro host).
   // 'unsafe-inline' em style-src é exigido pelo MUI/emotion (styles injetados);
-  // 'unsafe-inline'/'unsafe-eval' em script-src cobrem scripts inline do Next.js.
+  // 'unsafe-inline' em script-src cobre scripts inline do Next.js/GA4/Impact/
+  // Cloudflare. 'unsafe-eval' foi removido: não é necessário em produção (só o
+  // dev server do Next usa eval) e é o vetor mais perigoso para XSS via CSP bypass.
   // Os domínios de terceiros abaixo precisam estar em script-src, senão o CSP
   // BLOQUEIA o GA4 (@next/third-parties), o tracking da Impact (loader inline
   // cria <script> externo de utt.impactcdn.com) e o Cloudflare Web Analytics
@@ -22,7 +24,7 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value:
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' " +
+      "script-src 'self' 'unsafe-inline' " +
       'https://www.googletagmanager.com https://www.google-analytics.com ' +
       'https://utt.impactcdn.com https://static.cloudflareinsights.com; ' +
       "style-src 'self' 'unsafe-inline'; " +
