@@ -197,7 +197,7 @@ export const DICA_CATALOG: Dica[] = [
       {
         question: 'Com que frequência devo buscar vagas?',
         answer:
-          'Recomendamos buscar 1-2 vezes por semana. O sistema filtra vagas com mais de 20 dias para evitar repetição, e o cache de 24h garante que não resultsائد buscas desnecessárias.',
+          'Recomendamos buscar 1-2 vezes por semana. O sistema filtra vagas com mais de 20 dias para evitar repetição, e o cache de 24h evita buscas desnecessárias.',
       },
       {
         question: 'Meus dados estão seguros?',
@@ -219,7 +219,7 @@ export const DICA_CATALOG: Dica[] = [
       {
         heading: 'Preparação antes da entrevista',
         paragraphs: [
-          'Pesquise a empresa:了解 o produto, stack tecnológica, valores e cultura. Verifique o LinkedIn dos entrevistadores para entender o perfil da equipe.',
+          'Pesquise a empresa: entenda o produto, a stack tecnológica, os valores e a cultura. Verifique o LinkedIn dos entrevistadores para entender o perfil da equipe.',
           'Revise a descrição da vaga e mapeie cada requisito com um exemplo concreto da sua experiência. Tenha 3-5 stories prontos que demonstrem suas competências.',
         ],
       },
@@ -228,7 +228,7 @@ export const DICA_CATALOG: Dica[] = [
         paragraphs: [
           'Para vagas de desenvolvimento: pratique problemas de lógica no LeetCode/HackerRank, revise conceitos da stack pedida, e prepare um projeto pessoal ou repositório no GitHub para mostrar.',
           'Para vagas de dados: domine SQL avançado, estude modelagem de dados e prepare exemplos de dashboards ou relatórios que você criou com impacto mensurável.',
-          'Para vagas de infraestrutura/DevOps: revise conceitos de containers, CI/CD, monitoramento e troubleshooting. Tenha exemplos de Incidentes que você resolveu.',
+          'Para vagas de infraestrutura/DevOps: revise conceitos de containers, CI/CD, monitoramento e troubleshooting. Tenha exemplos de incidentes que você resolveu.',
         ],
       },
       {

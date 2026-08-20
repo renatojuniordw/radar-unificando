@@ -136,7 +136,7 @@ export default function DicasPage() {
               mb: 2,
             }}
           >
-            PRONTO PARA POR EM PRÁTICA?
+            PRONTO PARA PÔR EM PRÁTICA?
           </Typography>
           <Typography
             sx={{ color: '#94a3b8', fontSize: '0.85rem', mb: 3 }}

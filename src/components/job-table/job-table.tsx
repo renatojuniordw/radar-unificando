@@ -39,7 +39,7 @@ function escapeCsv(value: string): string {
 function downloadJobsCsv(jobsToExport: Job[]) {
   const headers = [
     'Empresa', 'Plataforma', 'Na sua lista?', 'Categoria do Cargo',
-    'Titulo da Vaga', 'Tipo', 'Local', 'Link', 'Nome na Plataforma',
+    'Título da Vaga', 'Tipo', 'Local', 'Link', 'Nome na Plataforma',
     'Publicado', 'Alerta', 'Detectada em',
   ];
 

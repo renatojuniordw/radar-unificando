@@ -6,7 +6,7 @@ export function FaqSection() {
     <section className="section-faq">
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "64px 16px" }}>
         <div className="badge-dark" style={{ marginBottom: "20px", display: "inline-block" }}>
-          DUVIDAS FREQUENTES
+          DÚVIDAS FREQUENTES
         </div>
         <h2
           style={{

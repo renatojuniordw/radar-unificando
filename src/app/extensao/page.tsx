@@ -194,7 +194,7 @@ export default function ExtensaoPage() {
               >
                 A extensão Radar Unificando abre um painel lateral inteligente
                 que lê a vaga aberta na página (Gupy, LinkedIn, InHire) e mostra
-                o **score ATS** do seu currículo em tempo real — com habilidades
+                o score ATS do seu currículo em tempo real — com habilidades
                 alinhadas e recomendações de melhorias.
               </p>
               <div

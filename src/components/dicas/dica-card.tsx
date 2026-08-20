@@ -109,7 +109,7 @@ export function DicaCard({ dica }: Props) {
             mt: 1,
           }}
         >
-          LER DICAS →
+          LER DICA →
         </Box>
       </Link>
     </Box>

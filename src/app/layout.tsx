@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | Radar Unificando",
   },
   description:
-    "Assistente de carreira com IA que consolida vagas de Gupy e InHire em tempo real, analisa seu currículo (score ATS) e recomenda cursos para fechar suas gaps.",
+    "Assistente de carreira com IA que consolida vagas de Gupy e InHire em tempo real, analisa seu currículo (score ATS) e recomenda cursos para fechar seus gaps.",
   keywords: [
     "vagas gupy",
     "vagas inhire",

@@ -190,7 +190,7 @@ export function GeneratedResumesTab() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mb: 4 }}>
       <Typography sx={{ fontWeight: 900, fontSize: "0.85rem", textTransform: "uppercase", color: "#64748b", fontFamily: "ui-monospace, monospace", letterSpacing: "0.05em" }}>
-        {total} CURRÍCULO{total === 1 ? "" : "S"} ADAPTADO{total === 1 ? "" : "S"} DISPONÍVEI{total === 1 ? "L" : "S"}
+        {total} CURRÍCULO{total === 1 ? "" : "S"} ADAPTADO{total === 1 ? "" : "S"} DISPONÍVE{total === 1 ? "L" : "IS"}
       </Typography>
 
       {items.map((item) => {
