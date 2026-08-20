@@ -38,10 +38,12 @@ describe('createSearchJobsTool', () => {
     expect(schema.safeParse({ query: 'Data-Analyst_2.0' }).success).toBe(true);
   });
 
-  it('should_accept_query_with_accented_letters', () => {
+  it('should_reject_query_with_accented_letters', () => {
     const schema = schemaOf(createSearchJobsTool('user-1'));
-    expect(schema.safeParse({ query: 'Data Ánalyst' }).success).toBe(true);
-    expect(schema.safeParse({ query: 'Ciência de Dados' }).success).toBe(true);
+    // OpenAI API does not support Unicode property escapes (\p{L}) in tool schemas,
+    // so accented characters are not allowed in queries
+    expect(schema.safeParse({ query: 'Data Ánalyst' }).success).toBe(false);
+    expect(schema.safeParse({ query: 'Ciência de Dados' }).success).toBe(false);
   });
 
   it('should_reject_limit_below_1', () => {
