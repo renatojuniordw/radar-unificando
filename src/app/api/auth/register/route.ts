@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { userRepository } from '@/lib/infrastructure/repositories';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { registerCredentialsSchema } from '@/lib/core/auth/register-schema';
+import { sendWelcomeEmail } from '@/lib/infrastructure/email/email-service';
 
 export async function POST(req: NextRequest) {
   const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
@@ -54,6 +55,11 @@ export async function POST(req: NextRequest) {
       email,
       passwordHash,
       name: name || null,
+    });
+
+    // Dispara e-mail de boas-vindas com instruções iniciais em background
+    void sendWelcomeEmail(email, name).catch((err) => {
+      console.error('[register] Erro ao disparar e-mail de boas-vindas:', err);
     });
 
     return NextResponse.json({ success: true }, { status: 201 });

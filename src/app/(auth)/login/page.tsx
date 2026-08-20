@@ -8,10 +8,10 @@ function isSafeCallbackUrl(url: string): boolean {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; registered?: string }>;
 }) {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, registered } = await searchParams;
   const safeCallbackUrl = callbackUrl && isSafeCallbackUrl(callbackUrl) ? callbackUrl : '/';
 
-  return <LoginForm callbackUrl={safeCallbackUrl} />;
+  return <LoginForm callbackUrl={safeCallbackUrl} registered={registered === 'true'} />;
 }

@@ -13,7 +13,17 @@ export default defineConfig({
     // transformar o next-auth e resolver 'next/server' corretamente.
     server: {
       deps: {
-        inline: ['next-auth', '@testing-library/react', '@testing-library/dom', 'react', 'react-dom', '@mui/material', '@mui/icons-material'],
+        inline: [
+          'next-auth',
+          '@testing-library/react',
+          '@testing-library/dom',
+          'react',
+          'react-dom',
+          '@mui/material',
+          '@mui/icons-material',
+          '@emotion/react',
+          '@emotion/styled',
+        ],
       },
     },
     exclude: ['e2e/**', 'node_modules/**', '.agents/**', 'src/__tests__/coverage/**'],
@@ -34,11 +44,14 @@ export default defineConfig({
   },
   resolve: {
     alias: [
-      { find: /^react-dom$/, replacement: path.resolve(__dirname, './node_modules/react-dom/index.js') },
-      { find: /^react-dom\/(.*)$/, replacement: path.resolve(__dirname, './node_modules/react-dom/$1') },
-      { find: /^react$/, replacement: path.resolve(__dirname, './node_modules/react/index.js') },
-      { find: /^react\/(.*)$/, replacement: path.resolve(__dirname, './node_modules/react/$1') },
-      { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: /^react-dom$/, replacement: path.resolve(__dirname, 'node_modules/react-dom') },
+      { find: /^react-dom\/(.*)$/, replacement: path.resolve(__dirname, 'node_modules/react-dom/$1') },
+      { find: /^react$/, replacement: path.resolve(__dirname, 'node_modules/react') },
+      { find: /^react\/(.*)$/, replacement: path.resolve(__dirname, 'node_modules/react/$1') },
+      { find: 'react-dom/client', replacement: path.resolve(__dirname, 'node_modules/react-dom/client.js') },
+      { find: 'react/jsx-runtime', replacement: path.resolve(__dirname, 'node_modules/react/jsx-runtime.js') },
+      { find: 'react/jsx-dev-runtime', replacement: path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js') },
+      { find: '@', replacement: path.resolve(__dirname, 'src') },
     ],
   },
 });

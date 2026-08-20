@@ -14,9 +14,14 @@ vi.mock('@/lib/infrastructure/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true, msBeforeNext: 0 }),
 }));
 
+vi.mock('@/lib/infrastructure/email/email-service', () => ({
+  sendWelcomeEmail: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { POST } from '@/app/api/auth/register/route';
 import { userRepository } from '@/lib/infrastructure/repositories';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
+import { sendWelcomeEmail } from '@/lib/infrastructure/email/email-service';
 
 function makeRequest(body: any): NextRequest {
   return {
@@ -86,6 +91,7 @@ describe('POST /api/auth/register', () => {
     const res = await POST(makeRequest({ email: 'new@test.com', password: 'ValidP@ssword123', name: 'User' }));
     expect(res.status).toBe(201);
     expect((await res.json()).success).toBe(true);
+    expect(sendWelcomeEmail).toHaveBeenCalledWith('new@test.com', 'User');
   });
 
   it('should_return_500_on_repository_error', async () => {

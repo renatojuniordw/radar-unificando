@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [registeredSuccess, setRegisteredSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,10 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/login?registered=true');
+      setRegisteredSuccess(true);
+      setTimeout(() => {
+        router.push('/login?registered=true');
+      }, 1200);
     } catch {
       setApiError('Erro ao criar conta');
     } finally {
@@ -111,6 +115,33 @@ export default function RegisterPage() {
 
       {/* Main Card */}
       <div className="card-brutalist" style={{ padding: 24 }}>
+        {registeredSuccess && (
+          <div
+            style={{
+              border: '3px solid #020617',
+              padding: '12px 14px',
+              marginBottom: 16,
+              backgroundColor: '#ccff00',
+              boxShadow: '3px 3px 0px #000',
+            }}
+          >
+            <p
+              style={{
+                color: '#020617',
+                fontWeight: 900,
+                fontSize: '0.8rem',
+                fontFamily: 'ui-monospace, monospace',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <span>🎉</span>
+              <span>CONTA CRIADA COM SUCESSO! REDIRECIONANDO PARA O LOGIN...</span>
+            </p>
+          </div>
+        )}
         {apiError && (
           <div
             style={{

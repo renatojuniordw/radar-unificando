@@ -14,7 +14,7 @@ const loginSchema = z.object({
   password: z.string().min(8, 'Mínimo de 8 caracteres'),
 });
 
-export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
+export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; registered?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -106,6 +106,33 @@ export function LoginForm({ callbackUrl }: { callbackUrl: string }) {
 
       {/* Main Card */}
       <div className="card-brutalist" style={{ padding: 24 }}>
+        {registered && (
+          <div
+            style={{
+              border: '3px solid #020617',
+              padding: '12px 14px',
+              marginBottom: 16,
+              backgroundColor: '#ccff00',
+              boxShadow: '3px 3px 0px #000',
+            }}
+          >
+            <p
+              style={{
+                color: '#020617',
+                fontWeight: 900,
+                fontSize: '0.8rem',
+                fontFamily: 'ui-monospace, monospace',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <span>✅</span>
+              <span>CONTA CRIADA COM SUCESSO! FAÇA LOGIN ABAIXO PARA COMEÇAR.</span>
+            </p>
+          </div>
+        )}
         {apiError && (
           <div
             style={{
