@@ -6,7 +6,10 @@
       "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando mv src/__tests__/admin-provisioning.test.ts prisma/seed/admin-provisioning.test.ts)",
       "Bash(./node_modules/.bin/vitest run *)",
       "Bash(./node_modules/.bin/tsx --eval \"console.log\\('ok: tsx runs'\\)\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando status --short)",
+      "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando log --oneline -3)",
+      "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando diff HEAD -- src/lib/api/auth-guard.ts)"
     ]
   }
 }
