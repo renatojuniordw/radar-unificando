@@ -7,6 +7,7 @@
 - **Busca Unificada de Vagas**: Pesquisa consolidada de vagas no Gupy e InHire por palavras-chave, área, empresa, senioridade e tipo de trabalho (Remoto, Híbrido, Presencial).
 - **Assistente de Carreira com IA**: Consultor virtual sênior de recrutamento para análise de currículo, diagnósticos de compatibilidade com vagas e mentorias profissionais.
 - **Análise ATS**: Score 0-100 do currículo com heurísticas determinísticas + IA, checklist de boas práticas e keywords faltando — disponível no site e na extensão Chrome.
+- **Currículo Adaptado**: Geração de currículo personalizado para cada vaga, com download em PDF e Word (DOCX).
 - **Extensão Chrome (Side Panel)**: Analisa a vaga aberta no navegador (LinkedIn, Gupy, InHire e sites genéricos) em tempo real, mostrando score ATS, skills por vaga, cursos recomendados e histórico local.
 - **Cursos Recomendados**: Recomendações personalizadas de capacitação em Udemy com base nas lacunas técnicas identificadas no currículo.
 - **Simulação de Entrevistas**: Treinamento interativo com perguntas comportamentais e técnicas específicas para diversas áreas do mercado.

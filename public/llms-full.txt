@@ -15,6 +15,7 @@ O **Radar Unificando** (https://radar.unificando.com.br) é uma plataforma open-
 ### 2. Assistente de IA para Carreira (Chat Consultivo)
 - **Análise de Fit (Compatibilidade)**: Compara o currículo/perfil do candidato com a descrição da vaga e gera um diagnóstico objetivo com pontos fortes e lacunas técnicas.
 - **Análise ATS do Currículo**: Score 0-100 (heurísticas determinísticas + IA), checklist de boas práticas, keywords faltando e recomendações — via página `/perfil` ou endpoint dedicado.
+- **Currículo Adaptado**: Geração de currículo personalizado para cada vaga, com download em PDF e Word (DOCX). Veracidade garantida em 3 camadas.
 - **Cursos Recomendados**: Recomendações personalizadas de capacitação em Udemy com base nas lacunas técnicas identificadas no currículo do usuário.
 - **Simulação de Entrevistas**: Conduz entrevistas simuladas (uma pergunta por vez) fornecendo feedback sênior após cada resposta do usuário.
 - **Gerador de Cartas de Apresentação**: Escreve cartas de apresentação personalizadas ajustadas ao currículo do usuário e à oportunidade desejada.

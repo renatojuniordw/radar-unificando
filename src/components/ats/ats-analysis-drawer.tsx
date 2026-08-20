@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { AutoAwesome, AccessTime } from "@mui/icons-material";
 import type { AtsResult } from "@/lib/core/ai/ats/ats-analyzer";
-import { downloadAdaptedResume, type ResumeProgressStep } from "@/lib/client/resume-download";
+import { downloadAdaptedResume, downloadAdaptedResumeDocx, type ResumeProgressStep } from "@/lib/client/resume-download";
 import { AtsResultsContent } from "./ats-results-content";
 
 /** Shape mínimo de vaga aceito pelo drawer (Job da busca ou ParsedJob do chat). */
@@ -144,6 +144,33 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         (stepInfo) => setResumeProgress(stepInfo),
       );
       setSnackbar("Currículo adaptado baixado!");
+    } catch (e) {
+      setSnackbar(e instanceof Error ? e.message : "Erro ao gerar o currículo.");
+    } finally {
+      setGenerating(false);
+      setResumeProgress(null);
+    }
+  };
+
+  const handleGenerateResumeDocx = async () => {
+    if (!job || generating) return;
+    setGenerating(true);
+    setResumeProgress({
+      step: 1,
+      totalSteps: 3,
+      message: "Analisando requisitos da vaga e palavras-chave ATS...",
+      progressPercent: 20,
+    });
+    try {
+      await downloadAdaptedResumeDocx(
+        {
+          title: job.title,
+          company: job.company || "",
+          description: job.description,
+        },
+        (stepInfo) => setResumeProgress(stepInfo),
+      );
+      setSnackbar("Currículo Word (DOCX) baixado!");
     } catch (e) {
       setSnackbar(e instanceof Error ? e.message : "Erro ao gerar o currículo.");
     } finally {
@@ -327,15 +354,32 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
             </Button>
           )}
           {stage === "ready" && job && (
-            <Button
-              variant="contained"
-              onClick={handleGenerateResume}
-              disabled={generating}
-              startIcon={generating ? <CircularProgress size={14} sx={{ color: "#020617" }} /> : <AutoAwesome />}
-              sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, "&:hover": { bgcolor: "#b8e600" } }}
-            >
-              {generating ? "GERANDO..." : "GERAR CURRÍCULO ADAPTADO"}
-            </Button>
+            <>
+              <Button
+                variant="contained"
+                onClick={handleGenerateResume}
+                disabled={generating}
+                startIcon={generating ? <CircularProgress size={14} sx={{ color: "#020617" }} /> : <AutoAwesome />}
+                sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, "&:hover": { bgcolor: "#b8e600" } }}
+              >
+                {generating ? "GERANDO..." : "BAIXAR PDF"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleGenerateResumeDocx}
+                disabled={generating}
+                sx={{
+                  bgcolor: "#ffffff",
+                  color: "#020617",
+                  fontWeight: 900,
+                  border: "2px solid #020617",
+                  "&:hover": { bgcolor: "#f8fafc" },
+                  "&.Mui-disabled": { bgcolor: "#334155", color: "#64748b" },
+                }}
+              >
+                BAIXAR DOCX
+              </Button>
+            </>
           )}
         </Box>
       </Box>

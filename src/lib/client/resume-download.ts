@@ -113,3 +113,88 @@ export async function downloadAdaptedResume(
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Gera o currículo adaptado no servidor e baixa o arquivo .docx (Microsoft Word).
+ */
+export async function downloadAdaptedResumeDocx(
+  job: ResumeJobInput,
+  onProgress?: ProgressCallback,
+): Promise<void> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  onProgress?.({
+    step: 1,
+    totalSteps: 3,
+    message: "Analisando requisitos da vaga e palavras-chave ATS...",
+    progressPercent: 20,
+  });
+
+  const t1 = setTimeout(() => {
+    onProgress?.({
+      step: 2,
+      totalSteps: 3,
+      message: "Adaptando e otimizando experiências profissionais com IA...",
+      progressPercent: 55,
+    });
+  }, 5000);
+
+  const t2 = setTimeout(() => {
+    onProgress?.({
+      step: 3,
+      totalSteps: 3,
+      message: "Validando veracidade e gerando arquivo Word (DOCX)...",
+      progressPercent: 85,
+    });
+  }, 18000);
+
+  let res: Response;
+  try {
+    res = await fetch("/api/resume/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        jobTitle: job.title,
+        jobDescription: job.description || "",
+        jobCompany: job.company,
+        jobLocation: job.location || "",
+      }),
+    });
+  } catch (err) {
+    const isTimeout = err instanceof DOMException && err.name === "AbortError";
+    throw new Error(
+      isTimeout
+        ? "A geração está demorando mais que o esperado. Tente novamente em instantes."
+        : "Erro de conexão. Tente novamente.",
+    );
+  } finally {
+    clearTimeout(timeoutId);
+    clearTimeout(t1);
+    clearTimeout(t2);
+  }
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(data?.error || "Erro ao gerar o currículo.");
+  }
+
+  onProgress?.({
+    step: 3,
+    totalSteps: 3,
+    message: "Currículo confeccionado com sucesso! Download Word iniciado.",
+    progressPercent: 100,
+  });
+
+  const { renderResumeDocx } = await import("@/lib/docx/render-resume-docx");
+  const blob = await renderResumeDocx(data.resume);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `curriculo-${slugify(job.title)}-${slugify(job.company)}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

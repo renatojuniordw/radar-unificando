@@ -54,6 +54,7 @@ const INITIAL_STATE: ProfileData = {
 
 export function useProfile() {
   const [state, setState] = useState<ProfileData>(INITIAL_STATE);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -91,6 +92,9 @@ export function useProfile() {
           profileSource: data.profileSource || (hasResume ? 'linkedin' : 'manual'),
           fieldOverrides: new Set(),
         });
+        if (data.createdAt) {
+          setCreatedAt(data.createdAt);
+        }
       }
     } catch {
       setLoadError('Erro de conexão. Verifique sua internet.');
@@ -310,8 +314,17 @@ export function useProfile() {
 
   const completionPercent = Math.round((completionScore / 6) * 100);
 
+  const profileDate = createdAt ? new Date(createdAt) : null;
+  const profileAgeDays = profileDate
+    ? Math.floor((Date.now() - profileDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const isOutdated = profileAgeDays >= 60;
+
   return {
     ...state,
+    createdAt,
+    profileAgeDays,
+    isOutdated,
     setField,
     addSkill,
     addSkills,

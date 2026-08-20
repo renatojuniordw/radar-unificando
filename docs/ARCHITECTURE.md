@@ -14,8 +14,9 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── /sobre       → página institucional
   ├── /doar        → página de doação (PIX)
   ├── /termos      → termos LGPD
-  └── components/  → home/, busca/, profile/, layout/ (header, footer, UserMenu), seo/,
+  └── components/  → home/, busca/, profile/ (inclui OutdatedProfileBanner), layout/ (header, footer, UserMenu), seo/,
                      chat/, admin/, ats/, cursos/, job-table/, shared/, ui/
+                     lib/docx/ (render-resume-docx — client-side DOCX generation)
         |
 API Layer (Route Handlers)
   ├── /api/pipeline (+ /stream, /:runId)

@@ -13,8 +13,16 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Download, Copy, Eye, FileText, Calendar, Building2, MapPin } from "lucide-react";
-import { downloadAdaptedResume } from "@/lib/client/resume-download";
+import {
+  Download,
+  ContentCopy,
+  Visibility,
+  Description,
+  CalendarToday,
+  Business,
+  LocationOn,
+} from "@mui/icons-material";
+import { downloadAdaptedResume, downloadAdaptedResumeDocx } from "@/lib/client/resume-download";
 
 export interface GeneratedResumeItem {
   id: string;
@@ -34,25 +42,34 @@ export function GeneratedResumesTab() {
   const [previewItem, setPreviewItem] = useState<GeneratedResumeItem | null>(null);
   const [snackbar, setSnackbar] = useState("");
 
-  async function loadHistory() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/resume/history");
-      if (!res.ok) {
-        throw new Error("Erro ao carregar histórico");
-      }
-      const data = await res.json();
-      setItems(data.history || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro de conexão.");
-    } finally {
-      setLoading(false);
-    }
+  function loadHistory() {
+    fetch("/api/resume/history")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Erro ao carregar histórico");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setItems(data.history || []);
+        setError("");
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Erro de conexão.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
+  const handleRetry = () => {
+    setLoading(true);
+    setError("");
+    loadHistory();
+  };
+
   useEffect(() => {
-    void loadHistory();
+    loadHistory();
   }, []);
 
   const handleDownload = async (item: GeneratedResumeItem) => {
@@ -67,6 +84,23 @@ export function GeneratedResumesTab() {
       setSnackbar("PDF baixado com sucesso!");
     } catch (e) {
       setSnackbar(e instanceof Error ? e.message : "Erro ao baixar PDF.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleDownloadDocx = async (item: GeneratedResumeItem) => {
+    if (downloadingId) return;
+    setDownloadingId(`${item.id}-docx`);
+    try {
+      await downloadAdaptedResumeDocx({
+        title: item.jobTitle,
+        company: item.jobCompany,
+        location: item.jobLocation,
+      });
+      setSnackbar("Arquivo Word (DOCX) baixado com sucesso!");
+    } catch (e) {
+      setSnackbar(e instanceof Error ? e.message : "Erro ao baixar DOCX.");
     } finally {
       setDownloadingId(null);
     }
@@ -95,7 +129,7 @@ export function GeneratedResumesTab() {
           {error}
         </Typography>
         <Button
-          onClick={loadHistory}
+          onClick={handleRetry}
           sx={{ mt: 1, bgcolor: "#991b1b", color: "#fff", "&:hover": { bgcolor: "#7f1d1d" } }}
           size="small"
         >
@@ -133,7 +167,7 @@ export function GeneratedResumesTab() {
             boxShadow: "3px 3px 0px #000",
           }}
         >
-          <FileText className="w-7 h-7 text-[#020617]" />
+          <Description sx={{ fontSize: 28, color: "#020617" }} />
         </Box>
         <Typography sx={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase", mb: 1 }}>
           Nenhum currículo confeccionado ainda
@@ -183,18 +217,18 @@ export function GeneratedResumesTab() {
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", mt: 0.5 }}>
                   {item.jobCompany && (
                     <Typography sx={{ fontWeight: 700, fontSize: "0.8rem", color: "#334155", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-                      <Building2 className="w-3.5 h-3.5 text-[#64748b]" />
+                      <Business sx={{ fontSize: 16, color: "#64748b" }} />
                       {item.jobCompany}
                     </Typography>
                   )}
                   {item.jobLocation && (
                     <Typography sx={{ fontSize: "0.75rem", color: "#64748b", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-                      <MapPin className="w-3.5 h-3.5 text-[#64748b]" />
+                      <LocationOn sx={{ fontSize: 16, color: "#64748b" }} />
                       {item.jobLocation}
                     </Typography>
                   )}
                   <Typography sx={{ fontFamily: "ui-monospace, monospace", fontSize: "0.7rem", color: "#94a3b8", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-                    <Calendar className="w-3.5 h-3.5" />
+                    <CalendarToday sx={{ fontSize: 14 }} />
                     Gerado em {formattedDate}
                   </Typography>
                 </Box>
@@ -207,8 +241,8 @@ export function GeneratedResumesTab() {
                 variant="contained"
                 size="small"
                 onClick={() => handleDownload(item)}
-                disabled={downloadingId === item.id}
-                startIcon={downloadingId === item.id ? <CircularProgress size={14} color="inherit" /> : <Download className="w-3.5 h-3.5" />}
+                disabled={downloadingId === item.id || downloadingId === `${item.id}-docx`}
+                startIcon={downloadingId === item.id ? <CircularProgress size={14} color="inherit" /> : <Download sx={{ fontSize: 16 }} />}
                 sx={{
                   bgcolor: "#ccff00",
                   color: "#020617",
@@ -227,8 +261,29 @@ export function GeneratedResumesTab() {
               <Button
                 variant="outlined"
                 size="small"
+                onClick={() => handleDownloadDocx(item)}
+                disabled={downloadingId === item.id || downloadingId === `${item.id}-docx`}
+                startIcon={downloadingId === `${item.id}-docx` ? <CircularProgress size={14} color="inherit" /> : <Download sx={{ fontSize: 16 }} />}
+                sx={{
+                  bgcolor: "#ffffff",
+                  color: "#020617",
+                  fontWeight: 900,
+                  fontSize: "0.7rem",
+                  fontFamily: "ui-monospace, monospace",
+                  border: "2px solid #020617",
+                  boxShadow: "2px 2px 0px #000",
+                  textTransform: "uppercase",
+                  "&:hover": { bgcolor: "#f8fafc" },
+                }}
+              >
+                {downloadingId === `${item.id}-docx` ? "BAIXANDO..." : "DOCX (WORD)"}
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
                 onClick={() => handleCopyText(item.resumeMarkdown)}
-                startIcon={<Copy className="w-3.5 h-3.5" />}
+                startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
                 sx={{
                   bgcolor: "#ffffff",
                   color: "#020617",
@@ -248,7 +303,7 @@ export function GeneratedResumesTab() {
                 variant="outlined"
                 size="small"
                 onClick={() => setPreviewItem(item)}
-                startIcon={<Eye className="w-3.5 h-3.5" />}
+                startIcon={<Visibility sx={{ fontSize: 16 }} />}
                 sx={{
                   bgcolor: "#ffffff",
                   color: "#020617",
@@ -305,7 +360,7 @@ export function GeneratedResumesTab() {
           <DialogActions sx={{ p: 2, bgcolor: "#0f172a" }}>
             <Button
               onClick={() => handleCopyText(previewItem.resumeMarkdown)}
-              startIcon={<Copy className="w-4 h-4" />}
+              startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
               sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, fontFamily: "ui-monospace, monospace" }}
             >
               COPIAR TEXTO

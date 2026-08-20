@@ -4,6 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  root: path.resolve(__dirname),
   test: {
     globals: true,
     environment: 'node',
@@ -12,7 +13,7 @@ export default defineConfig({
     // transformar o next-auth e resolver 'next/server' corretamente.
     server: {
       deps: {
-        inline: ['next-auth'],
+        inline: ['next-auth', '@testing-library/react', '@testing-library/dom', 'react', 'react-dom', '@mui/material', '@mui/icons-material'],
       },
     },
     exclude: ['e2e/**', 'node_modules/**', '.agents/**', 'src/__tests__/coverage/**'],
@@ -32,8 +33,12 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: /^react-dom$/, replacement: path.resolve(__dirname, './node_modules/react-dom/index.js') },
+      { find: /^react-dom\/(.*)$/, replacement: path.resolve(__dirname, './node_modules/react-dom/$1') },
+      { find: /^react$/, replacement: path.resolve(__dirname, './node_modules/react/index.js') },
+      { find: /^react\/(.*)$/, replacement: path.resolve(__dirname, './node_modules/react/$1') },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+    ],
   },
 });

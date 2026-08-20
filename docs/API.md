@@ -58,7 +58,7 @@ Base URL local: `http://localhost:11010`.
 | GET | `/api/chat/context?chatId=` | ✅ | Tokens de contexto da última chamada (`{ contextTokens }`) — tamanho real da janela enviada |
 | POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo. Rate limit próprio |
 | POST | `/api/courses/search` | ❌ (limitado por IP) | Busca dinâmica de cursos. Body: `{ query }` (1-80 chars). Prioriza a API Impact (Udemy, máx. 12), com cache Redis (1h) e fallback para o catálogo curado local. Retorna `{ courses, source }` (`source` ∈ `impact\|curated`) |
-| POST | `/api/resume/generate` | ✅ | Gera currículo adaptado à vaga em PDF. Body: `{ jobTitle, jobDescription?, jobCompany?, jobLocation? }`. Retorna `{ resume, resumeMarkdown, pdfBase64 }`. Veracidade garantida (`enforceVeracity`). Rate limit diário (`resume_daily`). 400 sem currículo importado |
+| POST | `/api/resume/generate` | ✅ | Gera currículo adaptado à vaga. Body: `{ jobTitle, jobDescription?, jobCompany?, jobLocation? }`. Retorna `{ resume, resumeMarkdown, pdfBase64 }`. O cliente renderiza PDF (server-side via `pdfBase64`) e DOCX (client-side via `lib/docx/render-resume-docx.ts`). Veracidade garantida (`enforceVeracity`). Rate limit diário (`resume_daily`). 400 sem currículo importado |
 
 **Exemplo de resposta do GET `/api/chat/usage`:**
 ```json

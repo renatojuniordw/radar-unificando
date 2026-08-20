@@ -18,7 +18,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Cursos Recomendados** — sugestões personalizadas de capacitação na **Udemy** (catálogo curado + busca no catálogo da Impact) baseadas nas lacunas técnicas do currículo, com CTA de fallback para buscar qualquer curso
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
 - **Análise ATS dedicada** — score 0-100 do currículo × vaga, com palavras-chave faltando e recomendações
-- **Currículo adaptado (PDF)** — gera uma versão do seu currículo adaptada à vaga, com download direto em PDF
+- **Currículo adaptado (PDF + Word)** — gera uma versão do seu currículo adaptada à vaga, com download direto em PDF ou DOCX (Word)
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
 - **Painel Admin** — métricas de usuários, buscas e uso de IA com gráficos (Recharts), filtro por período, tabela de usuários e auto-refresh — acesso restrito a `role=admin`
 - **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Status: EM BREVE** — em homologação na Chrome Web Store
@@ -112,7 +112,7 @@ src/
       health/      → Health check
       pipeline/    → Pipeline de busca (+ /stream, /:runId)
       profile/     → CRUD de perfil
-      resume/      → Geração de currículo adaptado (PDF)
+      resume/      → Geração de currículo adaptado (PDF + DOCX)
       track/       → Tracking de cliques em cursos
       upload/      → Upload de currículo (async)
       vagas/       → Listagem de vagas
@@ -133,13 +133,14 @@ src/
     home/          → Hero, WhyUse, FAQ, Results, Loading
     job-table/     → Tabela de vagas (desktop/mobile/filtros)
     layout/        → Header, Footer, UserMenu
-    profile/       → Import, Review, Completion
+    profile/       → Import, Review, Completion, OutdatedProfileBanner
     seo/           → Structured data, JobPosting schema, Breadcrumb schema
     shared/        → Componentes reutilizáveis (support-section, etc.)
     ui/            → Cookie consent, PWA register, error boundary
   contexts/        → Chat assistant context
   hooks/           → Custom hooks (useJobSearch, useProfile, useChatConversation, etc.)
   lib/
+    docx/          → Renderização de currículo adaptado em DOCX (Word)
     core/
       admin/       → Estatísticas do admin (métricas, séries, top termos)
       ai/          → IA: prompts, tools (9), chat-guard, pii-redactor, llm-provider

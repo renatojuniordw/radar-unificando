@@ -85,6 +85,7 @@ Estado revisão:
 
 Estado completo:
   ├── Card de completude (100%)
+  ├── Banner de currículo desatualizado (se 60+ dias desde a importação): "Currículo base atualizado há X dias" + botão "Atualizar Agora"
   └── Link: "Ver vagas recomendadas →"
 ```
 
@@ -153,9 +154,10 @@ Auto-refresh: a cada 60s (auto-refresh.tsx)
 - Nota de transparência sempre visível: "Avaliação baseada em boas práticas de ATS — não é garantia de passar em nenhum sistema específico."
 - No chat, o assistente chama a tool `analyze_ats_score` quando o usuário pergunta sobre filtros automáticos/otimização de CV.
 
-## Currículo Adaptado (PDF)
+## Currículo Adaptado (PDF + Word)
 
-- **Botão por vaga na `/busca`** (logado + com currículo importado): "GERAR CURRÍCULO ADAPTADO" → `POST /api/resume/generate` → **download direto do PDF** (sem fluxo multi-modal).
+- **Botão por vaga na `/busca`** (logado + com currículo importado): "BAIXAR PDF" (primário) + "BAIXAR DOCX" (secundário) → `POST /api/resume/generate` → download direto do PDF ou renderização client-side do DOCX.
+- **Histórico de currículos gerados** (aba "Currículos Gerados" no perfil): botões "BAIXAR PDF" e "DOCX (WORD)" por item.
 - Snackbar de sucesso ("Currículo adaptado baixado!") ou erro.
 - No chat, a tool `generate_resume` gera a versão adaptada em markdown.
 - Veracidade garantida em 3 camadas (prompt restritivo + input ATS + filtro pós-geração).

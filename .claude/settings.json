@@ -9,7 +9,10 @@
       "Bash(node -e ' *)",
       "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando status --short)",
       "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando log --oneline -3)",
-      "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando diff HEAD -- src/lib/api/auth-guard.ts)"
+      "Bash(git -C /Users/renatobezerra/Developer/radar/radar-unificando diff HEAD -- src/lib/api/auth-guard.ts)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://api.github.com/repos/vercel-labs/find-skills)",
+      "Bash(pg_isready -h 127.0.0.1 -p 11011)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(process.env.DATABASE_URL\\)\")"
     ]
   }
 }

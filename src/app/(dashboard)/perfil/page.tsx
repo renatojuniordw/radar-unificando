@@ -12,6 +12,7 @@ import { ProfileImportSection } from '@/components/profile/profile-import-sectio
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
 import { AtsAnalysisSection } from '@/components/profile/ats-analysis-section';
 import { GeneratedResumesTab } from '@/components/profile/generated-resumes-tab';
+import { OutdatedProfileBanner } from '@/components/profile/outdated-profile-banner';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ArrowLeft, Loader2, User, Download, Trash2, FileText } from 'lucide-react';
 
@@ -212,6 +213,8 @@ export default function ProfilePage() {
         {/* Conteúdo da Aba de Perfil */}
         {activeTab === 'profile' && (
           <>
+            <OutdatedProfileBanner ageDays={profile.profileAgeDays} onStartImport={handleStartImport} />
+
             {/* Estado setup: sem perfil */}
             {isSetup && (
               <div className="card-brutalist p-8 text-center mb-8">
