@@ -27,10 +27,16 @@ describe('createSearchJobsTool', () => {
     expect(schema.safeParse({ query: 'a'.repeat(201) }).success).toBe(false);
   });
 
-  it('should_reject_query_with_disallowed_characters', () => {
-    const schema = schemaOf(createSearchJobsTool('user-1'));
-    expect(schema.safeParse({ query: 'Python!' }).success).toBe(false);
-    expect(schema.safeParse({ query: 'Data;Analyst' }).success).toBe(false);
+  it('should_reject_query_with_disallowed_characters_at_runtime', async () => {
+    vi.mocked(gupyMcpClient.searchJobs).mockResolvedValue([]);
+    vi.mocked(jobLinkFilter.filterAlive).mockResolvedValue([]);
+    const tool = createSearchJobsTool('user-1') as unknown as Tool;
+
+    const result1 = await tool.execute({ query: 'Python!' });
+    expect(result1).toEqual({ error: 'Caracteres não permitidos na query' });
+
+    const result2 = await tool.execute({ query: 'Data;Analyst' });
+    expect(result2).toEqual({ error: 'Caracteres não permitidos na query' });
   });
 
   it('should_accept_query_with_letters_numbers_spaces_hyphen_underscore_dot', () => {
