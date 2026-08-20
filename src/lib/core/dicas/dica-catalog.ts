@@ -256,7 +256,7 @@ export const DICA_CATALOG: Dica[] = [
         ],
       },
       {
-        heading: 'Erros que cometem os candidatos',
+        heading: 'Erros que os candidatos cometem',
         list: [
           'Não pesquisar a empresa antes da entrevista.',
           'Falar apenas de tecnologia sem conectar com impacto no negócio.',

@@ -45,7 +45,7 @@ export const EXTENSION_FEATURES = [
   },
   {
     title: "RE-ANÁLISE AUTOMÁTICA",
-    desc: "Troque de vaga e o painel acompanha — re-analisa sozinho quando a página muda.",
+    desc: "Troque de vaga e o painel acompanha — reanalisa sozinho quando a página muda.",
   },
   {
     title: "SCORE POR SKILL",
@@ -104,6 +104,6 @@ export const FAQ_ITEMS = [
   },
   {
     q: "TEM EXTENSÃO DO CHROME?",
-    a: "Em breve! A extensão Radar Unificando está em processo de aprovação na Chrome Web Store. Ela abrirá um painel lateral que analisa a vaga aberta na página e mostra o score ATS do seu currículo, com dicas para passar em triagens automatizadas, re-analisando automaticamente quando você troca de vaga.",
+    a: "Em breve! A extensão Radar Unificando está em processo de aprovação na Chrome Web Store. Ela abrirá um painel lateral que analisa a vaga aberta na página e mostra o score ATS do seu currículo, com dicas para passar em triagens automatizadas, reanalisando automaticamente quando você troca de vaga.",
   },
 ];
