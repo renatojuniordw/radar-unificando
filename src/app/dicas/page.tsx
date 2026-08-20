@@ -35,7 +35,7 @@ const VALID_CATEGORIES = new Set<string>(
   Object.keys(DICA_CATEGORIES) as DicaCategory[],
 );
 
-export default function DicasPage({
+export default async function DicasPage({
   searchParams,
 }: {
   searchParams: Promise<{ categoria?: string }>;

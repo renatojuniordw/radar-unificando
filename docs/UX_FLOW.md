@@ -125,7 +125,7 @@ FAQ: como funciona, segurança do token, revogação
 Hub (/dicas):
   ├── Badge: "DICAS E TUTORIAIS"
   ├── H1: "DICAS PARA ACELERAR SUA CARREIRA"
-  ├── Chips de categoria: Todas, Currículo, Ferramentas, Carreira, ATS (filtro via query ?categoria= no server component — chip ativo fica com fundo lime)
+  ├── Chips de categoria: Todas, Currículo, Ferramentas, Carreira, ATS (filtro via query ?categoria= no server component — chip ativo fica com fundo lime e texto escuro)
   ├── Grid de cards (dica-card.tsx): título, descrição, tempo de leitura, categoria badge
   └── CTA: "PRONTO PARA PÔR EM PRÁTICA?" → botão "IMPORTAR CURRÍCULO AGORA" → /perfil
 

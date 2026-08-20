@@ -10,7 +10,7 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── /admin       → painel admin (métricas) — guarded por role no layout; noindex
   ├── /extensao    → página pública da extensão (marketing, JSON-LD)
   ├── /cursos      → hub de cursos + /cursos/[skill] (SSG, 71 skills)
-  ├── /dicas       → hub de tutoriais + /dicas/[slug] (SSG, ISR)
+  ├── /dicas       → hub de tutoriais (dynamic, filtra por ?categoria=) + /dicas/[slug] (SSG, ISR)
   ├── /sobre       → página institucional
   ├── /doar        → página de doação (PIX)
   ├── /termos      → termos LGPD
