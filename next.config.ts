@@ -13,17 +13,18 @@ const securityHeaders = [
   // 'unsafe-inline' em style-src é exigido pelo MUI/emotion (styles injetados);
   // 'unsafe-inline'/'unsafe-eval' em script-src cobrem scripts inline do Next.js.
   // Os domínios de terceiros abaixo precisam estar em script-src, senão o CSP
-  // BLOQUEIA o GA4 (@next/third-parties) e o tracking da Impact (loader inline
-  // cria <script> externo de utt.impactcdn.com) — regressão funcional (validação
-  // 13/08, item V-1). object-src/base-uri/form-action/frame-ancestors restringem
-  // vetores clássicos de XSS/clickjacking.
+  // BLOQUEIA o GA4 (@next/third-parties), o tracking da Impact (loader inline
+  // cria <script> externo de utt.impactcdn.com) e o Cloudflare Web Analytics
+  // (beacon.min.js, habilitado no painel do Cloudflare do domínio) — regressão
+  // funcional (validação 13/08, item V-1). object-src/base-uri/form-action/
+  // frame-ancestors restringem vetores clássicos de XSS/clickjacking.
   {
     key: 'Content-Security-Policy',
     value:
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' " +
       'https://www.googletagmanager.com https://www.google-analytics.com ' +
-      'https://utt.impactcdn.com; ' +
+      'https://utt.impactcdn.com https://static.cloudflareinsights.com; ' +
       "style-src 'self' 'unsafe-inline'; " +
       "img-src 'self' data: blob: https:; " +
       "font-src 'self' data:; " +

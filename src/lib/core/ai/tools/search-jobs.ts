@@ -10,6 +10,8 @@ const MAX_SEARCHES_PER_MESSAGE = 2;
 const MODALITY_QUALIFIERS_RE =
   /\b(remot[oa]|h[ií]brid[oa]|presencial|home\s+office)\b/giu;
 
+const ALLOWED_QUERY_CHARS_RE = /^[\p{L}\p{N}\s\-_.]+$/u;
+
 /**
  * Remove qualificadores de modalidade (remoto/híbrido/presencial) da query.
  * A Gupy indexa esses valores no campo workplaceType, não no título da vaga —
@@ -32,7 +34,6 @@ export function createSearchJobsTool(_userId: string) {
         .string()
         .min(2, "Query muito curta")
         .max(200, "Query muito longa")
-        .regex(/^[\p{L}\p{N}\s\-_.]+$/u, "Caracteres não permitidos na query")
         .describe('Termo de busca (ex: "Data Analyst", "Python", "Nubank")'),
       limit: z
         .number()
@@ -49,6 +50,9 @@ export function createSearchJobsTool(_userId: string) {
           error:
             "Limite de 2 buscas por mensagem atingido. Reformule o pedido.",
         };
+      }
+      if (!ALLOWED_QUERY_CHARS_RE.test(query)) {
+        return { error: "Caracteres não permitidos na query" };
       }
       const sanitizedQuery = stripModalityQualifiers(query);
       debugLog(
