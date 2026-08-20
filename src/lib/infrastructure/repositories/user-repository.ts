@@ -63,9 +63,8 @@ export const userRepository: IUserRepository = {
       prisma.extensionToken.deleteMany({ where: { userId } }),
       prisma.extensionFeedback.deleteMany({ where: { userId } }),
       prisma.courseClick.deleteMany({ where: { userId } }),
-      // 6. Perfil e sessão
+      // 6. Perfil
       prisma.profile.deleteMany({ where: { userId } }),
-      prisma.session.deleteMany({ where: { userId } }),
       // 7. Conta do usuário (último, por ser referenciada por tudo)
       prisma.user.delete({ where: { id: userId } }),
     ]);

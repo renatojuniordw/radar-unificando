@@ -7,16 +7,15 @@ datasource db {
 }
 
 model User {
-  id                    String            @id @default(uuid()) @db.Uuid
-  email                 String            @unique @db.VarChar(255)
-  passwordHash          String            @map("password_hash") @db.VarChar(255)
-  name                  String?           @db.VarChar(255)
-  role                  String            @default("user") @db.VarChar(20)
-  lastLoginAt           DateTime?         @map("last_login_at")
-  createdAt             DateTime          @default(now()) @map("created_at")
-  resetTokenHash        String?           @unique @map("reset_token_hash") @db.VarChar(64)
-  resetTokenExpiresAt   DateTime?         @map("reset_token_expires_at")
-  sessions              Session[]
+  id                    String                  @id @default(uuid()) @db.Uuid
+  email                 String                  @unique @db.VarChar(255)
+  passwordHash          String                  @map("password_hash") @db.VarChar(255)
+  name                  String?                 @db.VarChar(255)
+  role                  String                  @default("user") @db.VarChar(20)
+  lastLoginAt           DateTime?               @map("last_login_at")
+  createdAt             DateTime                @default(now()) @map("created_at")
+  resetTokenHash        String?                 @unique @map("reset_token_hash") @db.VarChar(64)
+  resetTokenExpiresAt   DateTime?               @map("reset_token_expires_at")
   profiles              Profile[]
   jobs                  Job[]
   applications          Application[]
@@ -60,16 +59,16 @@ model ExtensionFeedback {
 }
 
 model CourseClick {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String?   @map("user_id") @db.Uuid
-  courseId  String    @map("course_id") @db.VarChar(100)
-  skill     String?   @db.VarChar(100)
-  platform  String?   @db.VarChar(10)
-  origin    String    @default("web") @db.VarChar(20)
-  url       String?   @db.VarChar
-  ipHash    String?   @map("ip_hash") @db.VarChar(64)
-  createdAt DateTime  @default(now()) @map("created_at")
-  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  courseId  String   @map("course_id") @db.VarChar(100)
+  skill     String?  @db.VarChar(100)
+  platform  String?  @db.VarChar(10)
+  origin    String   @default("web") @db.VarChar(20)
+  url       String?  @db.VarChar
+  ipHash    String?  @map("ip_hash") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([courseId, createdAt])
@@ -77,36 +76,26 @@ model CourseClick {
 }
 
 model PublicJob {
-  id            String    @id @default(uuid()) @db.Uuid
-  link          String    @unique @db.VarChar
-  source        String    @default("gupy_api") @db.VarChar(20)
-  company       String    @db.VarChar
-  platform      String    @db.VarChar
-  roleCategory  String?   @map("role_category") @db.VarChar
-  title         String?   @db.VarChar
-  type          String?   @db.VarChar
-  location      String?   @db.VarChar
-  postedAt      String?   @map("posted_at") @db.VarChar
-  description   String?   @db.Text
-  status        String    @default("active") @db.VarChar(20)
-  detectedAt    String?   @map("detected_at") @db.VarChar
-  lastCheckedAt DateTime  @default(now()) @map("last_checked_at")
-  expiresAt     DateTime  @map("expires_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id            String   @id @default(uuid()) @db.Uuid
+  link          String   @unique @db.VarChar
+  source        String   @default("gupy_api") @db.VarChar(20)
+  company       String   @db.VarChar
+  platform      String   @db.VarChar
+  roleCategory  String?  @map("role_category") @db.VarChar
+  title         String?  @db.VarChar
+  type          String?  @db.VarChar
+  location      String?  @db.VarChar
+  postedAt      String?  @map("posted_at") @db.VarChar
+  description   String?  @db.Text
+  status        String   @default("active") @db.VarChar(20)
+  detectedAt    String?  @map("detected_at") @db.VarChar
+  lastCheckedAt DateTime @default(now()) @map("last_checked_at")
+  expiresAt     DateTime @map("expires_at")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   @@index([status, expiresAt])
   @@index([roleCategory, status])
   @@map("public_jobs")
-}
-
-model Session {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
 }
 
 model Profile {
@@ -162,13 +151,13 @@ model Job {
 }
 
 model Chat {
-  id         String        @id @default(uuid()) @db.Uuid
-  userId     String        @map("user_id") @db.Uuid
-  externalId String        @map("external_id") @db.VarChar(100)
-  title      String?       @db.VarChar(255)
-  createdAt  DateTime      @default(now()) @map("created_at")
-  updatedAt  DateTime      @updatedAt @map("updated_at")
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String         @id @default(uuid()) @db.Uuid
+  userId     String         @map("user_id") @db.Uuid
+  externalId String         @map("external_id") @db.VarChar(100)
+  title      String?        @db.VarChar(255)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages   ChatMessage[]
   usage      ChatUsage[]
   toolCalls  ChatToolCall[]

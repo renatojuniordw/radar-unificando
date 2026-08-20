@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Prisma } from '@prisma/client';
 const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
 vi.mock('@/auth', () => ({ auth: mockAuth }));
 vi.mock('@/lib/infrastructure/repositories', () => ({
@@ -97,6 +98,21 @@ describe('Profile API', () => {
       const res = await PUT({ json: async () => ({ skills: ['python'] }) } as any);
       expect(res.status).toBe(500);
       expect((await res.json()).error).toBe('Erro ao salvar perfil');
+    });
+
+    it('should_return_401_and_clear_cookie_when_session_is_stale', async () => {
+      mockSession();
+      const fkError = new Prisma.PrismaClientKnownRequestError('Foreign key constraint violated', {
+        code: 'P2003',
+        clientVersion: '7.9.1',
+      });
+      vi.mocked(profileRepository.upsert).mockRejectedValue(fkError);
+
+      const res = await PUT({ json: async () => ({ skills: ['python'] }) } as any);
+
+      expect(res.status).toBe(401);
+      expect((await res.json()).error).toBe('Sessão inválida, faça login novamente');
+      expect(res.cookies.get('authjs.session-token')?.value).toBe('');
     });
   });
 });

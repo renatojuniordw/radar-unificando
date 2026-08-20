@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { Prisma } from '@prisma/client';
 
 const { auth: mockAuth } = vi.hoisted(() => ({ auth: vi.fn() }));
 vi.mock('@/auth', () => ({ auth: mockAuth }));
@@ -72,6 +73,20 @@ describe('Chat History API', () => {
     const res = await POST(makeRequest());
     expect(res.status).toBe(500);
     expect((await res.json()).error).toBe('Erro ao salvar');
+  });
+
+  it('should_return_401_and_clear_cookie_when_session_is_stale', async () => {
+    const fkError = new Prisma.PrismaClientKnownRequestError('Foreign key constraint violated', {
+      code: 'P2003',
+      clientVersion: '7.9.1',
+    });
+    vi.mocked(chatRepository.replaceMessages).mockRejectedValue(fkError);
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(401);
+    expect((await res.json()).error).toBe('Sessão inválida, faça login novamente');
+    expect(res.cookies.get('authjs.session-token')?.value).toBe('');
   });
 
   it('should_delete_chat_on_delete', async () => {

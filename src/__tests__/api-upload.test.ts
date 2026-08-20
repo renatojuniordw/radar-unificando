@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/api/auth-guard', () => ({
   requireAuth: vi.fn(),
+  isForeignKeyViolation: vi.fn().mockReturnValue(false),
+  staleSessionResponse: vi.fn(),
+  STALE_SESSION_ERROR_CODE: 'STALE_SESSION',
 }));
 
 vi.mock('@/lib/infrastructure/repositories', () => ({
