@@ -11,8 +11,9 @@ import { ProfileCompletionCard } from '@/components/profile/profile-completion-c
 import { ProfileImportSection } from '@/components/profile/profile-import-section';
 import { ProfileReviewSection } from '@/components/profile/profile-review-section';
 import { AtsAnalysisSection } from '@/components/profile/ats-analysis-section';
+import { GeneratedResumesTab } from '@/components/profile/generated-resumes-tab';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { ArrowLeft, Loader2, User, Download, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Download, Trash2, FileText } from 'lucide-react';
 
 function getInitial(name?: string | null, email?: string | null): string {
   const source = name?.trim() || email?.trim() || 'U';
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const { data: session } = useSession();
   const { show: showSnackbar } = useSnackbar();
   const profile = useProfile();
+  const [activeTab, setActiveTab] = useState<'profile' | 'resumes'>('profile');
   const [showManualForm, setShowManualForm] = useState(false);
   const importRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
@@ -162,6 +164,34 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Navegação entre Abas */}
+        <div className="flex gap-2 mb-6 border-b-2 border-[#020617] pb-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab('profile')}
+            className={`flex items-center gap-2 px-4 py-2 font-mono text-xs font-black uppercase tracking-wider border-2 border-[#020617] cursor-pointer transition-all ${
+              activeTab === 'profile'
+                ? 'bg-[#ccff00] text-[#020617] shadow-[3px_3px_0px_#000]'
+                : 'bg-white text-[#64748b] hover:bg-slate-50'
+            }`}
+          >
+            <User className="w-4 h-4" />
+            Meu Perfil
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('resumes')}
+            className={`flex items-center gap-2 px-4 py-2 font-mono text-xs font-black uppercase tracking-wider border-2 border-[#020617] cursor-pointer transition-all ${
+              activeTab === 'resumes'
+                ? 'bg-[#ccff00] text-[#020617] shadow-[3px_3px_0px_#000]'
+                : 'bg-white text-[#64748b] hover:bg-slate-50'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Currículos Adaptados
+          </button>
+        </div>
+
         {profile.loadError && (
           <div className="card-brutalist p-4 mb-6 border-red-600 bg-red-50 text-red-900" role="alert">
             <p className="font-mono text-xs font-bold m-0">
@@ -176,102 +206,110 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Estado setup: sem perfil */}
-        {isSetup && (
-          <div className="card-brutalist p-8 text-center mb-8">
-            <div className="w-16 h-16 rounded-full border-4 border-[#020617] bg-[#ccff00] flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_#000]">
-              <User className="w-8 h-8 text-[#020617] stroke-[2.5]" />
-            </div>
-            <h3 className="font-black text-xl uppercase tracking-tight text-[#020617] mb-2">
-              CRIE SEU PERFIL
-            </h3>
-            <p className="text-[#64748b] font-mono text-xs mb-6 max-w-md mx-auto leading-relaxed font-bold">
-              Importe seu currículo do LinkedIn em PDF para extrair automaticamente suas habilidades, experiências e nível de senioridade.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
-              <button
-                onClick={handleStartImport}
-                className="btn-neon w-full sm:w-auto px-6 py-3 text-xs font-mono font-black uppercase tracking-wider"
-              >
-                IMPORTAR CURRÍCULO
-              </button>
-              <button
-                onClick={handleStartManual}
-                className="btn-dark w-full sm:w-auto px-6 py-3 text-xs font-mono font-black uppercase tracking-wider"
-              >
-                PREENCHER MANUALMENTE
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Conteúdo da Aba de Currículos Adaptados */}
+        {activeTab === 'resumes' && <GeneratedResumesTab />}
 
-        {/* Estado com dados: formulário de edição */}
-        {!isSetup && (
+        {/* Conteúdo da Aba de Perfil */}
+        {activeTab === 'profile' && (
           <>
-            <ProfileCompletionCard
-              percent={profile.completionPercent}
-              completedCount={profile.completionScore}
-              totalCount={6}
-              checks={checks}
-            />
-
-            {/* Upload de currículo (se não tem ou quer re-importar) */}
-            {!hasResume && (
-              <div ref={importRef}>
-                <ProfileImportSection
-                  extracting={profile.extracting}
-                  dragOver={profile.dragOver}
-                  onDragOver={profile.setDragOver}
-                  onExtract={handleExtract}
-                />
+            {/* Estado setup: sem perfil */}
+            {isSetup && (
+              <div className="card-brutalist p-8 text-center mb-8">
+                <div className="w-16 h-16 rounded-full border-4 border-[#020617] bg-[#ccff00] flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_#000]">
+                  <User className="w-8 h-8 text-[#020617] stroke-[2.5]" />
+                </div>
+                <h3 className="font-black text-xl uppercase tracking-tight text-[#020617] mb-2">
+                  CRIE SEU PERFIL
+                </h3>
+                <p className="text-[#64748b] font-mono text-xs mb-6 max-w-md mx-auto leading-relaxed font-bold">
+                  Importe seu currículo do LinkedIn em PDF para extrair automaticamente suas habilidades, experiências e nível de senioridade.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+                  <button
+                    onClick={handleStartImport}
+                    className="btn-neon w-full sm:w-auto px-6 py-3 text-xs font-mono font-black uppercase tracking-wider"
+                  >
+                    IMPORTAR CURRÍCULO
+                  </button>
+                  <button
+                    onClick={handleStartManual}
+                    className="btn-dark w-full sm:w-auto px-6 py-3 text-xs font-mono font-black uppercase tracking-wider"
+                  >
+                    PREENCHER MANUALMENTE
+                  </button>
+                </div>
               </div>
             )}
 
-            <ProfileReviewSection
-              skills={profile.skills}
-              currentRole={profile.currentRole}
-              seniority={profile.seniority}
-              area={profile.area}
-              experienceYears={profile.experienceYears}
-              education={profile.education}
-              onFieldChange={handleFieldChange}
-              onAddSkill={profile.addSkill}
-              onAddSkills={profile.addSkills}
-              onRemoveSkill={profile.removeSkill}
-            />
-
-            {hasResume && (
-              <div ref={importRef}>
-                <ProfileImportSection
-                  title="ATUALIZAR CURRÍCULO"
-                  extracting={profile.extracting}
-                  dragOver={profile.dragOver}
-                  onDragOver={profile.setDragOver}
-                  onExtract={handleExtract}
+            {/* Estado com dados: formulário de edição */}
+            {!isSetup && (
+              <>
+                <ProfileCompletionCard
+                  percent={profile.completionPercent}
+                  completedCount={profile.completionScore}
+                  totalCount={6}
+                  checks={checks}
                 />
-              </div>
-            )}
 
-            {hasResume && <AtsAnalysisSection />}
-
-            {/* Botão Salvar Perfil */}
-            <div className="mt-8 mb-4">
-              <button
-                onClick={handleSave}
-                disabled={profile.saving}
-                aria-busy={profile.saving}
-                className="btn-neon w-full py-4 text-base font-mono font-black uppercase tracking-wider shadow-[8px_8px_0px_#000] border-4 border-[#020617]"
-              >
-                {profile.saving ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    SALVANDO PERFIL...
-                  </span>
-                ) : (
-                  'SALVAR PERFIL'
+                {/* Upload de currículo (se não tem ou quer re-importar) */}
+                {!hasResume && (
+                  <div ref={importRef}>
+                    <ProfileImportSection
+                      extracting={profile.extracting}
+                      dragOver={profile.dragOver}
+                      onDragOver={profile.setDragOver}
+                      onExtract={handleExtract}
+                    />
+                  </div>
                 )}
-              </button>
-            </div>
+
+                <ProfileReviewSection
+                  skills={profile.skills}
+                  currentRole={profile.currentRole}
+                  seniority={profile.seniority}
+                  area={profile.area}
+                  experienceYears={profile.experienceYears}
+                  education={profile.education}
+                  onFieldChange={handleFieldChange}
+                  onAddSkill={profile.addSkill}
+                  onAddSkills={profile.addSkills}
+                  onRemoveSkill={profile.removeSkill}
+                />
+
+                {hasResume && (
+                  <div ref={importRef}>
+                    <ProfileImportSection
+                      title="ATUALIZAR CURRÍCULO"
+                      extracting={profile.extracting}
+                      dragOver={profile.dragOver}
+                      onDragOver={profile.setDragOver}
+                      onExtract={handleExtract}
+                    />
+                  </div>
+                )}
+
+                {hasResume && <AtsAnalysisSection />}
+
+                {/* Botão Salvar Perfil */}
+                <div className="mt-8 mb-4">
+                  <button
+                    onClick={handleSave}
+                    disabled={profile.saving}
+                    aria-busy={profile.saving}
+                    className="btn-neon w-full py-4 text-base font-mono font-black uppercase tracking-wider shadow-[8px_8px_0px_#000] border-4 border-[#020617]"
+                  >
+                    {profile.saving ? (
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        SALVANDO PERFIL...
+                      </span>
+                    ) : (
+                      'SALVAR PERFIL'
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
 
