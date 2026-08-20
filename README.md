@@ -121,7 +121,7 @@ src/
     doar/          → Página de doação (PIX)
     export/        → Export CSV/JSON
     extensao/      → Página pública da extensão (marketing)
-    guia-ats/      → Guia de boas práticas ATS
+    dicas/         → Tutoriais e dicas de carreira (SSG + ISR)
     sobre/         → Página institucional
     termos/        → Termos LGPD
   components/

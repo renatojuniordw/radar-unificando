@@ -1,7 +1,7 @@
 import {
   Search,
   GraduationCap,
-  FileText,
+  BookOpen,
   Puzzle,
   Info,
   Heart,
@@ -31,10 +31,10 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     icon: GraduationCap,
   },
   {
-    href: "/guia-ats",
-    label: "GUIA ATS",
-    mobileLabel: "GUIA ATS & CURRÍCULO",
-    icon: FileText,
+    href: "/dicas",
+    label: "DICAS",
+    mobileLabel: "DICAS & TUTORIAIS",
+    icon: BookOpen,
   },
   {
     href: "/extensao",

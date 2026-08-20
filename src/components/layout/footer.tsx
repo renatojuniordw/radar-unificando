@@ -229,6 +229,28 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/dicas"
+                  style={{
+                    color: "#94a3b8",
+                    fontSize: "0.65rem",
+                    fontWeight: 900,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    textDecoration: "none",
+                    fontFamily: "ui-monospace, monospace",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#ccff00";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#94a3b8";
+                  }}
+                >
+                  DICAS
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/extensao"
                   style={{
                     color: "#94a3b8",

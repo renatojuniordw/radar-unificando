@@ -10,7 +10,7 @@
 - ✅ Auth.js v5 (credentials + JWT, bcrypt cost=12)
 - ✅ MUI 7 + Tailwind v4 (tema claro fixo; visual dark via estilos brutalistas — sem toggle)
 - ✅ Gupy MCP + REST fallback + scraper InHire
-- ✅ Páginas: home institucional + `/busca` (ferramenta), perfil, login/register, termos, sobre, doar, guia-ats, vagas públicas (ISR + JSON-LD)
+- ✅ Páginas: home institucional + `/busca` (ferramenta), perfil, login/register, termos, sobre, doar, `/dicas` (tutoriais), vagas públicas (ISR + JSON-LD)
 - ✅ **SEO**: `sitemap.xml`, `robots.txt`, metadados por página, páginas SSG `/cursos/[skill]` (71 skills)
 - ✅ **Afiliados Udemy**: catálogo curado + matcher determinístico + busca no catálogo da Impact (`searchUdemyCourses`, cache Redis), recomendações na sidebar `/busca`, hub `/cursos` (com CTA de fallback `trk.udemy.com`), chat (tool `recommend_courses`) e extensão ("Cursos Recomendados"); tracking de cliques em `CourseClick` + GA4
 - ✅ **Pool público de vagas** (`PublicJob`, TTL 7 dias): alimentado por toda execução do pipeline, alimenta as páginas `/vagas` de SEO

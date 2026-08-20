@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { COURSES, POPULAR_SKILLS } from "@/lib/core/courses/course-catalog";
 import { skillSlug } from "@/lib/core/courses/course-matcher";
+import { DICA_CATALOG } from "@/lib/core/dicas/dica-catalog";
 import { SITE } from "@/lib/core/constants";
 
 export const dynamic = 'force-dynamic';
@@ -23,12 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: "weekly",
       priority: 0.8,
-    },
-    {
-      url: `${base}/guia-ats`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.7,
     },
     {
       url: `${base}/sobre`,
@@ -63,5 +58,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...courseRoutes];
+  // Rotas de dicas (tutoriais e dicas de carreira)
+  const dicasHub: MetadataRoute.Sitemap = [
+    {
+      url: `${base}/dicas`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+  ];
+  const dicaRoutes: MetadataRoute.Sitemap = DICA_CATALOG.map((dica) => ({
+    url: `${base}/dicas/${dica.slug}`,
+    lastModified: dica.updateDate ?? dica.publishDate,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...courseRoutes, ...dicasHub, ...dicaRoutes];
 }

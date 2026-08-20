@@ -10,7 +10,7 @@ describe('sitemap', () => {
     const urls = routes.map((r) => r.url);
     expect(urls).toContain(`${SITE.url}/busca`);
     expect(urls).toContain(`${SITE.url}/cursos`);
-    expect(urls).toContain(`${SITE.url}/guia-ats`);
+    expect(urls).toContain(`${SITE.url}/dicas`);
     expect(urls).toContain(`${SITE.url}/sobre`);
     expect(urls).toContain(`${SITE.url}/extensao`);
     expect(urls).toContain(`${SITE.url}/termos`);
