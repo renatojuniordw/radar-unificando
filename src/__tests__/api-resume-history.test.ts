@@ -11,6 +11,7 @@ vi.mock("@/lib/infrastructure/db/prisma-client", () => ({
   prisma: {
     generatedContentCache: {
       findMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -59,12 +60,16 @@ describe("GET /api/resume/history", () => {
         },
       },
     ]);
+    (prisma.generatedContentCache.count as ReturnType<typeof vi.fn>).mockResolvedValue(1);
 
     const res = await GET(new Request("http://localhost/api/resume/history") as any);
     expect(res.status).toBe(200);
 
     const body = await res.json();
     expect(body.history).toHaveLength(1);
+    expect(body.total).toBe(1);
+    expect(body.page).toBe(1);
+    expect(body.totalPages).toBe(1);
     expect(body.history[0]).toEqual(
       expect.objectContaining({
         id: "item-1",
@@ -73,5 +78,24 @@ describe("GET /api/resume/history", () => {
         jobLocation: "São Paulo",
       }),
     );
+  });
+
+  it("should_apply_page_and_pageSize_query_params", async () => {
+    (requireAuth as ReturnType<typeof vi.fn>).mockResolvedValue({
+      session: { user: { id: "user-123" } },
+      response: null,
+    });
+    (prisma.generatedContentCache.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (prisma.generatedContentCache.count as ReturnType<typeof vi.fn>).mockResolvedValue(25);
+
+    const res = await GET(new Request("http://localhost/api/resume/history?page=2&pageSize=10") as any);
+    const body = await res.json();
+
+    expect(prisma.generatedContentCache.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 10, take: 10 }),
+    );
+    expect(body.page).toBe(2);
+    expect(body.pageSize).toBe(10);
+    expect(body.totalPages).toBe(3);
   });
 });

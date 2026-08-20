@@ -12,6 +12,7 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  Pagination,
 } from "@mui/material";
 import {
   Download,
@@ -34,16 +35,22 @@ export interface GeneratedResumeItem {
   resumeMarkdown: string;
 }
 
+const PAGE_SIZE = 10;
+
 export function GeneratedResumesTab() {
   const [items, setItems] = useState<GeneratedResumeItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<GeneratedResumeItem | null>(null);
   const [snackbar, setSnackbar] = useState("");
 
-  function loadHistory() {
-    fetch("/api/resume/history")
+  function loadHistory(targetPage: number) {
+    setLoading(true);
+    fetch(`/api/resume/history?page=${targetPage}&pageSize=${PAGE_SIZE}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Erro ao carregar histórico");
@@ -52,6 +59,8 @@ export function GeneratedResumesTab() {
       })
       .then((data) => {
         setItems(data.history || []);
+        setTotal(data.total ?? 0);
+        setTotalPages(data.totalPages ?? 1);
         setError("");
       })
       .catch((err) => {
@@ -63,14 +72,13 @@ export function GeneratedResumesTab() {
   }
 
   const handleRetry = () => {
-    setLoading(true);
-    setError("");
-    loadHistory();
+    loadHistory(page);
   };
 
   useEffect(() => {
-    loadHistory();
-  }, []);
+    loadHistory(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   const handleDownload = async (item: GeneratedResumeItem) => {
     if (downloadingId) return;
@@ -139,7 +147,7 @@ export function GeneratedResumesTab() {
     );
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && total === 0) {
     return (
       <Box
         className="card-brutalist"
@@ -182,7 +190,7 @@ export function GeneratedResumesTab() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mb: 4 }}>
       <Typography sx={{ fontWeight: 900, fontSize: "0.85rem", textTransform: "uppercase", color: "#64748b", fontFamily: "ui-monospace, monospace", letterSpacing: "0.05em" }}>
-        {items.length} CURRÍCULO{items.length === 1 ? "" : "S"} ADAPTADO{items.length === 1 ? "" : "S"} DISPONÍVEI{items.length === 1 ? "L" : "S"}
+        {total} CURRÍCULO{total === 1 ? "" : "S"} ADAPTADO{total === 1 ? "" : "S"} DISPONÍVEI{total === 1 ? "L" : "S"}
       </Typography>
 
       {items.map((item) => {
@@ -322,6 +330,28 @@ export function GeneratedResumesTab() {
           </Box>
         );
       })}
+
+      {totalPages > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", pt: 1 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, value) => setPage(value)}
+            shape="rounded"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                fontFamily: "ui-monospace, monospace",
+                fontWeight: 700,
+                color: "#020617",
+                border: "2px solid #020617",
+              },
+              "& .Mui-selected": {
+                bgcolor: "#ccff00 !important",
+              },
+            }}
+          />
+        </Box>
+      )}
 
       {/* Dialog Preview */}
       {previewItem && (
