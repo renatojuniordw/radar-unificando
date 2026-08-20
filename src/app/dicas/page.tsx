@@ -4,7 +4,11 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { SITE } from '@/lib/core/constants';
-import { DICA_CATALOG, DICA_CATEGORIES } from '@/lib/core/dicas/dica-catalog';
+import {
+  DICA_CATALOG,
+  DICA_CATEGORIES,
+  type DicaCategory,
+} from '@/lib/core/dicas/dica-catalog';
 import { DicaCardGrid } from '@/components/dicas/dica-card-grid';
 import { DicaCard } from '@/components/dicas/dica-card';
 
@@ -27,8 +31,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DicasPage() {
-  const categories = Object.entries(DICA_CATEGORIES);
+const VALID_CATEGORIES = new Set<string>(
+  Object.keys(DICA_CATEGORIES) as DicaCategory[],
+);
+
+export default function DicasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ categoria?: string }>;
+}) {
+  const { categoria } = await searchParams;
+  const activeCategory =
+    categoria && VALID_CATEGORIES.has(categoria)
+      ? (categoria as DicaCategory)
+      : null;
+
+  const filteredDicas = activeCategory
+    ? DICA_CATALOG.filter(
+        (d) =>
+          d.category === activeCategory ||
+          d.secondCategory === activeCategory,
+      )
+    : DICA_CATALOG;
 
   return (
     <Box sx={{ bgcolor: '#020617', color: '#ffffff', minHeight: '100vh' }}>
@@ -79,39 +103,66 @@ export default function DicasPage() {
 
         {/* Category chips */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
-          {categories.map(([key, cat]) => (
-            <Link
-              key={key}
-              href={`/dicas?categoria=${key}`}
-              style={{ textDecoration: 'none' }}
+          <Link href="/dicas" style={{ textDecoration: 'none' }}>
+            <Box
+              sx={{
+                display: 'inline-block',
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: !activeCategory ? '#020617' : '#94a3b8',
+                bgcolor: !activeCategory ? '#ccff00' : 'transparent',
+                border: `2px solid ${!activeCategory ? '#ccff00' : '#334155'}`,
+                px: 1.5,
+                py: 0.5,
+                '&:hover': {
+                  borderColor: '#ccff00',
+                  color: '#ccff00',
+                },
+              }}
             >
-              <Box
-                sx={{
-                  display: 'inline-block',
-                  fontFamily: 'ui-monospace, monospace',
-                  fontSize: '0.7rem',
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  color: '#94a3b8',
-                  border: '2px solid #334155',
-                  px: 1.5,
-                  py: 0.5,
-                  '&:hover': {
-                    borderColor: '#ccff00',
-                    color: '#ccff00',
-                  },
-                }}
+              Todas
+            </Box>
+          </Link>
+          {Object.entries(DICA_CATEGORIES).map(([key, cat]) => {
+            const isActive = activeCategory === key;
+            return (
+              <Link
+                key={key}
+                href={`/dicas?categoria=${key}`}
+                style={{ textDecoration: 'none' }}
               >
-                {cat.label}
-              </Box>
-            </Link>
-          ))}
+                <Box
+                  sx={{
+                    display: 'inline-block',
+                    fontFamily: 'ui-monospace, monospace',
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: isActive ? '#020617' : '#94a3b8',
+                    bgcolor: isActive ? '#ccff00' : 'transparent',
+                    border: `2px solid ${isActive ? '#ccff00' : '#334155'}`,
+                    px: 1.5,
+                    py: 0.5,
+                    '&:hover': {
+                      borderColor: '#ccff00',
+                      color: '#ccff00',
+                    },
+                  }}
+                >
+                  {cat.label}
+                </Box>
+              </Link>
+            );
+          })}
         </Box>
 
         {/* Card grid */}
         <DicaCardGrid>
-          {DICA_CATALOG.map((dica) => (
+          {filteredDicas.map((dica) => (
             <DicaCard key={dica.slug} dica={dica} />
           ))}
         </DicaCardGrid>

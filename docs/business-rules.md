@@ -346,3 +346,54 @@ Deduplicates jobs by link (limit 200), maps to Prisma.JobCreateManyInput, calls 
 - **ASSUMPTION 1**: `SkillExtractor`'s NER model loading is mocked/stubbed in unit tests (heavy); tests focus on taxonomy + bullet + regex extraction.
 - **ASSUMPTION 2**: `DedupEngine` methods preserve order (first occurrence wins) — this matches standard Map behavior.
 - **ASSUMPTION 3**: `recommendation.ts` (`buildProfileTokens` cap 10 tokens, `rankJobsByProfile` overlap score 0–1) is a pure function tested without LLM dependency.
+
+---
+
+## DicaCatalog (core/dicas/dica-catalog.ts)
+
+### Expected Behavior
+**Input → Output/Side-Effect:**
+- Pure, static catalog module — no DB, no LLM, no side-effects.
+- `allDicaSlugs()`: Returns `string[]` of all slugs in `DICA_CATALOG`.
+- `dicaFromSlug(slug)`: Returns `Dica | undefined` by slug.
+- `dicasForCategory(category)`: Returns `Dica[]` filtered by category.
+
+### Types
+- `DicaCategory`: `'curriculo' | 'ferramenta' | 'carreira' | 'ats'`
+- `Dica`: `{ slug, title, description, category, secondCategory?, estimatedReadingMinutes, publishDate, sections[], faq[] }`
+- `DicaSection`: `{ heading: string; paragraphs?: string[]; list?: string[] }` — each section has a mandatory heading, optional paragraphs, and optional list.
+
+### Validations and Rules
+1. All slugs are unique; `dicaFromSlug` uses a `Map` for O(1) lookup.
+2. `dicasForCategory(category)` filters by exact match on `category` OR `secondCategory`. No passthrough — invalid categories return `[]`.
+3. Catalog is exported as `const` — no mutation possible.
+4. Currently 4 articles, all published 2026-08-20.
+
+### Mapped Edge Cases
+- **Unknown slug**: `dicaFromSlug` returns `undefined` → `notFound()` in the page component.
+- **No match for category**: Returns `[]` (empty grid shown).
+
+### Expected Error Scenarios
+- None — pure data module.
+
+---
+
+## EmailService (infrastructure/email/email-service.ts)
+
+### Expected Behavior
+**Input → Output/Side-Effect:**
+- `sendWelcomeEmail(to, name)`: Sends welcome email with 3 steps. Uses Resend SDK if `RESEND_API_KEY` is set; otherwise logs warning to console (dev fallback).
+- `sendPasswordResetEmail(to, resetUrl)`: Sends password reset link (valid 1 hour). Same Resend fallback behavior.
+
+### Validations and Rules
+1. Both functions silently return if `RESEND_API_KEY` is not set (no error thrown).
+2. From address: `process.env.MAIL_FROM` or `Radar Unificando <no-reply@radarunificando.com.br>`.
+3. Resend client is created lazily on first call (`getClient()`).
+4. Errors from Resend SDK are logged to `console.error` but not thrown — email failure does not block the user flow (registration still succeeds, password reset link is still returned in the API response).
+
+### Mapped Edge Cases
+- **No RESEND_API_KEY**: Emails silently not sent, warning logged.
+- **Resend API error**: Logged but not propagated — user flow continues.
+
+### Expected Error Scenarios
+- Network errors from Resend — caught and logged, no user impact.

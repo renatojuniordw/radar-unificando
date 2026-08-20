@@ -14,15 +14,16 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── /sobre       → página institucional
   ├── /doar        → página de doação (PIX)
   ├── /termos      → termos LGPD
-  └── components/  → home/, busca/, profile/ (inclui OutdatedProfileBanner), layout/ (header, footer, UserMenu), seo/,
-                     chat/, admin/, ats/, cursos/, job-table/, shared/, ui/
+  └── components/  → home/, busca/, profile/ (profile-tab, generated-resumes-tab com paginação, OutdatedProfileBanner),
+                     layout/ (header, footer, UserMenu), seo/ (inclui ArticleSchema), chat/, admin/, ats/, cursos/,
+                     dicas/ (dica-card, dica-card-grid), job-table/, shared/, ui/
                      lib/docx/ (render-resume-docx — client-side DOCX generation)
         |
 API Layer (Route Handlers)
   ├── /api/pipeline (+ /stream, /:runId)
   ├── /api/vagas · /api/profile · /api/upload (+ /:jobId)
   ├── /api/chat (+ /history, /conversations, /context, /usage) · /api/ats/analyze
-  ├── /api/auth/register · /api/health · /export (CSV/JSON)
+  ├── /api/auth/register · /api/resume/history (paginado) · /api/health · /export (CSV/JSON)
   ├── /api/extension/analyze · /api/extension/feedback (Bearer token da extensão)
   ├── /api/extensao/status (sessão — status de conexão da extensão)
   └── Auth.js v5 (NextAuth, credentials)
@@ -46,6 +47,7 @@ Application/Core Layer
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine
   ├── core/discovery/       → company-discovery (executado para usuários logados)
+  ├── core/dicas/           → dica-catalog (catálogo estático de tutoriais, helpers, categorias)
   └── core/admin/           → admin-stats (summary, séries diárias, top termos/empresas/ferramentas)
         |
 Domain Types
@@ -58,6 +60,7 @@ Infrastructure Layer
   ├── redis/                → client, chat-lock, global-budget (orçamento diário USD)
   ├── storage/              → browser-storage.ts (IndexedDB via idb)
   ├── security/             → rate-limiter.ts (in-memory), rate-limit.ts (Redis)
+  ├── email/                → email-service.ts (Resend: welcome email, password reset)
   └── ui/                   → theme, theme-provider, auth-provider, query-provider
 ```
 

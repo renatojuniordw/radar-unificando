@@ -17,7 +17,7 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limits: 5/min + 3/dia por IP (Redis). 409 em e-mail duplicado |
+| POST | `/api/auth/register` | ❌ | Criar conta (name, email, password ≥ 8). Rate limits: 5/min + 3/dia por IP (Redis). 400 em e-mail duplicado (mensagem genérica para anti-enumeração). Após sucesso, envia e-mail de boas-vindas via Resend (`sendWelcomeEmail`). Frontend redireciona para `/login?registered=true` |
 | POST | `/api/auth/forgot-password` | ❌ | Solicitar link de recuperação (`{email}`). Sempre `{success:true}` (anti-enumeração). Envia e-mail via Resend ou loga no console em dev. Rate limits: 3/min + 10/dia por IP e 3/hora por e-mail |
 | POST | `/api/auth/reset-password` | ❌ | Redefinir senha (`{token, password}`). 400 se link inválido/expirado. Rate limit: 5/min |
 | POST | `/api/auth/callback/credentials` | ❌ | Login (email, password) — rota do NextAuth |
@@ -59,6 +59,7 @@ Base URL local: `http://localhost:11010`.
 | POST | `/api/ats/analyze` | ✅ | Análise ATS do currículo do usuário. Body: `{ jobDescription? }`. Retorna `{ heuristics, analysis, cached }` (score 0-100, checklist, keywords faltando, recomendações). 400 se não houver currículo. Rate limit próprio |
 | POST | `/api/courses/search` | ❌ (limitado por IP) | Busca dinâmica de cursos. Body: `{ query }` (1-80 chars). Prioriza a API Impact (Udemy, máx. 12), com cache Redis (1h) e fallback para o catálogo curado local. Retorna `{ courses, source }` (`source` ∈ `impact\|curated`) |
 | POST | `/api/resume/generate` | ✅ | Gera currículo adaptado à vaga. Body: `{ jobTitle, jobDescription?, jobCompany?, jobLocation? }`. Retorna `{ resume, resumeMarkdown, pdfBase64 }`. O cliente renderiza PDF (server-side via `pdfBase64`) e DOCX (client-side via `lib/docx/render-resume-docx.ts`). Veracidade garantida (`enforceVeracity`). Rate limit diário (`resume_daily`). 400 sem currículo importado |
+| GET | `/api/resume/history?page=&pageSize=` | ✅ | Lista currículos gerados do usuário (paginação). `page` (padrão 1), `pageSize` (padrão 10, máx 50). Retorna `{ history: [...], total, page, pageSize, totalPages }`. Cada item: `id`, `jobTitle`, `jobCompany`, `jobLocation`, `createdAt`, `expiresAt`, `resumeMarkdown` |
 
 **Exemplo de resposta do GET `/api/chat/usage`:**
 ```json

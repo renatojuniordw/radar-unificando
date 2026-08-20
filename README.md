@@ -19,25 +19,27 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Recomendação por perfil** — vagas ranqueadas por relevância ao seu perfil
 - **Análise ATS dedicada** — score 0-100 do currículo × vaga, com palavras-chave faltando e recomendações
 - **Currículo adaptado (PDF + Word)** — gera uma versão do seu currículo adaptada à vaga, com download direto em PDF ou DOCX (Word)
+- **Dicas de carreira** — hub de tutoriais e dicas de currículo, ATS, entrevista e ferramentas (`/dicas`), com artigos SSG+ISR, FAQ e JSON-LD para SEO
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
 - **Painel Admin** — métricas de usuários, buscas e uso de IA com gráficos (Recharts), filtro por período, tabela de usuários e auto-refresh — acesso restrito a `role=admin`
 - **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Status: EM BREVE** — em homologação na Chrome Web Store
+- **E-mail de boas-vindas** — ao criar conta, o usuário recebe um e-mail com 3 passos iniciais (via Resend)
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
 ## Stack
 
-| Categoria | Tecnologia |
-|-----------|-----------|
-| Framework | Next.js 16 (App Router) |
-| UI | MUI 7 + Tailwind v4 |
-| Design | Neo-Brutalism + Premium SaaS |
-| Banco | PostgreSQL via Prisma ORM |
-| Cache/Fila | Redis (rate limiting, cache, locks) |
-| Auth | Auth.js v5 (credentials + JWT + bcrypt) |
-| Scraper Gupy | MCP oficial + REST fallback |
-| AI | Vercel AI SDK (OpenAI-compatible) |
-| Chat | MUI + `@ai-sdk/react` (useChat) |
-| Storage anônimo | IndexedDB via `idb` |
+| Categoria       | Tecnologia                              |
+| --------------- | --------------------------------------- |
+| Framework       | Next.js 16 (App Router)                 |
+| UI              | MUI 7 + Tailwind v4                     |
+| Design          | Neo-Brutalism + Premium SaaS            |
+| Banco           | PostgreSQL via Prisma ORM               |
+| Cache/Fila      | Redis (rate limiting, cache, locks)     |
+| Auth            | Auth.js v5 (credentials + JWT + bcrypt) |
+| Scraper Gupy    | MCP oficial + REST fallback             |
+| AI              | Vercel AI SDK (OpenAI-compatible)       |
+| Chat            | MUI + `@ai-sdk/react` (useChat)         |
+| Storage anônimo | IndexedDB via `idb`                     |
 
 ## Apoie o projeto
 
@@ -46,7 +48,7 @@ O Radar Unificando é gratuito e open source, mas tem custos reais de infraestru
 
 - **PIX** (Brasil, sem taxa): QR e chave em [radar.unificando.com.br/doar](https://radar.unificando.com.br/doar)
 
-Custos mensais transparentes: veja [`COSTS.md`](./COSTS.md).
+Custos mensais transparentes: veja a aba "Infraestrutura & Custos" no painel admin (`/admin`, role `admin`).
 
 ## Como Rodar
 
@@ -65,6 +67,32 @@ Abra [http://localhost:11010](http://localhost:11010)
 
 > **Portas locais (Docker):** app `11010`, PostgreSQL `11011`, Redis `11012` — configuradas para não conflitar com outros projetos na máquina (ex: medicamentos usa a 5432). Ajuste `DATABASE_URL` no `.env` conforme a porta do postgres.
 
+## Variáveis de Ambiente
+
+Modelo completo em `.env.example` (dev) e `.env.production.example` (produção, com instruções de agendamento do cron). Resumo por grupo:
+
+| Variável                          | Obrigatória | Descrição                                                              |
+| ---------------------------------- | :---------: | ------------------------------------------------------------------------ |
+| `DATABASE_URL`                     | Sim         | Connection string do PostgreSQL                                        |
+| `AUTH_SECRET`                      | Sim         | Segredo do Auth.js (`openssl rand -base64 64`)                         |
+| `AUTH_URL` / `NEXTAUTH_URL`        | Sim         | URL base do app (auth + allowlist de CORS no middleware)               |
+| `ADMIN_EMAIL/PASSWORD/NAME`        | Sim         | Primeiro usuário, criado com `role=admin` pelo seed                    |
+| `AI_BASE_URL` / `AI_API_KEY`       | Sim         | Endpoint e chave do provedor LLM (Verboo, OpenAI ou compatível)        |
+| `AI_MODEL`                         | Sim         | Modelo usado no chat/IA                                                |
+| `AI_INPUT_PRICE_PER_1M` / `AI_OUTPUT_PRICE_PER_1M` | Não | Preço por 1M tokens, usado no orçamento diário (defaults: 0.15 / 0.6) |
+| `CHAT_MAX_OUTPUT_TOKENS`           | Não         | Máx. tokens de saída por resposta (default: 3500)                      |
+| `AI_SUPPORTS_REASONING_KWARGS`     | Não         | Só para backends vLLM/SGLang com kwargs de raciocínio (default: false) |
+| `REDIS_HOST/PORT/PASSWORD`         | Sim         | Conexão do Redis (rate limit, cache, locks)                            |
+| `RESEND_API_KEY` / `MAIL_FROM`     | Prod        | Envio de e-mail (recuperação de senha, boas-vindas). Vazio em dev = link logado no console |
+| `GLOBAL_DAILY_BUDGET_USD`          | Não         | Teto diário agregado de custo de IA (default: 0.95)                    |
+| `DAILY_TOKEN_LIMIT` / `MONTHLY_TOKEN_LIMIT` / `IP_DAILY_TOKEN_LIMIT` | Não | Tetos de tokens por usuário/IP (renovam à meia-noite e no dia 1º) |
+| `EXTENSION_ORIGIN`                 | Extensão    | Origin completa da extensão Chrome (`chrome-extension://<id>`), exata  |
+| `NEXT_PUBLIC_GA_ID`                | Não         | Google Analytics 4                                                     |
+| `NEXT_PUBLIC_UDEMY_AFFILIATE_REF`  | Não         | ID de afiliado Udemy, adicionado aos deep links do catálogo            |
+| `IMPACT_ACCOUNT_SID` / `IMPACT_AUTH_TOKEN` / `IMPACT_UDEMY_CATALOG_ID` | Não | Credenciais da API Impact (busca de cursos Udemy além do catálogo curado) |
+| `CRON_SECRET`                      | Prod        | Autentica `GET /api/cron/cleanup` (header `x-cron-secret`)             |
+| `RETENTION_INACTIVE_CHAT_MONTHS`   | Não         | Meses de inatividade até exclusão automática do chat (default: 12)     |
+
 ## Desenvolvimento
 
 ```bash
@@ -73,24 +101,25 @@ npm run dev
 ```
 
 > **Atenção:** `next build` e `next dev` compartilham o diretório `.next` por padrão — rodar um build enquanto o dev está ativo corrompe o cache do dev (500 em tudo). Para validar um build sem derrubar o dev, use um diretório separado:
+>
 > ```bash
 > NEXT_DIST_DIR=.next-check npm run build
 > ```
 
 ## Scripts
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Dev server (porta 11010) |
-| `npm run build` | Build produção |
+| Comando                                   | Descrição                                       |
+| ----------------------------------------- | ----------------------------------------------- |
+| `npm run dev`                             | Dev server (porta 11010)                        |
+| `npm run build`                           | Build produção                                  |
 | `NEXT_DIST_DIR=.next-check npm run build` | Build de validação (não toca no `.next` do dev) |
-| `npm run lint` | Lint |
-| `npm run test` | Testes Vitest |
-| `npm run test:coverage` | Testes com cobertura |
-| `npm run test:e2e` | Testes E2E (Playwright) |
-| `npm run db:migrate` | Migrations Prisma |
-| `npm run db:seed` | Seed dados iniciais |
-| `npm run db:studio` | Prisma Studio |
+| `npm run lint`                            | Lint                                            |
+| `npm run test`                            | Testes Vitest                                   |
+| `npm run test:coverage`                   | Testes com cobertura                            |
+| `npm run test:e2e`                        | Testes E2E (Playwright)                         |
+| `npm run db:migrate`                      | Migrations Prisma                               |
+| `npm run db:seed`                         | Seed dados iniciais                             |
+| `npm run db:studio`                       | Prisma Studio                                   |
 
 ## Estrutura
 
@@ -98,7 +127,7 @@ npm run dev
 src/
   app/
     (auth)/        → Login, register, forgot-password, reset-password
-    (dashboard)/   → Perfil do usuário, conexão da extensão (/extensao/conectar)
+    (dashboard)/   → Perfil do usuário (abas: perfil + currículos gerados), conexão da extensão (/extensao/conectar)
     admin/         → Painel admin (métricas, usuários) — restrito por role, noindex
     api/
       ats/         → Análise ATS dedicada
@@ -121,7 +150,7 @@ src/
     doar/          → Página de doação (PIX)
     export/        → Export CSV/JSON
     extensao/      → Página pública da extensão (marketing)
-    dicas/         → Tutoriais e dicas de carreira (SSG + ISR)
+    dicas/         → Hub de tutoriais + /dicas/[slug] (SSG, ISR)
     sobre/         → Página institucional
     termos/        → Termos LGPD
   components/
@@ -133,8 +162,9 @@ src/
     home/          → Hero, WhyUse, FAQ, Results, Loading
     job-table/     → Tabela de vagas (desktop/mobile/filtros)
     layout/        → Header, Footer, UserMenu
-    profile/       → Import, Review, Completion, OutdatedProfileBanner
-    seo/           → Structured data, JobPosting schema, Breadcrumb schema
+    dicas/         → dica-card, dica-card-grid
+    profile/       → profile-tab, generated-resumes-tab (com paginação), Import, Review, Completion, OutdatedProfileBanner
+    seo/           → Structured data, JobPosting schema, Breadcrumb schema, ArticleSchema
     shared/        → Componentes reutilizáveis (support-section, etc.)
     ui/            → Cookie consent, PWA register, error boundary
   contexts/        → Chat assistant context
@@ -150,6 +180,7 @@ src/
         tools/     → 9 tools do chat (search-jobs, analyze-ats-score, etc.)
       auth/        → Auth.js config
       courses/     → Catálogo Udemy, matcher, Impact client, recomendação
+      dicas/       → Catálogo de dicas (dica-catalog.ts), helpers, categorias
       dedup/       → DedupEngine
       discovery/   → CompanyDiscovery (Wayback/Urlscan)
       extension/   → Token SHA-256, feedback
@@ -167,7 +198,7 @@ src/
       cache/       → Cache Redis
       cleanup/     → Retenção LGPD
       db/          → Prisma client
-      email/       → Resend
+      email/       → Resend (welcome email, password reset)
       redis/       → Redis client, chat-lock, global-budget
       repositories/→ Repositórios (user, job, pipeline, chat, admin, etc.)
       security/    → Rate limiter, env validation
@@ -184,22 +215,18 @@ src/
 
 Veja `docs/` para documentação detalhada:
 
-| Documento | Conteúdo |
-|-----------|----------|
-| `ARCHITECTURE.md` | Camadas, fluxo de dados, diagramas |
-| `DESIGN_SYSTEM.md` | Design system Neo-Brutalist, componentes |
-| `DATABASE.md` | Schema Prisma, migrações |
-| `API.md` | Rotas REST, exemplos curl |
-| `SECURITY.md` | JWT, rate limiting, sanitização |
-| `PIPELINE.md` | Steps do pipeline de busca |
-| `AI.md` | Pipeline de IA, modelos, tools |
-| `UX_FLOW.md` | Wireframes, estados, interações |
-| `CONTRIBUTING.md` | Setup dev, branch strategy |
-| `ROADMAP.md` | Roadmap v1 → v2 → v3 |
+| Documento                | Conteúdo                                            |
+| ------------------------ | --------------------------------------------------- |
+| `ARCHITECTURE.md`        | Camadas, fluxo de dados, diagramas                  |
+| `DESIGN.md`              | Design system visual, tokens, paleta, tipografia    |
+| `DESIGN_SYSTEM.md`       | Design system Neo-Brutalist, componentes            |
+| `DATABASE.md`            | Schema Prisma, migrações                            |
+| `API.md`                 | Rotas REST, exemplos curl                           |
+| `SECURITY.md`            | JWT, rate limiting, sanitização                     |
+| `PIPELINE.md`            | Steps do pipeline de busca                          |
+| `AI.md`                  | Pipeline de IA, modelos, tools                      |
+| `UX_FLOW.md`             | Wireframes, estados, interações                     |
+| `CONTRIBUTING.md`        | Setup dev, branch strategy                          |
+| `ROADMAP.md`             | Roadmap v1 → v2 → v3                                |
 | `INTEGRATIONS_IMPACT.md` | Permissões e escopos da API Impact (afiliado Udemy) |
-| `business-rules.md` | Regras de negócio mapeadas (dedup, pipeline, IA) |
-
-## Créditos
-
-- [@anomalyco](https://github.com/anomalyco) — scraper original Node.js + PowerShell
-- [Renato Bezerra](https://renatobezerra.com.br/) — reescrita para Next.js + web
+| `business-rules.md`      | Regras de negócio mapeadas (dedup, pipeline, IA)    |

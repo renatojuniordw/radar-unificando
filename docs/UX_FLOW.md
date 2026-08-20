@@ -55,38 +55,49 @@ Formulário: email + senha
 Link: "Criar conta" → /register
 Validação: Zod (email válido, senha ≥ 8 chars)
 Feedback: Alert inline em caso de erro
+Sucesso após registro: banner verde "Conta criada com sucesso! Faça login para continuar." (query ?registered=true)
 ```
 
 ### Registro (`/register`)
 ```
 Formulário: nome + email + senha + confirmar senha
 Validação: Zod (campos obrigatórios, senhas coincidem)
-Feedback: Snackbar sucesso + redirect para /
+Feedback: Banner inline verde "CONTA CRIADA COM SUCESSO! REDIRECIONANDO PARA O LOGIN..." → redirect para /login?registered=true após 1.2s
+Side-effect: envia e-mail de boas-vindas via Resend (email-service.ts)
 ```
 
 ### Perfil (`/perfil`) — requer login
 ```
-Estado vazio:
-  ├── Seção: "IMPORTAR CURRÍCULO"
-  │   ├── Upload PDF (drag & drop ou clique)
-  │   └── Textarea: colar texto do currículo
-  └── Formulário manual: skills + senioridade + cargo + área
+Layout: duas abas (tabs) — "PERFIL" (padrão) e "CURRÍCURSOS GERADOS"
 
-Estado revisão:
-  ├── Dados extraídos pela IA (editáveis)
-  │   ├── Skills (tags editáveis)
-  │   ├── Senioridade (select)
-  │   ├── Anos de experiência (number)
-  │   ├── Cargo atual (text)
-  │   ├── Área (select)
-  │   └── Formação (text)
-  ├── Barra de completude (percentual)
-  └── Botão: "SALVAR PERFIL"
+Aba "PERFIL":
+  Estado vazio:
+    ├── Seção: "IMPORTAR CURRÍCULO"
+    │   ├── Upload PDF (drag & drop ou clique)
+    │   └── Textarea: colar texto do currículo
+    └── Formulário manual: skills + senioridade + cargo + área
 
-Estado completo:
-  ├── Card de completude (100%)
-  ├── Banner de currículo desatualizado (se 60+ dias desde a importação): "Currículo base atualizado há X dias" + botão "Atualizar Agora"
-  └── Link: "Ver vagas recomendadas →"
+  Estado revisão:
+    ├── Dados extraídos pela IA (editáveis)
+    │   ├── Skills (tags editáveis)
+    │   ├── Senioridade (select)
+    │   ├── Anos de experiência (number)
+    │   ├── Cargo atual (text)
+    │   ├── Área (select)
+    │   └── Formação (text)
+    ├── Barra de completude (percentual)
+    └── Botão: "SALVAR PERFIL"
+
+  Estado completo:
+    ├── Card de completude (100%)
+    ├── Banner de currículo desatualizado (se 60+ dias desde a importação): "Currículo base atualizado há X dias" + botão "Atualizar Agora"
+    └── Link: "Ver vagas recomendadas →"
+
+Aba "CURRÍCURSOS GERADOS":
+  ├── Paginação server-side (GET /api/resume/history?page=&pageSize=, padrão 10/página, máx 50)
+  ├── Lista de currículos adaptados: vaga + empresa + local + data
+  ├── Cada item: link "Baixar" (PDF) + link "Baixar" (DOCX)
+  └── Estado vazio: "Nenhum currículo gerado ainda"
 ```
 
 ### Extensão Chrome (`/extensao/conectar`) — requer login
@@ -109,6 +120,25 @@ Fluxo automático (launchWebAuthFlow):
 FAQ: como funciona, segurança do token, revogação
 ```
 
+### Dicas (`/dicas`) — pública
+```
+Hub (/dicas):
+  ├── Badge: "DICAS E TUTORIAIS"
+  ├── H1: "DICAS PARA ACELERAR SUA CARREIRA"
+  ├── Chips de categoria: Todas, Currículo, Ferramentas, Carreira, ATS (filtro via query ?categoria= no server component — chip ativo fica com fundo lime)
+  ├── Grid de cards (dica-card.tsx): título, descrição, tempo de leitura, categoria badge
+  └── CTA: "PRONTO PARA PÔR EM PRÁTICA?" → botão "IMPORTAR CURRÍCULO AGORA" → /perfil
+
+Artigo (/dicas/[slug]):
+  ├── Breadcrumb: HOME / DICAS / Título
+  ├── Badge de categoria + tempo de leitura + data (pt-BR)
+  ├── H1: título do artigo
+  ├── Seções: parágrafos + listas (DicaSection)
+  ├── FAQ expansível (DicaFaqItem)
+  ├── JSON-LD: FAQPage + Article + BreadcrumbList
+  └── CTA: mesmo do hub
+```
+
 ### Painel Admin (`/admin`) — requer `role=admin`
 ```
 Acesso: guardado no layout server-side (role admin) + auth-guard; noindex no robots.txt
@@ -129,7 +159,7 @@ Auto-refresh: a cada 60s (auto-refresh.tsx)
 | Buscar vagas | Overlay + progresso | Tabela + contagem | "Nenhuma vaga encontrada" | Alert + retry |
 | Salvar perfil | Btn desabilitado | Snackbar "Perfil salvo!" | — | Snackbar erro |
 | Login | Spinner no btn | Redirect para / | — | Alert inline |
-| Register | Spinner no btn | Snackbar + redirect | — | Alert inline |
+| Register | Spinner no btn | Banner inline sucesso → redirect /login?registered=true | — | Alert inline |
 | Chat assistente | "Digitando..." | Mensagem streaming | Chips de sugestão | Snackbar |
 | Export CSV | Btn desabilitado | Download arquivo | — | Snackbar |
 | Upload currículo | "Extraindo skills..." | Dados extraídos | — | "Não foi possível ler" |

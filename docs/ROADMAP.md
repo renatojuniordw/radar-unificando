@@ -1,11 +1,11 @@
 # Roadmap — Radar Unificando
 
-## v1 (Manutenção)
+## MVP local (concluído)
 - Scraper local + SQLite
 - Brutalist UI
 - Docker single service
 
-## v2 (desenvolvimento atual — branches `feat/*` a partir de `main`)
+## Migração para produção (atual — branches `feat/*` a partir de `main`)
 - ✅ PostgreSQL + Prisma ORM
 - ✅ Auth.js v5 (credentials + JWT, bcrypt cost=12)
 - ✅ MUI 7 + Tailwind v4 (tema claro fixo; visual dark via estilos brutalistas — sem toggle)
@@ -38,6 +38,10 @@
 - ✅ **Ordenação por recência** dos resultados do pipeline (`sortJobsByRecency`)
 - ✅ **Painel admin** (`/admin`, role `admin` no User): métricas de usuários, logins, buscas (termos/empresas), ferramentas de chat, tokens e cursos por dia (Recharts)
 - ✅ **Refatoração fasedada** (branch `feat/refactor`): `AtsResultsContent` compartilhado, Zod validation em chat/history, rate limiting em chat/history, dynamic imports para Recharts (~200KB), `useMemo` em admin dashboard, `aria-label` em botões de ação, Server Component para FaqStructuredData
+- ✅ **Dicas de carreira** (`/dicas`): hub SSG+ISR com catálogo de 4 artigos (currículo ATS, uso do Radar, entrevista TI, adaptar currículo), categorias, FAQ, JSON-LD (Article + FAQ + Breadcrumb), substituiu `/guia-ats`
+- ✅ **E-mail de boas-vindas**: `sendWelcomeEmail()` via Resend no registro (`email-service.ts`), com 3 passos iniciais; fallback em dev sem `RESEND_API_KEY`
+- ✅ **Profile tab extraction**: `ProfileTab` extraído de `perfil/page.tsx`, `GeneratedResumesTab` com paginação server-side (`GET /api/resume/history?page=&pageSize=`)
+- ✅ **Consolidação de docs**: `DESIGN.md` e `COSTS.md` movidos/consolidados em `docs/`, relatório LGPD removido (obsoleto)
 - ⏳ Performance audit
 - ⏳ Acessibilidade audit
 
@@ -45,7 +49,7 @@
 > depois removida (commit `0465180`) e **re-implementada** com PDF export (commits `c709863`,
 > `e363b1d`) — hoje é a tool `generate_resume` + `POST /api/resume/generate`.
 
-## v3 (Futuro)
+## Expansão futura
 - Notificações em tempo real
 - Integração com LinkedIn API
 - Pipeline Discovery avançado (mais fontes — o discovery já roda para usuários logados; expandir fontes)
