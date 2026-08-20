@@ -2,6 +2,7 @@ import { profileRepository } from '@/lib/infrastructure/repositories';
 import { computeResumeHash } from '@/lib/core/upload/resume-hash';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
 import { uploadJobStore, type UploadJobResult } from '@/lib/core/upload/upload-job-store';
+import { isForeignKeyViolation, STALE_SESSION_ERROR_CODE } from '@/lib/api/auth-guard';
 import {
   resumeExtractionCache,
   hashContent,
@@ -67,6 +68,10 @@ export async function processUploadJob(
   } catch (error) {
     const latency = (performance.now() - start).toFixed(0);
     console.error(`[upload] AI extraction failed (${latency}ms):`, error);
+    if (isForeignKeyViolation(error)) {
+      uploadJobStore.fail(jobId, STALE_SESSION_ERROR_CODE);
+      return;
+    }
     const message = error instanceof Error ? error.message : 'Falha ao extrair skills via IA';
     uploadJobStore.fail(jobId, message);
   }

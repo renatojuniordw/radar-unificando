@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createHash } from 'node:crypto';
 import { streamText, stepCountIs, convertToModelMessages, type UIMessage } from 'ai';
-import { requireAuth } from '@/lib/api/auth-guard';
+import { isForeignKeyViolation, requireAuth } from '@/lib/api/auth-guard';
 import { chatLlm } from '@/lib/core/ai/llm-provider';
 import { createChatTools } from '@/lib/core/ai/chat-tools';
 import { chatRepository, profileRepository } from '@/lib/infrastructure/repositories';
@@ -251,14 +251,22 @@ export async function POST(req: NextRequest) {
             ipHash,
           });
         } catch (err) {
-          console.error('[chat] Erro ao registrar usage:', err);
+          if (isForeignKeyViolation(err)) {
+            console.warn('[chat] Sessão obsoleta (FK violation) — usage não persistido:', err);
+          } else {
+            console.error('[chat] Erro ao registrar usage:', err);
+          }
         }
 
         // Registra as ferramentas de IA usadas (métrica "ferramentas mais utilizadas").
         // Fire-and-forget: falha no registro não pode atrasar o fim do stream.
         if (toolNames.length > 0) {
           void chatRepository.recordToolCalls(session.user.id, toolNames).catch((err) => {
-            console.error('[chat] Erro ao registrar tool calls:', err);
+            if (isForeignKeyViolation(err)) {
+              console.warn('[chat] Sessão obsoleta (FK violation) — tool calls não persistidas:', err);
+            } else {
+              console.error('[chat] Erro ao registrar tool calls:', err);
+            }
           });
         }
 
@@ -278,7 +286,11 @@ export async function POST(req: NextRequest) {
             ];
             await chatRepository.replaceMessages(session.user.id, 'default', updatedMessages);
           } catch (err) {
-            console.error('[chat] Erro ao auto-salvar histórico:', err);
+            if (isForeignKeyViolation(err)) {
+              console.warn('[chat] Sessão obsoleta (FK violation) — histórico não persistido:', err);
+            } else {
+              console.error('[chat] Erro ao auto-salvar histórico:', err);
+            }
           }
         }
 

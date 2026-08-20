@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/api/auth-guard';
+import { isForeignKeyViolation, requireAuth, staleSessionResponse } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { computeResumeHash } from '@/lib/core/upload/resume-hash';
 import { profileUpdateSchema } from '@/lib/core/profile/profile-schema';
@@ -42,6 +42,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (isForeignKeyViolation(error)) return staleSessionResponse();
     console.error('[profile] Error:', error);
     return NextResponse.json(
       { error: 'Erro ao salvar perfil' },

@@ -39,6 +39,13 @@ function unauthorizedResponse(message = 'Não autenticado'): NextResponse {
 export const staleSessionResponse = () => unauthorizedResponse('Sessão inválida, faça login novamente');
 
 /**
+ * Sentinel usado por jobs assíncronos (ex.: uploadJobStore) para sinalizar que
+ * falharam por sessão obsoleta (FK violation), já que rodam fora do ciclo
+ * request/response e não podem retornar staleSessionResponse() diretamente.
+ */
+export const STALE_SESSION_ERROR_CODE = 'STALE_SESSION';
+
+/**
  * Detecta violação de FK do Prisma (ex.: chats_user_id_fkey) — sinal de que o
  * `user.id` do JWT da sessão não existe mais no banco (ex.: banco recriado
  * enquanto o cookie de sessão antigo ainda era válido).
