@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
 import { Box, Typography } from '@mui/material';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface SkillInputProps {
   skills: string[];
@@ -131,7 +132,7 @@ export function SkillInput({
           gap: 1,
           p: 1.5,
           border: '4px solid #020617',
-          bgcolor: '#ffffff',
+          bgcolor: tokens.surface,
           boxShadow: '4px 4px 0px #000',
           minHeight: 56,
           alignItems: 'center',
@@ -146,16 +147,16 @@ export function SkillInput({
               display: 'inline-flex',
               alignItems: 'center',
               gap: 0.8,
-              border: '2px solid #020617',
+              border: tokens.border,
               bgcolor: '#f1f5f9',
-              color: '#020617',
+              color: tokens.primary,
               px: 1.2,
               py: 0.5,
               fontWeight: 800,
               fontSize: '0.7rem',
               textTransform: 'uppercase',
               letterSpacing: '0.02em',
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
             }}
           >
             <span>{skill}</span>
@@ -201,11 +202,11 @@ export function SkillInput({
             outline: 'none',
             flex: 1,
             minWidth: 180,
-            fontFamily: 'ui-monospace, monospace',
+            fontFamily: tokens.fontMono,
             fontSize: '0.8rem',
             padding: '6px 0',
             background: 'transparent',
-            color: '#020617',
+            color: tokens.primary,
           }}
         />
       </Box>
@@ -217,8 +218,8 @@ export function SkillInput({
           display: 'block',
           mt: 0.8,
           mb: 1.5,
-          color: '#64748b',
-          fontFamily: 'ui-monospace, monospace',
+          color: tokens.muted,
+          fontFamily: tokens.fontMono,
           fontSize: '0.65rem',
           textTransform: 'uppercase',
           letterSpacing: '0.03em',
@@ -236,7 +237,7 @@ export function SkillInput({
             left: 0,
             right: 0,
             zIndex: 1000,
-            bgcolor: '#ffffff',
+            bgcolor: tokens.surface,
             border: '4px solid #020617',
             boxShadow: '6px 6px 0px #000',
             mt: 0.5,
@@ -253,12 +254,12 @@ export function SkillInput({
                 p: 1.2,
                 px: 2,
                 cursor: 'pointer',
-                fontFamily: 'ui-monospace, monospace',
+                fontFamily: tokens.fontMono,
                 fontSize: '0.75rem',
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                bgcolor: idx === selectedIndex ? '#ccff00' : 'transparent',
-                color: '#020617',
+                bgcolor: idx === selectedIndex ? tokens.accent : 'transparent',
+                color: tokens.primary,
                 borderBottom: idx === filteredSuggestions.length - 1 ? 'none' : '1px solid #e2e8f0',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -266,7 +267,7 @@ export function SkillInput({
               }}
             >
               <span>{suggestion}</span>
-              <span style={{ fontSize: '0.65rem', color: idx === selectedIndex ? '#020617' : '#94a3b8' }}>
+              <span style={{ fontSize: '0.65rem', color: idx === selectedIndex ? tokens.primary : '#94a3b8' }}>
                 ↵ Adicionar
               </span>
             </Box>
@@ -284,7 +285,7 @@ export function SkillInput({
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
               fontSize: '0.65rem',
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               mr: 0.5,
             }}
           >
@@ -299,20 +300,20 @@ export function SkillInput({
                 fontWeight: 700,
                 fontSize: '0.65rem',
                 cursor: 'pointer',
-                border: '2px solid #020617',
-                color: '#020617',
-                background: '#f8fafc',
+                border: tokens.border,
+                color: tokens.primary,
+                background: tokens.surfaceHover,
                 padding: '3px 8px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.02em',
-                fontFamily: 'ui-monospace, monospace',
+                fontFamily: tokens.fontMono,
                 transition: 'all 0.15s',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = '#ccff00';
+                e.currentTarget.style.background = tokens.accent;
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = '#f8fafc';
+                e.currentTarget.style.background = tokens.surfaceHover;
               }}
             >
               + {s}

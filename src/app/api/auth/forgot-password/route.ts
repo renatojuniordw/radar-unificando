@@ -4,13 +4,14 @@ import { userRepository } from '@/lib/infrastructure/repositories';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { generatePasswordResetToken } from '@/lib/core/auth/password-reset-token';
 import { sendPasswordResetEmail } from '@/lib/infrastructure/email/email-service';
+import { getClientIp, rateLimitResponse, validationErrorResponse, routeErrorResponse } from '@/lib/api/route-helpers';
 
 const forgotPasswordSchema = z.object({
   email: z.string({ message: 'Email é obrigatório' }).trim().email('Email inválido'),
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
+  const ip = getClientIp(req);
 
   // Limites por IP: 3/minuto e 10/dia (perfis dedicados ao forgot-password).
   const [ipLimit, ipDailyLimit] = await Promise.all([
@@ -23,25 +24,13 @@ export async function POST(req: NextRequest) {
       ipLimit.success ? 0 : ipLimit.msBeforeNext,
       ipDailyLimit.success ? 0 : ipDailyLimit.msBeforeNext
     );
-    const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
-    return NextResponse.json(
-      { error: `Muitas tentativas. Aguarde ${retryAfterSeconds} segundos.` },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(retryAfterSeconds),
-        },
-      }
-    );
+    return rateLimitResponse(retryAfterMs, 'Muitas tentativas. Aguarde os segundos indicados.');
   }
 
   try {
     const parsed = forgotPasswordSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
-        { status: 400 }
-      );
+      return validationErrorResponse(parsed.error);
     }
 
     const { email } = parsed.data;
@@ -50,16 +39,7 @@ export async function POST(req: NextRequest) {
     // exista a conta ou não, para não vazar quais e-mails estão cadastrados.
     const emailLimit = await checkRateLimit(`email:${email.toLowerCase()}`, 'forgot_password_email');
     if (!emailLimit.success) {
-      const retryAfterSeconds = Math.ceil(emailLimit.msBeforeNext / 1000);
-      return NextResponse.json(
-        { error: `Muitas solicitações para este e-mail. Aguarde ${retryAfterSeconds} segundos.` },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(retryAfterSeconds),
-          },
-        }
-      );
+      return rateLimitResponse(emailLimit.msBeforeNext, 'Muitas solicitações para este e-mail. Aguarde os segundos indicados.');
     }
 
     const user = await userRepository.findByEmail(email);
@@ -75,10 +55,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[forgot-password] Error:', error);
-    return NextResponse.json(
-      { error: 'Erro ao processar a solicitação' },
-      { status: 500 }
-    );
+    return routeErrorResponse(error, 'forgot-password', 'Erro ao processar a solicitação');
   }
 }

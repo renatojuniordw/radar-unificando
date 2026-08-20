@@ -2,6 +2,7 @@ import { Box, TextField, Button, InputAdornment, Chip } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface Props {
   searchFilter: string;
@@ -60,20 +61,20 @@ export function JobFiltersMobile({
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon fontSize="small" sx={{ color: "#020617" }} />
+                  <SearchIcon fontSize="small" sx={{ color: tokens.primary }} />
                 </InputAdornment>
               ),
             },
           }}
           sx={{
             flex: 1,
-            bgcolor: "#ffffff",
+            bgcolor: tokens.surface,
             "& .MuiOutlinedInput-root": {
               borderRadius: 0,
-              border: "2px solid #020617",
+              border: tokens.border,
               fontWeight: 700,
               fontSize: "0.85rem",
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
             },
           }}
         />
@@ -83,17 +84,17 @@ export function JobFiltersMobile({
           size="small"
           sx={{
             borderRadius: 0,
-            border: "2px solid #020617",
-            bgcolor: "#020617",
-            color: "#ccff00",
+            border: tokens.border,
+            bgcolor: tokens.primary,
+            color: tokens.accent,
             boxShadow: "2px 2px 0px #000",
             fontWeight: 900,
-            fontFamily: "ui-monospace, monospace",
+            fontFamily: tokens.fontMono,
             px: 2.5,
             fontSize: "0.85rem",
             "&:hover": {
               bgcolor: "#1e293b",
-              color: "#ccff00",
+              color: tokens.accent,
             },
           }}
         >
@@ -124,12 +125,12 @@ export function JobFiltersMobile({
               size="small"
               clickable
               sx={{
-                bgcolor: isSelected ? "#ccff00" : "#ffffff",
-                color: isSelected ? "#020617" : "#475569",
-                border: "2px solid #020617",
+                bgcolor: isSelected ? tokens.accent : tokens.surface,
+                color: isSelected ? tokens.primary : "#475569",
+                border: tokens.border,
                 fontWeight: 900,
                 fontSize: "0.68rem",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 borderRadius: 0,
                 boxShadow: isSelected ? "2px 2px 0px #000" : "none",
                 flexShrink: 0,
@@ -144,12 +145,12 @@ export function JobFiltersMobile({
           size="small"
           clickable
           sx={{
-            bgcolor: typeFilter ? "#020617" : "#f1f5f9",
-            color: typeFilter ? "#ccff00" : "#020617",
-            border: "2px solid #020617",
+            bgcolor: typeFilter ? tokens.primary : "#f1f5f9",
+            color: typeFilter ? tokens.accent : tokens.primary,
+            border: tokens.border,
             fontWeight: 900,
             fontSize: "0.68rem",
-            fontFamily: "ui-monospace, monospace",
+            fontFamily: tokens.fontMono,
             borderRadius: 0,
             boxShadow: "2px 2px 0px #000",
             flexShrink: 0,
@@ -166,12 +167,12 @@ export function JobFiltersMobile({
               size="small"
               clickable
               sx={{
-                bgcolor: isSelected ? "#ccff00" : "#ffffff",
-                color: isSelected ? "#020617" : "#475569",
-                border: "2px solid #020617",
+                bgcolor: isSelected ? tokens.accent : tokens.surface,
+                color: isSelected ? tokens.primary : "#475569",
+                border: tokens.border,
                 fontWeight: 900,
                 fontSize: "0.68rem",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 borderRadius: 0,
                 boxShadow: isSelected ? "2px 2px 0px #000" : "none",
                 flexShrink: 0,
@@ -190,12 +191,12 @@ export function JobFiltersMobile({
           startIcon={<FilterListIcon fontSize="small" />}
           sx={{
             justifyContent: "center",
-            border: "2px solid #020617",
-            bgcolor: countSecondaryFilters > 0 ? "#020617" : "#ffffff",
-            color: countSecondaryFilters > 0 ? "#ccff00" : "#020617",
+            border: tokens.border,
+            bgcolor: countSecondaryFilters > 0 ? tokens.primary : tokens.surface,
+            color: countSecondaryFilters > 0 ? tokens.accent : tokens.primary,
             fontWeight: 900,
             fontSize: "0.75rem",
-            fontFamily: "ui-monospace, monospace",
+            fontFamily: tokens.fontMono,
             borderRadius: 0,
             py: 1,
             px: 2,
@@ -218,12 +219,12 @@ export function JobFiltersMobile({
               minWidth: "auto",
               px: 1.5,
               py: 1,
-              border: "2px solid #020617",
-              bgcolor: "#ffffff",
+              border: tokens.border,
+              bgcolor: tokens.surface,
               color: "#ef4444",
               fontWeight: 900,
               fontSize: "0.7rem",
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
               borderRadius: 0,
               boxShadow: "2px 2px 0px #000",
               whiteSpace: "nowrap",

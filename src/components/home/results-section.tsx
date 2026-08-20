@@ -4,6 +4,7 @@ import { memo } from "react";
 import { Container, Box, Typography, Chip, CircularProgress } from "@mui/material";
 import { JobTable } from "@/components/job-table/job-table";
 import type { Job } from "@/lib/types/job";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface ResultsSectionProps {
   recommendedMode: boolean;
@@ -49,13 +50,13 @@ export const ResultsSection = memo(function ResultsSection({
                   mb: 1.5,
                   textTransform: "uppercase",
                   letterSpacing: "-0.01em",
-                  color: "#f8fafc",
+                  color: tokens.surfaceHover,
                   fontSize: { xs: "1.25rem", sm: "1.75rem", md: "2.25rem" },
                   lineHeight: 1.15,
                   wordBreak: "break-word",
                 }}
               >
-                RECOMENDADAS PARA VOCÊ · <Box component="span" sx={{ color: "#ccff00" }}>{areaOrRole}</Box>
+                RECOMENDADAS PARA VOCÊ · <Box component="span" sx={{ color: tokens.accent }}>{areaOrRole}</Box>
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                 <Chip
@@ -80,9 +81,9 @@ export const ResultsSection = memo(function ResultsSection({
                 gap: 1,
                 px: 2,
                 py: 0.75,
-                bgcolor: "#ccff00",
-                color: "#020617",
-                border: "2px solid #020617",
+                bgcolor: tokens.accent,
+                color: tokens.primary,
+                border: tokens.border,
                 boxShadow: "3px 3px 0px #020617",
                 fontWeight: 800,
                 fontSize: "0.8125rem",
@@ -91,7 +92,7 @@ export const ResultsSection = memo(function ResultsSection({
                 borderRadius: 0,
               }}
             >
-              <CircularProgress size={14} thickness={6} sx={{ color: "#020617" }} />
+              <CircularProgress size={14} thickness={6} sx={{ color: tokens.primary }} />
               Atualizando vagas em segundo plano...
             </Box>
           )}

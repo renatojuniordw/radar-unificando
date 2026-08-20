@@ -29,7 +29,7 @@ API Layer (Route Handlers)
   └── Auth.js v5 (NextAuth, credentials)
         |
 Application/Core Layer
-  ├── core/pipeline/        → steps gupy/inhire/save/discovery + progress-emitter
+  ├── core/pipeline/        → pipeline-runner (DI via PipelineDeps), steps gupy/inhire/save/discovery + progress-emitter
   │   ├── query-expansion/  → expansão híbrida de queries (mapa curado + IA cacheada)
   │   ├── relevance-filter  → descarta design físico (moda/industrial)
   │   └── freshness         → descarta vagas com postedAt > 20 dias
@@ -40,7 +40,7 @@ Application/Core Layer
   ├── core/ai/              → skill-extractor, chat-tools (agregador), tools/ (9 tools),
   │                           job-analyzer, cover-letter, interview-questions,
   │                           resume-adaptation-generator, query-expansion, pii-redactor,
-  │                           llm-provider, chat-guard, shared/with-timeout (AbortSignal)
+  │                           llm-provider (factory pattern via createLlmProvider), chat-guard, shared/with-timeout (AbortSignal)
   ├── ats/                  → ats-analyzer (LLM v4), ats-heuristics, ats-service (cache,
   │                           buildAtsResumeInput, in-flight dedup), AtsResult type
   ├── core/mcp/             → gupy-client (JSON-RPC, paginado por offset)
@@ -61,7 +61,7 @@ Infrastructure Layer
   ├── storage/              → browser-storage.ts (IndexedDB via idb)
   ├── security/             → rate-limiter.ts (in-memory), rate-limit.ts (Redis)
   ├── email/                → email-service.ts (Resend: welcome email, password reset)
-  └── ui/                   → theme, theme-provider, auth-provider, query-provider
+  └── ui/                   → theme, tokens (design tokens centralizados), theme-provider, auth-provider, query-provider
 ```
 
 ## Princípios

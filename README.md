@@ -168,7 +168,7 @@ src/
     shared/        → Componentes reutilizáveis (support-section, etc.)
     ui/            → Cookie consent, PWA register, error boundary
   contexts/        → Chat assistant context
-  hooks/           → Custom hooks (useJobSearch, useProfile, useChatConversation, etc.)
+  hooks/           → Custom hooks (useJobSearch, useProfile, useChatConversation, useJobFiltersState, useChatUsage, etc.)
   lib/
     docx/          → Renderização de currículo adaptado em DOCX (Word)
     core/
@@ -194,6 +194,7 @@ src/
       seo/         → Sitemap, robots, structured data
       upload/      → Upload assíncrono (store + processor)
       vagas/       → Lógica de listagem de vagas
+    api/           → Helpers de rotas (route-helpers, auth-guard)
     infrastructure/
       cache/       → Cache Redis
       cleanup/     → Retenção LGPD
@@ -203,7 +204,7 @@ src/
       repositories/→ Repositórios (user, job, pipeline, chat, admin, etc.)
       security/    → Rate limiter, env validation
       storage/     → IndexedDB (browser)
-      ui/          → Theme, providers (MUI, Auth, Query)
+      ui/          → Theme, tokens, providers (MUI, Auth, Query)
     pdf/           → Geração de PDF (currículo adaptado)
     types/         → Tipos do domínio
     utils/         → Utilitários gerais

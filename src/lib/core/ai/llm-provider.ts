@@ -3,31 +3,42 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { API_ENDPOINTS } from '@/lib/core/constants';
 import { isLlmTimeout } from './shared/with-timeout';
 
-const baseURL = process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase;
-const apiKey = process.env.AI_API_KEY || '';
-const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
+export const LLM_TIMEOUT_MS = 120_000;
+
+/** Prompt como string única ou separado em system + user. */
+export type LlmPrompt = string | { system: string; user: string };
+
+/**
+ * Cria o provider LLM a partir de variáveis de ambiente.
+ * Exportado para testes injetarem configurações customizadas.
+ */
+export function createLlmProvider() {
+  const baseURL = process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase;
+  const apiKey = process.env.AI_API_KEY || '';
+  const modelName = process.env.AI_MODEL || 'gpt-4o-mini';
+
+  const provider = createOpenAICompatible({
+    name: 'llm',
+    baseURL,
+    apiKey,
+    includeUsage: true,
+  });
+
+  return {
+    chatLlm: provider.chatModel(modelName),
+    modelName,
+  };
+}
+
 // `reasoning_effort`/`chat_template_kwargs` são extensões OpenAI-compatíveis
 // de backends tipo vLLM/SGLang para modelos de raciocínio — provedores OpenAI
 // reais (ex. gpt-4o-mini) rejeitam esses campos com 400. Só envia quando o
 // deploy aponta explicitamente para um backend que os suporta.
 const supportsReasoningKwargs = process.env.AI_SUPPORTS_REASONING_KWARGS === 'true';
 
-export const LLM_TIMEOUT_MS = 120_000;
-
-/** Prompt como string única ou separado em system + user. */
-export type LlmPrompt = string | { system: string; user: string };
-
-const provider = createOpenAICompatible({
-  name: 'llm',
-  baseURL,
-  apiKey,
-  // Exige o chunk final de usage no streaming (stream_options.include_usage).
-  // Sem isso, provedores OpenAI-compatíveis não reportam tokens e o medidor
-  // de consumo do chat fica travado em 0.
-  includeUsage: true,
-});
-
-export const chatLlm = provider.chatModel(modelName);
+// Instância padrão usada pelos callers
+const { chatLlm: defaultChatLlm } = createLlmProvider();
+export const chatLlm = defaultChatLlm;
 
 // --- Direct fetch for JSON extraction (bypasses AI SDK reasoning_content issues) ---
 
@@ -89,7 +100,7 @@ async function callLlm<T extends z.ZodType>(
       ];
 
   const bodyPayload: Record<string, unknown> = {
-    model: modelName,
+    model: process.env.AI_MODEL || 'gpt-4o-mini',
     messages,
     stream: false,
     response_format: { type: 'json_object' },
@@ -106,10 +117,10 @@ async function callLlm<T extends z.ZodType>(
 
   const timeoutMs = opts?.timeoutMs ?? LLM_TIMEOUT_MS;
 
-  let res = await fetch(`${baseURL}/chat/completions`, {
+  let res = await fetch(`${process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase}/chat/completions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      'Authorization': `Bearer ${process.env.AI_API_KEY || ''}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(bodyPayload),
@@ -125,10 +136,10 @@ async function callLlm<T extends z.ZodType>(
     delete bodyPayload.response_format;
     delete bodyPayload.reasoning_effort;
     delete bodyPayload.chat_template_kwargs;
-    res = await fetch(`${baseURL}/chat/completions`, {
+    res = await fetch(`${process.env.AI_BASE_URL || API_ENDPOINTS.openaiBase}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${process.env.AI_API_KEY || ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(bodyPayload),
@@ -152,7 +163,7 @@ async function callLlm<T extends z.ZodType>(
   const usage = data.usage;
   if (usage) {
     console.log('[llm-provider] token_usage:', JSON.stringify({
-      model: modelName,
+      model: process.env.AI_MODEL || 'gpt-4o-mini',
       prompt_tokens: usage.prompt_tokens,
       completion_tokens: usage.completion_tokens,
       total_tokens: usage.total_tokens,
@@ -169,7 +180,7 @@ async function callLlm<T extends z.ZodType>(
   // Fast-fail: modelo queimou todos os tokens em raciocínio sem gerar JSON
   if (finishReason === 'length') {
     console.error('[llm-provider] finishReason=length — tokens esgotados sem gerar JSON:', {
-      model: modelName,
+      model: process.env.AI_MODEL || 'gpt-4o-mini',
       maxTokens: opts?.maxOutputTokens,
       contentLength: content.length,
     });

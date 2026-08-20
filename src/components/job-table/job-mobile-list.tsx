@@ -4,6 +4,7 @@ import { type RefObject } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { JobMobileCard } from './job-mobile-card';
 import type { Job } from '@/lib/types/job';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -60,12 +61,12 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
             onClick={() => goToPage(Math.max(page - 1, 1))}
             size="small"
             sx={{
-              border: '2px solid #020617',
-              bgcolor: page === 1 ? '#e2e8f0' : '#ffffff',
-              color: '#020617',
+              border: tokens.border,
+              bgcolor: page === 1 ? '#e2e8f0' : tokens.surface,
+              color: tokens.primary,
               fontWeight: 900,
               fontSize: '0.75rem',
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               borderRadius: 0,
               boxShadow: page === 1 ? 'none' : '2px 2px 0px #000',
               px: 1.5,
@@ -78,10 +79,10 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
 
           <Typography
             sx={{
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               fontSize: '0.75rem',
               fontWeight: 900,
-              color: '#020617',
+              color: tokens.primary,
             }}
           >
             PÁG {page} / {totalPages}
@@ -92,12 +93,12 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
             onClick={() => goToPage(Math.min(page + 1, totalPages))}
             size="small"
             sx={{
-              border: '2px solid #020617',
-              bgcolor: page >= totalPages ? '#e2e8f0' : '#020617',
-              color: page >= totalPages ? '#94a3b8' : '#ccff00',
+              border: tokens.border,
+              bgcolor: page >= totalPages ? '#e2e8f0' : tokens.primary,
+              color: page >= totalPages ? '#94a3b8' : tokens.accent,
               fontWeight: 900,
               fontSize: '0.75rem',
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               borderRadius: 0,
               boxShadow: page >= totalPages ? 'none' : '2px 2px 0px #000',
               px: 1.5,

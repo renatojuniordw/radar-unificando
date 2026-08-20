@@ -25,6 +25,15 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Rate limiter e configuração de navegação centralizados
 - Documentação consolidada (`DESIGN.md`, `COSTS.md` movidos para `docs/`)
 
+### Refatorado (auditoria técnica)
+- **Design tokens centralizados** em `tokens.ts` — 27 componentes MUI atualizados para usar tokens em vez de valores hardcoded
+- **Helpers de rotas** extraídos para `route-helpers.ts` (getClientIp, rateLimitResponse, validationErrorResponse, routeErrorResponse) — 3 rotas auth atualizadas
+- **Download PDF/DOCX consolidado** — `downloadAdaptedResume` e `downloadAdaptedResumeDocx` unificados em função única com parâmetro `format`
+- **God Hooks decompostos**: `useJobFiltersState` extraído de `useJobSearch`, `useChatUsage` extraído de `useChatConversation`
+- **DI no pipeline**: `PipelineDeps` interface com defaults — permite injeção de mocks em testes
+- **Factory pattern no LLM**: `createLlmProvider()` — provider criado via factory, testável
+- **Dependência morta removida**: `picocolors` (zero referências no codebase)
+
 ### Corrigido
 - Tratamento de sessões obsoletas e violações de FK em rotas de API e jobs em background
 - Regex de busca (`search-jobs`) restrita a caracteres alfanuméricos

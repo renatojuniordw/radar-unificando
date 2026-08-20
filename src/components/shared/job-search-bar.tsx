@@ -4,6 +4,7 @@ import { memo } from "react";
 import { Box, Button, Chip, Typography } from "@mui/material";
 import { Search, ArrowRight } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface JobSearchBarProps {
   variant: "hero" | "header";
@@ -25,7 +26,7 @@ const suggestionChipSx = {
   bgcolor: "#1e293b",
   color: "#cbd5e1",
   border: "1px solid #334155",
-  fontFamily: "ui-monospace, monospace",
+  fontFamily: tokens.fontMono,
   fontSize: "0.7rem",
   borderRadius: 0,
   shrink: 0,
@@ -33,9 +34,9 @@ const suggestionChipSx = {
   transition: "all 0.15s",
   "&:active": { transform: "scale(0.95)" },
   "&:hover": {
-    bgcolor: "#ccff00",
-    color: "#020617",
-    borderColor: "#ccff00",
+    bgcolor: tokens.accent,
+    color: tokens.primary,
+    borderColor: tokens.accent,
     fontWeight: 800,
   },
 } as const;
@@ -55,7 +56,7 @@ const suggestionRowSx = {
 
 const suggestionLabelSx = {
   fontSize: "0.7rem",
-  fontFamily: "ui-monospace, monospace",
+  fontFamily: tokens.fontMono,
   fontWeight: 800,
   color: "#94a3b8",
   textTransform: "uppercase",
@@ -134,7 +135,7 @@ export const JobSearchBar = memo(function JobSearchBar({
           transition: "all 0.2s ease-in-out",
           "&:focus-within": isHero
             ? {
-                borderColor: "#ffffff",
+                borderColor: tokens.surface,
                 boxShadow: "8px 8px 0px #ccff00",
               }
             : undefined,
@@ -169,16 +170,16 @@ export const JobSearchBar = memo(function JobSearchBar({
               disabled={running || cooldown > 0}
               variant="contained"
               sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
+                bgcolor: tokens.accent,
+                color: tokens.primary,
                 fontWeight: 900,
                 fontSize: "0.9rem",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
                 borderRadius: 0,
-                border: "2px solid #020617",
-                boxShadow: "3px 3px 0px #000",
+                border: tokens.border,
+                boxShadow: tokens.shadow,
                 height: 52,
                 px: { xs: 3, sm: 4 },
                 width: { xs: "100%", sm: "auto" },
@@ -241,16 +242,16 @@ export const JobSearchBar = memo(function JobSearchBar({
               disabled={running || cooldown > 0}
               variant="contained"
               sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
+                bgcolor: tokens.accent,
+                color: tokens.primary,
                 fontWeight: 900,
                 fontSize: "0.875rem",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
                 borderRadius: 0,
-                border: "2px solid #020617",
-                boxShadow: "3px 3px 0px #000",
+                border: tokens.border,
+                boxShadow: tokens.shadow,
                 height: 56,
                 px: 3,
                 whiteSpace: "nowrap",
@@ -284,7 +285,7 @@ export const JobSearchBar = memo(function JobSearchBar({
             justifyContent: "center",
             gap: 0.5,
             color: "#94a3b8",
-            fontFamily: "ui-monospace, monospace",
+            fontFamily: tokens.fontMono,
             fontSize: "0.75rem",
             fontWeight: 700,
             letterSpacing: "0.02em",

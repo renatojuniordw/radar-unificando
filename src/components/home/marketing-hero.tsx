@@ -6,6 +6,7 @@ import { Box, Container, Typography } from "@mui/material";
 import { Sparkles } from "lucide-react";
 import { RotatingText } from "@/components/home/rotating-text";
 import { JobSearchBar } from "@/components/shared/job-search-bar";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 const POPULAR_TAGS = [
   "DevOps",
@@ -101,7 +102,7 @@ export function MarketingHero() {
             sx={{
               fontWeight: 900,
               letterSpacing: "-0.03em",
-              color: "#ccff00",
+              color: tokens.accent,
               fontSize: {
                 xs: "2.25rem",
                 sm: "3.5rem",
@@ -131,11 +132,11 @@ export function MarketingHero() {
           >
             A plataforma inteligente que busca vagas de <RotatingText /> em
             tempo real no{" "}
-            <Box component="span" sx={{ color: "#ffffff", fontWeight: 700 }}>
+            <Box component="span" sx={{ color: tokens.surface, fontWeight: 700 }}>
               Gupy
             </Box>{" "}
             e{" "}
-            <Box component="span" sx={{ color: "#ffffff", fontWeight: 700 }}>
+            <Box component="span" sx={{ color: tokens.surface, fontWeight: 700 }}>
               InHire
             </Box>
             , calcula seu score de match e otimiza seu currículo.
@@ -174,9 +175,9 @@ export function MarketingHero() {
             >
               <Typography
                 sx={{
-                  fontFamily: "ui-monospace, monospace",
+                  fontFamily: tokens.fontMono,
                   fontSize: "0.75rem",
-                  color: "#ccff00",
+                  color: tokens.accent,
                   fontWeight: 900,
                   letterSpacing: "0.1em",
                   mb: 0.75,
@@ -187,7 +188,7 @@ export function MarketingHero() {
               <Typography
                 sx={{
                   fontWeight: 900,
-                  color: "#ffffff",
+                  color: tokens.surface,
                   fontSize: "0.95rem",
                   textTransform: "uppercase",
                   letterSpacing: "-0.01em",

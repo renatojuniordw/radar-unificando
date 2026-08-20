@@ -9,13 +9,46 @@ import { dedupEngine } from '@/lib/core/dedup';
 import { pipelineCache } from '@/lib/infrastructure/cache/pipeline-cache';
 import { expandQueries } from '@/lib/core/pipeline/query-expansion/service';
 import { sortJobsByRecency } from '@/lib/utils/date';
-
 export const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 export interface RunPipelineOptions {
   /** Habilita a descoberta de novas empresas (padrão: true para usuários logados). */
   discoveryEnabled?: boolean;
 }
+
+/**
+ * Dependências injetáveis do pipeline.
+ * Permite testes com mocks sem acoplamento a implementações concretas.
+ */
+export interface PipelineDeps {
+  runGupyStep: typeof runGupyStep;
+  runInHireStep: typeof runInHireStep;
+  runDiscoveryStep: typeof runDiscoveryStep;
+  runSaveStep: typeof runSaveStep;
+  runPublicSaveStep: typeof runPublicSaveStep;
+  dedupEngine: typeof dedupEngine;
+  pipelineCache: typeof pipelineCache;
+  pipelineRunRepository: typeof pipelineRunRepository;
+  progressEmitter: typeof progressEmitter;
+  expandQueries: typeof expandQueries;
+  sortJobsByRecency: typeof sortJobsByRecency;
+  shouldUseGupyMCP: typeof shouldUseGupyMCP;
+}
+
+const defaultDeps: PipelineDeps = {
+  runGupyStep,
+  runInHireStep,
+  runDiscoveryStep,
+  runSaveStep,
+  runPublicSaveStep,
+  dedupEngine,
+  pipelineCache,
+  pipelineRunRepository,
+  progressEmitter,
+  expandQueries,
+  sortJobsByRecency,
+  shouldUseGupyMCP,
+};
 
 async function fetchFreshJobs(
   runId: string,
@@ -24,21 +57,22 @@ async function fetchFreshJobs(
   queries: string[],
   isLoggedIn: boolean,
   discoveryEnabled: boolean,
+  deps: PipelineDeps,
 ) {
-  const expandedQueries = await expandQueries(queries);
+  const expandedQueries = await deps.expandQueries(queries);
   const [gupyJobs, inhireJobs, discCount] = await Promise.all([
-    runGupyStep(runId, {
+    deps.runGupyStep(runId, {
       companies,
       isLoggedIn,
       queries: expandedQueries,
       relevanceQueries: queries,
     }),
-    runInHireStep(runId, { companies, queries }),
-    discoveryEnabled ? runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
+    deps.runInHireStep(runId, { companies, queries }),
+    discoveryEnabled ? deps.runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
   ]);
 
-  const allJobs = sortJobsByRecency(dedupEngine.mergeSources(gupyJobs, inhireJobs));
-  pipelineCache.set(companies, queries, allJobs);
+  const allJobs = deps.sortJobsByRecency(deps.dedupEngine.mergeSources(gupyJobs, inhireJobs));
+  deps.pipelineCache.set(companies, queries, allJobs);
   return {
     allJobs,
     gupyCount: gupyJobs.length,
@@ -54,18 +88,19 @@ export async function runPipeline(
   queries: string[],
   isLoggedIn: boolean,
   options: RunPipelineOptions = {},
+  deps: PipelineDeps = defaultDeps,
 ) {
   try {
     const discoveryEnabled = options.discoveryEnabled !== false && isLoggedIn;
 
-    const { jobs: cachedJobs, isStale } = pipelineCache.get(companies, queries);
+    const { jobs: cachedJobs, isStale } = deps.pipelineCache.get(companies, queries);
     let allJobs;
     let gupyCount = 0;
     let inhireCount = 0;
     let newCompaniesFound = 0;
 
     if (cachedJobs !== null) {
-      progressEmitter.emit(runId, {
+      deps.progressEmitter.emit(runId, {
         type: 'step_complete',
         step: 'Cache',
         message: `Resultados obtidos em cache (${cachedJobs.length} vagas encontradas)${isStale ? ' - atualizando em segundo plano...' : ''}`,
@@ -74,12 +109,12 @@ export async function runPipeline(
 
       if (isStale) {
         // Stale-While-Revalidate: revalida em segundo plano sem bloquear a resposta ao usuário
-        void fetchFreshJobs(runId, userId, companies, queries, isLoggedIn, discoveryEnabled).catch((err) => {
+        void fetchFreshJobs(runId, userId, companies, queries, isLoggedIn, discoveryEnabled, deps).catch((err) => {
           console.warn('[pipeline-runner] Error during background revalidation:', err);
         });
       }
     } else {
-      const fresh = await fetchFreshJobs(runId, userId, companies, queries, isLoggedIn, discoveryEnabled);
+      const fresh = await fetchFreshJobs(runId, userId, companies, queries, isLoggedIn, discoveryEnabled, deps);
       allJobs = fresh.allJobs;
       gupyCount = fresh.gupyCount;
       inhireCount = fresh.inhireCount;
@@ -87,17 +122,17 @@ export async function runPipeline(
     }
 
     // Pool público de vagas (SEO): alimentado em toda execução, logada ou anônima.
-    await runPublicSaveStep(allJobs);
+    await deps.runPublicSaveStep(allJobs);
 
     if (isLoggedIn && userId !== ANONYMOUS_USER_ID) {
-      await runSaveStep(runId, allJobs, {
+      await deps.runSaveStep(runId, allJobs, {
         userId,
-        source: shouldUseGupyMCP(isLoggedIn, queries) ? 'gupy_mcp' : 'gupy_api',
+        source: deps.shouldUseGupyMCP(isLoggedIn, queries) ? 'gupy_mcp' : 'gupy_api',
       });
     }
 
     // Atualiza também runs anônimos (registrados para métricas do painel admin)
-    await pipelineRunRepository.update(runId, {
+    await deps.pipelineRunRepository.update(runId, {
       status: 'completed',
       totalJobs: allJobs.length,
       gupyJobs: gupyCount,
@@ -106,20 +141,20 @@ export async function runPipeline(
       finishedAt: new Date(),
     });
 
-    progressEmitter.emit(runId, {
+    deps.progressEmitter.emit(runId, {
       type: 'pipeline_complete',
       message: `Busca concluída! ${allJobs.length} vaga(s) encontrada(s).`,
       jobs: allJobs,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido';
-    progressEmitter.emit(runId, {
+    deps.progressEmitter.emit(runId, {
       type: 'step_error', step: 'Pipeline', error: message,
       message: `Falha: ${message}`,
     });
-    progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
+    deps.progressEmitter.emit(runId, { type: 'pipeline_error', message: 'Pipeline falhou' });
 
-    await pipelineRunRepository.update(runId, {
+    await deps.pipelineRunRepository.update(runId, {
       status: 'failed',
       finishedAt: new Date(),
     });

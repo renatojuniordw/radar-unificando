@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material';
 import type { Course } from '@/lib/core/courses/course-provider';
 import { buildAffiliateUrl } from '@/lib/core/courses/course-provider';
 import { trackCourseClick } from '@/lib/utils/course-analytics';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface Props {
   course: Course;
@@ -18,15 +19,15 @@ function ProviderBadge() {
     <Box
       sx={{
         display: 'inline-block',
-        bgcolor: '#ccff00',
-        color: '#020617',
+        bgcolor: tokens.accent,
+        color: tokens.primary,
         fontWeight: 900,
         fontSize: '0.6rem',
         textTransform: 'uppercase',
         letterSpacing: '0.2em',
         px: 1,
         py: 0.5,
-        border: '2px solid #020617',
+        border: tokens.border,
         boxShadow: '2px 2px 0px #000',
         alignSelf: 'flex-start',
       }}
@@ -65,9 +66,9 @@ export function CourseCard({ course, compact = false, origin = 'cursos' }: Props
         {course.rating && (
           <Typography
             sx={{
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               fontSize: '0.7rem',
-              color: '#ccff00',
+              color: tokens.accent,
               fontWeight: 800,
             }}
           >
@@ -79,7 +80,7 @@ export function CourseCard({ course, compact = false, origin = 'cursos' }: Props
       <Typography
         sx={{
           fontWeight: 900,
-          color: '#ffffff',
+          color: tokens.surface,
           fontSize: compact ? '0.9rem' : '1.05rem',
           lineHeight: 1.2,
           textTransform: 'uppercase',
@@ -114,9 +115,9 @@ export function CourseCard({ course, compact = false, origin = 'cursos' }: Props
       >
         <Typography
           sx={{
-            fontFamily: 'ui-monospace, monospace',
+            fontFamily: tokens.fontMono,
             fontSize: '0.75rem',
-            color: '#ccff00',
+            color: tokens.accent,
             fontWeight: 800,
           }}
         >

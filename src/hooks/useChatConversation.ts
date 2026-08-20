@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useChat, type UIMessage } from '@ai-sdk/react';
 import {
   type Conversation,
@@ -10,30 +10,10 @@ import {
   saveMessagesToServer,
 } from '@/lib/utils/chat';
 import { browserStorage } from '@/lib/infrastructure/storage/browser-storage';
+import { useChatUsage } from '@/hooks/useChatUsage';
 
-export interface GlobalBudgetUsage {
-  usedUsd: number;
-  limitUsd: number;
-  ratio: number;
-  degraded: boolean;
-  exhausted: boolean;
-}
-
-export interface DailyUsage {
-  count: number;
-  limit: number;
-  remaining: number;
-  isDailyLimitReached: boolean;
-  dailyTokens: number;
-  dailyTokenLimit: number;
-  dailyTokenRemaining: number;
-  monthlyTokens: number;
-  monthlyTokenLimit: number;
-  monthlyTokenRemaining: number;
-  isTokenLimitReached: boolean;
-  contextTokens?: number;
-  globalBudget?: GlobalBudgetUsage;
-}
+// Re-exporta tipos para backward compatibility
+export type { GlobalBudgetUsage, DailyUsage } from '@/hooks/chat-types';
 
 interface UseChatConversationParams {
   userName?: string | null;
@@ -45,21 +25,9 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
   const [isLoaded, setIsLoaded] = useState(false);
   const [syncError, setSyncError] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [dailyUsage, setDailyUsage] = useState<DailyUsage>({
-    count: 0,
-    limit: 50,
-    remaining: 50,
-    isDailyLimitReached: false,
-    dailyTokens: 0,
-    dailyTokenLimit: 100000,
-    dailyTokenRemaining: 100000,
-    monthlyTokens: 0,
-    monthlyTokenLimit: 2000000,
-    monthlyTokenRemaining: 2000000,
-    isTokenLimitReached: false,
-    contextTokens: 0,
-    globalBudget: { usedUsd: 0, limitUsd: 0.95, ratio: 0, degraded: false, exhausted: false },
-  });
+
+  // Hook de uso diário extraído
+  const { dailyUsage, fetchDailyUsage, fetchContextTokens } = useChatUsage();
 
   // Throttle mais alto reduz a frequência de re-render em respostas com
   // muitas tool-result parts chegando em rajada (ex: várias análises de
@@ -84,30 +52,6 @@ export function useChatConversation({ userName, active }: UseChatConversationPar
     }
     prevLoadingRef.current = loading;
   }, [loading]);
-
-  const fetchDailyUsage = useCallback(async () => {
-    try {
-      const res = await fetch('/api/chat/usage');
-      if (res.ok) {
-        const data = await res.json();
-        setDailyUsage(data);
-      }
-    } catch {
-      // Ignorar erros de rede em background
-    }
-  }, []);
-
-  const fetchContextTokens = useCallback(async () => {
-    try {
-      const res = await fetch('/api/chat/context');
-      if (res.ok) {
-        const data = await res.json();
-        setDailyUsage((prev) => ({ ...prev, contextTokens: data.contextTokens ?? 0 }));
-      }
-    } catch {
-      // Ignorar erros de rede em background
-    }
-  }, []);
 
   // Carrega ou cria o chat id persistido (IndexedDB)
   useEffect(() => {

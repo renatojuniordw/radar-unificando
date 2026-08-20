@@ -2,6 +2,7 @@
 
 import { Box, Typography } from "@mui/material";
 import Link from "next/link";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 /** CTA para usuários anônimos usarem o assistente de carreira (logado). */
 export function ChatTeaser() {
@@ -9,9 +10,9 @@ export function ChatTeaser() {
     <Box className="card-panel" sx={{ p: 2.5 }}>
       <Typography
         sx={{
-          fontFamily: "ui-monospace, monospace",
+          fontFamily: tokens.fontMono,
           fontSize: "0.7rem",
-          color: "#ccff00",
+          color: tokens.accent,
           fontWeight: 800,
           textTransform: "uppercase",
           letterSpacing: "0.05em",

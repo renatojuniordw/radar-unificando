@@ -4,6 +4,7 @@ import { memo } from "react";
 import { Container, Box, Typography, Chip } from "@mui/material";
 import { JobSearchBar } from "@/components/shared/job-search-bar";
 import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from "@/lib/constants/home";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface BuscaHeaderProps {
   companies: string[];
@@ -32,7 +33,7 @@ export const BuscaHeader = memo(function BuscaHeader({
     <Box
       className="section-hero"
       sx={{
-        bgcolor: "#020617",
+        bgcolor: tokens.primary,
         borderBottom: "2px solid #1e293b",
         pt: { xs: 3, md: 4 },
         pb: { xs: 3, md: 4 },
@@ -61,13 +62,13 @@ export const BuscaHeader = memo(function BuscaHeader({
             >
               <Box
                 sx={{
-                  bgcolor: "#ccff00",
-                  color: "#020617",
+                  bgcolor: tokens.accent,
+                  color: tokens.primary,
                   px: 1.5,
                   py: 0.5,
                   fontSize: "0.7rem",
                   fontWeight: 900,
-                  fontFamily: "ui-monospace, monospace",
+                  fontFamily: tokens.fontMono,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                   boxShadow: "2px 2px 0px #000",
@@ -80,7 +81,7 @@ export const BuscaHeader = memo(function BuscaHeader({
                 sx={{
                   fontSize: { xs: "1.25rem", sm: "1.75rem" },
                   fontWeight: 900,
-                  color: "#f8fafc",
+                  color: tokens.surfaceHover,
                   textTransform: "uppercase",
                   letterSpacing: "-0.02em",
                 }}
@@ -95,9 +96,9 @@ export const BuscaHeader = memo(function BuscaHeader({
                 size="small"
                 sx={{
                   bgcolor: "#1e293b",
-                  color: "#ccff00",
+                  color: tokens.accent,
                   border: "1px solid #ccff00",
-                  fontFamily: "ui-monospace, monospace",
+                  fontFamily: tokens.fontMono,
                   fontWeight: 700,
                   fontSize: "0.75rem",
                 }}

@@ -12,6 +12,7 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface Props {
   open: boolean;
@@ -58,7 +59,7 @@ export function JobFiltersDrawer({
       PaperProps={{
         sx: {
           borderTop: "4px solid #020617",
-          bgcolor: "#ffffff",
+          bgcolor: tokens.surface,
           p: 2.5,
           borderTopLeftRadius: 0,
           borderTopRightRadius: 0,
@@ -73,14 +74,14 @@ export function JobFiltersDrawer({
           alignItems: "center",
           mb: 2,
           pb: 1,
-          borderBottom: "2px solid #020617",
+          borderBottom: tokens.border,
         }}
       >
         <Typography
           sx={{
             fontWeight: 900,
             fontSize: "1.1rem",
-            color: "#020617",
+            color: tokens.primary,
             textTransform: "uppercase",
             letterSpacing: "-0.01em",
           }}
@@ -92,10 +93,10 @@ export function JobFiltersDrawer({
           size="small"
           aria-label="Fechar filtros"
           sx={{
-            border: "2px solid #020617",
+            border: tokens.border,
             borderRadius: 0,
             p: 0.5,
-            color: "#020617",
+            color: tokens.primary,
           }}
         >
           <CloseIcon fontSize="small" />
@@ -111,7 +112,7 @@ export function JobFiltersDrawer({
               color: "#475569",
               textTransform: "uppercase",
               mb: 0.75,
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
             }}
           >
             Plataforma
@@ -123,12 +124,12 @@ export function JobFiltersDrawer({
             displayEmpty
             size="small"
             sx={{
-              backgroundColor: "#ffffff",
+              backgroundColor: tokens.surface,
               borderRadius: 0,
-              border: "2px solid #020617",
+              border: tokens.border,
               fontSize: "0.85rem",
               fontWeight: 700,
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
             }}
           >
             <MenuItem value="">TODAS AS PLATAFORMAS</MenuItem>
@@ -145,7 +146,7 @@ export function JobFiltersDrawer({
               color: "#475569",
               textTransform: "uppercase",
               mb: 0.75,
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
             }}
           >
             Empresa
@@ -175,7 +176,7 @@ export function JobFiltersDrawer({
               color: "#475569",
               textTransform: "uppercase",
               mb: 0.75,
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
             }}
           >
             Modalidade
@@ -205,7 +206,7 @@ export function JobFiltersDrawer({
               color: "#475569",
               textTransform: "uppercase",
               mb: 0.75,
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
             }}
           >
             Cargo
@@ -235,12 +236,12 @@ export function JobFiltersDrawer({
           variant="contained"
           sx={{
             borderRadius: 0,
-            border: "2px solid #020617",
-            bgcolor: "#020617",
-            color: "#ccff00",
-            boxShadow: "3px 3px 0px #000",
+            border: tokens.border,
+            bgcolor: tokens.primary,
+            color: tokens.accent,
+            boxShadow: tokens.shadow,
             fontWeight: 900,
-            fontFamily: "ui-monospace, monospace",
+            fontFamily: tokens.fontMono,
             py: 1.25,
             fontSize: "0.85rem",
             "&:hover": {
@@ -259,12 +260,12 @@ export function JobFiltersDrawer({
             }}
             sx={{
               borderRadius: 0,
-              border: "2px solid #020617",
-              bgcolor: "#ffffff",
+              border: tokens.border,
+              bgcolor: tokens.surface,
               color: "#ef4444",
-              boxShadow: "3px 3px 0px #000",
+              boxShadow: tokens.shadow,
               fontWeight: 900,
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
               px: 2,
               fontSize: "0.75rem",
               whiteSpace: "nowrap",

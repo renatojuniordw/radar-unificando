@@ -62,6 +62,23 @@ Configurado em `src/lib/infrastructure/ui/theme.ts`:
 | error | `#dc2626` |
 | fontFamily | Inter, sans-serif |
 
+## Design Tokens (código)
+
+Valores centralizados em `src/lib/infrastructure/ui/tokens.ts` para uso em
+componentes que não acessam o tema MUI (inline styles, contextos não-React):
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `tokens.primary` | `#020617` | Cor primária — texto, bordas |
+| `tokens.accent` | `#ccff00` | Cor de destaque — botões CTA, badges |
+| `tokens.accentHover` | `#b8e600` | Accent no hover |
+| `tokens.muted` | `#64748b` | Texto secundário, ícones |
+| `tokens.surface` | `#ffffff` | Fundo claro — cards |
+| `tokens.surfaceHover` | `#f8fafc` | Hover de superfícies |
+| `tokens.border` | `2px solid #020617` | Borda padrão |
+| `tokens.shadow` | `3px 3px 0px #000` | Sombra brutal |
+| `tokens.fontMono` | `ui-monospace, monospace` | Fonte monospaced |
+
 ## Dark Mode
 
 **Não há toggle de tema.** O `ThemeProvider` usa `mode: 'light'` fixo

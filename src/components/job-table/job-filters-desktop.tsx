@@ -3,6 +3,7 @@
 import { Box, TextField, Button, Chip, InputAdornment, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface Props {
   platformFilter: string;
@@ -77,18 +78,18 @@ export function JobFiltersDesktop({
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon fontSize="small" sx={{ color: '#020617' }} />
+                  <SearchIcon fontSize="small" sx={{ color: tokens.primary }} />
                 </InputAdornment>
               ),
             },
           }}
           sx={{
             flex: 1,
-            bgcolor: '#ffffff',
+            bgcolor: tokens.surface,
             '& .MuiOutlinedInput-root': {
               borderRadius: 0,
-              border: '2px solid #020617',
-              fontFamily: 'ui-monospace, monospace',
+              border: tokens.border,
+              fontFamily: tokens.fontMono,
               fontWeight: 700,
               fontSize: '0.85rem',
             },
@@ -101,17 +102,17 @@ export function JobFiltersDesktop({
           size="small"
           sx={{
             borderRadius: 0,
-            border: '2px solid #020617',
-            bgcolor: '#020617',
-            color: '#ccff00',
-            boxShadow: '3px 3px 0px #000',
+            border: tokens.border,
+            bgcolor: tokens.primary,
+            color: tokens.accent,
+            boxShadow: tokens.shadow,
             fontWeight: 900,
-            fontFamily: 'ui-monospace, monospace',
+            fontFamily: tokens.fontMono,
             height: 40,
             px: 2.5,
             '&:hover': {
               bgcolor: '#1e293b',
-              color: '#ccff00',
+              color: tokens.accent,
             },
           }}
         >
@@ -126,18 +127,18 @@ export function JobFiltersDesktop({
             startIcon={<FilterListIcon fontSize="small" />}
             sx={{
               borderRadius: 0,
-              border: '2px solid #020617',
-              bgcolor: countSecondaryFilters > 0 ? '#1e293b' : '#ffffff',
-              color: countSecondaryFilters > 0 ? '#ccff00' : '#020617',
-              boxShadow: '3px 3px 0px #000',
+              border: tokens.border,
+              bgcolor: countSecondaryFilters > 0 ? '#1e293b' : tokens.surface,
+              color: countSecondaryFilters > 0 ? tokens.accent : tokens.primary,
+              boxShadow: tokens.shadow,
               fontWeight: 900,
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               height: 40,
               px: 2,
               whiteSpace: 'nowrap',
               '&:hover': {
-                bgcolor: '#020617',
-                color: '#ccff00',
+                bgcolor: tokens.primary,
+                color: tokens.accent,
               },
             }}
           >
@@ -153,9 +154,9 @@ export function JobFiltersDesktop({
           alignItems: 'center',
           gap: 2.5,
           flexWrap: 'wrap',
-          bgcolor: '#f8fafc',
+          bgcolor: tokens.surfaceHover,
           p: 1.75,
-          border: '2px solid #020617',
+          border: tokens.border,
           boxShadow: '3px 3px 0px #020617',
         }}
       >
@@ -165,13 +166,13 @@ export function JobFiltersDesktop({
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              bgcolor: '#020617',
-              color: '#f8fafc',
+              bgcolor: tokens.primary,
+              color: tokens.surfaceHover,
               px: 1,
               py: 0.5,
               fontSize: '0.68rem',
               fontWeight: 900,
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
             }}
@@ -189,22 +190,22 @@ export function JobFiltersDesktop({
                   size="small"
                   clickable
                   sx={{
-                    bgcolor: isSelected ? '#ccff00' : '#ffffff',
-                    border: '2px solid #020617',
+                    bgcolor: isSelected ? tokens.accent : tokens.surface,
+                    border: tokens.border,
                     fontWeight: 900,
                     fontSize: '0.7rem',
-                    fontFamily: 'ui-monospace, monospace',
+                    fontFamily: tokens.fontMono,
                     borderRadius: 0,
                     boxShadow: isSelected ? '2px 2px 0px #020617' : 'none',
                     transition: 'all 0.15s ease',
                     '& .MuiChip-label': {
-                      color: isSelected ? '#020617' : '#334155',
+                      color: isSelected ? tokens.primary : '#334155',
                       px: 1.25,
                     },
                     '&:hover': {
-                      bgcolor: isSelected ? '#b3e600' : '#020617',
+                      bgcolor: isSelected ? '#b3e600' : tokens.primary,
                       '& .MuiChip-label': {
-                        color: isSelected ? '#020617' : '#ffffff',
+                        color: isSelected ? tokens.primary : tokens.surface,
                       },
                     },
                   }}
@@ -220,13 +221,13 @@ export function JobFiltersDesktop({
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              bgcolor: '#020617',
-              color: '#f8fafc',
+              bgcolor: tokens.primary,
+              color: tokens.surfaceHover,
               px: 1,
               py: 0.5,
               fontSize: '0.68rem',
               fontWeight: 900,
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
             }}
@@ -244,22 +245,22 @@ export function JobFiltersDesktop({
                   size="small"
                   clickable
                   sx={{
-                    bgcolor: isSelected ? '#ccff00' : '#ffffff',
-                    border: '2px solid #020617',
+                    bgcolor: isSelected ? tokens.accent : tokens.surface,
+                    border: tokens.border,
                     fontWeight: 900,
                     fontSize: '0.7rem',
-                    fontFamily: 'ui-monospace, monospace',
+                    fontFamily: tokens.fontMono,
                     borderRadius: 0,
                     boxShadow: isSelected ? '2px 2px 0px #020617' : 'none',
                     transition: 'all 0.15s ease',
                     '& .MuiChip-label': {
-                      color: isSelected ? '#020617' : '#334155',
+                      color: isSelected ? tokens.primary : '#334155',
                       px: 1.25,
                     },
                     '&:hover': {
-                      bgcolor: isSelected ? '#b3e600' : '#020617',
+                      bgcolor: isSelected ? '#b3e600' : tokens.primary,
                       '& .MuiChip-label': {
-                        color: isSelected ? '#020617' : '#ffffff',
+                        color: isSelected ? tokens.primary : tokens.surface,
                       },
                     },
                   }}
@@ -278,8 +279,8 @@ export function JobFiltersDesktop({
             sx={{
               fontSize: '0.68rem',
               fontWeight: 800,
-              fontFamily: 'ui-monospace, monospace',
-              color: '#020617',
+              fontFamily: tokens.fontMono,
+              color: tokens.primary,
               textTransform: 'uppercase',
             }}
           >
@@ -332,7 +333,7 @@ export function JobFiltersDesktop({
             sx={{
               fontSize: '0.68rem',
               fontWeight: 800,
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: tokens.fontMono,
               color: '#ef4444',
               textDecoration: 'underline',
               p: 0,

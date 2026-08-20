@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { sendWelcomeEmail, sendPasswordResetEmail } from '@/lib/infrastructure/email/email-service';
+import { sendWelcomeEmail } from '@/lib/infrastructure/email/email-service';
 
 vi.mock('resend', () => {
   return {

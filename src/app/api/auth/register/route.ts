@@ -4,22 +4,14 @@ import { userRepository } from '@/lib/infrastructure/repositories';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { registerCredentialsSchema } from '@/lib/core/auth/register-schema';
 import { sendWelcomeEmail } from '@/lib/infrastructure/email/email-service';
+import { getClientIp, rateLimitResponse, validationErrorResponse, routeErrorResponse } from '@/lib/api/route-helpers';
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
+  const ip = getClientIp(req);
   const { success, msBeforeNext } = await checkRateLimit(ip, 'auth');
 
   if (!success) {
-    const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
-    return NextResponse.json(
-      { error: `Muitas tentativas de cadastro. Aguarde ${retryAfterSeconds} segundos.` },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(retryAfterSeconds),
-        },
-      }
-    );
+    return rateLimitResponse(msBeforeNext);
   }
 
   // Limite diário de criação de contas por IP (anti multi-conta)
@@ -34,10 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     const parsed = registerCredentialsSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
-        { status: 400 }
-      );
+      return validationErrorResponse(parsed.error);
     }
 
     const { name, email, password } = parsed.data;
@@ -64,10 +53,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error('[register] Error:', error);
-    return NextResponse.json(
-      { error: 'Erro ao criar conta' },
-      { status: 500 }
-    );
+    return routeErrorResponse(error, 'register', 'Erro ao criar conta');
   }
 }

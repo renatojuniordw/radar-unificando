@@ -6,6 +6,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { formatJobDate } from '@/lib/utils/date';
 import { trackJobApply } from '@/lib/utils/analytics';
 import type { Job } from '@/lib/types/job';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 const GRID_COLUMNS = '180px 120px 140px 1fr 150px 180px';
 
@@ -37,12 +38,12 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
         style={{
           display: 'grid',
           gridTemplateColumns: GRID_COLUMNS,
-          backgroundColor: '#020617',
+          backgroundColor: tokens.primary,
           minWidth: 800,
         }}
       >
         {['EMPRESA', 'PLATAFORMA', 'DATA', 'TÍTULO DA VAGA', 'LOCALIDADE', 'AÇÃO'].map(h => (
-          <div key={h} role="columnheader" style={{ color: '#ccff00', fontWeight: 900, padding: '10px 12px', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.05em', fontFamily: 'ui-monospace, monospace' }}>
+          <div key={h} role="columnheader" style={{ color: tokens.accent, fontWeight: 900, padding: '10px 12px', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.05em', fontFamily: tokens.fontMono }}>
             {h}
           </div>
         ))}
@@ -67,7 +68,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                   display: 'grid',
                   gridTemplateColumns: GRID_COLUMNS,
                   alignItems: 'center',
-                  backgroundColor: virtualRow.index % 2 === 0 ? '#ffffff' : '#f8fafc',
+                  backgroundColor: virtualRow.index % 2 === 0 ? tokens.surface : tokens.surfaceHover,
                   borderBottom: '1px solid #e2e8f0',
                   fontSize: '0.75rem',
                   boxSizing: 'border-box',
@@ -75,7 +76,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
               >
                 <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
                   <Tooltip title={job.company} arrow>
-                    <span style={{ fontWeight: 800, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontWeight: 800, color: tokens.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {job.company}
                     </span>
                   </Tooltip>
@@ -83,9 +84,9 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
 
                 <div style={{ padding: '10px 12px', minWidth: 0 }}>
                   <span style={{
-                    border: '2px solid #020617',
-                    backgroundColor: job.platform === 'Gupy' ? '#ccff00' : '#e2e8f0',
-                    color: '#020617',
+                    border: tokens.border,
+                    backgroundColor: job.platform === 'Gupy' ? tokens.accent : '#e2e8f0',
+                    color: tokens.primary,
                     fontWeight: 900,
                     fontSize: '0.55rem',
                     padding: '2px 6px',
@@ -97,7 +98,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                   </span>
                 </div>
 
-                <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace' }}>
+                <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: tokens.fontMono }}>
                   {(() => {
                     const dateInfo = formatJobDate(job.postedAt, job.detectedAt);
                     if (!dateInfo) return '';
@@ -109,13 +110,13 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                   })()}
                 </div>
 
-                <div style={{ padding: '10px 12px', fontSize: '0.75rem', fontWeight: 700, color: '#020617', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ padding: '10px 12px', fontSize: '0.75rem', fontWeight: 700, color: tokens.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   <Tooltip title={job.title} arrow>
                     <span>{job.title}</span>
                   </Tooltip>
                 </div>
 
-                <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ padding: '10px 12px', fontSize: '0.7rem', color: tokens.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   <Tooltip title={job.location} arrow>
                     <span>{job.location}</span>
                   </Tooltip>
@@ -129,16 +130,16 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                     onClick={() => trackJobApply({ title: job.title, company: job.company, platform: job.platform, link: job.link })}
                     aria-label={`Ver vaga ${job.title} na ${job.company}`}
                     style={{
-                      backgroundColor: '#020617',
-                      color: '#ccff00',
+                      backgroundColor: tokens.primary,
+                      color: tokens.accent,
                       fontWeight: 900,
                       fontSize: '0.6rem',
                       padding: '5px 10px',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                       textDecoration: 'none',
-                      border: '2px solid #020617',
-                      fontFamily: 'ui-monospace, monospace',
+                      border: tokens.border,
+                      fontFamily: tokens.fontMono,
                       boxShadow: '2px 2px 0px #000',
                       display: 'inline-block',
                       textAlign: 'center',
@@ -152,15 +153,15 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                       onClick={() => onAnalyzeAts(job)}
                       aria-label={`Analisar ATS para ${job.title} na ${job.company}`}
                       style={{
-                        backgroundColor: '#ffffff',
-                        color: '#020617',
+                        backgroundColor: tokens.surface,
+                        color: tokens.primary,
                         fontWeight: 900,
                         fontSize: '0.6rem',
                         padding: '5px 10px',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        border: '2px solid #020617',
-                        fontFamily: 'ui-monospace, monospace',
+                        border: tokens.border,
+                        fontFamily: tokens.fontMono,
                         boxShadow: '2px 2px 0px #000',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
@@ -176,15 +177,15 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                       disabled={generatingJobKey === `${job.company}|${job.title}`}
                       aria-label={`Gerar currículo adaptado para ${job.title} na ${job.company}`}
                       style={{
-                        backgroundColor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : '#ccff00',
-                        color: '#020617',
+                        backgroundColor: generatingJobKey === `${job.company}|${job.title}` ? '#94a3b8' : tokens.accent,
+                        color: tokens.primary,
                         fontWeight: 900,
                         fontSize: '0.6rem',
                         padding: '5px 10px',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        border: '2px solid #020617',
-                        fontFamily: 'ui-monospace, monospace',
+                        border: tokens.border,
+                        fontFamily: tokens.fontMono,
                         boxShadow: '2px 2px 0px #000',
                         cursor: generatingJobKey === `${job.company}|${job.title}` ? 'wait' : 'pointer',
                         whiteSpace: 'nowrap',

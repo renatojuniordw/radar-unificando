@@ -15,6 +15,7 @@ import { AutoAwesome, AccessTime } from "@mui/icons-material";
 import type { AtsResult } from "@/lib/core/ai/ats/ats-analyzer";
 import { downloadAdaptedResume, downloadAdaptedResumeDocx, type ResumeProgressStep } from "@/lib/client/resume-download";
 import { AtsResultsContent } from "./ats-results-content";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 /** Shape mínimo de vaga aceito pelo drawer (Job da busca ou ParsedJob do chat). */
 export interface AtsDrawerJob {
@@ -125,7 +126,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
     };
   }, [open, job, analyze]);
 
-  const handleGenerateResume = async () => {
+  const handleGenerateResume = async (format: 'pdf' | 'docx' = 'pdf') => {
     if (!job || generating) return;
     setGenerating(true);
     setResumeProgress({
@@ -135,7 +136,8 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
       progressPercent: 20,
     });
     try {
-      await downloadAdaptedResume(
+      const downloadFn = format === 'docx' ? downloadAdaptedResumeDocx : downloadAdaptedResume;
+      await downloadFn(
         {
           title: job.title,
           company: job.company || "",
@@ -143,34 +145,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         },
         (stepInfo) => setResumeProgress(stepInfo),
       );
-      setSnackbar("Currículo adaptado baixado!");
-    } catch (e) {
-      setSnackbar(e instanceof Error ? e.message : "Erro ao gerar o currículo.");
-    } finally {
-      setGenerating(false);
-      setResumeProgress(null);
-    }
-  };
-
-  const handleGenerateResumeDocx = async () => {
-    if (!job || generating) return;
-    setGenerating(true);
-    setResumeProgress({
-      step: 1,
-      totalSteps: 3,
-      message: "Analisando requisitos da vaga e palavras-chave ATS...",
-      progressPercent: 20,
-    });
-    try {
-      await downloadAdaptedResumeDocx(
-        {
-          title: job.title,
-          company: job.company || "",
-          description: job.description,
-        },
-        (stepInfo) => setResumeProgress(stepInfo),
-      );
-      setSnackbar("Currículo Word (DOCX) baixado!");
+      setSnackbar(format === 'docx' ? "Currículo Word (DOCX) baixado!" : "Currículo adaptado baixado!");
     } catch (e) {
       setSnackbar(e instanceof Error ? e.message : "Erro ao gerar o currículo.");
     } finally {
@@ -198,7 +173,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
             fontWeight: 900,
             textTransform: "uppercase",
             fontSize: "0.85rem",
-            color: "#ccff00",
+            color: tokens.accent,
             letterSpacing: "0.05em",
             mb: 0.5,
           }}
@@ -206,7 +181,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
           Análise ATS
         </Typography>
         {job && (
-          <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#f8fafc", mb: 2 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: tokens.surfaceHover, mb: 2 }}>
             {job.title}
             {job.company ? ` — ${job.company}` : ""}
           </Typography>
@@ -214,8 +189,8 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
 
         {stage === "loading" && (
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
-            <CircularProgress sx={{ color: "#ccff00" }} />
-            <Typography sx={{ fontFamily: "ui-monospace, monospace", fontSize: "0.8rem", color: "#64748b" }}>
+            <CircularProgress sx={{ color: tokens.accent }} />
+            <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.8rem", color: tokens.muted }}>
               ANALISANDO COMPATIBILIDADE ATS...
             </Typography>
           </Box>
@@ -255,7 +230,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
             <Typography
               aria-hidden="true"
               sx={{
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 fontSize: "1.4rem",
                 fontWeight: 700,
                 color: retryAfter > 0 ? "#f59e0b" : "#22c55e",
@@ -291,14 +266,14 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
                 sx={{
                   fontWeight: 800,
                   fontSize: "0.75rem",
-                  color: "#ccff00",
-                  fontFamily: "ui-monospace, monospace",
+                  color: tokens.accent,
+                  fontFamily: tokens.fontMono,
                   textTransform: "uppercase",
                 }}
               >
                 CONFECCIONANDO CURRÍCULO ({resumeProgress.step}/{resumeProgress.totalSteps})
               </Typography>
-              <Typography sx={{ fontSize: "0.7rem", color: "#94a3b8", fontFamily: "ui-monospace, monospace" }}>
+              <Typography sx={{ fontSize: "0.7rem", color: "#94a3b8", fontFamily: tokens.fontMono }}>
                 {resumeProgress.progressPercent}%
               </Typography>
             </Box>
@@ -308,10 +283,10 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
               sx={{
                 height: 6,
                 bgcolor: "#0f172a",
-                "& .MuiLinearProgress-bar": { bgcolor: "#ccff00" },
+                "& .MuiLinearProgress-bar": { bgcolor: tokens.accent },
               }}
             />
-            <Typography sx={{ fontSize: "0.75rem", color: "#cbd5e1", fontFamily: "ui-monospace, monospace" }}>
+            <Typography sx={{ fontSize: "0.75rem", color: "#cbd5e1", fontFamily: tokens.fontMono }}>
               {resumeProgress.message}
             </Typography>
           </Box>
@@ -319,14 +294,14 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
 
         {/* Rodapé fixo */}
         <Box sx={{ mt: 2, pt: 2, borderTop: "1px solid #1e293b", display: "flex", gap: 1 }}>
-          <Button onClick={onClose} sx={{ color: "#64748b" }}>
+          <Button onClick={onClose} sx={{ color: tokens.muted }}>
             Fechar
           </Button>
           {stage === "error" && job && (
             <Button
               variant="contained"
               onClick={() => void analyze(job)}
-              sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, "&:hover": { bgcolor: "#b8e600" } }}
+              sx={{ bgcolor: tokens.accent, color: tokens.primary, fontWeight: 900, "&:hover": { bgcolor: tokens.accentHover } }}
             >
               TENTAR NOVAMENTE
             </Button>
@@ -343,11 +318,11 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
                   : "Tentar novamente"
               }
               sx={{
-                bgcolor: "#ccff00",
-                color: "#020617",
+                bgcolor: tokens.accent,
+                color: tokens.primary,
                 fontWeight: 900,
-                "&:hover": { bgcolor: "#b8e600" },
-                "&.Mui-disabled": { bgcolor: "#334155", color: "#64748b" },
+                "&:hover": { bgcolor: tokens.accentHover },
+                "&.Mui-disabled": { bgcolor: "#334155", color: tokens.muted },
               }}
             >
               {retryAfter > 0 ? `DISPONÍVEL EM ${formatRetryTime(retryAfter).toUpperCase()}` : "TENTAR NOVAMENTE"}
@@ -357,24 +332,24 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
             <>
               <Button
                 variant="contained"
-                onClick={handleGenerateResume}
+                onClick={() => handleGenerateResume()}
                 disabled={generating}
-                startIcon={generating ? <CircularProgress size={14} sx={{ color: "#020617" }} /> : <AutoAwesome />}
-                sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, "&:hover": { bgcolor: "#b8e600" } }}
+                startIcon={generating ? <CircularProgress size={14} sx={{ color: tokens.primary }} /> : <AutoAwesome />}
+                sx={{ bgcolor: tokens.accent, color: tokens.primary, fontWeight: 900, "&:hover": { bgcolor: tokens.accentHover } }}
               >
                 {generating ? "GERANDO..." : "BAIXAR PDF"}
               </Button>
               <Button
                 variant="outlined"
-                onClick={handleGenerateResumeDocx}
+                onClick={() => handleGenerateResume('docx')}
                 disabled={generating}
                 sx={{
-                  bgcolor: "#ffffff",
-                  color: "#020617",
+                  bgcolor: tokens.surface,
+                  color: tokens.primary,
                   fontWeight: 900,
-                  border: "2px solid #020617",
-                  "&:hover": { bgcolor: "#f8fafc" },
-                  "&.Mui-disabled": { bgcolor: "#334155", color: "#64748b" },
+                  border: tokens.border,
+                  "&:hover": { bgcolor: tokens.surfaceHover },
+                  "&.Mui-disabled": { bgcolor: "#334155", color: tokens.muted },
                 }}
               >
                 BAIXAR DOCX

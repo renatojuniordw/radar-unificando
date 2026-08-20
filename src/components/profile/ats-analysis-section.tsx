@@ -9,6 +9,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { ErrorOutline } from "@mui/icons-material";
 import type { AtsResult } from "@/lib/core/ai/ats/ats-analyzer";
 import { AtsResultsContent } from "@/components/ats/ats-results-content";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 // Mantido em sincronia com FETCH_TIMEOUT_MS de ats-analysis-drawer.tsx.
 const FETCH_TIMEOUT_MS = 90_000;
@@ -63,7 +64,7 @@ export function AtsAnalysisSection() {
         p: 3,
         border: "4px solid #ccff00",
         boxShadow: "6px 6px 0px #ccff00",
-        bgcolor: "#020617",
+        bgcolor: tokens.primary,
       }}
     >
       <Typography
@@ -71,14 +72,14 @@ export function AtsAnalysisSection() {
           fontWeight: 900,
           fontSize: "1rem",
           textTransform: "uppercase",
-          color: "#ccff00",
+          color: tokens.accent,
           mb: 1,
-          fontFamily: "ui-monospace, monospace",
+          fontFamily: tokens.fontMono,
         }}
       >
         ANÁLISE ATS DO CURRÍCULO
       </Typography>
-      <Typography sx={{ color: "#cbd5e1", fontSize: "0.8rem", mb: 2, fontFamily: "ui-monospace, monospace" }}>
+      <Typography sx={{ color: "#cbd5e1", fontSize: "0.8rem", mb: 2, fontFamily: tokens.fontMono }}>
         Descubra se seu currículo passa nos filtros automáticos (ATS) usados
         pelas empresas. Opcional: cole a descrição da vaga para checar as
         palavras-chave que faltam.
@@ -96,8 +97,8 @@ export function AtsAnalysisSection() {
         placeholder="Cole aqui a descrição da vaga alvo..."
         sx={{
           mb: 2,
-          "& .MuiInputBase-root": { color: "#fff", fontFamily: "ui-monospace, monospace", fontSize: "0.8rem" },
-          "& .MuiInputLabel-root": { color: "#94a3b8", fontFamily: "ui-monospace, monospace" },
+          "& .MuiInputBase-root": { color: "#fff", fontFamily: tokens.fontMono, fontSize: "0.8rem" },
+          "& .MuiInputLabel-root": { color: "#94a3b8", fontFamily: tokens.fontMono },
           "& .MuiOutlinedInput-notchedOutline": { borderColor: "#334155" },
         }}
       />
@@ -111,14 +112,14 @@ export function AtsAnalysisSection() {
           loading ? <CircularProgress size={16} color="inherit" /> : undefined
         }
         sx={{
-          bgcolor: "#ccff00",
-          color: "#020617",
+          bgcolor: tokens.accent,
+          color: tokens.primary,
           fontWeight: 900,
           textTransform: "uppercase",
           fontSize: "0.75rem",
-          fontFamily: "ui-monospace, monospace",
-          border: "2px solid #020617",
-          "&:hover": { bgcolor: "#b8e600" },
+          fontFamily: tokens.fontMono,
+          border: tokens.border,
+          "&:hover": { bgcolor: tokens.accentHover },
           "&.Mui-disabled": { bgcolor: "grey.600", color: "grey.400" },
         }}
       >

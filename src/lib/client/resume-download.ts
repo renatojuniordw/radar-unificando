@@ -28,14 +28,31 @@ export function jobKey(job: ResumeJobInput): string {
 // ficar acima da soma dos dois piores casos.
 const FETCH_TIMEOUT_MS = 150_000;
 
+export type ResumeFormat = 'pdf' | 'docx';
+
+const FORMAT_MESSAGES: Record<ResumeFormat, { step3: string; success: string; ext: string }> = {
+  pdf: {
+    step3: "Validando veracidade e compilando documento PDF...",
+    success: "Currículo confeccionado com sucesso! Download iniciado.",
+    ext: "pdf",
+  },
+  docx: {
+    step3: "Validando veracidade e gerando arquivo Word (DOCX)...",
+    success: "Currículo confeccionado com sucesso! Download Word iniciado.",
+    ext: "docx",
+  },
+};
+
 /**
- * Gera o currículo adaptado no servidor e baixa o PDF diretamente.
+ * Gera o currículo adaptado no servidor e baixa o arquivo no formato especificado.
  * Lança Error com mensagem amigável em caso de falha.
  */
-export async function downloadAdaptedResume(
+async function downloadResume(
   job: ResumeJobInput,
+  format: ResumeFormat,
   onProgress?: ProgressCallback,
 ): Promise<void> {
+  const fmt = FORMAT_MESSAGES[format];
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -59,7 +76,7 @@ export async function downloadAdaptedResume(
     onProgress?.({
       step: 3,
       totalSteps: 3,
-      message: "Validando veracidade e compilando documento PDF...",
+      message: fmt.step3,
       progressPercent: 85,
     });
   }, 18000);
@@ -98,103 +115,35 @@ export async function downloadAdaptedResume(
   onProgress?.({
     step: 3,
     totalSteps: 3,
-    message: "Currículo confeccionado com sucesso! Download iniciado.",
+    message: fmt.success,
     progressPercent: 100,
   });
 
-  const bytes = Uint8Array.from(atob(data.pdfBase64), (c) => c.charCodeAt(0));
-  const blob = new Blob([bytes], { type: "application/pdf" });
+  let blob: Blob;
+  if (format === 'docx') {
+    const { renderResumeDocx } = await import("@/lib/docx/render-resume-docx");
+    blob = await renderResumeDocx(data.resume);
+  } else {
+    const bytes = Uint8Array.from(atob(data.pdfBase64), (c) => c.charCodeAt(0));
+    blob = new Blob([bytes], { type: "application/pdf" });
+  }
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `curriculo-${slugify(job.title)}-${slugify(job.company)}.pdf`;
+  a.download = `curriculo-${slugify(job.title)}-${slugify(job.company)}.${fmt.ext}`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
 }
 
-/**
- * Gera o currículo adaptado no servidor e baixa o arquivo .docx (Microsoft Word).
- */
-export async function downloadAdaptedResumeDocx(
-  job: ResumeJobInput,
-  onProgress?: ProgressCallback,
-): Promise<void> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+/** Gera e baixa o currículo adaptado como PDF. */
+export function downloadAdaptedResume(job: ResumeJobInput, onProgress?: ProgressCallback): Promise<void> {
+  return downloadResume(job, 'pdf', onProgress);
+}
 
-  onProgress?.({
-    step: 1,
-    totalSteps: 3,
-    message: "Analisando requisitos da vaga e palavras-chave ATS...",
-    progressPercent: 20,
-  });
-
-  const t1 = setTimeout(() => {
-    onProgress?.({
-      step: 2,
-      totalSteps: 3,
-      message: "Adaptando e otimizando experiências profissionais com IA...",
-      progressPercent: 55,
-    });
-  }, 5000);
-
-  const t2 = setTimeout(() => {
-    onProgress?.({
-      step: 3,
-      totalSteps: 3,
-      message: "Validando veracidade e gerando arquivo Word (DOCX)...",
-      progressPercent: 85,
-    });
-  }, 18000);
-
-  let res: Response;
-  try {
-    res = await fetch("/api/resume/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        jobTitle: job.title,
-        jobDescription: job.description || "",
-        jobCompany: job.company,
-        jobLocation: job.location || "",
-      }),
-    });
-  } catch (err) {
-    const isTimeout = err instanceof DOMException && err.name === "AbortError";
-    throw new Error(
-      isTimeout
-        ? "A geração está demorando mais que o esperado. Tente novamente em instantes."
-        : "Erro de conexão. Tente novamente.",
-    );
-  } finally {
-    clearTimeout(timeoutId);
-    clearTimeout(t1);
-    clearTimeout(t2);
-  }
-
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    throw new Error(data?.error || "Erro ao gerar o currículo.");
-  }
-
-  onProgress?.({
-    step: 3,
-    totalSteps: 3,
-    message: "Currículo confeccionado com sucesso! Download Word iniciado.",
-    progressPercent: 100,
-  });
-
-  const { renderResumeDocx } = await import("@/lib/docx/render-resume-docx");
-  const blob = await renderResumeDocx(data.resume);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `curriculo-${slugify(job.title)}-${slugify(job.company)}.docx`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+/** Gera e baixa o currículo adaptado como DOCX (Word). */
+export function downloadAdaptedResumeDocx(job: ResumeJobInput, onProgress?: ProgressCallback): Promise<void> {
+  return downloadResume(job, 'docx', onProgress);
 }

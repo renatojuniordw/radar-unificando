@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography } from "@mui/material";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 export function LoadingOverlay() {
   return (
@@ -33,20 +34,20 @@ export function LoadingOverlay() {
       />
       <Typography
         sx={{
-          color: "#ccff00",
+          color: tokens.accent,
           fontWeight: 900,
           fontSize: "1.2rem",
           textTransform: "uppercase",
           letterSpacing: "0.05em",
-          fontFamily: "ui-monospace, monospace",
+          fontFamily: tokens.fontMono,
         }}
       >
         Buscando vagas...
       </Typography>
       <Typography
         sx={{
-          color: "#64748b",
-          fontFamily: "ui-monospace, monospace",
+          color: tokens.muted,
+          fontFamily: tokens.fontMono,
           fontSize: "0.75rem",
           textTransform: "uppercase",
           letterSpacing: "0.1em",

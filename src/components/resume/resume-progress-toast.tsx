@@ -2,6 +2,7 @@
 
 import { Box, Typography, LinearProgress, IconButton } from "@mui/material";
 import { Close, AutoAwesome, CheckCircle, ErrorOutline } from "@mui/icons-material";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 export interface ResumeProgressState {
   jobTitle: string;
@@ -35,11 +36,11 @@ export function ResumeProgressToast({ state, onClose }: Props) {
         right: { xs: 16, sm: 24 },
         zIndex: 9999,
         width: { xs: "calc(100vw - 32px)", sm: 420 },
-        bgcolor: "#020617",
+        bgcolor: tokens.primary,
         border: "3px solid #ccff00",
         boxShadow: "6px 6px 0px #000000",
         p: 2,
-        color: "#f8fafc",
+        color: tokens.surfaceHover,
         display: "flex",
         flexDirection: "column",
         gap: 1.5,
@@ -58,7 +59,7 @@ export function ResumeProgressToast({ state, onClose }: Props) {
           ) : isError ? (
             <ErrorOutline sx={{ color: "#ef4444", fontSize: 20 }} />
           ) : (
-            <AutoAwesome sx={{ color: "#ccff00", fontSize: 20, animation: "spin 3s linear infinite", "@keyframes spin": { "100%": { transform: "rotate(360deg)" } } }} />
+            <AutoAwesome sx={{ color: tokens.accent, fontSize: 20, animation: "spin 3s linear infinite", "@keyframes spin": { "100%": { transform: "rotate(360deg)" } } }} />
           )}
           <Typography
             sx={{
@@ -66,8 +67,8 @@ export function ResumeProgressToast({ state, onClose }: Props) {
               fontSize: "0.8rem",
               textTransform: "uppercase",
               letterSpacing: "0.05em",
-              color: isSuccess ? "#22c55e" : isError ? "#ef4444" : "#ccff00",
-              fontFamily: "ui-monospace, monospace",
+              color: isSuccess ? "#22c55e" : isError ? "#ef4444" : tokens.accent,
+              fontFamily: tokens.fontMono,
             }}
           >
             {isSuccess
@@ -92,7 +93,7 @@ export function ResumeProgressToast({ state, onClose }: Props) {
         sx={{
           fontWeight: 700,
           fontSize: "0.85rem",
-          color: "#f8fafc",
+          color: tokens.surfaceHover,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -113,7 +114,7 @@ export function ResumeProgressToast({ state, onClose }: Props) {
               bgcolor: "#1e293b",
               border: "1px solid #334155",
               "& .MuiLinearProgress-bar": {
-                bgcolor: "#ccff00",
+                bgcolor: tokens.accent,
                 transition: "transform 0.4s ease",
               },
             }}
@@ -126,7 +127,7 @@ export function ResumeProgressToast({ state, onClose }: Props) {
         sx={{
           fontSize: "0.75rem",
           color: isError ? "#f87171" : "#94a3b8",
-          fontFamily: "ui-monospace, monospace",
+          fontFamily: tokens.fontMono,
           lineHeight: 1.4,
         }}
       >

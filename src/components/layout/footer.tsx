@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CookieSettingsLink } from "@/components/ui/cookie-settings-link";
 import { LINKS } from "@/lib/core/constants";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 export function Footer() {
   return (
@@ -36,7 +37,7 @@ export function Footer() {
             >
               <div
                 style={{
-                  backgroundColor: "#ccff00",
+                  backgroundColor: tokens.accent,
                   padding: "8px 12px",
                   border: "2px solid #020617",
                   boxShadow: "4px 4px 0px #fff",
@@ -61,7 +62,7 @@ export function Footer() {
                   fontSize: "0.65rem",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
-                  fontFamily: "ui-monospace, monospace",
+                  fontFamily: tokens.fontMono,
                 }}
               >
                 ECOSSISTEMA
@@ -70,7 +71,7 @@ export function Footer() {
             <p
               style={{
                 color: "#94a3b8",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 fontSize: "0.6rem",
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
@@ -99,7 +100,7 @@ export function Footer() {
                 fontSize: "0.65rem",
                 letterSpacing: "0.15em",
                 marginBottom: 12,
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
               }}
             >
               Pronto para o próximo nível?
@@ -109,7 +110,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                color: "#ccff00",
+                color: tokens.accent,
                 border: "2px solid #ccff00",
                 padding: "12px 24px",
                 fontWeight: 900,
@@ -117,7 +118,7 @@ export function Footer() {
                 fontSize: "0.7rem",
                 letterSpacing: "0.08em",
                 textDecoration: "none",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 transition: "all 0.2s",
                 boxShadow: "4px 4px 0px rgba(204,255,0,0.3)",
                 maxWidth: "100%",
@@ -125,13 +126,13 @@ export function Footer() {
                 textAlign: "center",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#ccff00";
+                e.currentTarget.style.background = tokens.accent;
                 e.currentTarget.style.color = "#020617";
                 e.currentTarget.style.boxShadow = "none";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "#ccff00";
+                e.currentTarget.style.color = tokens.accent;
                 e.currentTarget.style.boxShadow =
                   "4px 4px 0px rgba(204,255,0,0.3)";
               }}
@@ -158,7 +159,7 @@ export function Footer() {
               fontWeight: 900,
               textTransform: "uppercase",
               letterSpacing: "0.05em",
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: tokens.fontMono,
               margin: 0,
             }}
           >
@@ -169,7 +170,7 @@ export function Footer() {
               rel="noopener noreferrer"
               style={{ color: "#94a3b8", textDecoration: "none" }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#ccff00";
+                e.currentTarget.style.color = tokens.accent;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.color = "#94a3b8";
@@ -193,13 +194,13 @@ export function Footer() {
                 <Link
                   href="/doar"
                   style={{
-                    color: "#ccff00",
+                    color: tokens.accent,
                     fontSize: "0.65rem",
                     fontWeight: 900,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     textDecoration: "none",
-                    fontFamily: "ui-monospace, monospace",
+                    fontFamily: tokens.fontMono,
                   }}
                 >
                   APOIAR
@@ -215,10 +216,10 @@ export function Footer() {
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     textDecoration: "none",
-                    fontFamily: "ui-monospace, monospace",
+                    fontFamily: tokens.fontMono,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#ccff00";
+                    e.currentTarget.style.color = tokens.accent;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = "#94a3b8";
@@ -237,10 +238,10 @@ export function Footer() {
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     textDecoration: "none",
-                    fontFamily: "ui-monospace, monospace",
+                    fontFamily: tokens.fontMono,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#ccff00";
+                    e.currentTarget.style.color = tokens.accent;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = "#94a3b8";
@@ -259,10 +260,10 @@ export function Footer() {
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     textDecoration: "none",
-                    fontFamily: "ui-monospace, monospace",
+                    fontFamily: tokens.fontMono,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#ccff00";
+                    e.currentTarget.style.color = tokens.accent;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = "#94a3b8";
@@ -281,10 +282,10 @@ export function Footer() {
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     textDecoration: "none",
-                    fontFamily: "ui-monospace, monospace",
+                    fontFamily: tokens.fontMono,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#ccff00";
+                    e.currentTarget.style.color = tokens.accent;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = "#94a3b8";
@@ -297,13 +298,13 @@ export function Footer() {
                 <Link
                   href="/termos"
                   style={{
-                    color: "#ccff00",
+                    color: tokens.accent,
                     fontSize: "0.65rem",
                     fontWeight: 900,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     textDecoration: "none",
-                    fontFamily: "ui-monospace, monospace",
+                    fontFamily: tokens.fontMono,
                   }}
                 >
                   TERMOS & PRIVACIDADE
@@ -322,7 +323,7 @@ export function Footer() {
             color: "#475569",
             fontSize: "0.6rem",
             lineHeight: 1.6,
-            fontFamily: "ui-monospace, monospace",
+            fontFamily: tokens.fontMono,
             maxWidth: 720,
           }}
         >

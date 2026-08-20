@@ -24,6 +24,7 @@ import {
   LocationOn,
 } from "@mui/icons-material";
 import { downloadAdaptedResume, downloadAdaptedResumeDocx } from "@/lib/client/resume-download";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 export interface GeneratedResumeItem {
   id: string;
@@ -79,35 +80,19 @@ export function GeneratedResumesTab() {
 
   const loading = isPending && !hasLoadedOnce;
 
-  const handleDownload = async (item: GeneratedResumeItem) => {
+  const handleDownload = async (item: GeneratedResumeItem, format: 'pdf' | 'docx') => {
     if (downloadingId) return;
-    setDownloadingId(item.id);
+    setDownloadingId(format === 'docx' ? `${item.id}-docx` : item.id);
     try {
-      await downloadAdaptedResume({
+      const downloadFn = format === 'docx' ? downloadAdaptedResumeDocx : downloadAdaptedResume;
+      await downloadFn({
         title: item.jobTitle,
         company: item.jobCompany,
         location: item.jobLocation,
       });
-      setSnackbar("PDF baixado com sucesso!");
+      setSnackbar(format === 'docx' ? "Arquivo Word (DOCX) baixado com sucesso!" : "PDF baixado com sucesso!");
     } catch (e) {
-      setSnackbar(e instanceof Error ? e.message : "Erro ao baixar PDF.");
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-
-  const handleDownloadDocx = async (item: GeneratedResumeItem) => {
-    if (downloadingId) return;
-    setDownloadingId(`${item.id}-docx`);
-    try {
-      await downloadAdaptedResumeDocx({
-        title: item.jobTitle,
-        company: item.jobCompany,
-        location: item.jobLocation,
-      });
-      setSnackbar("Arquivo Word (DOCX) baixado com sucesso!");
-    } catch (e) {
-      setSnackbar(e instanceof Error ? e.message : "Erro ao baixar DOCX.");
+      setSnackbar(e instanceof Error ? e.message : `Erro ao baixar ${format.toUpperCase()}.`);
     } finally {
       setDownloadingId(null);
     }
@@ -121,8 +106,8 @@ export function GeneratedResumesTab() {
   if (loading) {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
-        <CircularProgress sx={{ color: "#ccff00" }} />
-        <Typography sx={{ fontFamily: "ui-monospace, monospace", fontSize: "0.8rem", color: "#64748b" }}>
+        <CircularProgress sx={{ color: tokens.accent }} />
+        <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.8rem", color: tokens.muted }}>
           CARREGANDO CURRÍCULOS GERADOS...
         </Typography>
       </Box>
@@ -132,7 +117,7 @@ export function GeneratedResumesTab() {
   if (error) {
     return (
       <Box sx={{ p: 3, border: "2px solid #ef4444", bgcolor: "#fef2f2", color: "#991b1b", mb: 4 }}>
-        <Typography sx={{ fontFamily: "ui-monospace, monospace", fontSize: "0.85rem", fontWeight: 700 }}>
+        <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.85rem", fontWeight: 700 }}>
           {error}
         </Typography>
         <Button
@@ -153,7 +138,7 @@ export function GeneratedResumesTab() {
         sx={{
           p: 5,
           textAlign: "center",
-          bgcolor: "#ffffff",
+          bgcolor: tokens.surface,
           border: "3px solid #020617",
           boxShadow: "6px 6px 0px #000",
           mb: 4,
@@ -165,21 +150,21 @@ export function GeneratedResumesTab() {
             height: 56,
             borderRadius: "50%",
             border: "3px solid #020617",
-            bgcolor: "#ccff00",
+            bgcolor: tokens.accent,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             mx: "auto",
             mb: 2,
-            boxShadow: "3px 3px 0px #000",
+            boxShadow: tokens.shadow,
           }}
         >
-          <Description sx={{ fontSize: 28, color: "#020617" }} />
+          <Description sx={{ fontSize: 28, color: tokens.primary }} />
         </Box>
         <Typography sx={{ fontWeight: 900, fontSize: "1.1rem", textTransform: "uppercase", mb: 1 }}>
           Nenhum currículo confeccionado ainda
         </Typography>
-        <Typography sx={{ color: "#64748b", fontFamily: "ui-monospace, monospace", fontSize: "0.8rem", maxW: 420, mx: "auto", mb: 3 }}>
+        <Typography sx={{ color: tokens.muted, fontFamily: tokens.fontMono, fontSize: "0.8rem", maxW: 420, mx: "auto", mb: 3 }}>
           Quando você clica em &quot;GERAR CURRÍCULO&quot; nas vagas ou na Análise ATS, seus currículos adaptados por IA ficam salvos aqui para download rápido a qualquer momento.
         </Typography>
       </Box>
@@ -188,7 +173,7 @@ export function GeneratedResumesTab() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mb: 4 }}>
-      <Typography sx={{ fontWeight: 900, fontSize: "0.85rem", textTransform: "uppercase", color: "#64748b", fontFamily: "ui-monospace, monospace", letterSpacing: "0.05em" }}>
+      <Typography sx={{ fontWeight: 900, fontSize: "0.85rem", textTransform: "uppercase", color: tokens.muted, fontFamily: tokens.fontMono, letterSpacing: "0.05em" }}>
         {total} CURRÍCULO{total === 1 ? "" : "S"} ADAPTADO{total === 1 ? "" : "S"} DISPONÍVE{total === 1 ? "L" : "IS"}
       </Typography>
 
@@ -207,7 +192,7 @@ export function GeneratedResumesTab() {
             className="card-brutalist"
             sx={{
               p: { xs: 2, sm: 3 },
-              bgcolor: "#ffffff",
+              bgcolor: tokens.surface,
               border: "3px solid #020617",
               boxShadow: "5px 5px 0px #000",
               display: "flex",
@@ -218,23 +203,23 @@ export function GeneratedResumesTab() {
             {/* Header: Vaga e Empresa */}
             <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 900, fontSize: "1.05rem", color: "#020617", lineHeight: 1.25 }}>
+                <Typography sx={{ fontWeight: 900, fontSize: "1.05rem", color: tokens.primary, lineHeight: 1.25 }}>
                   {item.jobTitle}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", mt: 0.5 }}>
                   {item.jobCompany && (
                     <Typography sx={{ fontWeight: 700, fontSize: "0.8rem", color: "#334155", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-                      <Business sx={{ fontSize: 16, color: "#64748b" }} />
+                      <Business sx={{ fontSize: 16, color: tokens.muted }} />
                       {item.jobCompany}
                     </Typography>
                   )}
                   {item.jobLocation && (
-                    <Typography sx={{ fontSize: "0.75rem", color: "#64748b", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-                      <LocationOn sx={{ fontSize: 16, color: "#64748b" }} />
+                    <Typography sx={{ fontSize: "0.75rem", color: tokens.muted, display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                      <LocationOn sx={{ fontSize: 16, color: tokens.muted }} />
                       {item.jobLocation}
                     </Typography>
                   )}
-                  <Typography sx={{ fontFamily: "ui-monospace, monospace", fontSize: "0.7rem", color: "#94a3b8", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                  <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.7rem", color: "#94a3b8", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
                     <CalendarToday sx={{ fontSize: 14 }} />
                     Gerado em {formattedDate}
                   </Typography>
@@ -247,19 +232,19 @@ export function GeneratedResumesTab() {
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => handleDownload(item)}
+                onClick={() => handleDownload(item, 'pdf')}
                 disabled={downloadingId === item.id || downloadingId === `${item.id}-docx`}
                 startIcon={downloadingId === item.id ? <CircularProgress size={14} color="inherit" /> : <Download sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: "#ccff00",
-                  color: "#020617",
+                  bgcolor: tokens.accent,
+                  color: tokens.primary,
                   fontWeight: 900,
                   fontSize: "0.7rem",
-                  fontFamily: "ui-monospace, monospace",
-                  border: "2px solid #020617",
+                  fontFamily: tokens.fontMono,
+                  border: tokens.border,
                   boxShadow: "2px 2px 0px #000",
                   textTransform: "uppercase",
-                  "&:hover": { bgcolor: "#b8e600" },
+                  "&:hover": { bgcolor: tokens.accentHover },
                 }}
               >
                 {downloadingId === item.id ? "BAIXANDO..." : "BAIXAR PDF"}
@@ -268,19 +253,19 @@ export function GeneratedResumesTab() {
               <Button
                 variant="outlined"
                 size="small"
-                onClick={() => handleDownloadDocx(item)}
+                onClick={() => handleDownload(item, 'docx')}
                 disabled={downloadingId === item.id || downloadingId === `${item.id}-docx`}
                 startIcon={downloadingId === `${item.id}-docx` ? <CircularProgress size={14} color="inherit" /> : <Download sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: "#ffffff",
-                  color: "#020617",
+                  bgcolor: tokens.surface,
+                  color: tokens.primary,
                   fontWeight: 900,
                   fontSize: "0.7rem",
-                  fontFamily: "ui-monospace, monospace",
-                  border: "2px solid #020617",
+                  fontFamily: tokens.fontMono,
+                  border: tokens.border,
                   boxShadow: "2px 2px 0px #000",
                   textTransform: "uppercase",
-                  "&:hover": { bgcolor: "#f8fafc" },
+                  "&:hover": { bgcolor: tokens.surfaceHover },
                 }}
               >
                 {downloadingId === `${item.id}-docx` ? "BAIXANDO..." : "DOCX (WORD)"}
@@ -292,15 +277,15 @@ export function GeneratedResumesTab() {
                 onClick={() => handleCopyText(item.resumeMarkdown)}
                 startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: "#ffffff",
-                  color: "#020617",
+                  bgcolor: tokens.surface,
+                  color: tokens.primary,
                   fontWeight: 900,
                   fontSize: "0.7rem",
-                  fontFamily: "ui-monospace, monospace",
-                  border: "2px solid #020617",
+                  fontFamily: tokens.fontMono,
+                  border: tokens.border,
                   boxShadow: "2px 2px 0px #000",
                   textTransform: "uppercase",
-                  "&:hover": { bgcolor: "#f8fafc" },
+                  "&:hover": { bgcolor: tokens.surfaceHover },
                 }}
               >
                 COPIAR TEXTO
@@ -312,15 +297,15 @@ export function GeneratedResumesTab() {
                 onClick={() => setPreviewItem(item)}
                 startIcon={<Visibility sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: "#ffffff",
-                  color: "#020617",
+                  bgcolor: tokens.surface,
+                  color: tokens.primary,
                   fontWeight: 900,
                   fontSize: "0.7rem",
-                  fontFamily: "ui-monospace, monospace",
-                  border: "2px solid #020617",
+                  fontFamily: tokens.fontMono,
+                  border: tokens.border,
                   boxShadow: "2px 2px 0px #000",
                   textTransform: "uppercase",
-                  "&:hover": { bgcolor: "#f8fafc" },
+                  "&:hover": { bgcolor: tokens.surfaceHover },
                 }}
               >
                 VER RESUMO
@@ -339,10 +324,10 @@ export function GeneratedResumesTab() {
             shape="rounded"
             sx={{
               "& .MuiPaginationItem-root": {
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 fontWeight: 700,
-                color: "#020617",
-                border: "2px solid #020617",
+                color: tokens.primary,
+                border: tokens.border,
               },
               "& .Mui-selected": {
                 bgcolor: "#ccff00 !important",
@@ -361,14 +346,14 @@ export function GeneratedResumesTab() {
           fullWidth
           PaperProps={{
             sx: {
-              bgcolor: "#020617",
-              color: "#f8fafc",
+              bgcolor: tokens.primary,
+              color: tokens.surfaceHover,
               border: "3px solid #ccff00",
               boxShadow: "8px 8px 0px #000",
             },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 900, color: "#ccff00", fontFamily: "ui-monospace, monospace", fontSize: "1rem" }}>
+          <DialogTitle sx={{ fontWeight: 900, color: tokens.accent, fontFamily: tokens.fontMono, fontSize: "1rem" }}>
             CURRÍCULO ADAPTADO: {previewItem.jobTitle} {previewItem.jobCompany ? `— ${previewItem.jobCompany}` : ""}
           </DialogTitle>
           <DialogContent dividers sx={{ borderColor: "#1e293b" }}>
@@ -377,7 +362,7 @@ export function GeneratedResumesTab() {
               sx={{
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
-                fontFamily: "ui-monospace, monospace",
+                fontFamily: tokens.fontMono,
                 fontSize: "0.8rem",
                 color: "#e2e8f0",
                 m: 0,
@@ -390,7 +375,7 @@ export function GeneratedResumesTab() {
             <Button
               onClick={() => handleCopyText(previewItem.resumeMarkdown)}
               startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
-              sx={{ bgcolor: "#ccff00", color: "#020617", fontWeight: 900, fontFamily: "ui-monospace, monospace" }}
+              sx={{ bgcolor: tokens.accent, color: tokens.primary, fontWeight: 900, fontFamily: tokens.fontMono }}
             >
               COPIAR TEXTO
             </Button>

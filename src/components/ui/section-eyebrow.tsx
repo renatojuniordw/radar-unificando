@@ -2,6 +2,7 @@
 
 import { Typography } from '@mui/material';
 import type { ReactNode } from 'react';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface Props {
   children: ReactNode;
@@ -10,11 +11,11 @@ interface Props {
 }
 
 /** Rótulo de seção mono/uppercase do design system (ex.: "SKILLS MAIS PROCURADAS"). */
-export function SectionEyebrow({ children, color = '#ccff00', mb = 2 }: Props) {
+export function SectionEyebrow({ children, color = tokens.accent, mb = 2 }: Props) {
   return (
     <Typography
       sx={{
-        fontFamily: 'ui-monospace, monospace',
+        fontFamily: tokens.fontMono,
         fontSize: '0.7rem',
         color,
         fontWeight: 800,

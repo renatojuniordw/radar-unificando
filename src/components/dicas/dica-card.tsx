@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Box, Typography } from '@mui/material';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 import {
   DICA_CATEGORIES,
   type Dica,
@@ -15,13 +16,13 @@ function CategoryBadge({ category }: { category: DicaCategory }) {
     <Box
       sx={{
         display: 'inline-block',
-        bgcolor: '#020617',
-        color: '#ccff00',
+        bgcolor: tokens.primary,
+        color: tokens.accent,
         fontWeight: 900,
         fontSize: '0.6rem',
         textTransform: 'uppercase',
         letterSpacing: '0.2em',
-        fontFamily: 'ui-monospace, monospace',
+        fontFamily: tokens.fontMono,
         px: 1,
         py: 0.5,
         border: '2px solid #ccff00',
@@ -56,7 +57,7 @@ export function DicaCard({ dica }: Props) {
         <CategoryBadge category={dica.category} />
         <Typography
           sx={{
-            fontFamily: 'ui-monospace, monospace',
+            fontFamily: tokens.fontMono,
             fontSize: '0.7rem',
             color: '#94a3b8',
             fontWeight: 800,
@@ -69,7 +70,7 @@ export function DicaCard({ dica }: Props) {
       <Typography
         sx={{
           fontWeight: 900,
-          color: '#ffffff',
+          color: tokens.surface,
           fontSize: '1.05rem',
           lineHeight: 1.2,
           textTransform: 'uppercase',
@@ -98,14 +99,14 @@ export function DicaCard({ dica }: Props) {
             alignItems: 'center',
             justifyContent: 'center',
             minHeight: '40px',
-            bgcolor: '#ccff00',
-            color: '#020617',
+            bgcolor: tokens.accent,
+            color: tokens.primary,
             px: 2,
             fontWeight: 900,
             textTransform: 'uppercase',
             fontSize: '0.75rem',
-            fontFamily: 'ui-monospace, monospace',
-            boxShadow: '3px 3px 0px #000',
+            fontFamily: tokens.fontMono,
+            boxShadow: tokens.shadow,
             mt: 1,
           }}
         >

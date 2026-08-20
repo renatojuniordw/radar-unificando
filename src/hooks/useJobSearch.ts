@@ -10,11 +10,13 @@ import { trackJobSearch } from "@/lib/utils/analytics";
 import { useCooldown } from "@/hooks/useCooldown";
 import { useAutoSync } from "@/hooks/useAutoSync";
 import { usePipelineStream } from "@/hooks/usePipelineStream";
+import { useJobFiltersState } from "@/hooks/useJobFiltersState";
 import type { Job } from "@/lib/types/job";
 
 /**
  * Hook principal de busca de vagas.
  * Composta por hooks menores com responsabilidades isoladas:
+ * - useJobFiltersState: filtros, persistência e sugestões
  * - useCooldown: contagem regressiva entre buscas
  * - useAutoSync: decide e dispara sincronização automática
  * - usePipelineStream: gerencia conexão SSE com o pipeline
@@ -22,8 +24,6 @@ import type { Job } from "@/lib/types/job";
 export function useJobSearch(initialJobs: Job[] = []) {
   const { data: session } = useSession();
   const profile = useProfile();
-  const [companies, setCompanies] = useState<string[]>([]);
-  const [roleQueries, setRoleQueries] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [autoSyncing, setAutoSyncing] = useState(false);
   const [lastRunAt, setLastRunAt] = useState<number | null>(null);
@@ -34,7 +34,6 @@ export function useJobSearch(initialJobs: Job[] = []) {
     message: string;
     severity: "success" | "error" | "info";
   } | null>(null);
-  const [filtersLoaded, setFiltersLoaded] = useState(false);
 
   // Termo `q` da URL (ex: busca da home) — já aplicado ou não.
   const urlQueryHandledRef = useRef<string | null>(null);
@@ -43,6 +42,18 @@ export function useJobSearch(initialJobs: Job[] = []) {
 
   const searchParams = useSearchParams();
   const urlQuery = searchParams.get("q");
+
+  // --- Hook de filtros extraído ---
+  const {
+    companies,
+    setCompanies,
+    roleQueries,
+    setRoleQueries,
+    clientFilter,
+    setClientFilter,
+    filtersLoaded,
+    addSuggestion,
+  } = useJobFiltersState(urlQuery);
 
   // --- Derivações de perfil (antes de loadJobs que depende delas) ---
 
@@ -270,36 +281,6 @@ export function useJobSearch(initialJobs: Job[] = []) {
       .catch(() => {});
   }, []);
 
-  // Carregar filtros persistidos na montagem
-  useEffect(() => {
-    browserStorage
-      .getFilters()
-      .then((filters) => {
-        if (filters) {
-          if (Array.isArray(filters.companies)) setCompanies(filters.companies);
-          // Se houver parâmetro q na URL, a URL tem precedência sobre os filtros persistidos.
-          if (Array.isArray(filters.roles) && !urlQuery) {
-            setRoleQueries(filters.roles);
-          }
-        }
-      })
-      .catch(() => {})
-      .finally(() => setFiltersLoaded(true));
-  }, [urlQuery]);
-
-  // Persistir filtros a cada alteração
-  useEffect(() => {
-    void browserStorage
-      .setFilters({ companies, roles: roleQueries })
-      .catch(() => {});
-  }, [companies, roleQueries]);
-
-  function addSuggestion(role: string) {
-    if (!roleQueries.includes(role)) {
-      setRoleQueries([...roleQueries, role]);
-    }
-  }
-
   // Auto-sync via useAutoSync
   useAutoSync({
     cooldown,
@@ -347,9 +328,8 @@ export function useJobSearch(initialJobs: Job[] = []) {
     running,
     autoSyncing,
     handleStart,
+    setRoleQueries,
   ]);
-
-  const [clientFilter, setClientFilter] = useState("");
 
   const filteredJobs = useMemo(() => {
     if (!clientFilter.trim()) return jobs;

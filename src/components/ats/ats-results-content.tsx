@@ -3,6 +3,7 @@
 import { Box, Typography } from "@mui/material";
 import { CheckCircle, ErrorOutline, InfoOutlined } from "@mui/icons-material";
 import type { AtsResult } from "@/lib/core/ai/ats/ats-analyzer";
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 export function scoreColor(score: number): string {
   if (score < 50) return "#ef4444";
@@ -66,7 +67,7 @@ export function AtsResultsContent({ result }: Props) {
       )}
 
       {/* Checklist rápido */}
-      <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: "#ccff00", mb: 1 }}>
+      <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: tokens.accent, mb: 1 }}>
         Checklist rápido
       </Typography>
       <Box sx={{ mb: 2 }}>
@@ -87,7 +88,7 @@ export function AtsResultsContent({ result }: Props) {
       {/* Palavras-chave faltando */}
       {result.analysis.missingKeywords.length > 0 && (
         <Box sx={{ mb: 2 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: "#ccff00", mb: 1 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: tokens.accent, mb: 1 }}>
             Palavras-chave faltando
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
@@ -114,7 +115,7 @@ export function AtsResultsContent({ result }: Props) {
       {/* Recomendações */}
       {result.analysis.recommendations.length > 0 && (
         <Box sx={{ mb: 2 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: "#ccff00", mb: 1 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: tokens.accent, mb: 1 }}>
             Recomendações
           </Typography>
           <ul style={{ margin: 0, paddingLeft: 18, color: "#e2e8f0", fontSize: "0.8rem" }}>
@@ -127,7 +128,7 @@ export function AtsResultsContent({ result }: Props) {
         </Box>
       )}
 
-      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mt: 2, color: "#64748b" }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mt: 2, color: tokens.muted }}>
         <InfoOutlined sx={{ fontSize: 16, mt: 0.2 }} />
         <Typography sx={{ fontSize: "0.7rem" }}>
           Avaliação baseada em boas práticas de ATS — não é garantia de passar em nenhum sistema específico.

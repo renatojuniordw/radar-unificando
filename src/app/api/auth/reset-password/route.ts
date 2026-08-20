@@ -5,6 +5,7 @@ import { userRepository } from '@/lib/infrastructure/repositories';
 import { checkRateLimit } from '@/lib/infrastructure/rate-limit';
 import { passwordSchema } from '@/lib/core/auth/password-schema';
 import { hashPasswordResetToken } from '@/lib/core/auth/password-reset-token';
+import { getClientIp, rateLimitResponse, validationErrorResponse, routeErrorResponse } from '@/lib/api/route-helpers';
 
 const resetPasswordSchema = z.object({
   token: z.string({ message: 'Token é obrigatório' }).regex(/^[0-9a-f]{64}$/, 'Token inválido'),
@@ -12,29 +13,17 @@ const resetPasswordSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers?.get?.('x-forwarded-for') || req.headers?.get?.('x-real-ip') || '127.0.0.1';
+  const ip = getClientIp(req);
   const { success, msBeforeNext } = await checkRateLimit(ip, 'auth');
 
   if (!success) {
-    const retryAfterSeconds = Math.ceil(msBeforeNext / 1000);
-    return NextResponse.json(
-      { error: `Muitas tentativas. Aguarde ${retryAfterSeconds} segundos.` },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(retryAfterSeconds),
-        },
-      }
-    );
+    return rateLimitResponse(msBeforeNext);
   }
 
   try {
     const parsed = resetPasswordSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0]?.message || 'Dados inválidos' },
-        { status: 400 }
-      );
+      return validationErrorResponse(parsed.error);
     }
 
     const { token, password } = parsed.data;
@@ -50,10 +39,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[reset-password] Error:', error);
-    return NextResponse.json(
-      { error: 'Erro ao redefinir a senha' },
-      { status: 500 }
-    );
+    return routeErrorResponse(error, 'reset-password', 'Erro ao redefinir a senha');
   }
 }

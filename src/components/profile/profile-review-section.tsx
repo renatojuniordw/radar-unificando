@@ -5,6 +5,7 @@ import { Select, MenuItem, FormControl, InputLabel, Slider, Chip } from '@mui/ma
 import { BaseCard } from '@/components/ui/base-card';
 import { SkillInput } from '@/components/profile/skill-input';
 import type { ProfileField, ProfileData } from '@/hooks/useProfile';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 const SENIORITY_LEVELS = ['junior', 'pleno', 'senior', 'lead', 'manager', 'head'];
 const AREA_OPTIONS = ['Dados', 'BI', 'Business', 'Growth', 'Engenharia', 'Produto', 'Outro'];
@@ -43,7 +44,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
       <BaseCard title={<span className="flex items-center gap-2">
         <span>SKILLS</span>
         {skills.length > 0 && (
-          <span style={{ border: '2px solid #020617', padding: '1px 6px', fontSize: '0.65rem', fontWeight: 900, backgroundColor: '#ffffff' }}>
+          <span style={{ border: tokens.border, padding: '1px 6px', fontSize: '0.65rem', fontWeight: 900, backgroundColor: tokens.surface }}>
             {skills.length}
           </span>
         )}
@@ -67,14 +68,14 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
                 if (missing.length > 0) onAddSkills(missing);
               }}
               style={{
-                border: '2px solid #020617', background: '#f8fafc',
+                border: tokens.border, background: tokens.surfaceHover,
                 fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase',
-                letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace',
-                padding: '3px 10px', cursor: 'pointer', color: '#020617',
+                letterSpacing: '0.02em', fontFamily: tokens.fontMono,
+                padding: '3px 10px', cursor: 'pointer', color: tokens.primary,
                 transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#ccff00'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f8fafc'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = tokens.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = tokens.surfaceHover; }}
             >
               + {cat}
             </button>
@@ -85,7 +86,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
       {/* DADOS PROFISSIONAIS */}
       <BaseCard title="DADOS PROFISSIONAIS">
         <div style={{ marginBottom: 16 }}>
-          <label htmlFor="current-role" style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', display: 'block', marginBottom: 6, color: '#020617' }}>
+          <label htmlFor="current-role" style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: tokens.fontMono, display: 'block', marginBottom: 6, color: tokens.primary }}>
             Cargo Atual
           </label>
           <input
@@ -98,7 +99,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
               width: '100%', boxSizing: 'border-box',
               border: '4px solid #020617', padding: '10px 12px',
               fontSize: '0.85rem', fontFamily: 'inherit',
-              color: '#020617', backgroundColor: '#ffffff',
+              color: tokens.primary, backgroundColor: tokens.surface,
               boxShadow: '2px 2px 0px #000', fontWeight: 700,
             }}
           />
@@ -106,7 +107,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
 
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
           <FormControl sx={{ minWidth: { xs: '100%', sm: 180 }, flex: 1 }} size="small">
-            <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 900, textTransform: 'uppercase', color: '#020617' }}>
+            <InputLabel sx={{ fontFamily: tokens.fontMono, fontWeight: 900, textTransform: 'uppercase', color: tokens.primary }}>
               Senioridade
             </InputLabel>
             <Select
@@ -114,17 +115,17 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
               label="Senioridade"
               onChange={e => onFieldChange('seniority', e.target.value)}
               sx={{
-                color: '#020617',
+                color: tokens.primary,
                 fontWeight: 700,
-                bgcolor: '#ffffff',
-                fontFamily: 'ui-monospace, monospace',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 4 },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
+                bgcolor: tokens.surface,
+                fontFamily: tokens.fontMono,
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: tokens.primary, borderWidth: 4 },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: tokens.primary },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: tokens.primary },
               }}
             >
               {SENIORITY_LEVELS.map(level => (
-                <MenuItem key={level} value={level} sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: '#020617' }}>
+                <MenuItem key={level} value={level} sx={{ fontFamily: tokens.fontMono, fontWeight: 700, color: tokens.primary }}>
                   {level.charAt(0).toUpperCase() + level.slice(1)}
                 </MenuItem>
               ))}
@@ -132,7 +133,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
           </FormControl>
 
           <FormControl sx={{ minWidth: { xs: '100%', sm: 160 }, flex: 1 }} size="small">
-            <InputLabel sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 900, textTransform: 'uppercase', color: '#020617' }}>
+            <InputLabel sx={{ fontFamily: tokens.fontMono, fontWeight: 900, textTransform: 'uppercase', color: tokens.primary }}>
               Área
             </InputLabel>
             <Select
@@ -140,17 +141,17 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
               label="Área"
               onChange={e => onFieldChange('area', e.target.value)}
               sx={{
-                color: '#020617',
+                color: tokens.primary,
                 fontWeight: 700,
-                bgcolor: '#ffffff',
-                fontFamily: 'ui-monospace, monospace',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#020617', borderWidth: 4 },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#020617' },
+                bgcolor: tokens.surface,
+                fontFamily: tokens.fontMono,
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: tokens.primary, borderWidth: 4 },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: tokens.primary },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: tokens.primary },
               }}
             >
               {AREA_OPTIONS.map(opt => (
-                <MenuItem key={opt} value={opt} sx={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: '#020617' }}>
+                <MenuItem key={opt} value={opt} sx={{ fontFamily: tokens.fontMono, fontWeight: 700, color: tokens.primary }}>
                   {opt}
                 </MenuItem>
               ))}
@@ -159,7 +160,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
         </div>
 
         <div style={{ marginBottom: education.length > 0 ? 16 : 0 }}>
-          <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', color: '#020617', marginBottom: 8 }} id="years-label">
+          <p style={{ fontFamily: tokens.fontMono, fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', color: tokens.primary, marginBottom: 8 }} id="years-label">
             Experiência: {experienceYears} {experienceYears === 1 ? 'ano' : 'anos'}
           </p>
           <Slider
@@ -172,14 +173,14 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
             valueLabelDisplay="auto"
             aria-labelledby="years-label"
             sx={{
-              color: '#020617',
+              color: tokens.primary,
               '& .MuiSlider-thumb': {
                 width: 20,
                 height: 20,
-                bgcolor: '#020617',
-                border: '2px solid #020617',
+                bgcolor: tokens.primary,
+                border: tokens.border,
               },
-              '& .MuiSlider-track': { bgcolor: '#020617', height: 6 },
+              '& .MuiSlider-track': { bgcolor: tokens.primary, height: 6 },
               '& .MuiSlider-rail': { bgcolor: '#cbd5e1', height: 6 },
             }}
           />
@@ -187,7 +188,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
 
         {education.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <p style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: 'ui-monospace, monospace', marginBottom: 6, color: '#020617' }}>
+            <p style={{ fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.02em', fontFamily: tokens.fontMono, marginBottom: 6, color: tokens.primary }}>
               Formação
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -198,11 +199,11 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
                   size="small"
                   sx={{
                     fontWeight: 700,
-                    fontFamily: 'ui-monospace, monospace',
+                    fontFamily: tokens.fontMono,
                     fontSize: '0.65rem',
                     bgcolor: '#f1f5f9',
-                    color: '#020617',
-                    border: '2px solid #020617',
+                    color: tokens.primary,
+                    border: tokens.border,
                     borderRadius: 0,
                   }}
                 />

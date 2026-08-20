@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
+import { tokens } from "@/lib/infrastructure/ui/tokens";
 
 interface Props {
   label?: string;
@@ -81,8 +82,8 @@ export function TagInput({
           <Typography
             variant="body2"
             sx={{
-              color: dark ? '#f8fafc' : '#020617',
-              fontFamily: 'ui-monospace, monospace',
+              color: dark ? tokens.surfaceHover : tokens.primary,
+              fontFamily: tokens.fontMono,
               fontWeight: 800,
               fontSize: compact ? '0.75rem' : '0.85rem',
               textTransform: 'uppercase',
@@ -101,17 +102,17 @@ export function TagInput({
           gap: 0.75,
           p: frameless ? '4px 0' : (compact ? 1.25 : 1.75),
           border: frameless ? 'none' : '3px solid',
-          borderColor: frameless ? 'transparent' : (dark ? '#ccff00' : '#020617'),
+          borderColor: frameless ? 'transparent' : (dark ? tokens.accent : tokens.primary),
           borderRadius: 0,
           boxShadow: frameless ? 'none' : (dark ? '4px 4px 0px #000' : '4px 4px 0px #020617'),
           minHeight: compact ? 44 : 52,
           alignItems: 'center',
-          bgcolor: frameless ? 'transparent' : (dark ? '#0f172a' : '#ffffff'),
+          bgcolor: frameless ? 'transparent' : (dark ? '#0f172a' : tokens.surface),
           transition: 'all 0.15s ease-in-out',
           '&:focus-within': frameless
             ? undefined
             : {
-                borderColor: dark ? '#ffffff' : '#000000',
+                borderColor: dark ? tokens.surface : '#000000',
                 boxShadow: dark ? '4px 4px 0px #ccff00' : '4px 4px 0px #ccff00',
               },
         }}
@@ -125,13 +126,13 @@ export function TagInput({
             sx={{
               fontWeight: 800,
               fontSize: '0.75rem',
-              fontFamily: 'ui-monospace, monospace',
-              bgcolor: dark ? '#ccff00' : '#020617',
-              color: dark ? '#020617' : '#ffffff',
+              fontFamily: tokens.fontMono,
+              bgcolor: dark ? tokens.accent : tokens.primary,
+              color: dark ? tokens.primary : tokens.surface,
               borderRadius: 0,
               border: '1px solid #000',
               '& .MuiChip-deleteIcon': {
-                color: dark ? '#020617' : '#ffffff',
+                color: dark ? tokens.primary : tokens.surface,
                 '&:hover': {
                   color: '#ef4444',
                 },
@@ -163,7 +164,7 @@ export function TagInput({
             fontSize: compact ? '0.9rem' : '1rem',
             padding: '4px 0',
             background: 'transparent',
-            color: dark ? '#f8fafc' : '#020617',
+            color: dark ? tokens.surfaceHover : tokens.primary,
           }}
         />
       </Box>
@@ -177,8 +178,8 @@ export function TagInput({
             alignItems: 'center',
             gap: 0.5,
             mt: 0.75,
-            color: input.trim().length > 0 ? (dark ? '#ccff00' : '#020617') : (dark ? '#94a3b8' : '#64748b'),
-            fontFamily: 'ui-monospace, monospace',
+            color: input.trim().length > 0 ? (dark ? tokens.accent : tokens.primary) : (dark ? '#94a3b8' : tokens.muted),
+            fontFamily: tokens.fontMono,
             fontSize: '0.7rem',
             fontWeight: input.trim().length > 0 ? 800 : 700,
             letterSpacing: '0.02em',
