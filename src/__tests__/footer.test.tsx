@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+
+vi.mock('next/link', () => ({
+  default: ({ href, children }: any) => <a href={href}>{children}</a>,
+}));
+
 import { Footer } from '@/components/layout/footer';
 
 describe('Footer', () => {
@@ -67,5 +72,4 @@ describe('Footer', () => {
     fireEvent.mouseLeave(link);
     expect(link.style.color).toBe('rgb(148, 163, 184)');
   });
-
-  });
+});

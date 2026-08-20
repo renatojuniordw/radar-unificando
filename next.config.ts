@@ -1,5 +1,18 @@
 import type { NextConfig } from 'next';
+import fs from 'fs';
 import path from 'path';
+
+// No monorepo local (npm workspaces), o pacote `next` só existe hoisted no
+// node_modules do diretório pai — o root do turbopack/tracing precisa apontar
+// pra lá, senão o build nem encontra next/package.json. Já na imagem Docker o
+// build roda isolado, com next instalado no próprio node_modules do projeto;
+// nesse caso o root tem que ficar aqui, senão o output standalone é gerado
+// aninhado (ex: .next/standalone/app/server.js) e o Dockerfile — que espera
+// .next/standalone/server.js — quebra em produção.
+const monorepoRoot = path.join(__dirname, '..');
+const projectRoot = fs.existsSync(path.join(monorepoRoot, 'node_modules', 'next'))
+  ? monorepoRoot
+  : __dirname;
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -49,8 +62,9 @@ const nextConfig: NextConfig = {
   // derrubar o dev: NEXT_DIST_DIR=.next-check npm run build
   distDir: process.env.NEXT_DIST_DIR || '.next',
   serverExternalPackages: ['@prisma/client', 'pdfjs-dist', 'pg', '@prisma/adapter-pg', '@react-pdf/renderer', 'docx'],
+  outputFileTracingRoot: projectRoot,
   turbopack: {
-    root: path.join(__dirname, '..'),
+    root: projectRoot,
   },
   experimental: {
     optimizePackageImports: [

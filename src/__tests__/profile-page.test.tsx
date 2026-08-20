@@ -5,7 +5,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 const { useSessionMock } = vi.hoisted(() => ({ useSessionMock: vi.fn() }));
 const { useSnackbarMock } = vi.hoisted(() => ({ useSnackbarMock: vi.fn() }));
 const { useProfileMock } = vi.hoisted(() => ({ useProfileMock: vi.fn() }));
+const { useRouterMock } = vi.hoisted(() => ({ useRouterMock: vi.fn() }));
 
+vi.mock('next/navigation', () => ({ useRouter: useRouterMock }));
 vi.mock('next-auth/react', () => ({ useSession: useSessionMock }));
 vi.mock('@/hooks/useSnackbar', () => ({ useSnackbar: useSnackbarMock }));
 vi.mock('@/hooks/useProfile', () => ({ useProfile: useProfileMock }));
@@ -71,6 +73,7 @@ describe('ProfilePage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useRouterMock.mockReturnValue({ push: vi.fn() });
     useSessionMock.mockReturnValue({ data: { user: { name: 'Maria Silva', email: 'maria@test.com' } } });
     useSnackbarMock.mockReturnValue({ show: showSnackbar });
     useProfileMock.mockReturnValue(baseProfile());

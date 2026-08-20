@@ -175,7 +175,7 @@ describe('Chat API POST', () => {
       expect.objectContaining({
         model: expect.anything(),
         system: expect.any(String),
-        maxOutputTokens: 2000,
+        maxOutputTokens: 3500,
       }),
     );
     expect(callbacks).toBeDefined();
@@ -185,7 +185,7 @@ describe('Chat API POST', () => {
     vi.mocked(getGlobalBudgetStatus).mockResolvedValue({ exhausted: false, degraded: true } as any);
     captureStreamCallbacks();
     await POST(makeRequest());
-    expect(mockStreamText).toHaveBeenCalledWith(expect.objectContaining({ maxOutputTokens: 1000 }));
+    expect(mockStreamText).toHaveBeenCalledWith(expect.objectContaining({ maxOutputTokens: 1750 }));
   });
 
   it('should_record_reported_usage_and_tool_calls_on_finish', async () => {

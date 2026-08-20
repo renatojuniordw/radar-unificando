@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 
 const { useRouterMock } = vi.hoisted(() => ({ useRouterMock: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: useRouterMock }));
@@ -24,6 +24,7 @@ describe('RegisterPage', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -68,15 +69,21 @@ describe('RegisterPage', () => {
   });
 
   it('should_register_and_redirect_to_login', async () => {
+    vi.useFakeTimers();
     fetchMock.mockResolvedValue({ ok: true });
     render(<RegisterPage />);
     fillValid();
     submit();
-    await screen.findByText('CRIAR CONTA');
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
     expect(fetchMock).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ name: 'Maria Silva', email: 'maria@test.com', password: 'Senha@2026' }),
     }));
+    await act(async () => {
+      vi.advanceTimersByTime(1500);
+    });
     expect(push).toHaveBeenCalledWith('/login?registered=true');
   });
 

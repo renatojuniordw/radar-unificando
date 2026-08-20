@@ -5,6 +5,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 vi.mock('@next/third-parties/google', () => ({
   GoogleAnalytics: () => <div data-testid="ga-loaded" />,
 }));
+vi.mock('next/link', () => ({
+  default: ({ href, children }: any) => <a href={href}>{children}</a>,
+}));
 
 import { CookieConsent } from '@/components/ui/cookie-consent';
 

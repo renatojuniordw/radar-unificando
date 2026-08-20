@@ -72,7 +72,7 @@ describe('AtsAnalysisDrawer', () => {
     expect(screen.getByText('Currículo bom, faltam keywords.')).toBeTruthy();
     expect(screen.getByText('AWS')).toBeTruthy();
     expect(screen.getByText('Adicione palavras-chave')).toBeTruthy();
-    expect(screen.getByText('GERAR CURRÍCULO ADAPTADO')).toBeTruthy();
+    expect(screen.getByText('BAIXAR PDF')).toBeTruthy();
   });
 
   it('should_send_job_description_and_job_key_from_id_in_request_body', async () => {
@@ -145,7 +145,7 @@ describe('AtsAnalysisDrawer', () => {
     await waitForReady('72');
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'BAIXAR PDF' })).toBeTruthy();
   });
 
   it('should_show_generic_error_when_error_response_has_no_message', async () => {
@@ -361,7 +361,7 @@ describe('AtsAnalysisDrawer', () => {
     renderDrawer({ job: { id: 'j', title: 'Analista' } });
 
     await waitForReady('72');
-    fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
+    fireEvent.click(screen.getByRole('button', { name: 'BAIXAR PDF' }));
 
     await waitForReady('Currículo adaptado baixado!');
     expect(downloadAdaptedResume).toHaveBeenCalledWith(
@@ -380,7 +380,7 @@ describe('AtsAnalysisDrawer', () => {
     renderDrawer();
 
     await waitForReady('72');
-    fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
+    fireEvent.click(screen.getByRole('button', { name: 'BAIXAR PDF' }));
     await waitForReady('Currículo adaptado baixado!');
 
     fireEvent.click(screen.getByLabelText('Close'));
@@ -393,7 +393,7 @@ describe('AtsAnalysisDrawer', () => {
     renderDrawer();
 
     await waitForReady('72');
-    fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
+    fireEvent.click(screen.getByRole('button', { name: 'BAIXAR PDF' }));
 
     await waitForReady('Erro ao gerar o currículo.');
   });
@@ -407,7 +407,7 @@ describe('AtsAnalysisDrawer', () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
+    fireEvent.click(screen.getByRole('button', { name: 'BAIXAR PDF' }));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
@@ -459,7 +459,7 @@ describe('AtsAnalysisDrawer', () => {
     renderDrawer();
 
     await waitForReady('72');
-    fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
+    fireEvent.click(screen.getByRole('button', { name: 'BAIXAR PDF' }));
 
     await waitForReady('Currículo adaptado baixado!');
     expect(downloadAdaptedResume).toHaveBeenCalledWith(
@@ -478,7 +478,7 @@ describe('AtsAnalysisDrawer', () => {
     renderDrawer();
 
     await waitForReady('72');
-    fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
+    fireEvent.click(screen.getByRole('button', { name: 'BAIXAR PDF' }));
 
     await waitForReady('Falha no PDF');
   });
@@ -492,7 +492,7 @@ describe('AtsAnalysisDrawer', () => {
     renderDrawer();
 
     await waitForReady('72');
-    const generateButton = screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' });
+    const generateButton = screen.getByRole('button', { name: 'BAIXAR PDF' });
     fireEvent.click(generateButton);
 
     await waitFor(() => expect(screen.getByText('GERANDO...')).toBeTruthy());
