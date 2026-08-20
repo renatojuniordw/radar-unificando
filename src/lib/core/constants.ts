@@ -12,7 +12,8 @@ export const LINKS = {
   unificando: "https://unificando.com.br/",
   portfolio: "https://renatobezerra.com.br/",
   github: "https://github.com/renatojuniordw/radar-unificando",
-  costs: "https://github.com/renatobezerra/radar-unificando/blob/main/COSTS.md",
+  costs:
+    "https://github.com/renatojuniordw/radar-unificando/blob/main/COSTS.md",
 } as const;
 
 export const IMPACT = {

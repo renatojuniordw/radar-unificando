@@ -9,6 +9,15 @@ export interface ResumeJobInput {
   location?: string;
 }
 
+export interface ResumeProgressStep {
+  step: number;
+  totalSteps: number;
+  message: string;
+  progressPercent: number;
+}
+
+export type ProgressCallback = (stepInfo: ResumeProgressStep) => void;
+
 /** Chave composta para identificar uma vaga (para estado de loading). */
 export function jobKey(job: ResumeJobInput): string {
   return `${job.company}|${job.title}`;
@@ -23,9 +32,37 @@ const FETCH_TIMEOUT_MS = 150_000;
  * Gera o currículo adaptado no servidor e baixa o PDF diretamente.
  * Lança Error com mensagem amigável em caso de falha.
  */
-export async function downloadAdaptedResume(job: ResumeJobInput): Promise<void> {
+export async function downloadAdaptedResume(
+  job: ResumeJobInput,
+  onProgress?: ProgressCallback,
+): Promise<void> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  onProgress?.({
+    step: 1,
+    totalSteps: 3,
+    message: "Analisando requisitos da vaga e palavras-chave ATS...",
+    progressPercent: 20,
+  });
+
+  const t1 = setTimeout(() => {
+    onProgress?.({
+      step: 2,
+      totalSteps: 3,
+      message: "Adaptando e otimizando experiências profissionais com IA...",
+      progressPercent: 55,
+    });
+  }, 5000);
+
+  const t2 = setTimeout(() => {
+    onProgress?.({
+      step: 3,
+      totalSteps: 3,
+      message: "Validando veracidade e compilando documento PDF...",
+      progressPercent: 85,
+    });
+  }, 18000);
 
   let res: Response;
   try {
@@ -49,12 +86,21 @@ export async function downloadAdaptedResume(job: ResumeJobInput): Promise<void> 
     );
   } finally {
     clearTimeout(timeoutId);
+    clearTimeout(t1);
+    clearTimeout(t2);
   }
 
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     throw new Error(data?.error || "Erro ao gerar o currículo.");
   }
+
+  onProgress?.({
+    step: 3,
+    totalSteps: 3,
+    message: "Currículo confeccionado com sucesso! Download iniciado.",
+    progressPercent: 100,
+  });
 
   const bytes = Uint8Array.from(atob(data.pdfBase64), (c) => c.charCodeAt(0));
   const blob = new Blob([bytes], { type: "application/pdf" });

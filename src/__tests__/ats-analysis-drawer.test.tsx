@@ -364,11 +364,14 @@ describe('AtsAnalysisDrawer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
 
     await waitForReady('Currículo adaptado baixado!');
-    expect(downloadAdaptedResume).toHaveBeenCalledWith({
-      title: 'Analista',
-      company: '',
-      description: undefined,
-    });
+    expect(downloadAdaptedResume).toHaveBeenCalledWith(
+      {
+        title: 'Analista',
+        company: '',
+        description: undefined,
+      },
+      expect.any(Function),
+    );
   });
 
   it('should_close_snackbar_when_alert_close_icon_clicked', async () => {
@@ -459,11 +462,14 @@ describe('AtsAnalysisDrawer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'GERAR CURRÍCULO ADAPTADO' }));
 
     await waitForReady('Currículo adaptado baixado!');
-    expect(downloadAdaptedResume).toHaveBeenCalledWith({
-      title: 'Desenvolvedor React',
-      company: 'Acme',
-      description: 'Vaga de React',
-    });
+    expect(downloadAdaptedResume).toHaveBeenCalledWith(
+      {
+        title: 'Desenvolvedor React',
+        company: 'Acme',
+        description: 'Vaga de React',
+      },
+      expect.any(Function),
+    );
   });
 
   it('should_show_error_snackbar_when_resume_download_fails', async () => {

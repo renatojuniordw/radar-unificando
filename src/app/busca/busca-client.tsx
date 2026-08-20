@@ -10,6 +10,7 @@ import { CourseRecommendationSidebar } from "@/components/busca/course-recommend
 import { ChatTeaser } from "@/components/shared/chat-teaser";
 import { AtsAnalysisDrawer } from "@/components/ats/ats-analysis-drawer";
 import { downloadAdaptedResume, jobKey } from "@/lib/client/resume-download";
+import { ResumeProgressToast, type ResumeProgressState } from "@/components/resume/resume-progress-toast";
 import type { Job } from "@/lib/types/job";
 
 function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
@@ -36,18 +37,53 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
 
   const [atsJob, setAtsJob] = useState<Job | null>(null);
   const [generatingJobKey, setGeneratingJobKey] = useState<string | null>(null);
+  const [resumeToastState, setResumeToastState] = useState<ResumeProgressState | null>(null);
   const canGenerateResume = !!(session && (profile.resumeMarkdown || profile.resumeText));
 
   const handleGenerateResume = async (job: Job) => {
     const key = jobKey(job);
     setGeneratingJobKey(key);
+    setResumeToastState({
+      jobTitle: job.title,
+      jobCompany: job.company || "",
+      step: 1,
+      totalSteps: 3,
+      message: "Analisando requisitos da vaga e palavras-chave ATS...",
+      progressPercent: 20,
+      status: "generating",
+    });
     try {
-      await downloadAdaptedResume(job);
-      setSnackbar({ severity: "success", message: "Currículo adaptado baixado!" });
+      await downloadAdaptedResume(job, (stepInfo) => {
+        setResumeToastState({
+          jobTitle: job.title,
+          jobCompany: job.company || "",
+          step: stepInfo.step,
+          totalSteps: stepInfo.totalSteps,
+          message: stepInfo.message,
+          progressPercent: stepInfo.progressPercent,
+          status: "generating",
+        });
+      });
+      setResumeToastState({
+        jobTitle: job.title,
+        jobCompany: job.company || "",
+        step: 3,
+        totalSteps: 3,
+        message: "Currículo confeccionado com sucesso! O download do PDF começou.",
+        progressPercent: 100,
+        status: "success",
+      });
     } catch (e) {
-      setSnackbar({
-        severity: "error",
-        message: e instanceof Error ? e.message : "Erro ao gerar o currículo.",
+      const msg = e instanceof Error ? e.message : "Erro ao gerar o currículo.";
+      setResumeToastState({
+        jobTitle: job.title,
+        jobCompany: job.company || "",
+        step: 0,
+        totalSteps: 3,
+        message: msg,
+        progressPercent: 0,
+        status: "error",
+        errorMessage: msg,
       });
     } finally {
       setGeneratingJobKey(null);
@@ -123,6 +159,11 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
           </Alert>
         </Snackbar>
       )}
+
+      <ResumeProgressToast
+        state={resumeToastState}
+        onClose={() => setResumeToastState(null)}
+      />
 
       <AtsAnalysisDrawer
         open={!!atsJob}

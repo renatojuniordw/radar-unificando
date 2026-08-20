@@ -6,13 +6,14 @@ import {
   Box,
   Typography,
   CircularProgress,
+  LinearProgress,
   Alert,
   Button,
   Snackbar,
 } from "@mui/material";
 import { AutoAwesome, AccessTime } from "@mui/icons-material";
 import type { AtsResult } from "@/lib/core/ai/ats/ats-analyzer";
-import { downloadAdaptedResume } from "@/lib/client/resume-download";
+import { downloadAdaptedResume, type ResumeProgressStep } from "@/lib/client/resume-download";
 import { AtsResultsContent } from "./ats-results-content";
 
 /** Shape mínimo de vaga aceito pelo drawer (Job da busca ou ParsedJob do chat). */
@@ -55,6 +56,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
   const [retryAfter, setRetryAfter] = useState(0);
   const [initialRetryAfter, setInitialRetryAfter] = useState(0);
   const [generating, setGenerating] = useState(false);
+  const [resumeProgress, setResumeProgress] = useState<ResumeProgressStep | null>(null);
   const [snackbar, setSnackbar] = useState("");
   const abortRef = useRef<AbortController | null>(null);
 
@@ -126,17 +128,27 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
   const handleGenerateResume = async () => {
     if (!job || generating) return;
     setGenerating(true);
+    setResumeProgress({
+      step: 1,
+      totalSteps: 3,
+      message: "Analisando requisitos da vaga e palavras-chave ATS...",
+      progressPercent: 20,
+    });
     try {
-      await downloadAdaptedResume({
-        title: job.title,
-        company: job.company || "",
-        description: job.description,
-      });
+      await downloadAdaptedResume(
+        {
+          title: job.title,
+          company: job.company || "",
+          description: job.description,
+        },
+        (stepInfo) => setResumeProgress(stepInfo),
+      );
       setSnackbar("Currículo adaptado baixado!");
     } catch (e) {
       setSnackbar(e instanceof Error ? e.message : "Erro ao gerar o currículo.");
     } finally {
       setGenerating(false);
+      setResumeProgress(null);
     }
   };
 
@@ -231,6 +243,50 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         {stage === "ready" && result && (
           <Box sx={{ flex: 1, overflowY: "auto", pr: 0.5 }}>
             <AtsResultsContent result={result} />
+          </Box>
+        )}
+
+        {generating && resumeProgress && (
+          <Box
+            sx={{
+              mt: 2,
+              p: 2,
+              bgcolor: "#1e293b",
+              border: "1px solid #ccff00",
+              borderRadius: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  color: "#ccff00",
+                  fontFamily: "ui-monospace, monospace",
+                  textTransform: "uppercase",
+                }}
+              >
+                CONFECCIONANDO CURRÍCULO ({resumeProgress.step}/{resumeProgress.totalSteps})
+              </Typography>
+              <Typography sx={{ fontSize: "0.7rem", color: "#94a3b8", fontFamily: "ui-monospace, monospace" }}>
+                {resumeProgress.progressPercent}%
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={resumeProgress.progressPercent}
+              sx={{
+                height: 6,
+                bgcolor: "#0f172a",
+                "& .MuiLinearProgress-bar": { bgcolor: "#ccff00" },
+              }}
+            />
+            <Typography sx={{ fontSize: "0.75rem", color: "#cbd5e1", fontFamily: "ui-monospace, monospace" }}>
+              {resumeProgress.message}
+            </Typography>
           </Box>
         )}
 
