@@ -102,9 +102,13 @@ To improve conversion rates from paid ads, we are blending this raw look with a 
 - **Search Inputs**: Thick black borders, dark backgrounds, high-contrast text.
 - **Suggestion chips**: Monospace uppercase chips that fill the cargo input on click, with neon hover state.
 - **Result table**: Monospace header with uppercase labels, compact rows, optional JobPosting structured data.
+- **Interactive Chips/Pills**: Segmented pill toggles with clear active/inactive visual states instead of ambiguous inline lines.
 
 ## Do's and Don'ts
 - **DO** use `#ccff00` for active states and critical CTAs.
 - **DO** keep the text clean, readable, and uppercase for headers.
+- **DO** maintain high contrast between dark section headers and light result tables.
 - **DON'T** use purple or generic blue/cyan gradients (strictly forbidden under the Purple Ban).
 - **DON'T** add round borders (`border-radius > 4px`) to brutalist cards or buttons.
+- **DON'T** use floating single-pixel vertical lines between inline chips that look like broken artifacts.
+- **DON'T** duplicate search input fields across adjacent page blocks.

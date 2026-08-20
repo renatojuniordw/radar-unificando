@@ -228,7 +228,7 @@ export default function TermosPage() {
                 <strong>Limites por Pessoa (Anti Multi-Conta):</strong> Contas que compartilham o mesmo currículo são vinculadas e <strong>compartilham o mesmo teto de tokens</strong>. Existe também um teto diário global por endereço de IP de <strong>300 mil tokens/dia</strong> e um limite de <strong>3 cadastros de conta por IP a cada 24 horas</strong>.
               </li>
               <li style={{ marginBottom: 8 }}>
-                <strong>Orçamento Diário Global:</strong> O projeto possui um limite diário global de custos em nuvem que reativa automaticamente o serviço após a meia-noite em caso de picos atípicos de demanda.
+                <strong>Orçamento Diário Global:</strong> O projeto possui um limite diário global de custos em nuvem. Ao ser atingido, o chat é pausado para todos os usuários e volta a funcionar automaticamente após a meia-noite.
               </li>
               <li style={{ marginBottom: 8 }}>
                 <strong>Extensão do Navegador Chrome:</strong> As requisições de análise de vagas enviadas pela Extensão Chrome contam com rate limit próprio de <strong>20 análises por minuto</strong>.
