@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   Box,
   Typography,
@@ -42,33 +42,31 @@ export function GeneratedResumesTab() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState("");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<GeneratedResumeItem | null>(null);
   const [snackbar, setSnackbar] = useState("");
 
   function loadHistory(targetPage: number) {
-    setLoading(true);
-    fetch(`/api/resume/history?page=${targetPage}&pageSize=${PAGE_SIZE}`)
-      .then((res) => {
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/resume/history?page=${targetPage}&pageSize=${PAGE_SIZE}`);
         if (!res.ok) {
           throw new Error("Erro ao carregar histórico");
         }
-        return res.json();
-      })
-      .then((data) => {
+        const data = await res.json();
         setItems(data.history || []);
         setTotal(data.total ?? 0);
         setTotalPages(data.totalPages ?? 1);
         setError("");
-      })
-      .catch((err) => {
+      } catch (err) {
         setError(err instanceof Error ? err.message : "Erro de conexão.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      } finally {
+        setHasLoadedOnce(true);
+      }
+    });
   }
 
   const handleRetry = () => {
@@ -77,8 +75,9 @@ export function GeneratedResumesTab() {
 
   useEffect(() => {
     loadHistory(page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  const loading = isPending && !hasLoadedOnce;
 
   const handleDownload = async (item: GeneratedResumeItem) => {
     if (downloadingId) return;
