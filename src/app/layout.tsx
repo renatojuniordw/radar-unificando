@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@/lib/infrastructure/ui/theme-provider";
@@ -84,6 +84,11 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 import { ConsoleEasterEgg } from "@/components/ui/console-easter-egg";

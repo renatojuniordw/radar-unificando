@@ -32,7 +32,11 @@ export function JobPostingSchema({ jobs }: { jobs: JobPostingData[] }) {
     description: job.description || `Vaga de ${job.title} na empresa ${job.company} via plataforma ${job.location || 'Gupy/InHire'}.`,
     datePosted: job.datePosted || nowIso,
     validThrough: validThroughIso,
-    employmentType: job.type?.toLowerCase().includes('remoto') ? 'FULL_TIME' : 'FULL_TIME',
+    // `job.type` carrega o modo de trabalho (remoto/híbrido/presencial), não o
+    // regime de contratação (CLT/PJ/estágio) — não há dado de regime na fonte,
+    // então FULL_TIME é usado como default fixo em vez de um ternário sem
+    // diferenciação real entre os ramos.
+    employmentType: 'FULL_TIME',
     hiringOrganization: {
       '@type': 'Organization',
       name: job.company,

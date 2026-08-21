@@ -11,8 +11,8 @@ import {
 } from '@/lib/core/dicas/dica-catalog';
 import { BreadcrumbSchema } from '@/components/seo/breadcrumb-schema';
 import { ArticleSchema } from '@/components/seo/article-schema';
+import { FaqStructuredData } from '@/components/seo/faq-structured-data';
 import { SITE } from '@/lib/core/constants';
-import { toScriptJson } from '@/lib/core/seo/jsonld';
 
 export const revalidate = 86400;
 
@@ -75,22 +75,8 @@ export default async function DicaPage({
       }}
     >
       {/* FAQPage JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: toScriptJson({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: dica.faq.map((f) => ({
-              '@type': 'Question',
-              name: f.question,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: f.answer,
-              },
-            })),
-          }),
-        }}
+      <FaqStructuredData
+        items={dica.faq.map((f) => ({ q: f.question, a: f.answer }))}
       />
 
       {/* Article JSON-LD */}

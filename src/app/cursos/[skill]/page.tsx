@@ -7,7 +7,12 @@ import { CourseCard } from '@/components/cursos/course-card';
 import { CourseGrid } from '@/components/cursos/course-grid';
 import { CourseFallbackCta } from '@/components/cursos/course-fallback-cta';
 import { BreadcrumbSchema } from '@/components/seo/breadcrumb-schema';
+import { CourseListSchema } from '@/components/seo/course-list-schema';
 import { SITE } from '@/lib/core/constants';
+
+const PROVIDER_URLS: Record<string, string> = {
+  udemy: 'https://www.udemy.com',
+};
 
 export const revalidate = 86400; // ISR: regenera a cada 24h
 
@@ -56,6 +61,15 @@ export default async function SkillPage({
             { name: 'Cursos', url: `${SITE.url}/cursos` },
             { name, url: `${SITE.url}/cursos/${skill}` },
           ]}
+        />
+        <CourseListSchema
+          courses={courses.map((course) => ({
+            title: course.title,
+            description: course.description,
+            url: course.url,
+            providerName: 'Udemy',
+            providerUrl: PROVIDER_URLS[course.provider] ?? 'https://www.udemy.com',
+          }))}
         />
         <Box
           component="nav"

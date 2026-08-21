@@ -4,7 +4,7 @@ import { skillSlug } from "@/lib/core/courses/course-matcher";
 import { DICA_CATALOG } from "@/lib/core/dicas/dica-catalog";
 import { SITE } from "@/lib/core/constants";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE.url;

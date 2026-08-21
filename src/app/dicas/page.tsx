@@ -11,6 +11,7 @@ import {
 } from '@/lib/core/dicas/dica-catalog';
 import { DicaCardGrid } from '@/components/dicas/dica-card-grid';
 import { DicaCard } from '@/components/dicas/dica-card';
+import { BreadcrumbSchema } from '@/components/seo/breadcrumb-schema';
 
 export const revalidate = 86400;
 
@@ -60,6 +61,13 @@ export default async function DicasPage({
         maxWidth="xl"
         sx={{ py: { xs: 5, md: 8 }, px: { xs: 2, sm: 3 } }}
       >
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: SITE.url },
+            { name: 'Dicas', url: `${SITE.url}/dicas` },
+          ]}
+        />
+
         {/* Badge */}
         <Box
           sx={{
