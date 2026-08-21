@@ -23,7 +23,8 @@ API Layer (Route Handlers)
   ├── /api/pipeline (+ /stream, /:runId)
   ├── /api/vagas · /api/profile · /api/upload (+ /:jobId)
   ├── /api/chat (+ /history, /conversations, /context, /usage) · /api/ats/analyze
-  ├── /api/auth/register · /api/resume/history (paginado) · /api/health · /export (CSV/JSON)
+  ├── /api/auth/register · /api/auth/account (exclusão LGPD) · /api/resume/history (paginado) · /api/health
+  ├── /api/export (LGPD portabilidade) · /export (CSV/JSON de vagas)
   ├── /api/extension/analyze · /api/extension/feedback (Bearer token da extensão)
   ├── /api/extensao/status (sessão — status de conexão da extensão)
   └── Auth.js v5 (NextAuth, credentials)
@@ -39,15 +40,24 @@ Application/Core Layer
   ├── core/matching/        → recommendation.ts (token overlap)
   ├── core/ai/              → skill-extractor, chat-tools (agregador), tools/ (9 tools),
   │                           job-analyzer, cover-letter, interview-questions,
-  │                           resume-adaptation-generator, query-expansion, pii-redactor,
+  │                           resume-adaptation-generator, resume-veracity (anti-alucinação),
+  │                           query-expansion, pii-redactor, extraction-schema,
+  │                           generated-content-cache, ai-logger, prompts/ (um arquivo por prompt),
   │                           llm-provider (factory pattern via createLlmProvider), chat-guard, shared/with-timeout (AbortSignal)
-  ├── ats/                  → ats-analyzer (LLM v4), ats-heuristics, ats-service (cache,
+  ├── core/constants.ts     → constantes globais (limites, defaults)
+  ├── core/ai/ats/          → ats-analyzer (LLM v4), ats-heuristics, ats-service (cache,
   │                           buildAtsResumeInput, in-flight dedup), AtsResult type
   ├── core/mcp/             → gupy-client (JSON-RPC, paginado por offset)
   ├── core/scrapers/        → inhire-scraper
   ├── core/dedup/           → DedupEngine
   ├── core/discovery/       → company-discovery (executado para usuários logados)
   ├── core/dicas/           → dica-catalog (catálogo estático de tutoriais, helpers, categorias)
+  ├── core/courses/         → course-catalog (curado), course-matcher, impact-client (API Udemy), course-provider, course-track
+  ├── core/jobs/            → map-job (mapeamento para API/UI)
+  ├── core/profile/         → lógica de perfil (skills, senioridade)
+  ├── core/seo/             → schemas JSON-LD (CourseListSchema, FAQ, JobPosting)
+  ├── core/vagas/           → páginas públicas de vagas (SEO)
+  ├── core/auth/            → auth-guard (requireAuth), helpers de autenticação
   └── core/admin/           → admin-stats (summary, séries diárias, top termos/empresas/ferramentas)
         |
 Domain Types
@@ -106,7 +116,7 @@ A extensão (MV3, side panel) reusa o motor ATS do backend e se autentica por **
    - **Fluxo automático** (`launchWebAuthFlow`): `redirect_uri=<chrome-extension-id>.chromiumapp.org` → o backend redireciona com `?token=...` (validado por `isSafeRedirectUri`).
    - **Fluxo manual**: token exibido na página e copiado para a extensão.
 3. A extensão envia `Authorization: Bearer <token>` em `POST /api/extension/analyze` e `POST /api/extension/feedback` (rate limit 20/min por usuário+IP).
-4. `findUserIdByExtensionToken` resolve o token (atualiza `lastUsedAt`) e o `middleware.ts` só aceita requisições com `Origin: chrome-extension://<id>` se o valor estiver em `EXTENSION_ORIGIN`.
+4. `findUserIdByExtensionToken` resolve o token (atualiza `lastUsedAt`) e o `proxy.ts` só aceita requisições com `Origin: chrome-extension://<id>` se o valor estiver em `EXTENSION_ORIGIN`.
 5. A página `/extensao/conectar` faz polling em `GET /api/extensao/status` (4s) para exibir "Extensão conectada" quando `lastUsedAt` é atualizado.
 
 **Origem cruzada:** o middleware de CORS não reflete `Origin` — `EXTENSION_ORIGIN` é a única origem externa permitida nas rotas `/api/*` (ver `docs/SECURITY.md`).

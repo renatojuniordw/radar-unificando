@@ -40,14 +40,14 @@ Sem border-radius (Neo-Brutalism: `rounded: none`).
 
 | Classe | Uso |
 |--------|-----|
-| `card-brutalist` | Cards brancos com border 4px + shadow 8px |
+| `card-brutalist` | Cards brancos com border 4px + shadow 6px (8px no hover) |
 | `btn-neon` | Botão amarelo com border 4px + shadow 8px |
 | `badge-neon` | Badge amarelo com border 2px + shadow 3px |
 | `badge-dark` | Badge escuro com border 2px |
 | `faq-item` | Itens FAQ com border 4px + shadow 4px |
-| `section-hero` | Background escuro + border amarelo |
-| `section-white` | Background branco + border preto |
-| `section-faq` | Background cinza claro + border preto |
+| `section-hero` | Background escuro `#020617` + border-bottom 4px `#1e293b` |
+| `section-white` | Background escuro `#020617` + border-top 1px `#1e293b` (texto claro) |
+| `section-faq` | Background escuro `#020617` + border-top 1px `#1e293b` (texto claro) |
 
 ## MUI Theme
 

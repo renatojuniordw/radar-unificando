@@ -21,6 +21,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Currículo adaptado (PDF + Word)** — gera uma versão do seu currículo adaptada à vaga, com download direto em PDF ou DOCX (Word)
 - **Dicas de carreira** — hub de tutoriais e dicas de currículo, ATS, entrevista e ferramentas (`/dicas`), com artigos SSG+ISR, FAQ e JSON-LD para SEO
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
+- **Conformidade LGPD** — exportação de dados pessoais (`/api/export`), exclusão de conta (`DELETE /api/auth/account`) e limpeza automática por retenção (cron)
 - **Painel Admin** — métricas de usuários, buscas e uso de IA com gráficos (Recharts), filtro por período, tabela de usuários e auto-refresh — acesso restrito a `role=admin`
 - **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Status: EM BREVE** — em homologação na Chrome Web Store
 - **E-mail de boas-vindas** — ao criar conta, o usuário recebe um e-mail com 3 passos iniciais (via Resend)
@@ -135,7 +136,7 @@ src/
       chat/        → Chat IA (streaming, histórico, conversas, uso)
       courses/     → Busca de cursos (Impact/Udemy)
       cron/        → Rotina de retenção LGPD
-      export/      → Export CSV/JSON
+      export/      → Export LGPD (dados pessoais, portabilidade)
       extensao/    → Status de conexão da extensão
       extension/   → Análise + feedback da extensão Chrome
       health/      → Health check

@@ -23,6 +23,7 @@ Base URL local: `http://localhost:11010`.
 | POST | `/api/auth/callback/credentials` | ❌ | Login (email, password) — rota do NextAuth |
 | GET | `/api/auth/session` | ❌ | Obter sessão atual — rota do NextAuth |
 | GET/POST | `/api/auth/[...nextauth]` | ❌ | Handlers do NextAuth |
+| DELETE | `/api/auth/account` | ✅ | Excluir a conta do usuário e todos os dados pessoais associados (LGPD Art. 18, VI). Executa exclusão em cascata de todas as tabelas e limpa os cookies de sessão |
 
 ### Pipeline
 
@@ -129,7 +130,7 @@ Resposta (trecho — `courses` só aparece quando há `missingKeywords`):
 }
 ```
 
-> Nota: as chamadas da extensão vêm de `Origin: chrome-extension://<id>`. O `middleware.ts` só aceita a origem se estiver configurada em `EXTENSION_ORIGIN` (nunca refletida).
+> Nota: as chamadas da extensão vêm de `Origin: chrome-extension://<id>`. O `proxy.ts` só aceita a origem se estiver configurada em `EXTENSION_ORIGIN` (nunca refletida).
 
 ### Upload de currículo
 
@@ -158,7 +159,8 @@ curl http://localhost:11010/api/upload/<jobId> \
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| GET | `/export?format=csv` | ❌ | Exportar até 500 vagas em CSV (default, com BOM) ou `format=json` |
+| GET | `/export?format=csv` | ✅ | Exportar até 500 vagas do usuário logado em CSV (default, com BOM) ou `format=json` |
+| GET | `/api/export` | ✅ | **LGPD Art. 18, V (portabilidade)** — exportar todos os dados pessoais do usuário em JSON estruturado (conta, perfil, vagas, chats, mensagens, pipeline, candidaturas, empresas, tokens de extensão, feedback, cliques em cursos, cache). O hash do token de extensão é omitido |
 
 ### Health
 
@@ -193,6 +195,11 @@ curl http://localhost:11010/api/vagas?plataforma=Gupy&search=Analista
 curl http://localhost:11010/api/profile \
   -H 'Cookie: next-auth.session-token=<token>'
 
-# Export JSON
-curl http://localhost:11010/export?format=json
+# Export de vagas (CSV/JSON — autenticado)
+curl http://localhost:11010/export?format=json \
+  -H 'Cookie: next-auth.session-token=<token>'
+
+# Export LGPD (dados pessoais — autenticado)
+curl http://localhost:11010/api/export \
+  -H 'Cookie: next-auth.session-token=<token>'
 ```

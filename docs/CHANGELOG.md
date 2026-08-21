@@ -24,6 +24,9 @@ Nenhuma mudança desde `v4.0.0`.
 - Filtros de **relevância** e **frescor** de vagas no pipeline; expansão híbrida de queries (mapa curado + IA)
 - Banner de aviso de currículo desatualizado (60+ dias) na aba de perfil
 - Cloudflare Web Analytics, banner de consentimento de cookies (LGPD)
+- Schemas de SEO para cursos (`CourseListSchema`) e FAQs, com dados estruturados adicionais em `busca`, `cursos/[skill]` e layout raiz
+- Otimização da estrutura de dados de postagens de emprego
+- Diretório `claude-seo/` (configuração e scripts de SEO: agentes, extensões, documentação)
 
 ### Alterado
 - Stack atualizado para **Next.js 16**

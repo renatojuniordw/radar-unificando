@@ -4,12 +4,11 @@
 
 > **Porta local (Docker):** PostgreSQL exposto em `127.0.0.1:11011` (Redis em `11012`, app em `11010`) — escolhidas para não conflitar com outros projetos na máquina. Ajuste `DATABASE_URL` no `.env` conforme a porta.
 
-### Schema (18 models)
+### Schema (17 models)
 
 | Model | Tabela | Descrição |
 |-------|--------|-----------|
-| User | `users` | id, email, passwordHash, name, role (default `user`), lastLoginAt, createdAt |
-| Session | `sessions` | id, userId, expiresAt, createdAt |
+| User | `users` | id, email, passwordHash, name, role (default `user`), lastLoginAt, resetTokenHash, resetTokenExpiresAt, createdAt |
 | Profile | `profiles` | id, userId, skills, experienceYears, seniority, currentRole, area, education, resumeText, resumeMarkdown, parsedData, profileSource, resumeHash |
 | Job | `jobs` | id, userId, source, company, platform, onList, roleCategory, title, type, location, link, companyNameOnPlatform, postedAt, description, skillsRequired, score, alert, detectedAt, status, lastCheckedAt |
 | Chat | `chats` | id, userId, externalId, title, createdAt, updatedAt |
@@ -21,7 +20,7 @@
 | Application | `applications` | id, userId, jobId, stage, score, breakdown, notes, createdAt |
 | ApplicationLog | `application_logs` | id, applicationId, userId, fromStage, toStage, createdAt |
 | NewCompany | `new_companies` | id, userId, name, totalJobs, careersUrl, createdAt |
-| PipelineRun | `pipeline_runs` | id, userId (nullable — `null` para anônimos), status, queries, companies, totalJobs, gupyJobs, inhireJobs, newCompaniesFound, discoveryEnabled, startedAt, finishedAt |
+| PipelineRun | `pipeline_runs` | id, userId (nullable — `null` para anônimos), status, totalJobs, gupyJobs, inhireJobs, newCompaniesFound, discoveryEnabled, startedAt, finishedAt |
 | ChatToolCall | `chat_tool_calls` | id, userId, chatId?, toolName, createdAt — uso das ferramentas de IA do chat (métrica "ferramentas mais utilizadas") |
 | CompanyPresence | `company_presence` | id, userId, company, hasGupy, gupyPage, hasInhire, inhirePage, totalInhireJobs |
 | PublicJob | `public_jobs` | id, link (unique), source, company, platform, roleCategory, title, type, location, postedAt, description, status, detectedAt, lastCheckedAt, expiresAt (TTL 7 dias), createdAt — pool público de vagas que alimenta as páginas SEO `/vagas` |
@@ -35,8 +34,7 @@
 > discovery-step roda em toda execução logada.
 >
 > ℹ️ Desde o painel admin, **toda** execução de busca grava um `PipelineRun`
-> (logada ou anônima; `userId` `null` para anônimos) com os termos/empresas em
-> `queries`/`companies` — alimenta as métricas de buscas por dia e top pesquisas.
+> (logada ou anônima; `userId` `null` para anônimos) — alimenta as métricas de buscas por dia.
 > `User.lastLoginAt` é atualizado a cada login (via `userRepository.updateLastLogin`).
 
 ### Comandos

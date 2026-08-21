@@ -244,14 +244,15 @@ O `POST /api/chat` aplica três camadas de proteção:
 ## Env Vars
 
 ```env
-# O SDK adiciona /v1 automaticamente — NÃO coloque /v1 na URL
-AI_BASE_URL=https://code.verboo.ai/router   # Verboo
-# AI_BASE_URL=https://api.openai.com/v1     # OpenAI
+# O provider usa AI_BASE_URL diretamente (não adiciona /v1 automaticamente).
+# Inclua o caminho completo, incluindo /v1 quando o endpoint exigir.
+AI_BASE_URL=https://code.verboo.ai/router/v1   # Verboo (default do .env.example)
+# AI_BASE_URL=https://api.openai.com/v1        # OpenAI (default do provider)
 AI_API_KEY=sk-xxx
 AI_MODEL=gpt-4o-mini
 ```
 
-> Nota: `.env.example` atual usa `https://code.verboo.ai/router/v1` (com `/v1`).
+> Nota: `.env.example` usa `https://code.verboo.ai/router/v1` (com `/v1`).
 > O provider (`llm-provider.ts`) tem default `https://api.openai.com/v1`.
 
 ## Logging

@@ -5,7 +5,7 @@
 | Medida | Implementação |
 |--------|---------------|
 | Security Headers | `next.config.ts` (HSTS, X-Frame-Options, etc.) |
-| CORS | `middleware.ts` (Access-Control headers) |
+| CORS | `proxy.ts` (Access-Control headers) |
 | Rate Limiting | `src/lib/infrastructure/security/rate-limiter.ts` |
 | Env Validation | `src/lib/infrastructure/security/env.ts` |
 | Auth | Auth.js v5 com JWT + bcrypt (cost=12) |
@@ -15,7 +15,7 @@
 | Prompt Injection | `api/chat/route.ts` — sanitização de input + detecção de padrões + hardening do prompt |
 | Validação de Tools | `src/lib/core/ai/tools/` — Zod schema por tool com limites de tamanho e regex |
 | Token de Extensão | `extension-token.ts` — token 64-hex entregue 1x, apenas SHA-256 armazenado (`ExtensionToken`) |
-| Origem da Extensão | `middleware.ts` — `Origin: chrome-extension://<id>` aceita somente se igual a `EXTENSION_ORIGIN` (nunca refletida) |
+| Origem da Extensão | `proxy.ts` — `Origin: chrome-extension://<id>` aceita somente se igual a `EXTENSION_ORIGIN` (nunca refletida) |
 
 ## Rate Limits por Operação
 
@@ -80,7 +80,7 @@ Aplicada no `POST /api/chat` (`src/app/api/chat/route.ts`):
 - **Entrega**: via redirect do `launchWebAuthFlow` (`?token=...`) — o backend valida `redirect_uri` com `isSafeRedirectUri` (somente `https://*.chromiumapp.org`, evita open redirect) — ou manualmente na página.
 - **Uso**: `Authorization: Bearer <token>` em `POST /api/extension/*`. Cada uso válido atualiza `ExtensionToken.lastUsedAt` (é isso que o `GET /api/extensao/status` lê para mostrar "conectado").
 - **Revogação**: campo `revokedAt` no schema (sem UI ainda) — tokens revogados retornam 401.
-- **CORS/origem**: o middleware só adiciona `Access-Control-Allow-Origin` para origens da allowlist (self + `EXTENSION_ORIGIN`). `chrome-extension://<id>` **nunca** é refletida de volta.
+- **CORS/origem**: o `proxy.ts` só adiciona `Access-Control-Allow-Origin` para origens da allowlist (self + `EXTENSION_ORIGIN`). `chrome-extension://<id>` **nunca** é refletida de volta.
 
 ## Variáveis de Ambiente Obrigatórias
 
