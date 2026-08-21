@@ -3,10 +3,17 @@
 Todas as mudanças relevantes do projeto são documentadas aqui, por release (tag do git).
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
-## [Não lançado] — desde `v3.0.0` (2026-08-07)
+## [Não lançado]
+
+Nenhuma mudança desde `v4.0.0`.
+
+---
+
+## [4.0.0] — 2026-08-20
 
 ### Adicionado
 - **Dicas de carreira** (`/dicas`): hub SSG+ISR com catálogo de artigos, categorias, FAQ, JSON-LD
+- Schemas de SEO para cursos (`CourseListSchema`) e FAQs, com dados estruturados adicionais em `busca`, `cursos/[skill]` e layout raiz
 - **Currículo adaptado (PDF + Word)**: `generate_resume` (tool de chat) + `POST /api/resume/generate`, com histórico paginado (`/api/resume/history`)
 - **E-mail de boas-vindas** via Resend, com fallback em dev sem `RESEND_API_KEY`
 - **Painel admin** (`/admin`): métricas de usuários, logins, buscas, tokens e cursos por dia (Recharts)
@@ -33,6 +40,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - **DI no pipeline**: `PipelineDeps` interface com defaults — permite injeção de mocks em testes
 - **Factory pattern no LLM**: `createLlmProvider()` — provider criado via factory, testável
 - **Dependência morta removida**: `picocolors` (zero referências no codebase)
+- **Cobertura de testes expandida**: novos testes unitários para hooks (`useChatUsage`, `useJobFiltersState`), helpers de rotas, download de currículo e componentes de UI (dashboard admin, chat, schemas de SEO, gráficos)
 
 ### Corrigido
 - Tratamento de sessões obsoletas e violações de FK em rotas de API e jobs em background
