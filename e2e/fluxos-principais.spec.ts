@@ -1,10 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { dismissCookieConsent } from './helpers/auth';
 
 test.describe('Radar Unificando — Fluxos Principais', () => {
   test('home page carrega e mostra elementos principais', async ({ page }) => {
     await page.goto('/');
+    await dismissCookieConsent(page);
     await expect(page.getByRole('heading', { name: /radar de vagas/i })).toBeVisible();
-    await expect(page.getByText('BUSCAR VAGAS EM TEMPO REAL').first()).toBeVisible();
+    // Copy atual do hero (marketing-hero.tsx): "GUPY + INHIRE · BUSCA EM TEMPO REAL"
+    await expect(page.getByText(/busca em tempo real/i).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /sobre/i }).first()).toBeVisible();
   });
 

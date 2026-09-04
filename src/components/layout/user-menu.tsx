@@ -53,12 +53,14 @@ export function UserMenu() {
     return (
       <div className="flex items-center gap-1.5 sm:gap-2">
         <Link
+          data-testid="user-menu-login-link"
           href="/login"
           className="bg-[#0f172a] text-white border-2 border-[#334155] font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase px-2.5 py-1 sm:px-3.5 sm:py-1.5 no-underline font-mono transition-all hover:border-[#ccff00] hover:text-[#ccff00]"
         >
           ENTRAR
         </Link>
         <Link
+          data-testid="user-menu-cadastro-link"
           href="/register"
           className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-[10px] sm:text-[11px] tracking-wider uppercase px-2.5 py-1 sm:px-3.5 sm:py-1.5 no-underline font-mono shadow-[2px_2px_0px_#000] inline-flex items-center gap-1 sm:gap-1.5 hover:bg-[#d9ff33]"
         >
@@ -76,6 +78,7 @@ export function UserMenu() {
     <div ref={menuRef} className="relative">
       {/* Trigger Button */}
       <button
+        data-testid="user-menu-button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -121,7 +124,7 @@ export function UserMenu() {
 
       {/* Floating Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] right-0 w-[240px] max-w-[calc(100vw-24px)] bg-[#0f172a] border-2 border-[#ccff00] shadow-[6px_6px_0px_#000] z-50 p-3">
+        <div data-testid="user-menu-dropdown" className="absolute top-[calc(100%+8px)] right-0 w-[240px] max-w-[calc(100vw-24px)] bg-[#0f172a] border-2 border-[#ccff00] shadow-[6px_6px_0px_#000] z-50 p-3">
           {/* Header info inside dropdown */}
           <div className="pb-2.5 mb-2.5 border-b border-[#1e293b]">
             <div className="flex items-center gap-2 mb-1">
@@ -148,6 +151,7 @@ export function UserMenu() {
           {/* Menu Links/Actions */}
           <div className="flex flex-col gap-1">
             <Link
+              data-testid="user-menu-perfil-link"
               href="/perfil"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 p-2 text-[#f8fafc] text-xs font-bold font-mono no-underline bg-[#1e293b] border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
@@ -157,6 +161,7 @@ export function UserMenu() {
             </Link>
 
             <Link
+              data-testid="user-menu-extensao-link"
               href="/extensao/conectar"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 p-2 text-[#f8fafc] text-xs font-bold font-mono no-underline bg-[#1e293b] border border-transparent transition-all hover:bg-[#ccff00] hover:text-[#020617]"
@@ -167,6 +172,7 @@ export function UserMenu() {
 
             {(session.user as { role?: string }).role === 'admin' && (
               <Link
+                data-testid="user-menu-admin-link"
                 href="/admin"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-2.5 p-2 text-[#ccff00] text-xs font-bold font-mono no-underline bg-[#1e293b] border border-[#ccff00]/30 transition-all hover:bg-[#ccff00] hover:text-[#020617]"
@@ -177,6 +183,7 @@ export function UserMenu() {
             )}
 
             <button
+              data-testid="user-menu-logout-button"
               onClick={() => {
                 setIsOpen(false);
                 signOut();

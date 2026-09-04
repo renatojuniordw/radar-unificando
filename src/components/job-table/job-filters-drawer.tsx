@@ -53,6 +53,7 @@ export function JobFiltersDrawer({
 }: Props) {
   return (
     <Drawer
+      data-testid="job-filters-drawer"
       anchor="bottom"
       open={open}
       onClose={onClose}
@@ -89,6 +90,7 @@ export function JobFiltersDrawer({
           ⚡ FILTROS AVANÇADOS
         </Typography>
         <IconButton
+          data-testid="job-filters-drawer-close"
           onClick={onClose}
           size="small"
           aria-label="Fechar filtros"
@@ -118,6 +120,7 @@ export function JobFiltersDrawer({
             Plataforma
           </Typography>
           <Select
+            data-testid="job-filters-drawer-platform-select"
             fullWidth
             value={platformFilter}
             onChange={(e) => onPlatformChange(e.target.value)}
@@ -152,6 +155,7 @@ export function JobFiltersDrawer({
             Empresa
           </Typography>
           <Autocomplete
+            data-testid="job-filters-drawer-company-select"
             options={companies}
             value={companyFilter || null}
             onChange={(_, v) => onCompanyChange(v || "")}
@@ -182,6 +186,7 @@ export function JobFiltersDrawer({
             Modalidade
           </Typography>
           <Autocomplete
+            data-testid="job-filters-drawer-type-select"
             options={types}
             value={typeFilter || null}
             onChange={(_, v) => onTypeChange(v || "")}
@@ -212,6 +217,7 @@ export function JobFiltersDrawer({
             Cargo
           </Typography>
           <Autocomplete
+            data-testid="job-filters-drawer-role-select"
             options={roles}
             value={roleFilter || null}
             onChange={(_, v) => onRoleChange(v || "")}
@@ -231,6 +237,7 @@ export function JobFiltersDrawer({
 
       <Box sx={{ display: "flex", gap: 1.5 }}>
         <Button
+          data-testid="job-filters-drawer-submit"
           onClick={onClose}
           fullWidth
           variant="contained"
@@ -254,6 +261,7 @@ export function JobFiltersDrawer({
 
         {countSecondaryFilters > 0 && (
           <Button
+            data-testid="job-filters-drawer-clear"
             onClick={() => {
               onClearFilters();
               onClose();

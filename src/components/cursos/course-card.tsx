@@ -52,6 +52,7 @@ export function CourseCard({ course, compact = false, origin = 'cursos' }: Props
 
   return (
     <Box
+      data-testid="course-card"
       className="card-dark"
       sx={{
         display: 'flex',
@@ -124,6 +125,7 @@ export function CourseCard({ course, compact = false, origin = 'cursos' }: Props
           {course.priceLabel}
         </Typography>
         <Box
+          data-testid="course-link"
           component="a"
           href={url}
           target="_blank"

@@ -29,7 +29,7 @@ const cellStyle = {
 /** Lista de usuários cadastrados com consumo agregado. */
 export function UsersTable({ users }: Props) {
   return (
-    <div className="card-brutalist" style={{ padding: 20, overflowX: 'auto' }}>
+    <div className="card-brutalist" style={{ padding: 20, overflowX: 'auto' }} data-testid="admin-users-table">
       <Table size="small">
         <TableHead>
           <TableRow sx={{ backgroundColor: '#020617' }}>
@@ -47,14 +47,14 @@ export function UsersTable({ users }: Props) {
         </TableHead>
         <TableBody>
           {users.length === 0 ? (
-            <TableRow>
+            <TableRow data-testid="admin-users-table-empty">
               <TableCell colSpan={10} sx={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
                 Nenhum usuário cadastrado
               </TableCell>
             </TableRow>
           ) : (
             users.map((u) => (
-              <TableRow key={u.id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#f8fafc' } }}>
+              <TableRow key={u.id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#f8fafc' } }} data-testid="admin-users-table-row">
                 <TableCell sx={{ ...cellStyle, fontWeight: 800 }}>
                   {u.email}
                   {u.name && <span style={{ color: '#64748b', fontWeight: 500 }}> · {u.name}</span>}

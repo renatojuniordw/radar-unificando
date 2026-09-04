@@ -53,7 +53,7 @@ export default async function SkillPage({
   const name = skillFromSlug(skill);
 
   return (
-    <Box sx={{ bgcolor: '#020617', color: '#ffffff', minHeight: '100vh' }}>
+    <Box data-testid="course-skill-page" sx={{ bgcolor: '#020617', color: '#ffffff', minHeight: '100vh' }}>
       <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 }, px: { xs: 2, sm: 3 } }}>
         <BreadcrumbSchema
           items={[

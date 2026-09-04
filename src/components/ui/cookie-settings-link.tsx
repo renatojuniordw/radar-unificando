@@ -25,6 +25,7 @@ export function CookieSettingsLink() {
   return (
     <button
       type="button"
+      data-testid="cookie-settings-open-button"
       onClick={openSettings}
       style={{
         background: "none",

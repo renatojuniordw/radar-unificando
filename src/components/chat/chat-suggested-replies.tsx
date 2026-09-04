@@ -93,6 +93,7 @@ export function ChatSuggestedReplies({ lastMessageText, loading, onSelect }: Pro
       {suggestions.map((item, i) => (
         <Chip
           key={i}
+          data-testid="chat-suggested-reply-button"
           icon={item.icon}
           label={item.label}
           onClick={() => onSelect(item.prompt)}

@@ -28,7 +28,7 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
   }
 
   return (
-    <Box ref={containerRef} sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
+    <Box ref={containerRef} data-testid="job-mobile-list" sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
       {jobs
         .slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
         .map((job, index) => (
@@ -57,6 +57,7 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
           }}
         >
           <Button
+            data-testid="job-mobile-pagination-prev"
             disabled={page === 1}
             onClick={() => goToPage(Math.max(page - 1, 1))}
             size="small"
@@ -89,6 +90,7 @@ export function JobMobileList({ jobs, containerRef, page, onPageChange, canGener
           </Typography>
 
           <Button
+            data-testid="job-mobile-pagination-next"
             disabled={page >= totalPages}
             onClick={() => goToPage(Math.min(page + 1, totalPages))}
             size="small"

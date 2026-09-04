@@ -106,6 +106,7 @@ export function Footer() {
               Pronto para o próximo nível?
             </p>
             <a
+              data-testid="footer-consultoria-link"
               href={LINKS.unificando}
               target="_blank"
               rel="noopener noreferrer"
@@ -165,6 +166,7 @@ export function Footer() {
           >
             © 2026 RADAR UNIFICANDO — Desenvolvido por{" "}
             <a
+              data-testid="footer-portfolio-link"
               href={LINKS.portfolio}
               target="_blank"
               rel="noopener noreferrer"
@@ -192,6 +194,7 @@ export function Footer() {
             >
               <li>
                 <Link
+                  data-testid="footer-apoiar-link"
                   href="/doar"
                   style={{
                     color: tokens.accent,
@@ -208,6 +211,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  data-testid="footer-cursos-link"
                   href="/cursos"
                   style={{
                     color: "#94a3b8",
@@ -230,6 +234,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  data-testid="footer-dicas-link"
                   href="/dicas"
                   style={{
                     color: "#94a3b8",
@@ -252,6 +257,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  data-testid="footer-extensao-link"
                   href="/extensao"
                   style={{
                     color: "#94a3b8",
@@ -274,6 +280,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  data-testid="footer-sobre-link"
                   href="/sobre"
                   style={{
                     color: "#94a3b8",
@@ -296,6 +303,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  data-testid="footer-termos-link"
                   href="/termos"
                   style={{
                     color: tokens.accent,

@@ -46,6 +46,7 @@ export function JobFiltersMobile({
 }: Props) {
   return (
     <Box
+      data-testid="job-filters-mobile"
       component="form"
       onSubmit={onSubmit}
       sx={{ display: { xs: "block", md: "none" }, mb: 2.5 }}
@@ -53,6 +54,7 @@ export function JobFiltersMobile({
       {/* Full-width Search Bar */}
       <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
         <TextField
+          data-testid="job-filters-mobile-search"
           size="small"
           value={searchFilter}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -79,6 +81,7 @@ export function JobFiltersMobile({
           }}
         />
         <Button
+          data-testid="job-filters-mobile-submit"
           type="submit"
           variant="contained"
           size="small"
@@ -120,6 +123,7 @@ export function JobFiltersMobile({
           return (
             <Chip
               key={p.label}
+              data-testid="job-filters-mobile-platform-chip"
               label={p.label}
               onClick={() => onPlatformChange(isSelected ? "" : p.value)}
               size="small"
@@ -140,6 +144,7 @@ export function JobFiltersMobile({
         })}
 
         <Chip
+          data-testid="job-filters-mobile-modality-chip"
           label={`MODALIDADE: ${typeFilter ? typeFilter.toUpperCase() : "TODAS"}`}
           onClick={onOpenDrawer}
           size="small"
@@ -162,6 +167,7 @@ export function JobFiltersMobile({
           return (
             <Chip
               key={t.label}
+              data-testid="job-filters-mobile-type-chip"
               label={t.label}
               onClick={() => onTypeChange(isSelected ? "" : t.value)}
               size="small"
@@ -185,6 +191,7 @@ export function JobFiltersMobile({
       {/* Filter Trigger Pills */}
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         <Button
+          data-testid="job-filters-mobile-advanced"
           onClick={onOpenDrawer}
           fullWidth
           size="small"
@@ -212,6 +219,7 @@ export function JobFiltersMobile({
 
         {countTotalFilters > 0 && (
           <Button
+            data-testid="job-filters-mobile-clear"
             onClick={onClearFilters}
             size="small"
             startIcon={<DeleteOutlineIcon fontSize="small" />}

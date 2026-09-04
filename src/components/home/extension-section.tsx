@@ -47,6 +47,7 @@ export function ExtensionSection() {
 
             <div className="w-full md:w-auto shrink-0">
               <Link
+                data-testid="extension-link"
                 href="/extensao"
                 className="btn-neon w-full md:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap shadow-[4px_4px_0px_#000] active:scale-95 transition-transform"
               >

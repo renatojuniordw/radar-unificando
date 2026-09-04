@@ -56,6 +56,7 @@ export function DateRangeFilter({ days, from, to }: Props) {
     <div
       className="card-brutalist"
       style={{ padding: 16, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
+      data-testid="admin-date-range-filter"
     >
       <span
         style={{
@@ -70,19 +71,19 @@ export function DateRangeFilter({ days, from, to }: Props) {
         Período:
       </span>
       {PRESETS.map((p) => (
-        <button key={p.days} type="button" onClick={() => applyPreset(p.days)} style={buttonStyle(!isCustom && days === p.days)}>
+        <button key={p.days} type="button" onClick={() => applyPreset(p.days)} style={buttonStyle(!isCustom && days === p.days)} data-testid={`admin-date-range-preset-${p.days}`}>
           {p.label}
         </button>
       ))}
-      <button type="button" onClick={() => setMode('custom')} style={buttonStyle(isCustom)}>
+      <button type="button" onClick={() => setMode('custom')} style={buttonStyle(isCustom)} data-testid="admin-date-range-custom">
         Personalizado
       </button>
       {mode === 'custom' && (
         <>
-          <input type="date" value={fromVal} onChange={(e) => setFromVal(e.target.value)} style={inputStyle} aria-label="De" />
+          <input type="date" value={fromVal} onChange={(e) => setFromVal(e.target.value)} style={inputStyle} aria-label="De" data-testid="admin-date-range-from" />
           <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.7rem', color: '#64748b' }}>até</span>
-          <input type="date" value={toVal} onChange={(e) => setToVal(e.target.value)} style={inputStyle} aria-label="Até" />
-          <button type="button" onClick={applyCustom} disabled={!fromVal || !toVal} style={buttonStyle(false)}>
+          <input type="date" value={toVal} onChange={(e) => setToVal(e.target.value)} style={inputStyle} aria-label="Até" data-testid="admin-date-range-to" />
+          <button type="button" onClick={applyCustom} disabled={!fromVal || !toVal} style={buttonStyle(false)} data-testid="admin-date-range-apply">
             Aplicar
           </button>
         </>

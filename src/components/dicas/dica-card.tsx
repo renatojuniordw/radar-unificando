@@ -37,6 +37,7 @@ function CategoryBadge({ category }: { category: DicaCategory }) {
 export function DicaCard({ dica }: Props) {
   return (
     <Box
+      data-testid="dica-card"
       className="card-dark"
       sx={{
         display: 'flex',
@@ -90,6 +91,7 @@ export function DicaCard({ dica }: Props) {
         {dica.description}
       </Typography>
       <Link
+        data-testid="dica-link"
         href={`/dicas/${dica.slug}`}
         style={{ textDecoration: 'none', marginTop: 'auto' }}
       >

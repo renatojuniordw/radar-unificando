@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 export function DicaCardGrid({ children }: { children: ReactNode }) {
   return (
     <Box
+      data-testid="dica-card-grid"
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr' },

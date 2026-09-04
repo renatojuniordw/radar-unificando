@@ -7,7 +7,7 @@ import { tokens } from "@/lib/infrastructure/ui/tokens";
 /** CTA para usuários anônimos usarem o assistente de carreira (logado). */
 export function ChatTeaser() {
   return (
-    <Box className="card-panel" sx={{ p: 2.5 }}>
+    <Box data-testid="chat-teaser" className="card-panel" sx={{ p: 2.5 }}>
       <Typography
         sx={{
           fontFamily: tokens.fontMono,
@@ -28,7 +28,7 @@ export function ChatTeaser() {
         estudos com o assistente de IA. Disponível para usuários logados.
       </Typography>
       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-        <Link href="/login" style={{ textDecoration: "none" }}>
+        <Link data-testid="chat-teaser-login-link" href="/login" style={{ textDecoration: "none" }}>
           <Box
             className="btn-neon"
             sx={{ display: "inline-block", px: 2, py: 1, fontSize: "0.7rem" }}
@@ -36,7 +36,7 @@ export function ChatTeaser() {
             ENTRAR
           </Box>
         </Link>
-        <Link href="/register" style={{ textDecoration: "none" }}>
+        <Link data-testid="chat-teaser-register-link" href="/register" style={{ textDecoration: "none" }}>
           <Box
             className="btn-dark"
             sx={{ display: "inline-block", px: 2, py: 1, fontSize: "0.7rem" }}

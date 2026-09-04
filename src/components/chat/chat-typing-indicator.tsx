@@ -5,7 +5,7 @@ import { BotIcon } from './icons';
 
 export function ChatTypingIndicator() {
   return (
-    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }} role="status" aria-live="polite">
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }} role="status" aria-live="polite" data-testid="chat-typing-indicator">
       <Typography sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
         Assistente está digitando...
       </Typography>

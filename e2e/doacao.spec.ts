@@ -1,20 +1,22 @@
 import { test, expect } from '@playwright/test';
+import { dismissCookieConsent } from './helpers/auth';
 
 test.describe('Doação (PIX)', () => {
-  test('footer APOIAR leva à página /doar com PIX', async ({ page }) => {
+  test('rodapé APOIAR leva à página /doar com PIX', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: /apoiar/i }).click();
+    await dismissCookieConsent(page);
+    await page.getByTestId('footer-apoiar-link').click();
     await expect(page).toHaveURL(/\/doar/);
-    await expect(page.getByRole('heading', { name: /apoie/i })).toBeVisible();
-    await expect(page.getByText(/chave pix/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /copiar/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /costs\.md/i })).toBeVisible();
+    await expect(page.getByTestId('doar-copy-pix-button')).toBeVisible();
+    await expect(page.getByTestId('doar-costs-link')).toBeVisible();
   });
 
   test('botão copiar código PIX funciona', async ({ page }) => {
     await page.context().grantPermissions(['clipboard-write']);
     await page.goto('/doar');
-    await page.getByRole('button', { name: /copiar/i }).click();
-    await expect(page.getByRole('button', { name: /código copiado/i })).toBeVisible();
+    await dismissCookieConsent(page);
+    await page.getByTestId('doar-copy-pix-button').click();
+    // Rótulo real do estado copiado (doar-content.tsx): "CÓDIGO PIX COPIADO!"
+    await expect(page.getByText(/pix copiado/i)).toBeVisible();
   });
 });

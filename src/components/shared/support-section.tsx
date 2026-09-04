@@ -6,6 +6,7 @@ import { Heart } from "lucide-react";
 export function SupportSection() {
   return (
     <Box
+      data-testid="support-section"
       sx={{
         textAlign: "center",
         p: { xs: 2.5, sm: 4 },
@@ -35,6 +36,7 @@ export function SupportSection() {
         plataforma viva e acessível para todos.
       </Typography>
       <Link
+        data-testid="support-donate-link"
         href="/doar"
         className="btn-neon w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs sm:text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap shadow-[4px_4px_0px_#fff] active:scale-95 transition-transform"
       >

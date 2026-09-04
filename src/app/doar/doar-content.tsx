@@ -179,6 +179,7 @@ export default function DoarContent() {
             {/* Copy Action Button */}
             <button
               onClick={handleCopy}
+              data-testid="doar-copy-pix-button"
               className="btn-neon"
               style={{
                 padding: "16px 24px",
@@ -244,6 +245,7 @@ export default function DoarContent() {
                 <div
                   key={item.label}
                   className="card-brutalist"
+                  data-testid={`doar-valor-${item.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
                   style={{
                     padding: "24px 20px",
                     display: "flex",
@@ -343,6 +345,7 @@ export default function DoarContent() {
                 <div
                   key={item.title}
                   className="card-brutalist"
+                  data-testid={`doar-transparencia-${item.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
                   style={{
                     padding: "28px 24px",
                     backgroundColor: "#ffffff",
@@ -383,6 +386,7 @@ export default function DoarContent() {
             Quer conferir os custos detalhados do projeto? Veja o nosso{" "}
             <a
               href={LINKS.costs}
+              data-testid="doar-costs-link"
               target="_blank"
               rel="noopener noreferrer"
               style={{

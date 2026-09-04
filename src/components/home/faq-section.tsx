@@ -33,15 +33,15 @@ export function FaqSection() {
           }}
         >
           {FAQ_ITEMS.map((faq) => (
-            <details key={faq.q} className="faq-item">
-              <summary>
+            <details key={faq.q} data-testid="faq-item" className="faq-item">
+              <summary data-testid="faq-question-button">
                 <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <HelpCircle size={18} style={{ color: "#ccff00", flexShrink: 0 }} />
                   {faq.q}
                 </span>
                 <ChevronDown className="faq-arrow" size={20} />
               </summary>
-              <div className="faq-content">
+              <div data-testid="faq-answer" className="faq-content">
                 <p style={{ margin: 0 }}>{faq.a}</p>
               </div>
             </details>

@@ -16,6 +16,7 @@ export function Header() {
         <div className="max-w-[1280px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between gap-2 h-14">
             <Link
+              data-testid="header-logo-link"
               href="/"
               className="no-underline flex items-center gap-1.5 sm:gap-2.5 shrink-0"
             >
@@ -36,6 +37,7 @@ export function Header() {
                     return (
                       <Link
                         key={item.href}
+                        data-testid="header-nav-link"
                         href={item.href}
                         className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-[0.7rem] lg:text-[0.75rem] tracking-wider uppercase px-2 py-0.5 lg:px-2.5 lg:py-1 no-underline font-mono shadow-[2px_2px_0px_#fff] transition-all hover:bg-[#d9ff33] active:scale-95 flex items-center gap-1 whitespace-nowrap"
                       >
@@ -47,6 +49,7 @@ export function Header() {
                   return (
                     <Link
                       key={item.href}
+                      data-testid="header-nav-link"
                       href={item.href}
                       className="text-[#94a3b8] text-[0.7rem] lg:text-[0.75rem] font-black tracking-wider uppercase no-underline font-mono transition-colors hover:text-[#ccff00] whitespace-nowrap"
                     >
@@ -60,6 +63,7 @@ export function Header() {
 
               {/* Mobile Hamburger Toggle Button */}
               <button
+                data-testid="header-menu-button"
                 onClick={() => setIsMobileNavOpen((prev) => !prev)}
                 aria-label="Abrir menu principal"
                 aria-expanded={isMobileNavOpen}

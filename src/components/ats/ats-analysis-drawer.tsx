@@ -159,6 +159,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
       anchor="right"
       open={open}
       onClose={onClose}
+      data-testid="ats-analysis-drawer"
       PaperProps={{
         sx: {
           width: { xs: "100%", sm: 520 },
@@ -188,7 +189,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         )}
 
         {stage === "loading" && (
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
+          <Box data-testid="ats-analysis-loading" sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
             <CircularProgress sx={{ color: tokens.accent }} />
             <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.8rem", color: tokens.muted }}>
               ANALISANDO COMPATIBILIDADE ATS...
@@ -197,13 +198,14 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         )}
 
         {stage === "error" && (
-          <Alert severity="error" variant="filled">
+          <Alert severity="error" variant="filled" data-testid="ats-analysis-error">
             {error}
           </Alert>
         )}
 
         {stage === "rate-limited" && (
           <Box
+            data-testid="ats-rate-limited"
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -250,6 +252,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
 
         {generating && resumeProgress && (
           <Box
+            data-testid="ats-generating-progress"
             sx={{
               mt: 2,
               p: 2,
@@ -294,13 +297,14 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
 
         {/* Rodapé fixo */}
         <Box sx={{ mt: 2, pt: 2, borderTop: "1px solid #1e293b", display: "flex", gap: 1 }}>
-          <Button onClick={onClose} sx={{ color: tokens.muted }}>
+          <Button onClick={onClose} data-testid="ats-close-button" sx={{ color: tokens.muted }}>
             Fechar
           </Button>
           {stage === "error" && job && (
             <Button
               variant="contained"
               onClick={() => void analyze(job)}
+              data-testid="ats-retry-button"
               sx={{ bgcolor: tokens.accent, color: tokens.primary, fontWeight: 900, "&:hover": { bgcolor: tokens.accentHover } }}
             >
               TENTAR NOVAMENTE
@@ -311,6 +315,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
               variant="contained"
               onClick={() => void analyze(job)}
               disabled={retryAfter > 0}
+              data-testid="ats-retry-button"
               aria-disabled={retryAfter > 0}
               aria-label={
                 retryAfter > 0
@@ -334,6 +339,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
                 variant="contained"
                 onClick={() => handleGenerateResume()}
                 disabled={generating}
+                data-testid="resume-download-button"
                 startIcon={generating ? <CircularProgress size={14} sx={{ color: tokens.primary }} /> : <AutoAwesome />}
                 sx={{ bgcolor: tokens.accent, color: tokens.primary, fontWeight: 900, "&:hover": { bgcolor: tokens.accentHover } }}
               >
@@ -343,6 +349,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
                 variant="outlined"
                 onClick={() => handleGenerateResume('docx')}
                 disabled={generating}
+                data-testid="resume-download-docx-button"
                 sx={{
                   bgcolor: tokens.surface,
                   color: tokens.primary,
@@ -364,6 +371,7 @@ export function AtsAnalysisDrawer({ open, job, onClose }: Props) {
         autoHideDuration={4000}
         onClose={() => setSnackbar("")}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        data-testid="ats-action-toast"
       >
         <Alert
           severity={snackbar.includes("baixado") ? "success" : "error"}

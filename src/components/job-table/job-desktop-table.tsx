@@ -32,7 +32,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
   });
 
   return (
-    <Box sx={{ display: { xs: 'none', md: 'block' }, border: '4px solid #020617', overflowX: 'auto' }}>
+    <Box data-testid="job-table-desktop" sx={{ display: { xs: 'none', md: 'block' }, border: '4px solid #020617', overflowX: 'auto' }}>
       <div
         role="row"
         style={{
@@ -58,6 +58,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                 key={virtualRow.key}
                 ref={rowVirtualizer.measureElement}
                 data-index={virtualRow.index}
+                data-testid="job-table-row"
                 role="row"
                 style={{
                   position: 'absolute',
@@ -124,6 +125,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
 
                 <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <a
+                    data-testid="job-table-apply-link"
                     href={job.link}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -149,6 +151,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                   </a>
                   {canGenerateResume && (
                     <button
+                      data-testid="job-table-ats-button"
                       type="button"
                       onClick={() => onAnalyzeAts(job)}
                       aria-label={`Analisar ATS para ${job.title} na ${job.company}`}
@@ -172,6 +175,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                   )}
                   {canGenerateResume && (
                     <button
+                      data-testid="job-table-resume-button"
                       type="button"
                       onClick={() => onGenerateResume(job)}
                       disabled={generatingJobKey === `${job.company}|${job.title}`}

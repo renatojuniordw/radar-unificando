@@ -58,6 +58,7 @@ export function JobFiltersDesktop({
 }: Props) {
   return (
     <Box
+      data-testid="job-filters-desktop"
       component="form"
       onSubmit={onSubmit}
       sx={{
@@ -70,6 +71,7 @@ export function JobFiltersDesktop({
       {/* Search Bar + Advanced Filters Button Row */}
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
         <TextField
+          data-testid="job-filters-desktop-search"
           size="small"
           value={searchFilter}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -97,6 +99,7 @@ export function JobFiltersDesktop({
         />
 
         <Button
+          data-testid="job-filters-desktop-submit"
           type="submit"
           variant="contained"
           size="small"
@@ -121,6 +124,7 @@ export function JobFiltersDesktop({
 
         <Badge badgeContent={countSecondaryFilters} color="warning" overlap="circular">
           <Button
+            data-testid="job-filters-desktop-advanced"
             onClick={onOpenDrawer}
             variant="outlined"
             size="small"
@@ -185,6 +189,7 @@ export function JobFiltersDesktop({
               return (
                 <Chip
                   key={p.label}
+                  data-testid="job-filters-desktop-platform-chip"
                   label={p.label}
                   onClick={() => onPlatformChange(p.value)}
                   size="small"
@@ -240,6 +245,7 @@ export function JobFiltersDesktop({
               return (
                 <Chip
                   key={t.label}
+                  data-testid="job-filters-desktop-type-chip"
                   label={t.label}
                   onClick={() => onTypeChange(t.value)}
                   size="small"
@@ -289,6 +295,7 @@ export function JobFiltersDesktop({
 
           {platformFilter && (
             <Chip
+              data-testid="job-filters-desktop-active-chip"
               label={`Plataforma: ${platformFilter}`}
               onDelete={() => onPlatformChange('')}
               size="small"
@@ -299,6 +306,7 @@ export function JobFiltersDesktop({
 
           {companyFilter && (
             <Chip
+              data-testid="job-filters-desktop-active-chip"
               label={`Empresa: ${companyFilter}`}
               onDelete={() => onCompanyChange('')}
               size="small"
@@ -309,6 +317,7 @@ export function JobFiltersDesktop({
 
           {typeFilter && (
             <Chip
+              data-testid="job-filters-desktop-active-chip"
               label={`Modalidade: ${typeFilter}`}
               onDelete={() => onTypeChange('')}
               size="small"
@@ -319,6 +328,7 @@ export function JobFiltersDesktop({
 
           {roleFilter && (
             <Chip
+              data-testid="job-filters-desktop-active-chip"
               label={`Cargo: ${roleFilter}`}
               onDelete={() => onRoleChange('')}
               size="small"
@@ -328,6 +338,7 @@ export function JobFiltersDesktop({
           )}
 
           <Button
+            data-testid="job-filters-desktop-clear"
             onClick={onClearFilters}
             size="small"
             sx={{

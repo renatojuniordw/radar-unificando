@@ -115,6 +115,7 @@ export function ChatAssistantUI() {
   return (
     <>
       <Fab
+        data-testid="chat-open-button"
         onClick={openDrawer}
         aria-label="Abrir assistente de vagas"
         sx={{
@@ -140,6 +141,7 @@ export function ChatAssistantUI() {
       </Fab>
 
       <Drawer
+        data-testid="chat-drawer"
         anchor="right"
         open={open}
         onClose={closeDrawer}

@@ -19,6 +19,7 @@ export function ChatQuickActions({ loading, onSelect }: Props) {
       {QUICK_ACTIONS.map((action) => (
         <Chip
           key={action.label}
+          data-testid="chat-quick-action-button"
           label={action.label}
           size="small"
           variant="outlined"

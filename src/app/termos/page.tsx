@@ -24,6 +24,7 @@ export default function TermosPage() {
         <div style={{ marginBottom: 40 }}>
           <Link
             href="/"
+            data-testid="termos-voltar-link"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -109,7 +110,7 @@ export default function TermosPage() {
           }}
         >
           {/* Seção 1 */}
-          <section
+          <section data-testid="termos-secao-1"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -135,7 +136,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 2 - Sanitização e PII */}
-          <section
+          <section data-testid="termos-secao-2"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #ccff00',
@@ -188,7 +189,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 3 */}
-          <section
+          <section data-testid="termos-secao-3"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -240,7 +241,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 4 */}
-          <section
+          <section data-testid="termos-secao-4"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -266,7 +267,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 5 - Links de Afiliados */}
-          <section
+          <section data-testid="termos-secao-5"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -306,7 +307,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 6 - Política de Cookies */}
-          <section
+          <section data-testid="termos-secao-6"
             id="cookies"
             style={{
               backgroundColor: '#0f172a',
@@ -369,7 +370,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 7 - Seus Direitos LGPD */}
-          <section
+          <section data-testid="termos-secao-7"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -415,7 +416,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 8 - Retenção de Dados */}
-          <section
+          <section data-testid="termos-secao-8"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -458,7 +459,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 9 - Controlador e Encarregado */}
-          <section
+          <section data-testid="termos-secao-9"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #ccff00',
@@ -503,7 +504,7 @@ export default function TermosPage() {
               </li>
               <li style={{ marginBottom: 8 }}>
                 <strong>Canal de contato direto:</strong>{' '}
-                <a href="mailto:privacidade@unificando.com.br" style={{ color: '#ccff00' }}>privacidade@unificando.com.br</a>{' '}
+                <a href="mailto:privacidade@unificando.com.br" style={{ color: '#ccff00' }} data-testid="termos-dpo-email-link">privacidade@unificando.com.br</a>{' '}
                 (assuntos de proteção de dados, direitos LGPD e comunicação com a ANPD). Também é possível usar o formulário da página{' '}
                 <Link href="/sobre" style={{ color: '#ccff00' }}>Sobre</Link>.
               </li>
@@ -514,7 +515,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 10 - Base Legal */}
-          <section
+          <section data-testid="termos-secao-10"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -557,7 +558,7 @@ export default function TermosPage() {
           </section>
 
           {/* Seção 11 - Transferência Internacional */}
-          <section
+          <section data-testid="termos-secao-11"
             style={{
               backgroundColor: '#0f172a',
               border: '2px solid #1e293b',
@@ -597,6 +598,7 @@ export default function TermosPage() {
           <div style={{ marginTop: 24, textAlign: 'center' }}>
             <Link
               href="/"
+              data-testid="termos-acessar-radar-link"
               style={{
                 display: 'inline-block',
                 backgroundColor: '#ccff00',

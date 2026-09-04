@@ -32,6 +32,7 @@ function CourseCardComponent({ course }: Props) {
 
   return (
     <Box
+      data-testid="chat-course-card"
       sx={{
         bgcolor: 'grey.50',
         border: '1px solid',
@@ -65,6 +66,7 @@ function CourseCardComponent({ course }: Props) {
         </Box>
         {course.link && (
           <Button
+            data-testid="chat-course-link-button"
             size="small"
             variant="contained"
             color="primary"

@@ -58,6 +58,7 @@ export function AtsAnalysisSection() {
 
   return (
     <Box
+      data-testid="ats-analysis-section"
       sx={{
         mt: 3,
         mb: 3,
@@ -86,6 +87,7 @@ export function AtsAnalysisSection() {
       </Typography>
 
       <TextField
+        data-testid="ats-job-description-input"
         label="Descrição da vaga (opcional)"
         multiline
         minRows={2}
@@ -107,6 +109,7 @@ export function AtsAnalysisSection() {
         variant="contained"
         onClick={handleAnalyze}
         disabled={loading}
+        data-testid="ats-analyze-button"
         aria-busy={loading}
         startIcon={
           loading ? <CircularProgress size={16} color="inherit" /> : undefined
@@ -128,6 +131,7 @@ export function AtsAnalysisSection() {
 
       {error && (
         <Box
+          data-testid="ats-analysis-error"
           sx={{
             display: "flex",
             alignItems: "center",

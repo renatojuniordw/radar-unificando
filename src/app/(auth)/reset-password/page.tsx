@@ -73,7 +73,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="card-brutalist" style={{ padding: 24, textAlign: 'center' }}>
+      <div data-testid="redefinir-senha-invalido" className="card-brutalist" style={{ padding: 24, textAlign: 'center' }}>
         <ShieldCheck size={32} color="#dc2626" style={{ marginBottom: 12 }} />
         <h2 style={{ margin: '0 0 8px', fontSize: '1rem', fontWeight: 900, color: '#dc2626' }}>
           LINK INVÁLIDO
@@ -82,6 +82,7 @@ function ResetPasswordForm() {
           O link de recuperação está incompleto ou expirado.
         </p>
         <Link
+          data-testid="redefinir-senha-solicitar-link"
           href="/forgot-password"
           className="btn-neon"
           style={{
@@ -154,6 +155,7 @@ function ResetPasswordForm() {
       <div className="card-brutalist" style={{ padding: 24 }}>
         {apiError && (
           <div
+            data-testid="redefinir-senha-api-error"
             style={{
               border: '2px solid #dc2626',
               padding: 10,
@@ -178,6 +180,7 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit}>
           <div style={{ position: 'relative' }}>
             <FormField
+              data-testid="redefinir-senha-senha-input"
               label="Nova Senha"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
@@ -188,6 +191,7 @@ function ResetPasswordForm() {
               marginBottom={10}
             />
             <button
+              data-testid="redefinir-senha-senha-toggle-button"
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
@@ -214,6 +218,7 @@ function ResetPasswordForm() {
 
           <div style={{ position: 'relative', marginBottom: 20 }}>
             <FormField
+              data-testid="redefinir-senha-confirmar-senha-input"
               label="Confirmar Nova Senha"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="••••••••"
@@ -224,6 +229,7 @@ function ResetPasswordForm() {
               marginBottom={0}
             />
             <button
+              data-testid="redefinir-senha-confirmar-senha-toggle-button"
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
@@ -243,6 +249,7 @@ function ResetPasswordForm() {
           </div>
 
           <button
+            data-testid="redefinir-senha-submit-button"
             type="submit"
             disabled={loading}
             className="btn-neon"

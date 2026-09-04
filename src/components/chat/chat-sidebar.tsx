@@ -12,8 +12,8 @@ interface Props {
 
 export function ChatSidebar({ conversations, activeId, onSelect, onNew }: Props) {
   return (
-    <Box sx={{ 
-      width: '100%', 
+    <Box data-testid="chat-sidebar" sx={{
+      width: '100%',
       borderRight: '1px solid', 
       borderColor: 'divider',
       display: 'flex',
@@ -21,9 +21,10 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew }: Props)
       height: '100%',
     }}>
       <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Button 
-          fullWidth 
-          variant="contained" 
+        <Button
+          fullWidth
+          data-testid="chat-sidebar-new-chat-button"
+          variant="contained"
           onClick={onNew}
           sx={{ 
             textTransform: 'uppercase',
@@ -37,15 +38,16 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew }: Props)
       
       <List sx={{ flex: 1, overflow: 'auto' }}>
         {conversations.length === 0 ? (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
+          <Box data-testid="chat-sidebar-empty" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Nenhuma conversa ainda
             </Typography>
           </Box>
         ) : (
           conversations.map(conv => (
-            <ListItemButton 
-              key={conv.id} 
+            <ListItemButton
+              key={conv.id}
+              data-testid="chat-conversation-item"
               selected={conv.id === activeId}
               onClick={() => onSelect(conv.id)}
               sx={{ 

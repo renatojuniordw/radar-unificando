@@ -72,6 +72,7 @@ export default function ProfilePage() {
         {/* Link de voltar */}
         <Link
           href="/"
+          data-testid="profile-back-link"
           className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-[#64748b] hover:text-[#020617] no-underline mb-6 transition-colors min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -98,6 +99,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
+            data-testid="profile-tab-profile"
             className={`flex items-center gap-2 px-4 py-2 font-mono text-xs font-black uppercase tracking-wider border-2 border-[#020617] cursor-pointer transition-all ${
               activeTab === 'profile'
                 ? 'bg-[#ccff00] text-[#020617] shadow-[3px_3px_0px_#000]'
@@ -110,6 +112,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setActiveTab('resumes')}
+            data-testid="profile-tab-resumes"
             className={`flex items-center gap-2 px-4 py-2 font-mono text-xs font-black uppercase tracking-wider border-2 border-[#020617] cursor-pointer transition-all ${
               activeTab === 'resumes'
                 ? 'bg-[#ccff00] text-[#020617] shadow-[3px_3px_0px_#000]'
@@ -139,6 +142,7 @@ export default function ProfilePage() {
             <button
               onClick={handleExportData}
               disabled={exporting}
+              data-testid="profile-export-button"
               className="flex items-center justify-center gap-2 px-5 py-3 text-xs font-mono font-black uppercase tracking-wider border-2 border-[#020617] bg-white text-[#020617] hover:bg-slate-50 cursor-pointer min-h-[44px]"
             >
               <Download className="w-4 h-4" />
@@ -146,6 +150,7 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={() => setDeleteDialogOpen(true)}
+              data-testid="profile-delete-account-button"
               className="flex items-center justify-center gap-2 px-5 py-3 text-xs font-mono font-black uppercase tracking-wider border-2 border-red-600 bg-transparent text-red-600 hover:bg-red-50 cursor-pointer min-h-[44px]"
             >
               <Trash2 className="w-4 h-4" />

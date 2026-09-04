@@ -125,6 +125,7 @@ export default function CursosPage() {
         </Box>
 
         <TextField
+          data-testid="course-search-input"
           fullWidth
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -157,7 +158,7 @@ export default function CursosPage() {
           </SectionEyebrow>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {POPULAR_SKILLS.map((skill) => (
-              <Link key={skill} href={`/cursos/${skillSlug(skill)}`} style={{ textDecoration: "none" }}>
+              <Link key={skill} data-testid="course-skill-link" href={`/cursos/${skillSlug(skill)}`} style={{ textDecoration: "none" }}>
                 <Box
                   sx={{
                     bgcolor: "#0f172a",

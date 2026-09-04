@@ -111,7 +111,7 @@ export default async function DicasPage({
 
         {/* Category chips */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
-          <Link href="/dicas" style={{ textDecoration: 'none' }}>
+          <Link data-testid="dica-category-link" href="/dicas" style={{ textDecoration: 'none' }}>
             <Box
               sx={{
                 display: 'inline-block',
@@ -139,6 +139,7 @@ export default async function DicasPage({
             return (
               <Link
                 key={key}
+                data-testid="dica-category-link"
                 href={`/dicas?categoria=${key}`}
                 style={{ textDecoration: 'none' }}
               >
@@ -204,6 +205,7 @@ export default async function DicasPage({
             detalhada.
           </Typography>
           <Link
+            data-testid="dica-import-resume-link"
             href="/perfil"
             style={{
               display: 'inline-flex',

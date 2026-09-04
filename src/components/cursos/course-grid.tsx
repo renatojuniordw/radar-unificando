@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 export function CourseGrid({ children }: { children: ReactNode }) {
   return (
     <Box
+      data-testid="course-grid"
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },

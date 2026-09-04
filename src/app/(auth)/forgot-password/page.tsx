@@ -107,6 +107,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div>
             <div
+              data-testid="recuperar-senha-success"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -144,6 +145,7 @@ export default function ForgotPasswordPage() {
           <>
             {apiError && (
               <div
+                data-testid="recuperar-senha-api-error"
                 style={{
                   border: "2px solid #dc2626",
                   padding: 10,
@@ -167,6 +169,7 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={handleSubmit}>
               <FormField
+                data-testid="recuperar-senha-email-input"
                 label="Email"
                 type="email"
                 placeholder="seu.email@exemplo.com"
@@ -177,6 +180,7 @@ export default function ForgotPasswordPage() {
               />
 
               <button
+                data-testid="recuperar-senha-submit-button"
                 type="submit"
                 disabled={loading}
                 className="btn-neon"
@@ -212,6 +216,7 @@ export default function ForgotPasswordPage() {
         }}
       >
         <Link
+          data-testid="recuperar-senha-voltar-link"
           href="/login"
           style={{
             color: "#020617",

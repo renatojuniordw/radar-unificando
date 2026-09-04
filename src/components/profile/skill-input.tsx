@@ -122,7 +122,7 @@ export function SkillInput({
   }
 
   return (
-    <Box ref={containerRef} sx={{ position: 'relative', width: '100%', mb: 2 }}>
+    <Box ref={containerRef} data-testid="profile-skill-input" sx={{ position: 'relative', width: '100%', mb: 2 }}>
       {/* Campo de Busca & Tags */}
       <Box
         onClick={() => inputRef.current?.focus()}
@@ -143,6 +143,7 @@ export function SkillInput({
         {skills.map(skill => (
           <Box
             key={skill}
+            data-testid="profile-skill-tag"
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -162,6 +163,7 @@ export function SkillInput({
             <span>{skill}</span>
             <button
               type="button"
+              data-testid="profile-skill-remove-button"
               onClick={e => {
                 e.stopPropagation();
                 onRemoveSkill(skill);
@@ -187,6 +189,7 @@ export function SkillInput({
         <input
           ref={inputRef}
           type="text"
+          data-testid="profile-skill-input-field"
           value={inputValue}
           onChange={e => handleInputChange(e.target.value)}
           onFocus={() => setIsOpen(true)}
@@ -248,6 +251,7 @@ export function SkillInput({
           {filteredSuggestions.map((suggestion, idx) => (
             <Box
               key={suggestion}
+              data-testid="profile-skill-suggestion-option"
               onClick={() => commitInput(suggestion)}
               onMouseEnter={() => setSelectedIndex(idx)}
               sx={{
@@ -295,6 +299,7 @@ export function SkillInput({
             <button
               key={s}
               type="button"
+              data-testid="profile-skill-suggestion-button"
               onClick={() => onAddSkill(s)}
               style={{
                 fontWeight: 700,

@@ -105,7 +105,7 @@ export function GeneratedResumesTab() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
+      <Box data-testid="generated-resumes-loading" sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
         <CircularProgress sx={{ color: tokens.accent }} />
         <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.8rem", color: tokens.muted }}>
           CARREGANDO CURRÍCULOS GERADOS...
@@ -116,12 +116,13 @@ export function GeneratedResumesTab() {
 
   if (error) {
     return (
-      <Box sx={{ p: 3, border: "2px solid #ef4444", bgcolor: "#fef2f2", color: "#991b1b", mb: 4 }}>
+      <Box data-testid="generated-resumes-error" sx={{ p: 3, border: "2px solid #ef4444", bgcolor: "#fef2f2", color: "#991b1b", mb: 4 }}>
         <Typography sx={{ fontFamily: tokens.fontMono, fontSize: "0.85rem", fontWeight: 700 }}>
           {error}
         </Typography>
         <Button
           onClick={handleRetry}
+          data-testid="generated-resumes-retry-button"
           sx={{ mt: 1, bgcolor: "#991b1b", color: "#fff", "&:hover": { bgcolor: "#7f1d1d" } }}
           size="small"
         >
@@ -135,6 +136,7 @@ export function GeneratedResumesTab() {
     return (
       <Box
         className="card-brutalist"
+        data-testid="generated-resumes-empty"
         sx={{
           p: 5,
           textAlign: "center",
@@ -190,6 +192,7 @@ export function GeneratedResumesTab() {
           <Box
             key={item.id}
             className="card-brutalist"
+            data-testid="generated-resume-card"
             sx={{
               p: { xs: 2, sm: 3 },
               bgcolor: tokens.surface,
@@ -233,6 +236,7 @@ export function GeneratedResumesTab() {
                 variant="contained"
                 size="small"
                 onClick={() => handleDownload(item, 'pdf')}
+                data-testid="resume-download-pdf-button"
                 disabled={downloadingId === item.id || downloadingId === `${item.id}-docx`}
                 startIcon={downloadingId === item.id ? <CircularProgress size={14} color="inherit" /> : <Download sx={{ fontSize: 16 }} />}
                 sx={{
@@ -254,6 +258,7 @@ export function GeneratedResumesTab() {
                 variant="outlined"
                 size="small"
                 onClick={() => handleDownload(item, 'docx')}
+                data-testid="resume-download-docx-button"
                 disabled={downloadingId === item.id || downloadingId === `${item.id}-docx`}
                 startIcon={downloadingId === `${item.id}-docx` ? <CircularProgress size={14} color="inherit" /> : <Download sx={{ fontSize: 16 }} />}
                 sx={{
@@ -275,6 +280,7 @@ export function GeneratedResumesTab() {
                 variant="outlined"
                 size="small"
                 onClick={() => handleCopyText(item.resumeMarkdown)}
+                data-testid="resume-copy-button"
                 startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
                 sx={{
                   bgcolor: tokens.surface,
@@ -295,6 +301,7 @@ export function GeneratedResumesTab() {
                 variant="outlined"
                 size="small"
                 onClick={() => setPreviewItem(item)}
+                data-testid="resume-preview-button"
                 startIcon={<Visibility sx={{ fontSize: 16 }} />}
                 sx={{
                   bgcolor: tokens.surface,
@@ -320,6 +327,7 @@ export function GeneratedResumesTab() {
           <Pagination
             count={totalPages}
             page={page}
+            data-testid="generated-resumes-pagination"
             onChange={(_, value) => setPage(value)}
             shape="rounded"
             sx={{
@@ -344,6 +352,7 @@ export function GeneratedResumesTab() {
           onClose={() => setPreviewItem(null)}
           maxWidth="md"
           fullWidth
+          data-testid="resume-preview-dialog"
           PaperProps={{
             sx: {
               bgcolor: tokens.primary,
@@ -375,11 +384,12 @@ export function GeneratedResumesTab() {
             <Button
               onClick={() => handleCopyText(previewItem.resumeMarkdown)}
               startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
+              data-testid="resume-preview-copy-button"
               sx={{ bgcolor: tokens.accent, color: tokens.primary, fontWeight: 900, fontFamily: tokens.fontMono }}
             >
               COPIAR TEXTO
             </Button>
-            <Button onClick={() => setPreviewItem(null)} sx={{ color: "#94a3b8" }}>
+            <Button onClick={() => setPreviewItem(null)} data-testid="resume-preview-close-button" sx={{ color: "#94a3b8" }}>
               Fechar
             </Button>
           </DialogActions>
@@ -391,6 +401,7 @@ export function GeneratedResumesTab() {
         autoHideDuration={4000}
         onClose={() => setSnackbar("")}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        data-testid="resume-action-toast"
       >
         <Alert severity="success" variant="filled" onClose={() => setSnackbar("")}>
           {snackbar}

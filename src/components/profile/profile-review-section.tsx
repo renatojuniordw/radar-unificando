@@ -92,6 +92,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
           <input
             id="current-role"
             type="text"
+            data-testid="profile-current-role-input"
             value={currentRole}
             onChange={e => onFieldChange('currentRole', e.target.value)}
             placeholder="Ex: Analista de Dados Sênior"
@@ -113,6 +114,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
             <Select
               value={seniority}
               label="Senioridade"
+              data-testid="profile-seniority-select"
               onChange={e => onFieldChange('seniority', e.target.value)}
               sx={{
                 color: tokens.primary,
@@ -139,6 +141,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
             <Select
               value={area}
               label="Área"
+              data-testid="profile-area-select"
               onChange={e => onFieldChange('area', e.target.value)}
               sx={{
                 color: tokens.primary,
@@ -166,6 +169,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
           <Slider
             value={experienceYears}
             onChange={(_, v) => onFieldChange('experienceYears', v as number)}
+            data-testid="profile-experience-slider"
             min={0}
             max={30}
             step={1}
@@ -196,6 +200,7 @@ export const ProfileReviewSection = memo(function ProfileReviewSection({
                 <Chip
                   key={i}
                   label={edu}
+                  data-testid="profile-education-chip"
                   size="small"
                   sx={{
                     fontWeight: 700,

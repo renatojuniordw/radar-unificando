@@ -39,7 +39,7 @@ export default function SobrePage() {
   return (
     <main style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', paddingBottom: '64px' }}>
       {/* Header Section */}
-      <section className="section-hero" style={{ padding: '64px 16px', position: 'relative', overflow: 'hidden' }}>
+      <section className="section-hero" data-testid="sobre-hero-section" style={{ padding: '64px 16px', position: 'relative', overflow: 'hidden' }}>
         <div
           className="hero-radar"
           style={{
@@ -92,7 +92,7 @@ export default function SobrePage() {
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px' }}>
         {/* Section 1: A Missão (Cartão Branco de Alto Contraste) */}
-        <section style={{ marginTop: '48px', marginBottom: '48px' }}>
+        <section data-testid="sobre-missao-section" style={{ marginTop: '48px', marginBottom: '48px' }}>
           <div
             className="card-brutalist"
             style={{
@@ -156,7 +156,7 @@ export default function SobrePage() {
         </section>
 
         {/* Section 2: O Criador (Renato Bezerra) */}
-        <section style={{ marginBottom: '48px' }}>
+        <section data-testid="sobre-criador-section" style={{ marginBottom: '48px' }}>
           <div
             className="card-dark"
             style={{
@@ -259,6 +259,7 @@ export default function SobrePage() {
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <a
                 href={LINKS.portfolio}
+                data-testid="sobre-portfolio-link"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-neon"
@@ -276,6 +277,7 @@ export default function SobrePage() {
 
               <a
                 href={LINKS.unificando}
+                data-testid="sobre-consultoria-link"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-dark"
@@ -298,12 +300,12 @@ export default function SobrePage() {
         </section>
 
         {/* Section 3: Apoie o projeto */}
-        <section style={{ marginBottom: '48px' }}>
+        <section data-testid="sobre-apoio-section" style={{ marginBottom: '48px' }}>
           <SupportSection />
         </section>
 
         {/* Section 4: Pilares */}
-        <section style={{ marginBottom: '48px' }}>
+        <section data-testid="sobre-pilares-section" style={{ marginBottom: '48px' }}>
           <div className="badge-dark" style={{ marginBottom: '16px', display: 'inline-block' }}>
             DIFERENCIAIS DA PLATAFORMA
           </div>
@@ -426,7 +428,7 @@ export default function SobrePage() {
         </section>
 
         {/* Final Action Box */}
-        <section style={{ marginTop: '56px' }}>
+        <section data-testid="sobre-cta-section" style={{ marginTop: '56px' }}>
           <div
             style={{
               textAlign: 'center',
@@ -461,6 +463,7 @@ export default function SobrePage() {
             <Link
               href="/"
               className="btn-neon"
+              data-testid="sobre-motor-busca-link"
               style={{
                 textDecoration: 'none',
                 display: 'inline-flex',

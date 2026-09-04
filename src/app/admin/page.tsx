@@ -37,6 +37,7 @@ export default async function AdminDashboardPage({
     <>
       <SectionEyebrow mb={1}>Painel Admin</SectionEyebrow>
       <h1
+        data-testid="admin-dashboard-title"
         style={{
           fontSize: '1.6rem',
           fontWeight: 900,

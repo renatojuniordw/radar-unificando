@@ -28,6 +28,7 @@ export function AdminNav() {
           <Link
             key={item.href}
             href={item.href}
+            data-testid="admin-nav-link"
             style={{
               fontFamily: 'ui-monospace, monospace',
               fontSize: '0.7rem',

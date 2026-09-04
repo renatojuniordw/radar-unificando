@@ -12,7 +12,7 @@ interface Props {
 
 export function JobEmptyState({ hasJobs, countTotalFilters, onClearFilters }: Props) {
   return (
-    <Box sx={{ textAlign: 'center', py: 6, px: 2, color: '#94a3b8' }}>
+    <Box data-testid="job-empty-state" sx={{ textAlign: 'center', py: 6, px: 2, color: '#94a3b8' }}>
       <SearchOffIcon sx={{ fontSize: 52, mb: 1.5, color: tokens.accent, opacity: 0.8 }} />
       <Typography sx={{ fontWeight: 900, mb: 1, textTransform: 'uppercase', letterSpacing: '-0.01em', color: tokens.surfaceHover }}>
         Nenhuma vaga encontrada
@@ -24,6 +24,7 @@ export function JobEmptyState({ hasJobs, countTotalFilters, onClearFilters }: Pr
       </Typography>
       {countTotalFilters > 0 && (
         <Button
+          data-testid="job-empty-state-clear-filters"
           onClick={onClearFilters}
           variant="outlined"
           size="small"

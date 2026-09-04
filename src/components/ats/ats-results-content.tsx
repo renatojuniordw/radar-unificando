@@ -25,7 +25,7 @@ export function AtsResultsContent({ result }: Props) {
   return (
     <>
       {/* Score */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+      <Box data-testid="ats-results-content" sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
         <Box
           sx={{
             width: 84,
@@ -70,7 +70,7 @@ export function AtsResultsContent({ result }: Props) {
       <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: tokens.accent, mb: 1 }}>
         Checklist rápido
       </Typography>
-      <Box sx={{ mb: 2 }}>
+      <Box data-testid="ats-checklist" sx={{ mb: 2 }}>
         {result.heuristics.checks.map((c) => (
           <Box key={c.id} sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 0.5 }}>
             {c.ok ? (
@@ -87,7 +87,7 @@ export function AtsResultsContent({ result }: Props) {
 
       {/* Palavras-chave faltando */}
       {result.analysis.missingKeywords.length > 0 && (
-        <Box sx={{ mb: 2 }}>
+        <Box data-testid="ats-missing-keywords" sx={{ mb: 2 }}>
           <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: tokens.accent, mb: 1 }}>
             Palavras-chave faltando
           </Typography>
@@ -95,6 +95,7 @@ export function AtsResultsContent({ result }: Props) {
             {result.analysis.missingKeywords.map((k) => (
               <Box
                 key={k}
+                data-testid="ats-missing-keyword"
                 sx={{
                   bgcolor: "#1e293b",
                   border: "1px solid #f59e0b",
@@ -118,7 +119,7 @@ export function AtsResultsContent({ result }: Props) {
           <Typography sx={{ fontWeight: 800, fontSize: "0.8rem", textTransform: "uppercase", color: tokens.accent, mb: 1 }}>
             Recomendações
           </Typography>
-          <ul style={{ margin: 0, paddingLeft: 18, color: "#e2e8f0", fontSize: "0.8rem" }}>
+          <ul data-testid="ats-recommendations" style={{ margin: 0, paddingLeft: 18, color: "#e2e8f0", fontSize: "0.8rem" }}>
             {result.analysis.recommendations.map((r, i) => (
               <li key={i} style={{ marginBottom: 4 }}>
                 {r}

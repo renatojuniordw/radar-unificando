@@ -71,10 +71,11 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
       />
 
       {/* Slide-down / Full Drawer Container */}
-      <div className="relative w-full max-h-[92vh] bg-[#020617] border-b-4 border-[#ccff00] shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden z-10">
+      <div data-testid="mobile-nav-drawer" className="relative w-full max-h-[92vh] bg-[#020617] border-b-4 border-[#ccff00] shadow-[0_10px_30px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden z-10">
         {/* Header Bar inside Drawer */}
         <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#1e293b] bg-[#0f172a]">
           <Link
+            data-testid="mobile-nav-logo-link"
             href="/"
             onClick={onClose}
             className="no-underline flex items-center gap-2"
@@ -88,6 +89,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           </Link>
 
           <button
+            data-testid="mobile-nav-close-button"
             onClick={onClose}
             aria-label="Fechar menu"
             className="w-11 h-11 bg-[#1e293b] text-[#94a3b8] hover:text-[#ccff00] hover:border-[#ccff00] border-2 border-[#334155] flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
@@ -137,6 +139,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
                 <div className="grid grid-cols-2 gap-2">
                   <Link
+                    data-testid="mobile-nav-perfil-link"
                     href="/perfil"
                     onClick={onClose}
                     className="flex items-center justify-center gap-2 py-2.5 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all active:scale-95"
@@ -146,6 +149,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   </Link>
 
                   <Link
+                    data-testid="mobile-nav-extensao-link"
                     href="/extensao/conectar"
                     onClick={onClose}
                     className="flex items-center justify-center gap-2 py-2.5 px-2.5 bg-[#1e293b] text-white text-xs font-mono font-bold no-underline border border-[#334155] hover:border-[#ccff00] hover:text-[#ccff00] transition-all active:scale-95"
@@ -156,6 +160,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 </div>
 
                 <button
+                  data-testid="mobile-nav-logout-button"
                   onClick={() => {
                     onClose();
                     signOut();
@@ -173,6 +178,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <Link
+                    data-testid="mobile-nav-login-link"
                     href="/login"
                     onClick={onClose}
                     className="bg-[#0f172a] text-white border-2 border-[#334155] font-extrabold text-xs tracking-wider uppercase py-2.5 text-center no-underline font-mono transition-all hover:border-[#ccff00] hover:text-[#ccff00] active:scale-95 flex items-center justify-center min-h-[44px]"
@@ -180,6 +186,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     ENTRAR
                   </Link>
                   <Link
+                    data-testid="mobile-nav-cadastro-link"
                     href="/register"
                     onClick={onClose}
                     className="bg-[#ccff00] text-[#020617] border-2 border-[#020617] font-black text-xs tracking-wider uppercase py-2.5 text-center no-underline font-mono shadow-[2px_2px_0px_#000] hover:bg-[#d9ff33] active:scale-95 flex items-center justify-center gap-1 min-h-[44px]"
@@ -204,6 +211,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 return (
                   <Link
                     key={item.href}
+                    data-testid="mobile-nav-link"
                     href={item.href}
                     onClick={onClose}
                     className="flex items-center justify-between p-3 min-h-[44px] bg-[#ccff00]/10 text-[#ccff00] border-2 border-[#ccff00] no-underline font-mono text-xs font-black uppercase tracking-wider hover:bg-[#ccff00] hover:text-[#020617] transition-all shadow-[2px_2px_0px_#ccff00] active:scale-98"
@@ -222,6 +230,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               return (
                 <Link
                   key={item.href}
+                  data-testid="mobile-nav-link"
                   href={item.href}
                   onClick={onClose}
                   className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-white border-2 border-[#334155] no-underline font-mono text-xs font-black uppercase tracking-wider hover:border-[#ccff00] hover:text-[#ccff00] transition-colors active:scale-98"
@@ -242,6 +251,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             })}
 
             <Link
+              data-testid="mobile-nav-termos-link"
               href="/termos"
               onClick={onClose}
               className="flex items-center justify-between p-3 min-h-[44px] bg-[#0f172a] text-[#94a3b8] border border-[#1e293b] no-underline font-mono text-xs font-bold uppercase tracking-wider hover:text-white transition-colors active:scale-98"
@@ -257,6 +267,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           {/* Consultancy Banner inside Menu Footer */}
           <div className="mt-2 pt-3 border-t border-[#1e293b] flex flex-col gap-2">
             <a
+              data-testid="mobile-nav-ecossistema-link"
               href={LINKS.unificando}
               target="_blank"
               rel="noopener noreferrer"

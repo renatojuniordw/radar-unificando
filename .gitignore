@@ -14,3 +14,9 @@ coverage
 
 .agents/
 .refactor/
+
+# Playwright (artefatos gerados, não versionar)
+playwright-report/
+test-results/
+e2e/.auth/
+blob-report/

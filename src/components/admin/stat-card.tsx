@@ -10,7 +10,7 @@ export function StatCard({ label, value, detail, progress }: StatCardProps) {
   const clamped = progress !== undefined ? Math.min(100, Math.max(0, progress)) : undefined;
 
   return (
-    <div className="card-brutalist" style={{ padding: 20 }}>
+    <div className="card-brutalist" style={{ padding: 20 }} data-testid="admin-stat-card">
       <p
         style={{
           fontFamily: 'ui-monospace, monospace',

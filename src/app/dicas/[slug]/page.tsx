@@ -67,6 +67,7 @@ export default async function DicaPage({
 
   return (
     <Box
+      data-testid="dica-page"
       sx={{
         bgcolor: '#020617',
         color: '#ffffff',
@@ -271,6 +272,7 @@ export default async function DicaPage({
             detalhada.
           </Typography>
           <Link
+            data-testid="dica-import-resume-link"
             href="/perfil"
             style={{
               display: 'inline-flex',

@@ -117,6 +117,7 @@ export default function RegisterPage() {
       <div className="card-brutalist" style={{ padding: 24 }}>
         {registeredSuccess && (
           <div
+            data-testid="cadastro-success-banner"
             style={{
               border: '3px solid #020617',
               padding: '12px 14px',
@@ -144,6 +145,7 @@ export default function RegisterPage() {
         )}
         {apiError && (
           <div
+            data-testid="cadastro-api-error"
             style={{
               border: '2px solid #dc2626',
               padding: 10,
@@ -167,6 +169,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit}>
           <FormField
+            data-testid="cadastro-nome-input"
             label="Nome Completo"
             type="text"
             placeholder="Ex: Maria Silva"
@@ -175,6 +178,7 @@ export default function RegisterPage() {
           />
 
           <FormField
+            data-testid="cadastro-email-input"
             label="Email"
             type="email"
             placeholder="seu.email@exemplo.com"
@@ -187,6 +191,7 @@ export default function RegisterPage() {
           {/* Password Input with Toggle */}
           <div style={{ position: 'relative' }}>
             <FormField
+              data-testid="cadastro-senha-input"
               label="Senha"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
@@ -197,6 +202,7 @@ export default function RegisterPage() {
               marginBottom={10}
             />
             <button
+              data-testid="cadastro-senha-toggle-button"
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
@@ -225,6 +231,7 @@ export default function RegisterPage() {
           {/* Confirm Password Input with Toggle */}
           <div style={{ position: 'relative', marginBottom: 20 }}>
             <FormField
+              data-testid="cadastro-confirmar-senha-input"
               label="Confirmar Senha"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="••••••••"
@@ -235,6 +242,7 @@ export default function RegisterPage() {
               marginBottom={0}
             />
             <button
+              data-testid="cadastro-confirmar-senha-toggle-button"
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
@@ -254,6 +262,7 @@ export default function RegisterPage() {
           </div>
 
           <button
+            data-testid="cadastro-submit-button"
             type="submit"
             disabled={loading}
             className="btn-neon"
@@ -299,6 +308,7 @@ export default function RegisterPage() {
           Já possui uma conta?{' '}
         </span>
         <Link
+          data-testid="cadastro-login-link"
           href="/login"
           style={{
             color: '#020617',

@@ -16,6 +16,7 @@ export default async function AdminUsersPage() {
     <>
       <SectionEyebrow mb={1}>Painel Admin</SectionEyebrow>
       <h1
+        data-testid="admin-users-title"
         style={{
           fontSize: '1.6rem',
           fontWeight: 900,

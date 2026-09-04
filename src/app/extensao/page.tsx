@@ -102,6 +102,7 @@ export default function ExtensaoPage() {
       {/* Hero Section */}
       <section
         className="section-hero"
+        data-testid="extensao-hero-section"
         style={{
           padding: "64px 16px",
           position: "relative",
@@ -150,6 +151,7 @@ export default function ExtensaoPage() {
 
               {/* Banner de Status de Homologação */}
               <div
+                data-testid="extensao-homologacao-banner"
                 style={{
                   backgroundColor: "rgba(204, 255, 0, 0.08)",
                   border: "2px solid #ccff00",
@@ -207,6 +209,7 @@ export default function ExtensaoPage() {
               >
                 <button
                   disabled
+                  data-testid="extensao-conectar-button"
                   title="Extensão em processo de homologação na Chrome Web Store"
                   style={{
                     display: "inline-flex",
@@ -229,6 +232,7 @@ export default function ExtensaoPage() {
                 <Link
                   href="/"
                   className="btn-dark"
+                  data-testid="extensao-voltar-home-link"
                   style={{
                     textDecoration: "none",
                     display: "inline-flex",
@@ -444,7 +448,7 @@ export default function ExtensaoPage() {
       </section>
 
       {/* Recursos Section */}
-      <section className="section-white" style={{ padding: "64px 16px" }}>
+      <section className="section-white" data-testid="extensao-recursos-section" style={{ padding: "64px 16px" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           <div
             className="badge-dark"
@@ -479,6 +483,7 @@ export default function ExtensaoPage() {
                 <div
                   key={item.title}
                   className="card-brutalist"
+                  data-testid={`extensao-feature-${item.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
                   style={{
                     padding: "28px 24px",
                     display: "flex",
@@ -535,7 +540,7 @@ export default function ExtensaoPage() {
       </section>
 
       {/* Como Funciona Section */}
-      <section className="section-dark-eco" style={{ padding: "64px 16px" }}>
+      <section className="section-dark-eco" data-testid="extensao-como-funciona-section" style={{ padding: "64px 16px" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           <div
             className="badge-neon"
@@ -570,6 +575,7 @@ export default function ExtensaoPage() {
                 <div
                   key={item.step}
                   className="card-dark"
+                  data-testid={`extensao-etapa-${item.step}`}
                   style={{
                     padding: "32px 24px",
                     display: "flex",
@@ -675,6 +681,7 @@ export default function ExtensaoPage() {
             </p>
             <button
               disabled
+              data-testid="extensao-conectar-conta-button"
               title="Extensão em processo de homologação na Chrome Web Store"
               style={{
                 display: "inline-flex",

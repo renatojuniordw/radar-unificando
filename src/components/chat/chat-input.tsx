@@ -61,6 +61,7 @@ export function ChatInput({ value, onChange, onSend, disabled, placeholder }: Pr
       >
         <TextareaAutosize
           ref={inputRef}
+          data-testid="chat-input"
           value={value}
           onChange={e => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -83,6 +84,7 @@ export function ChatInput({ value, onChange, onSend, disabled, placeholder }: Pr
           }}
         />
         <IconButton
+          data-testid="chat-send-button"
           onClick={onSend}
           disabled={!canSend}
           aria-label="Enviar mensagem"

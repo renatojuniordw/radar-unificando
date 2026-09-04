@@ -14,6 +14,7 @@ export function OutdatedProfileBanner({ ageDays, onStartImport }: Props) {
   return (
     <Box
       className="card-brutalist"
+      data-testid="profile-outdated-banner"
       sx={{
         p: 2.5,
         mb: 3,
@@ -66,6 +67,7 @@ export function OutdatedProfileBanner({ ageDays, onStartImport }: Props) {
         <Button
           variant="contained"
           onClick={onStartImport}
+          data-testid="profile-update-now-button"
           startIcon={<FileUploadOutlined sx={{ fontSize: 16 }} />}
           sx={{
             bgcolor: "#f59e0b",

@@ -6,6 +6,7 @@ import { tokens } from "@/lib/infrastructure/ui/tokens";
 export function LoadingOverlay() {
   return (
     <Box
+      data-testid="loading-overlay"
       role="status"
       aria-live="polite"
       aria-busy="true"

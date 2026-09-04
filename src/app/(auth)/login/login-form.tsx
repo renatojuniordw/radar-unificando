@@ -108,6 +108,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
       <div className="card-brutalist" style={{ padding: 24 }}>
         {registered && (
           <div
+            data-testid="login-registered-success"
             style={{
               border: '3px solid #020617',
               padding: '12px 14px',
@@ -135,6 +136,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
         )}
         {apiError && (
           <div
+            data-testid="login-api-error"
             style={{
               border: '2px solid #dc2626',
               padding: 10,
@@ -158,6 +160,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
 
         <form onSubmit={handleSubmit}>
           <FormField
+            data-testid="login-email-input"
             label="Email"
             type="email"
             placeholder="seu.email@exemplo.com"
@@ -169,6 +172,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
 
           <div style={{ position: 'relative', marginBottom: 20 }}>
             <FormField
+              data-testid="login-senha-input"
               label="Senha"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
@@ -180,6 +184,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
               marginBottom={0}
             />
             <button
+              data-testid="login-senha-toggle-button"
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
@@ -206,6 +211,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
             }}
           >
             <Link
+              data-testid="login-esqueci-senha-link"
               href="/forgot-password"
               style={{
                 color: '#475569',
@@ -222,6 +228,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
           </div>
 
           <button
+            data-testid="login-submit-button"
             type="submit"
             disabled={loading}
             className="btn-neon"
@@ -285,6 +292,7 @@ export function LoginForm({ callbackUrl, registered }: { callbackUrl: string; re
         </div>
 
         <Link
+          data-testid="login-criar-conta-link"
           href="/register"
           style={{
             backgroundColor: '#ccff00',

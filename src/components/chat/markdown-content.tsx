@@ -82,6 +82,7 @@ const markdownComponents: Components = {
     return (
       <Box
         component="a"
+        data-testid="chat-markdown-link"
         href={href}
         target="_blank"
         rel="noopener noreferrer"

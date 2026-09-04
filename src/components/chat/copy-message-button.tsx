@@ -26,6 +26,7 @@ export function CopyMessageButton({ text }: { text: string }) {
   return (
     <Box
       component="button"
+      data-testid="chat-copy-message-button"
       onClick={handleCopy}
       sx={{
         display: 'inline-flex',

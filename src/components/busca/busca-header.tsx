@@ -31,6 +31,7 @@ export const BuscaHeader = memo(function BuscaHeader({
 }: BuscaHeaderProps) {
   return (
     <Box
+      data-testid="busca-header"
       className="section-hero"
       sx={{
         bgcolor: tokens.primary,
@@ -92,6 +93,7 @@ export const BuscaHeader = memo(function BuscaHeader({
 
             {cooldown > 0 && (
               <Chip
+                data-testid="busca-cooldown-chip"
                 label={`Aguarde ${cooldown}s para nova busca`}
                 size="small"
                 sx={{

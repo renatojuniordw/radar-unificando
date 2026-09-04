@@ -24,7 +24,7 @@ interface Props {
 /** Gráfico de barras para contagens por categoria (ex.: buscas por dia, ferramentas usadas). */
 export function CategoryBarChart({ title, data, color = '#ccff00', horizontal = false, dateLabels = false }: Props) {
   return (
-    <div className="card-brutalist" style={{ padding: 20 }}>
+    <div className="card-brutalist" style={{ padding: 20 }} data-testid="admin-chart-category">
       <h2
         style={{
           fontWeight: 900,

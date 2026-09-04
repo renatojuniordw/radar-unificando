@@ -10,6 +10,7 @@ const FALLBACK_URL = IMPACT.udemyFallbackUrl;
 export function CourseFallbackCta() {
   return (
     <Box
+      data-testid="course-fallback-cta"
       className="card-dark"
       sx={{
         mt: 6,
@@ -40,6 +41,7 @@ export function CourseFallbackCta() {
         </Typography>
       </Box>
       <Box
+        data-testid="course-fallback-link"
         component="a"
         href={FALLBACK_URL}
         target="_blank"

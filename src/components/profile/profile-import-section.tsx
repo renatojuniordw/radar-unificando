@@ -42,6 +42,7 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
     <BaseCard title={title}>
       {extracting && (
         <LinearProgress
+          data-testid="profile-import-progress"
           sx={{
             mb: 2,
             height: 6,
@@ -60,6 +61,7 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
       <div
         role="button"
         tabIndex={0}
+        data-testid="profile-import-dropzone"
         aria-label="Selecionar arquivo PDF do currículo"
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -86,6 +88,7 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
           ref={fileInputRef}
           type="file"
           accept=".pdf"
+          data-testid="profile-import-file-input"
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
@@ -106,6 +109,7 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
           ref={textareaRef}
           rows={4}
           placeholder="Cole aqui o conteúdo textual do seu currículo..."
+          data-testid="profile-import-textarea"
           style={{
             width: '100%', boxSizing: 'border-box',
             border: '3px solid #020617', padding: 12,
@@ -118,6 +122,7 @@ export function ProfileImportSection({ title = 'IMPORTAR CURRÍCULO', extracting
         <button
           onClick={handleTextExtract}
           disabled={extracting}
+          data-testid="profile-import-text-button"
           className="btn-dark"
           style={{
             marginTop: 12, padding: '10px 24px',

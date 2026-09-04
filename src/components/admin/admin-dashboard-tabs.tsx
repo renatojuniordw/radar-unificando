@@ -43,6 +43,7 @@ export function AdminDashboardTabs({ activeTab, onChangeTab }: Props) {
           <button
             key={tab.id}
             role="tab"
+            data-testid={`admin-tab-${tab.id}`}
             aria-selected={isActive}
             aria-controls={`panel-${tab.id}`}
             id={`tab-${tab.id}`}

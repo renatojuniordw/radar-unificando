@@ -128,6 +128,7 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
         }))}
       />
       <Box
+        data-testid="job-table"
         className="card-brutalist"
         sx={{
           p: { xs: 2, sm: 2.5, md: 3 },

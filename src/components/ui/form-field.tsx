@@ -48,7 +48,7 @@ export function FormField({ label, error, id, marginBottom = 16, ...inputProps }
         {label}
       </label>
       <input id={fieldId} style={inputStyle} {...inputProps} />
-      {error && <p style={errorStyle}>⚠️ {error}</p>}
+      {error && <p style={errorStyle} data-testid="form-field-error">⚠️ {error}</p>}
     </div>
   );
 }

@@ -14,6 +14,7 @@ export function ChatSuggestions({ onSelect }: Props) {
         {CHAT_SUGGESTIONS.map((s) => (
           <Chip
             key={s}
+            data-testid="chat-initial-suggestion-button"
             label={s}
             size="small"
             onClick={() => onSelect(s)}

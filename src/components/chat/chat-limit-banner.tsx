@@ -8,6 +8,7 @@ export function SyncErrorBanner() {
     <Box
       role="status"
       aria-live="polite"
+      data-testid="chat-sync-error-banner"
       sx={{
         px: 2,
         py: 0.75,
@@ -27,6 +28,7 @@ export function ThreadLimitBanner({ onNewConversation, isDailyLimitReached }: { 
     <Box
       role="status"
       aria-live="polite"
+      data-testid="chat-thread-limit-banner"
       sx={{
         p: 2,
         bgcolor: 'grey.100',
@@ -43,6 +45,7 @@ export function ThreadLimitBanner({ onNewConversation, isDailyLimitReached }: { 
         Esta conversa atingiu o limite de 25 mensagens. Inicie um novo chat para continuar!
       </Typography>
       <IconButton
+        data-testid="chat-thread-new-chat-button"
         onClick={onNewConversation}
         disabled={isDailyLimitReached}
         sx={{
@@ -78,6 +81,7 @@ export function DailyLimitBanner() {
     <Box
       role="status"
       aria-live="polite"
+      data-testid="chat-daily-limit-banner"
       sx={{
         p: 2,
         bgcolor: 'error.50',
@@ -98,6 +102,7 @@ export function TokenLimitBanner() {
     <Box
       role="status"
       aria-live="polite"
+      data-testid="chat-token-limit-banner"
       sx={{
         p: 2,
         bgcolor: 'error.50',
@@ -108,7 +113,7 @@ export function TokenLimitBanner() {
     >
       <Typography variant="body2" sx={{ fontWeight: 600, color: 'error.dark' }}>
         Limite diário de consumo de IA atingido. Os limites renovam à meia-noite (diário) e no dia 1º do mês (mensal).{' '}
-        <Link href="/termos" style={{ color: 'inherit' }}>
+        <Link href="/termos" style={{ color: 'inherit' }} data-testid="chat-token-limit-link">
           Saiba mais
         </Link>
       </Typography>
@@ -121,6 +126,7 @@ export function GlobalBudgetWarningBanner() {
     <Box
       role="status"
       aria-live="polite"
+      data-testid="chat-budget-warning-banner"
       sx={{
         px: 2,
         py: 0.75,
@@ -140,6 +146,7 @@ export function GlobalBudgetExhaustedBanner() {
     <Box
       role="status"
       aria-live="polite"
+      data-testid="chat-budget-exhausted-banner"
       sx={{
         p: 2,
         bgcolor: 'error.50',

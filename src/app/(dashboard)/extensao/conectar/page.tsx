@@ -67,6 +67,7 @@ export default async function ConectarExtensaoPage({
         <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
           <Link
             href="/extensao"
+            data-testid="extensao-back-link"
             className="inline-flex items-center gap-2 text-[#94a3b8] hover:text-[#ccff00] text-xs font-mono font-black uppercase tracking-wider no-underline transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -172,7 +173,7 @@ export default async function ConectarExtensaoPage({
           </div>
 
           <div className="space-y-3">
-            <details className="faq-item group">
+            <details className="faq-item group" data-testid="extensao-faq-item-1">
               <summary className="font-mono text-xs sm:text-sm">
                 <span>Onde encontro o ícone da extensão no Chrome?</span>
                 <span className="faq-arrow">▼</span>
@@ -182,7 +183,7 @@ export default async function ConectarExtensaoPage({
               </div>
             </details>
 
-            <details className="faq-item group">
+            <details className="faq-item group" data-testid="extensao-faq-item-2">
               <summary className="font-mono text-xs sm:text-sm">
                 <span>Preciso gerar um novo token cada vez que abrir o navegador?</span>
                 <span className="faq-arrow">▼</span>
@@ -192,7 +193,7 @@ export default async function ConectarExtensaoPage({
               </div>
             </details>
 
-            <details className="faq-item group">
+            <details className="faq-item group" data-testid="extensao-faq-item-3">
               <summary className="font-mono text-xs sm:text-sm">
                 <span>O que fazer se o token der erro ao colar?</span>
                 <span className="faq-arrow">▼</span>
@@ -220,6 +221,7 @@ export default async function ConectarExtensaoPage({
 
           <Link
             href="/extensao"
+            data-testid="extensao-guide-link"
             className="btn-dark shrink-0 no-underline px-5 py-2.5 text-xs font-mono font-black uppercase tracking-wider inline-flex items-center gap-2"
           >
             <span>Ver Guia da Extensão</span>

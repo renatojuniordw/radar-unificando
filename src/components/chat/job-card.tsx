@@ -44,6 +44,7 @@ function JobCardComponent({ job }: Props) {
 
   return (
     <Box
+      data-testid="chat-job-card"
       sx={{
         bgcolor: 'grey.50',
         border: '1px solid',
@@ -69,6 +70,7 @@ function JobCardComponent({ job }: Props) {
         </Box>
         {job.link && (
           <Button
+            data-testid="chat-job-link-button"
             size="small"
             variant="contained"
             color="primary"
@@ -116,6 +118,7 @@ function JobCardComponent({ job }: Props) {
           </Typography>
           <Typography
             component="button"
+            data-testid="chat-job-expand-button"
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
             sx={{
@@ -138,6 +141,7 @@ function JobCardComponent({ job }: Props) {
 
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
         <Button
+          data-testid="chat-job-ats-button"
           size="small"
           variant="outlined"
           onClick={() => setAtsOpen(true)}
@@ -146,6 +150,7 @@ function JobCardComponent({ job }: Props) {
           Analisar ATS
         </Button>
         <Button
+          data-testid="chat-job-resume-button"
           size="small"
           variant="outlined"
           onClick={handleGenerateResume}
@@ -170,6 +175,7 @@ function JobCardComponent({ job }: Props) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
+          data-testid="chat-job-snackbar"
           severity={snackbar.includes('baixado') ? 'success' : 'error'}
           variant="filled"
           onClose={() => setSnackbar('')}

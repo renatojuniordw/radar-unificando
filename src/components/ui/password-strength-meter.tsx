@@ -36,6 +36,7 @@ export function PasswordStrengthMeter({
 
   return (
     <div
+      data-testid="password-strength-meter"
       style={{
         backgroundColor: '#f8fafc',
         border: '2px solid #020617',
@@ -66,6 +67,7 @@ export function PasswordStrengthMeter({
           FORÇA DA SENHA
         </span>
         <span
+          data-testid="password-strength-label"
           style={{
             fontSize: '0.68rem',
             fontWeight: 900,
@@ -104,6 +106,7 @@ export function PasswordStrengthMeter({
         {criteria.map((c, index) => (
           <div
             key={index}
+            data-testid="password-strength-criterion"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -126,6 +129,7 @@ export function PasswordStrengthMeter({
       {/* Confirmation Match Indicator */}
       {showMatchStatus && confirmPassword.length > 0 && (
         <div
+          data-testid="password-strength-match-status"
           style={{
             marginTop: 10,
             paddingTop: 8,

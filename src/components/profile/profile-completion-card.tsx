@@ -18,6 +18,7 @@ export function ProfileCompletionCard({ percent, completedCount, totalCount, che
   return (
     <div
       className="card-brutalist"
+      data-testid="profile-completion-card"
       style={{
         padding: '24px',
         marginBottom: '24px',
@@ -60,7 +61,7 @@ export function ProfileCompletionCard({ percent, completedCount, totalCount, che
         gap: '8px 16px',
       }}>
         {checks.map((c) => (
-          <li key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <li key={c.label} data-testid="profile-completion-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {c.done ? (
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 stroke-[2.5]" />
             ) : (

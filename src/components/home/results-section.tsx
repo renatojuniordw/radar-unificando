@@ -75,6 +75,7 @@ export const ResultsSection = memo(function ResultsSection({
 
           {autoSyncing && (
             <Box
+              data-testid="results-auto-sync"
               sx={{
                 display: "inline-flex",
                 alignItems: "center",

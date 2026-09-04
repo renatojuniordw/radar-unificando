@@ -109,6 +109,7 @@ export const JobSearchBar = memo(function JobSearchBar({
 
   return (
     <Box
+      data-testid="job-search-bar"
       component="form"
       onSubmit={handleSubmitForm}
       sx={{
@@ -166,6 +167,7 @@ export const JobSearchBar = memo(function JobSearchBar({
             </Box>
 
             <Button
+              data-testid="busca-submit-button"
               type="submit"
               disabled={running || cooldown > 0}
               variant="contained"
@@ -238,6 +240,7 @@ export const JobSearchBar = memo(function JobSearchBar({
             )}
 
             <Button
+              data-testid="busca-submit-button"
               type="submit"
               disabled={running || cooldown > 0}
               variant="contained"
@@ -307,6 +310,7 @@ export const JobSearchBar = memo(function JobSearchBar({
           {suggestedRoles.map((role) => (
             <Chip
               key={role}
+              data-testid="busca-role-suggestion-chip"
               label={`+ ${role}`}
               onClick={() => handleAddRole(role)}
               size="small"
@@ -324,6 +328,7 @@ export const JobSearchBar = memo(function JobSearchBar({
           {suggestedCompanies.map((company) => (
             <Chip
               key={company}
+              data-testid="busca-company-suggestion-chip"
               label={`+ ${company}`}
               onClick={() => handleAddCompany(company)}
               size="small"

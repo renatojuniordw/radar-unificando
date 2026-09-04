@@ -120,6 +120,7 @@ export function TagInput({
         {value.map((tag) => (
           <Chip
             key={tag}
+            data-testid={`tag-input-chip-${tag}`}
             label={tag}
             onDelete={() => remove(tag)}
             size="small"
@@ -142,6 +143,7 @@ export function TagInput({
         ))}
 
         <input
+          data-testid="tag-input-field"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -172,6 +174,7 @@ export function TagInput({
       {/* Dica visível de feedback ao usuário */}
       {showHelperHint && (
         <Typography
+          data-testid="tag-input-hint"
           variant="caption"
           sx={{
             display: 'flex',

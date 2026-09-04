@@ -19,6 +19,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
 
   return (
     <Box
+      data-testid="job-mobile-card"
       sx={{
         bgcolor: tokens.surface,
         border: '3px solid #020617',
@@ -93,6 +94,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
 
       {/* Action CTA Button */}
       <a
+        data-testid="job-mobile-card-apply-link"
         href={job.link}
         target="_blank"
         rel="noopener noreferrer"
@@ -126,6 +128,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
 
       {canGenerateResume && (
         <Box
+          data-testid="job-mobile-card-ats-button"
           onClick={() => onAnalyzeAts(job)}
           role="button"
           tabIndex={0}
@@ -163,6 +166,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
 
       {canGenerateResume && (
         <Box
+          data-testid="job-mobile-card-resume-button"
           onClick={() => onGenerateResume(job)}
           role="button"
           tabIndex={0}

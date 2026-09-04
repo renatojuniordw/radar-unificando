@@ -96,13 +96,13 @@ export function TokenBox({ token }: TokenBoxProps) {
   const displayToken = showToken ? token : maskedToken;
 
   return (
-    <div className="card-brutalist p-5 sm:p-6 mb-8 relative overflow-hidden group">
+    <div className="card-brutalist p-5 sm:p-6 mb-8 relative overflow-hidden group" data-testid="token-box">
       {/* Visual Accent Top Bar */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ccff00] via-[#00ff66] to-[#ccff00]" />
 
       {/* Banner de Status de Homologação */}
       {!isConnected && (
-        <div className="mb-5 bg-[#ccff00]/10 border-2 border-[#020617] p-3.5 flex items-start gap-3 shadow-[4px_4px_0px_#020617]">
+        <div className="mb-5 bg-[#ccff00]/10 border-2 border-[#020617] p-3.5 flex items-start gap-3 shadow-[4px_4px_0px_#020617]" data-testid="token-pending-banner">
           <span className="text-base shrink-0">⌛</span>
           <p className="font-mono text-xs font-bold text-[#020617] leading-relaxed m-0">
             <strong className="uppercase bg-[#020617] text-[#ccff00] px-1.5 py-0.5 mr-1">EM BREVE:</strong> 
@@ -113,7 +113,7 @@ export function TokenBox({ token }: TokenBoxProps) {
 
       {/* Banner de Conexão Ao Vivo (quando detectado uso na extensão) */}
       {isConnected && (
-        <div className="mb-4 bg-emerald-500/10 border-2 border-emerald-500 p-3 flex items-center justify-between gap-3 animate-fade-slide-up">
+        <div className="mb-4 bg-emerald-500/10 border-2 border-emerald-500 p-3 flex items-center justify-between gap-3 animate-fade-slide-up" data-testid="token-connected-banner">
           <div className="flex items-center gap-2 text-[#020617]">
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -152,7 +152,7 @@ export function TokenBox({ token }: TokenBoxProps) {
       </div>
 
       {/* Token Display Area */}
-      <div className="bg-[#020617] border-4 border-[#020617] p-4 mb-4 relative flex items-center justify-between gap-3 shadow-[3px_3px_0px_#000]">
+      <div className="bg-[#020617] border-4 border-[#020617] p-4 mb-4 relative flex items-center justify-between gap-3 shadow-[3px_3px_0px_#000]" data-testid="token-display">
         <div className="font-mono text-xs sm:text-sm font-bold text-[#f8fafc] break-all tracking-wider selection:bg-[#ccff00] selection:text-[#020617]">
           {displayToken}
         </div>
@@ -161,6 +161,7 @@ export function TokenBox({ token }: TokenBoxProps) {
         <button
           type="button"
           onClick={() => setShowToken(!showToken)}
+          data-testid="token-toggle-visibility"
           className="shrink-0 p-2 text-[#cbd5e1] hover:text-[#ccff00] hover:bg-[#0f172a] border border-transparent hover:border-[#334155] transition-all focus-visible:outline-none"
           title={showToken ? 'Ocultar token' : 'Revelar token'}
           aria-label={showToken ? 'Ocultar token para privacidade' : 'Revelar token completo'}
@@ -178,6 +179,7 @@ export function TokenBox({ token }: TokenBoxProps) {
         <button
           type="button"
           onClick={handleCopy}
+          data-testid="token-copy-button"
           className={`btn-neon shrink-0 flex items-center justify-center gap-2 px-6 py-3 text-xs font-mono font-black uppercase tracking-wider border-4 border-[#020617] transition-all transform active:scale-95 ${
             copied
               ? '!bg-[#00ff66] !text-[#020617] scale-105 shadow-[4px_4px_0px_#000]'

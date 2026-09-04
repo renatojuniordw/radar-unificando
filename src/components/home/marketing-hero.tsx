@@ -50,6 +50,7 @@ export function MarketingHero() {
 
   return (
     <Box
+      data-testid="home-hero"
       className="section-hero"
       sx={{
         position: "relative",

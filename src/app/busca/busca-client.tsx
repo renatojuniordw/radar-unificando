@@ -145,6 +145,7 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
 
       {snackbar && (
         <Snackbar
+          data-testid="busca-snackbar"
           open
           autoHideDuration={4000}
           onClose={() => setSnackbar(null)}

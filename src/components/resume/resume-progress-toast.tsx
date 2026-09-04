@@ -28,6 +28,7 @@ export function ResumeProgressToast({ state, onClose }: Props) {
 
   return (
     <Box
+      data-testid="resume-progress-toast"
       role="status"
       aria-live="polite"
       sx={{

@@ -120,6 +120,7 @@ export default function RootLayout({
                   {/* Skip link for keyboard navigation */}
                   <Box
                     component="a"
+                    data-testid="layout-skip-link"
                     href="#main-content"
                     sx={{
                       position: "absolute",

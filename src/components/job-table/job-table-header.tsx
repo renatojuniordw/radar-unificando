@@ -12,7 +12,7 @@ interface Props {
 
 export function JobTableHeader({ totalJobs, filteredTotal, exporting, onExport }: Props) {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
+    <Box data-testid="job-table-header" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
       <Box>
         <Typography
           sx={{
@@ -41,6 +41,7 @@ export function JobTableHeader({ totalJobs, filteredTotal, exporting, onExport }
 
       {totalJobs > 0 && (
         <button
+          data-testid="job-table-export-button"
           onClick={onExport}
           disabled={exporting}
           style={{

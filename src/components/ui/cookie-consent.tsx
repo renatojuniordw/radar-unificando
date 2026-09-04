@@ -72,6 +72,7 @@ export function CookieConsent() {
         <div
           role="dialog"
           aria-label="Aviso de cookies"
+          data-testid="cookie-consent-dialog"
           style={{
             position: "fixed",
             bottom: 0,
@@ -114,6 +115,7 @@ export function CookieConsent() {
               <Link
                 href="/termos#cookies"
                 style={{ color: "#ccff00", textDecoration: "underline" }}
+                data-testid="cookie-consent-policy-link"
               >
                 Saiba mais na Política de Cookies
               </Link>
@@ -122,6 +124,7 @@ export function CookieConsent() {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 type="button"
+                data-testid="cookie-consent-decline-button"
                 onClick={() => choose("declined")}
                 style={{
                   backgroundColor: "transparent",
@@ -140,6 +143,7 @@ export function CookieConsent() {
               </button>
               <button
                 type="button"
+                data-testid="cookie-consent-accept-button"
                 onClick={() => choose("accepted")}
                 style={{
                   backgroundColor: "#ccff00",

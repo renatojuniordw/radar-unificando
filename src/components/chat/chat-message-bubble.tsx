@@ -20,6 +20,7 @@ export function ChatMessageBubble({ message, isLast, onRetry }: Props) {
 
   return (
     <Box
+      data-testid="chat-message-bubble"
       sx={{
         display: 'flex',
         flexDirection: isUser ? 'row-reverse' : 'row',
@@ -69,6 +70,7 @@ export function ChatMessageBubble({ message, isLast, onRetry }: Props) {
               <CopyMessageButton text={text} />
               {isErrorMessage && onRetry && isLast && (
                 <Button
+                  data-testid="chat-retry-button"
                   size="small"
                   variant="outlined"
                   color="error"

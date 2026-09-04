@@ -82,6 +82,7 @@ export default function NotFound() {
         </p>
 
         <Link
+          data-testid="not-found-voltar-link"
           href="/"
           style={{
             display: 'inline-block',

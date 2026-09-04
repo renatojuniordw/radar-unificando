@@ -26,6 +26,7 @@ export function CourseRecommendationSidebar({ terms, area }: Props) {
 
   return (
     <Box
+      data-testid="course-recommendation-sidebar"
       className="card-panel"
       sx={{
         p: { xs: 2.5, sm: 3 },
@@ -79,7 +80,7 @@ export function CourseRecommendationSidebar({ terms, area }: Props) {
           )}
         </Box>
 
-        <Link href="/cursos" style={{ textDecoration: "none" }}>
+        <Link href="/cursos" data-testid="course-recommendation-catalog-link" style={{ textDecoration: "none" }}>
           <Typography
             sx={{
               fontFamily: tokens.fontMono,
@@ -97,7 +98,7 @@ export function CourseRecommendationSidebar({ terms, area }: Props) {
       </Box>
 
       {courses.length === 0 ? (
-        <Typography sx={{ color: tokens.muted, fontSize: "0.85rem", lineHeight: 1.5, fontFamily: tokens.fontMono }}>
+        <Typography data-testid="course-recommendation-empty-state" sx={{ color: tokens.muted, fontSize: "0.85rem", lineHeight: 1.5, fontFamily: tokens.fontMono }}>
           Busque por um cargo no topo da página para receber sugestões de cursos da Udemy alinhados às qualificações da vaga.
         </Typography>
       ) : (

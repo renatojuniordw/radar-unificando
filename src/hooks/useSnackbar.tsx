@@ -36,7 +36,7 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
           onClose={() => setItem(null)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <Alert severity={item.severity} variant="filled" onClose={() => setItem(null)}>
+          <Alert severity={item.severity} variant="filled" onClose={() => setItem(null)} data-testid="snackbar-message">
             {item.message}
           </Alert>
         </Snackbar>

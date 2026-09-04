@@ -55,6 +55,7 @@ export function ChatMessageList({ messages, loading, hasUserMessage, onSelectSug
     <Box sx={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <Box
         ref={containerRef}
+        data-testid="chat-message-list"
         onScroll={handleScroll}
         sx={{
           flex: 1,
@@ -110,6 +111,7 @@ export function ChatMessageList({ messages, loading, hasUserMessage, onSelectSug
             }}
           >
             <Chip
+              data-testid="chat-scroll-bottom-button"
               icon={<ArrowDownwardIcon sx={{ fontSize: '1rem !important' }} />}
               label="Ir para a mensagem recente"
               onClick={scrollToBottom}

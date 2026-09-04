@@ -161,7 +161,7 @@ export function ChatHeader({
               Assistente de Vagas
             </Typography>
             {loading ? (
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+              <Typography variant="caption" data-testid="chat-header-typing-indicator" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                 Digitando...
               </Typography>
             ) : (
@@ -183,6 +183,7 @@ export function ChatHeader({
           }}
         >
           <IconButton
+            data-testid="chat-sidebar-toggle-button"
             onClick={onToggleSidebar}
             aria-label="Histórico de conversas"
             sx={{
@@ -195,6 +196,7 @@ export function ChatHeader({
             <HistoryIcon />
           </IconButton>
           <IconButton
+            data-testid="chat-new-chat-button"
             onClick={onNewChat}
             disabled={isDailyLimitReached}
             aria-label="Nova conversa"
@@ -212,6 +214,7 @@ export function ChatHeader({
             <PlusIcon />
           </IconButton>
           <IconButton
+            data-testid="chat-close-button"
             onClick={onClose}
             aria-label="Fechar chat"
             sx={{
@@ -261,6 +264,7 @@ export function ChatHeader({
         />
         <Typography
           component="a"
+          data-testid="chat-lgpd-link"
           href="/termos"
           target="_blank"
           variant="caption"

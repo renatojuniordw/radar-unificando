@@ -21,7 +21,7 @@ interface Props {
 /** Gráfico de linha para séries temporais diárias (ex.: usuários/logins por dia). */
 export function SeriesChart({ title, data, color = '#ccff00' }: Props) {
   return (
-    <div className="card-brutalist" style={{ padding: 20 }}>
+    <div className="card-brutalist" style={{ padding: 20 }} data-testid="admin-chart-series">
       <h2
         style={{
           fontWeight: 900,
