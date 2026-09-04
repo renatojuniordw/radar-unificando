@@ -253,7 +253,9 @@ export default function SobrePage() {
                 fontWeight: 500,
               }}
             >
-              Desenvolvi o Radar Unificando para colocar a tecnologia a serviço do profissional brasileiro. A plataforma une automação em tempo real, segurança avançada de dados (LGPD) e inteligência artificial para que você passe menos tempo procurando vagas e mais tempo conquistando a oportunidade certa.
+              Desenvolvi o Radar Unificando — projeto autoral do{' '}
+              <strong style={{ color: '#ccff00' }}>laboratório Unificando</strong> — para colocar a
+              tecnologia a serviço do profissional brasileiro. A plataforma une automação em tempo real, segurança avançada de dados (LGPD) e inteligência artificial para que você passe menos tempo procurando vagas e mais tempo conquistando a oportunidade certa.
             </p>
 
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -277,7 +279,7 @@ export default function SobrePage() {
 
               <a
                 href={LINKS.unificando}
-                data-testid="sobre-consultoria-link"
+                data-testid="sobre-laboratorio-link"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-dark"
@@ -293,7 +295,7 @@ export default function SobrePage() {
                   border: '2px solid #ccff00',
                 }}
               >
-                <Rocket size={16} /> CONSULTORIA EM IA
+                <Rocket size={16} /> CONHEÇA O LABORATÓRIO
               </a>
             </div>
           </div>

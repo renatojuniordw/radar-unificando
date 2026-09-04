@@ -24,12 +24,12 @@ describe('Footer', () => {
   it('should_render_brand_and_description', () => {
     render(<Footer />);
     expect(screen.getByText('UNIFICANDO')).toBeTruthy();
-    expect(screen.getByText(/Desenvolvido com foco total/)).toBeTruthy();
+    expect(screen.getByText(/Projeto autoral do laboratório Unificando/)).toBeTruthy();
   });
 
   it('should_render_consultancy_link_to_unificando', () => {
     render(<Footer />);
-    const link = screen.getByText('CONSULTORIA EM IA E DESENVOLVIMENTO').closest('a');
+    const link = screen.getByText('CONHEÇA O LABORATÓRIO').closest('a');
     expect(link?.getAttribute('href')).toBe('https://unificando.com.br/');
   });
 
@@ -56,7 +56,7 @@ describe('Footer', () => {
 
   it('should_change_consultancy_link_colors_on_hover', () => {
     render(<Footer />);
-    const link = screen.getByText('CONSULTORIA EM IA E DESENVOLVIMENTO') as HTMLAnchorElement;
+    const link = screen.getByText('CONHEÇA O LABORATÓRIO') as HTMLAnchorElement;
     fireEvent.mouseEnter(link);
     expect(link.style.background).toBe('rgb(204, 255, 0)');
     expect(link.style.color).toBe('rgb(2, 6, 23)');

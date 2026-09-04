@@ -26,7 +26,7 @@ export function ConsoleEasterEgg() {
       "background: #020617; color: #ccff00; font-weight: 700; font-size: 13px; padding: 4px 8px; font-family: sans-serif;",
     );
     console.log(
-      "%cEste projeto é ofertado pela Unificando e desenvolvido por Renato Bezerra.\nAdoraria ver você contribuindo ou fazendo um fork para seu ambiente!\n",
+      "%cEste projeto faz parte do laboratório Unificando e é desenvolvido por Renato Bezerra.\nAdoraria ver você contribuindo ou fazendo um fork para seu ambiente!\n",
       "color: #94a3b8; font-size: 12px; font-family: sans-serif;",
     );
     console.log(

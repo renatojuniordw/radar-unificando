@@ -95,7 +95,7 @@ export default function TermosPage() {
               marginBottom: 0,
             }}
           >
-            Última atualização: Agosto de 2026 • Conformidade total com a Lei Geral de Proteção de Dados (LGPD)
+            Última atualização: Setembro de 2026 • Conformidade total com a Lei Geral de Proteção de Dados (LGPD)
           </p>
         </div>
 
@@ -496,7 +496,7 @@ export default function TermosPage() {
               9. Controlador de Dados e Encarregado (DPO)
             </h2>
             <p>
-              Em conformidade com o <strong>Art. 41 da LGPD</strong>, o controlador das operações de tratamento é o <strong>Radar Unificando</strong> (projeto de código aberto desenvolvido e mantido pelo desenvolvedor Renato Bezerra, como pessoa física).
+              Em conformidade com o <strong>Art. 41 da LGPD</strong>, o controlador das operações de tratamento é o <strong>Radar Unificando</strong> (projeto de código aberto do laboratório Unificando, desenvolvido e mantido pelo desenvolvedor Renato Bezerra, como pessoa física).
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>

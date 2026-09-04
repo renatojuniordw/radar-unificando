@@ -55,18 +55,6 @@ export function Footer() {
                   UNIFICANDO
                 </span>
               </div>
-              <span
-                style={{
-                  fontWeight: 900,
-                  color: "#ffffff",
-                  fontSize: "0.65rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  fontFamily: tokens.fontMono,
-                }}
-              >
-                ECOSSISTEMA
-              </span>
             </div>
             <p
               style={{
@@ -79,67 +67,10 @@ export function Footer() {
                 maxWidth: 320,
               }}
             >
-              Desenvolvido com foco total em performance e privacidade pela
-              Unificando. Ferramentas rápidas, seguras e fáceis de usar.
+              Projeto autoral do laboratório Unificando — desenvolvido com foco
+              total em performance e privacidade. Ferramentas rápidas, seguras e
+              fáceis de usar.
             </p>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "center",
-            }}
-          >
-            <p
-              style={{
-                color: "#64748b",
-                fontWeight: 900,
-                textTransform: "uppercase",
-                fontSize: "0.65rem",
-                letterSpacing: "0.15em",
-                marginBottom: 12,
-                fontFamily: tokens.fontMono,
-              }}
-            >
-              Pronto para o próximo nível?
-            </p>
-            <a
-              data-testid="footer-consultoria-link"
-              href={LINKS.unificando}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: tokens.accent,
-                border: "2px solid #ccff00",
-                padding: "12px 24px",
-                fontWeight: 900,
-                textTransform: "uppercase",
-                fontSize: "0.7rem",
-                letterSpacing: "0.08em",
-                textDecoration: "none",
-                fontFamily: tokens.fontMono,
-                transition: "all 0.2s",
-                boxShadow: "4px 4px 0px rgba(204,255,0,0.3)",
-                maxWidth: "100%",
-                boxSizing: "border-box",
-                textAlign: "center",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = tokens.accent;
-                e.currentTarget.style.color = "#020617";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = tokens.accent;
-                e.currentTarget.style.boxShadow =
-                  "4px 4px 0px rgba(204,255,0,0.3)";
-              }}
-            >
-              CONSULTORIA EM IA E DESENVOLVIMENTO
-            </a>
           </div>
         </div>
 
@@ -335,9 +266,8 @@ export function Footer() {
             maxWidth: 720,
           }}
         >
-          Alguns links desta plataforma são de afiliados (Udemy) e podem
-          gerar comissão para a manutenção do projeto, sem custo adicional para
-          você.
+          Alguns links desta plataforma são de afiliados (Udemy) e podem gerar
+          comissão para a manutenção do projeto, sem custo adicional para você.
         </p>
       </div>
     </footer>
