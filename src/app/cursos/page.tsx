@@ -237,6 +237,57 @@ export default function CursosPage() {
 
         <CourseFallbackCta />
 
+        <Box
+          sx={{
+            mt: 5,
+            p: 3,
+            border: "2px solid #334155",
+            bgcolor: "#0f172a",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontWeight: 900,
+                color: "#ffffff",
+                textTransform: "uppercase",
+                fontSize: "0.95rem",
+                mb: 0.5,
+              }}
+            >
+              Quer se destacar além das skills?
+            </Typography>
+            <Typography
+              sx={{ color: "#94a3b8", fontSize: "0.8rem", lineHeight: 1.5 }}
+            >
+              Veja dicas práticas de currículo, ATS e entrevista.
+            </Typography>
+          </Box>
+          <Link
+            data-testid="cursos-dicas-link"
+            href="/dicas"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              color: "#ccff00",
+              fontWeight: 900,
+              textTransform: "uppercase",
+              fontSize: "0.78rem",
+              fontFamily: "ui-monospace, monospace",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            VER DICAS →
+          </Link>
+        </Box>
+
         <Typography
           sx={{
             mt: 6,

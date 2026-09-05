@@ -11,6 +11,8 @@ export const metadata: Metadata = {
     title: 'Apoie o Radar Unificando — Doe via PIX',
     description:
       'Apoie o Radar Unificando com um PIX de qualquer valor — o projeto é 100% gratuito e mantido por doações.',
+    url: `${SITE.url}/doar`,
+    type: 'website',
   },
 };
 

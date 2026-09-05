@@ -23,7 +23,7 @@ import {
 export const metadata: Metadata = {
   title: { absolute: "Extensão Chrome — Score ATS e Vagas | Radar Unificando" },
   description:
-    "Analise vagas de emprego no Gupy, LinkedIn e InHire em tempo real. Veja seu score ATS, palavras-chave de IA faltando no seu currículo e dicas de otimização direto no painel lateral do Chrome.",
+    "Analise vagas no Gupy, LinkedIn e InHire. Veja seu score ATS, keywords faltando no currículo e dicas de otimização no painel lateral do Chrome.",
   alternates: { canonical: `${SITE.url}/extensao` },
   keywords: [
     "Extensão Chrome",
@@ -40,6 +40,7 @@ export const metadata: Metadata = {
     title: "Extensão Chrome Radar Unificando — Score ATS e Dicas de Vagas",
     description:
       "Descubra sua compatibilidade com vagas no Gupy, LinkedIn e InHire. Receba dicas imediatas de IA para ajustar seu currículo e passar em triagens automatizadas.",
+    url: `${SITE.url}/extensao`,
     type: "website",
   },
 };

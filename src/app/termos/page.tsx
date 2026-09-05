@@ -4,8 +4,16 @@ import { SITE } from '@/lib/core/constants';
 
 export const metadata: Metadata = {
   title: { absolute: 'Termos de Uso, Privacidade e LGPD | Radar Unificando' },
-  description: 'Política de privacidade, conformidade com a LGPD e termos de uso do Radar Unificando.',
+  description:
+    'Leia os termos de uso, a política de privacidade e a conformidade com a LGPD do Radar Unificando: como tratamos seus dados, seus direitos e as regras da plataforma.',
   alternates: { canonical: `${SITE.url}/termos` },
+  openGraph: {
+    title: 'Termos de Uso, Privacidade e LGPD | Radar Unificando',
+    description:
+      'Política de privacidade, conformidade com a LGPD e termos de uso do Radar Unificando.',
+    url: `${SITE.url}/termos`,
+    type: 'website',
+  },
 };
 
 export default function TermosPage() {

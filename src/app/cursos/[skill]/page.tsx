@@ -14,6 +14,26 @@ const PROVIDER_URLS: Record<string, string> = {
   udemy: 'https://www.udemy.com',
 };
 
+// Introduções variadas por página de skill — evitam duplicação programática
+// exata entre as dezenas de URLs /cursos/[skill] (thin/duplicate content).
+// A seleção é determinística pelo slug, então cada skill "ganha" um texto
+// estável entre rebuilds (ISR reutiliza o mesmo HTML).
+const SKILL_INTROS: Array<(name: string) => string> = [
+  (name) =>
+    `Quer encontrar vagas que pedem ${name.toLowerCase()}? Estude a skill com um curso avulso barato na Udemy e saia na frente na triagem.`,
+  (name) =>
+    `Para conquistar vagas que exigem ${name.toLowerCase()}, o caminho mais rápido é dominar a skill com um curso prático e barato na Udemy.`,
+  (name) =>
+    `Falta ${name.toLowerCase()} no seu currículo? Escolha um curso avulso na Udemy, estude o essencial e feche esse gap antes da próxima candidatura.`,
+  (name) =>
+    `Recrutadores buscam candidatos com ${name.toLowerCase()} no perfil. Aprenda a skill com um curso direto na Udemy e aumente sua compatibilidade com as vagas.`,
+];
+
+function pickIntro(slug: string): (name: string) => string {
+  const hash = [...slug].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return SKILL_INTROS[hash % SKILL_INTROS.length];
+}
+
 export const revalidate = 86400; // ISR: regenera a cada 24h
 
 export function generateStaticParams() {
@@ -118,8 +138,7 @@ export default async function SkillPage({
             Cursos de {name}
           </Typography>
           <Typography sx={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-            As vagas que você busca pedem {name.toLowerCase()}. Estude exatamente
-            essa skill com um curso avulso barato na Udemy.
+            {pickIntro(skill)(name)}
           </Typography>
         </Box>
 

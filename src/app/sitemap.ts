@@ -8,8 +8,9 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE.url;
-  // Data fixa para permitir cache estático do sitemap
-  const lastModified = "2026-08-04";
+  // Data do build/geração (o sitemap é cacheado por `revalidate`), em vez de
+  // uma data fixa que envelhece e confunde o Google sobre o frescor do site.
+  const lastModified = new Date().toISOString().slice(0, 10);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified, changeFrequency: "daily", priority: 1.0 },
@@ -26,6 +27,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${base}/dicas`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${base}/sobre`,
       lastModified,
       changeFrequency: "monthly",
@@ -33,6 +40,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${base}/extensao`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${base}/doar`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.5,

@@ -13,6 +13,7 @@ describe('sitemap', () => {
     expect(urls).toContain(`${SITE.url}/dicas`);
     expect(urls).toContain(`${SITE.url}/sobre`);
     expect(urls).toContain(`${SITE.url}/extensao`);
+    expect(urls).toContain(`${SITE.url}/doar`);
     expect(urls).toContain(`${SITE.url}/termos`);
   });
 
@@ -26,8 +27,8 @@ describe('sitemap', () => {
     }
   });
 
-  it('should_use_fixed_last_modified_date', async () => {
+  it('should_use_a_dynamic_iso_date_for_last_modified', async () => {
     const routes = await sitemap();
-    expect(routes[0].lastModified).toBe('2026-08-04');
+    expect(routes[0].lastModified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });

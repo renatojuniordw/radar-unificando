@@ -1,6 +1,7 @@
 import { FaqStructuredData } from "@/components/seo/faq-structured-data";
 import { MarketingHero } from "@/components/home/marketing-hero";
 import { ExtensionSection } from "@/components/home/extension-section";
+import { ContentHubsSection } from "@/components/home/content-hubs-section";
 import { FaqSection } from "@/components/home/faq-section";
 import { SupportSection } from "@/components/shared/support-section";
 
@@ -9,6 +10,7 @@ export default function HomePage() {
     <>
       <FaqStructuredData />
       <MarketingHero />
+      <ContentHubsSection />
       <ExtensionSection />
       <section className="section-dark-eco">
         <div

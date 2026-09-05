@@ -21,12 +21,16 @@ export interface Dica {
   description: string;
   category: DicaCategory;
   secondCategory?: DicaCategory;
+  author?: string;
   publishDate: string;
   updateDate?: string;
   sections: DicaSection[];
   faq: DicaFaqItem[];
   estimatedReadingMinutes: number;
 }
+
+/** Autor padrão das dicas — todas as publicações atuais são do criador do projeto. */
+export const DICA_AUTHOR = 'Renato Bezerra';
 
 export const DICA_CATEGORIES: Record<
   DicaCategory,

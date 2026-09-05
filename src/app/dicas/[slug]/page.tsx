@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import {
   allDicaSlugs,
   dicaFromSlug,
+  DICA_AUTHOR,
   DICA_CATEGORIES,
 } from '@/lib/core/dicas/dica-catalog';
 import { BreadcrumbSchema } from '@/components/seo/breadcrumb-schema';
@@ -87,6 +88,7 @@ export default async function DicaPage({
         url={`${SITE.url}/dicas/${dica.slug}`}
         datePublished={dica.publishDate}
         dateModified={dica.updateDate}
+        authorName={dica.author ?? DICA_AUTHOR}
       />
 
       <Container maxWidth="md">
@@ -155,8 +157,8 @@ export default async function DicaPage({
             mb: 2,
           }}
         >
-          {dica.estimatedReadingMinutes} min de leitura · Publicado em{' '}
-          {publishDateFormatted}
+          Por {dica.author ?? DICA_AUTHOR} · {dica.estimatedReadingMinutes} min
+          de leitura · Publicado em {publishDateFormatted}
         </Typography>
 
         {/* H1 */}

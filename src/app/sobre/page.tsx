@@ -23,6 +23,8 @@ export const metadata: Metadata = {
     title: 'Sobre o Radar Unificando — Nossa Missão e Como Funciona',
     description:
       'Conheça o Radar Unificando: a ferramenta inteligente que consolida vagas de emprego de grandes portais em tempo real.',
+    url: `${SITE.url}/sobre`,
+    type: 'website',
   },
 };
 

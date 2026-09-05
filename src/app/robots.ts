@@ -18,7 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           "Google-Extended",
         ],
         allow: "/",
-        disallow: ["/api/", "/perfil/", "/admin/"],
+        disallow: ["/api/", "/perfil/", "/admin/", "/export/"],
       },
     ],
     sitemap: `${SITE.url}/sitemap.xml`,

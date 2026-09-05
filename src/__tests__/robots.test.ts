@@ -32,7 +32,7 @@ describe('robots metadata route', () => {
       'Google-Extended',
     ]);
     expect(ai.allow).toBe('/');
-    expect(ai.disallow).toEqual(['/api/', '/perfil/', '/admin/']);
+    expect(ai.disallow).toEqual(['/api/', '/perfil/', '/admin/', '/export/']);
   });
 
   it('should_reference_sitemap_from_site_url', () => {

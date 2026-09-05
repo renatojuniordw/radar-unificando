@@ -17,8 +17,7 @@ export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: {
-    absolute:
-      'Dicas de Carreira, Currículo e Entrevista | Radar Unificando',
+    absolute: 'Dicas de Carreira e Currículo | Radar Unificando',
   },
   description:
     'Tutoriais e dicas práticas para otimizar seu currículo, passar nos filtros ATS, se preparar para entrevistas e encontrar melhores oportunidades.',
@@ -225,6 +224,25 @@ export default async function DicasPage({
           >
             IMPORTAR CURRÍCULO AGORA
           </Link>
+          <Box>
+            <Link
+              data-testid="dica-cursos-link"
+              href="/cursos"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                color: '#ccff00',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                fontFamily: 'ui-monospace, monospace',
+                textDecoration: 'none',
+              }}
+            >
+              Identificou um gap de skill? FECHE COM CURSOS →
+            </Link>
+          </Box>
         </Box>
       </Container>
     </Box>
