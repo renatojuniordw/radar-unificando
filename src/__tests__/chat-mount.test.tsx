@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 
 const mockUseSession = vi.fn();
 const { dynamicMock } = vi.hoisted(() => ({ dynamicMock: vi.fn() }));
@@ -64,7 +65,7 @@ describe('ChatAssistantMount', () => {
     // A factory registrada no dynamic() deve resolver (quando invocada pelo
     // Next) para o componente ChatAssistantUI do módulo lazy.
     const [factory] = dynamicMock.mock.calls[0] as [
-      () => Promise<() => JSX.Element>,
+      () => Promise<() => ReactElement>,
     ];
     const mod = await factory();
     expect(typeof mod).toBe('function');
