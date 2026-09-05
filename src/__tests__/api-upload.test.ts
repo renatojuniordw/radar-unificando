@@ -35,7 +35,7 @@ vi.mock('pdfjs-dist/legacy/build/pdf.mjs', () => ({
   getDocument: vi.fn(),
 }));
 
-import { requireAuth } from '@/lib/api/auth-guard';
+import { requireAuth, staleSessionResponse } from '@/lib/api/auth-guard';
 import { profileRepository } from '@/lib/infrastructure/repositories';
 import { extractSkillsFromResume } from '@/lib/core/ai/skill-extractor';
 import { uploadLimiter } from '@/lib/infrastructure/security/rate-limiter';
@@ -282,6 +282,52 @@ describe('GET /api/upload/[jobId]', () => {
       { params: Promise.resolve({ jobId: 'job-other-user' }) } as any,
     );
     expect(res.status).toBe(404);
+  });
+
+  it('should return 401 response if user is unauthenticated', async () => {
+    vi.mocked(requireAuth).mockResolvedValue({
+      session: null as any,
+      response: NextResponse.json({ error: 'Não autorizado' }, { status: 401 }),
+    });
+
+    const res = await GET_JOB(
+      new Request('http://localhost/api/upload/job-mine') as any,
+      { params: Promise.resolve({ jobId: 'job-mine' }) } as any,
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('should return stale session response when job failed with STALE_SESSION', async () => {
+    vi.mocked(staleSessionResponse).mockReturnValue(
+      NextResponse.json({ error: 'Sessão inválida, faça login novamente' }, { status: 401 }),
+    );
+    const job = uploadJobStore.create('job-stale', 'user-123');
+    void job;
+    uploadJobStore.fail('job-stale', 'STALE_SESSION');
+
+    const res = await GET_JOB(
+      new Request('http://localhost/api/upload/job-stale') as any,
+      { params: Promise.resolve({ jobId: 'job-stale' }) } as any,
+    );
+    expect(staleSessionResponse).toHaveBeenCalledTimes(1);
+    expect(res.status).toBe(401);
+    expect((await res.clone().json()).error).toContain('Sessão inválida');
+  });
+
+  it('should include error field when polling a failed job', async () => {
+    const job = uploadJobStore.create('job-failed', 'user-123');
+    void job;
+    uploadJobStore.fail('job-failed', 'LLM fora do ar');
+
+    const res = await GET_JOB(
+      new Request('http://localhost/api/upload/job-failed') as any,
+      { params: Promise.resolve({ jobId: 'job-failed' }) } as any,
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('failed');
+    expect(body.error).toBe('LLM fora do ar');
+    expect(body.result).toBeUndefined();
   });
 
   it('should return processing status then completed for own job', async () => {

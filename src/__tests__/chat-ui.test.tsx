@@ -88,6 +88,22 @@ function baseConversation(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function usage(overrides: Record<string, unknown> = {}) {
+  return {
+    count: 0,
+    limit: 50,
+    isDailyLimitReached: false,
+    isTokenLimitReached: false,
+    dailyTokens: 0,
+    dailyTokenLimit: 99000,
+    monthlyTokens: 0,
+    monthlyTokenLimit: 1000000,
+    contextTokens: 0,
+    globalBudget: null,
+    ...overrides,
+  };
+}
+
 function renderChat(overrides: Record<string, unknown> = {}) {
   useSessionMock.mockReturnValue({ data: { user: { name: 'Ana' } }, status: 'authenticated' });
   useChatAssistantMock.mockReturnValue({
@@ -197,5 +213,125 @@ describe('ChatAssistantUI', () => {
     fireEvent.click(screen.getByText('novo chat'));
     const conv = useChatConversationMock();
     expect(conv.startNewConversation).toHaveBeenCalled();
+  });
+
+  it('should_not_send_pending_prompt_when_drawer_closed', () => {
+    useChatAssistantMock.mockReturnValue({
+      open: false,
+      openDrawer: vi.fn(),
+      close: vi.fn(),
+      pendingPrompt: 'guardada',
+      clearPendingPrompt: vi.fn(),
+    });
+    render(<ChatAssistantUI />);
+    const conv = useChatConversationMock();
+    expect(conv.sendMessage).not.toHaveBeenCalled();
+    expect(useChatAssistantMock().clearPendingPrompt).not.toHaveBeenCalled();
+  });
+
+  it('should_render_fab_and_open_drawer_when_closed', () => {
+    useChatAssistantMock.mockReturnValue({
+      open: false,
+      openDrawer: vi.fn(),
+      close: vi.fn(),
+      pendingPrompt: null,
+      clearPendingPrompt: vi.fn(),
+    });
+    render(<ChatAssistantUI />);
+
+    const fab = screen.getByTestId('chat-open-button');
+    fireEvent.click(fab);
+    expect(useChatAssistantMock().openDrawer).toHaveBeenCalled();
+  });
+
+  it('should_not_send_blank_message', () => {
+    renderChat();
+    fireEvent.click(screen.getByText('enviar'));
+    const conv = useChatConversationMock();
+    expect(conv.sendMessage).not.toHaveBeenCalled();
+  });
+
+  it('should_not_send_message_when_input_disabled', () => {
+    renderChat({ messages: Array.from({ length: 25 }, (_, i) => ({ id: `${i}`, role: 'user', content: 'x' })) });
+    const input = screen.getByLabelText('Mensagem');
+    fireEvent.change(input, { target: { value: 'olá' } });
+    fireEvent.click(screen.getByText('enviar'));
+    const conv = useChatConversationMock();
+    expect(conv.sendMessage).not.toHaveBeenCalled();
+  });
+
+  it('should_show_daily_limit_banner_from_last_message_text', () => {
+    renderChat({ messages: [{ id: '1', role: 'assistant', parts: [{ type: 'text', text: 'Limite diário de interações atingido' }] }] });
+    expect(screen.getByText('DAILY LIMIT')).toBeTruthy();
+    expect(screen.queryByText('QUICK')).toBeNull();
+  });
+
+  it('should_show_token_limit_banner_from_last_message_text', () => {
+    renderChat({ messages: [{ id: '1', role: 'assistant', parts: [{ type: 'text', text: 'Limite diário de consumo de IA atingido' }] }] });
+    expect(screen.getByText('TOKEN LIMIT')).toBeTruthy();
+  });
+
+  it('should_show_token_limit_banner_from_token_code_text', () => {
+    renderChat({ messages: [{ id: '1', role: 'assistant', parts: [{ type: 'text', text: 'TOKEN_LIMIT_REACHED' }] }] });
+    expect(screen.getByText('TOKEN LIMIT')).toBeTruthy();
+  });
+
+  it('should_show_thread_limit_banner_from_last_message_text', () => {
+    renderChat({ messages: [{ id: '1', role: 'assistant', parts: [{ type: 'text', text: 'Atingiu o limite de 25 mensagens' }] }] });
+    expect(screen.getByText('THREAD LIMIT')).toBeTruthy();
+    expect((screen.getByLabelText('Mensagem') as HTMLInputElement).disabled).toBe(true);
+  });
+
+  it('should_show_budget_exhausted_banner_from_last_message_text', () => {
+    renderChat({ messages: [{ id: '1', role: 'assistant', parts: [{ type: 'text', text: 'O orçamento diário do projeto foi atingido' }] }] });
+    expect(screen.getByText('BUDGET EXHAUSTED')).toBeTruthy();
+  });
+
+  it('should_use_token_limit_placeholder', () => {
+    renderChat({ dailyUsage: usage({ isTokenLimitReached: true }) });
+    expect((screen.getByLabelText('Mensagem') as HTMLInputElement).placeholder).toBe('Limite diário de consumo atingido...');
+  });
+
+  it('should_use_daily_limit_placeholder', () => {
+    renderChat({ dailyUsage: usage({ isDailyLimitReached: true }) });
+    expect((screen.getByLabelText('Mensagem') as HTMLInputElement).placeholder).toBe('Limite diário atingido...');
+  });
+
+  it('should_use_thread_limit_placeholder', () => {
+    renderChat({ messages: Array.from({ length: 25 }, (_, i) => ({ id: `${i}`, role: 'user', content: 'x' })) });
+    expect((screen.getByLabelText('Mensagem') as HTMLInputElement).placeholder).toBe('Limite desta conversa atingido. Inicie um novo chat.');
+  });
+
+  it('should_use_budget_exhausted_placeholder', () => {
+    renderChat({ dailyUsage: usage({ globalBudget: { exhausted: true, degraded: false } }) });
+    expect((screen.getByLabelText('Mensagem') as HTMLInputElement).placeholder).toBe('Orçamento diário do projeto atingido...');
+  });
+
+  it('should_hide_quick_actions_and_show_suggested_replies_after_user_message', () => {
+    renderChat({ messages: [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'oi' }] }] });
+    expect(screen.queryByText('QUICK')).toBeNull();
+    expect(screen.getByText('SUGGESTED')).toBeTruthy();
+  });
+
+  it('should_show_sync_error_banner', () => {
+    renderChat({ syncError: true });
+    expect(screen.getByText('SYNC ERROR')).toBeTruthy();
+  });
+
+  it('should_close_sidebar_when_select_conversation_returns_false', () => {
+    renderChat({ selectConversation: vi.fn(() => false) });
+    fireEvent.click(screen.getByText('toggle sidebar'));
+    fireEvent.click(screen.getByText('conv-1'));
+    const conv = useChatConversationMock();
+    expect(conv.selectConversation).toHaveBeenCalledWith('conv-1');
+    expect(screen.queryByText('conv-1')).toBeNull();
+  });
+
+  it('should_not_start_new_conversation_when_daily_limit_reached', () => {
+    renderChat({ dailyUsage: usage({ isDailyLimitReached: true }) });
+    fireEvent.click(screen.getByText('toggle sidebar'));
+    fireEvent.click(screen.getByText('novo chat'));
+    const conv = useChatConversationMock();
+    expect(conv.startNewConversation).not.toHaveBeenCalled();
   });
 });

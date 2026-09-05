@@ -75,4 +75,21 @@ describe('FaqStructuredData', () => {
     const content = JSON.parse(script?.innerHTML || '{}');
     expect(content.mainEntity.length).toBe(FAQ_ITEMS.length);
   });
+
+  it('should use provided items instead of the default FAQ_ITEMS', () => {
+    const customItems = [{ q: 'Pergunta customizada?', a: 'Resposta customizada.' }];
+    const { container } = render(<FaqStructuredData items={customItems} />);
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const content = JSON.parse(script?.innerHTML || '{}');
+    expect(content.mainEntity).toHaveLength(1);
+    expect(content.mainEntity[0].name).toBe('Pergunta customizada?');
+    expect(content.mainEntity[0].acceptedAnswer.text).toBe('Resposta customizada.');
+  });
+
+  it('should accept an empty items array producing no mainEntity entries', () => {
+    const { container } = render(<FaqStructuredData items={[]} />);
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const content = JSON.parse(script?.innerHTML || '{}');
+    expect(content.mainEntity).toEqual([]);
+  });
 });

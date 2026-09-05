@@ -84,4 +84,61 @@ describe('ProfileImportSection', () => {
     fireEvent.click(screen.getByText('EXTRAIR DO TEXTO'));
     expect(onExtract).not.toHaveBeenCalled();
   });
+
+  it('should_not_extract_whitespace_only_text', () => {
+    renderSection();
+    fireEvent.change(screen.getByPlaceholderText('Cole aqui o conteúdo textual do seu currículo...'), {
+      target: { value: '     ' },
+    });
+    fireEvent.click(screen.getByText('EXTRAIR DO TEXTO'));
+    expect(onExtract).not.toHaveBeenCalled();
+  });
+
+  it('should_render_custom_title_prop', () => {
+    renderSection({ title: 'ATUALIZAR CURRÍCULO' });
+    expect(screen.getByText('ATUALIZAR CURRÍCULO')).toBeTruthy();
+  });
+
+  it('should_set_drag_over_true_on_drag_over', () => {
+    renderSection();
+    const zone = screen.getByLabelText('Selecionar arquivo PDF do currículo');
+    fireEvent.dragOver(zone);
+    expect(onDragOver).toHaveBeenCalledWith(true);
+  });
+
+  it('should_set_drag_over_false_on_drag_leave', () => {
+    renderSection();
+    const zone = screen.getByLabelText('Selecionar arquivo PDF do currículo');
+    fireEvent.dragLeave(zone);
+    expect(onDragOver).toHaveBeenCalledWith(false);
+  });
+
+  it('should_not_extract_when_drop_has_no_files', () => {
+    renderSection();
+    const zone = screen.getByLabelText('Selecionar arquivo PDF do currículo');
+    fireEvent.drop(zone, { dataTransfer: { files: [] } });
+    expect(onExtract).not.toHaveBeenCalled();
+    expect(onDragOver).toHaveBeenCalledWith(false);
+  });
+
+  it('should_trigger_file_picker_on_click', () => {
+    const { container } = renderSection();
+    const clickSpy = vi.spyOn(container.querySelector('input[type=file]') as HTMLInputElement, 'click').mockImplementation(() => {});
+    const zone = screen.getByLabelText('Selecionar arquivo PDF do currículo');
+    fireEvent.click(zone);
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('should_trigger_file_picker_on_space_key', () => {
+    const { container } = renderSection();
+    const clickSpy = vi.spyOn(container.querySelector('input[type=file]') as HTMLInputElement, 'click').mockImplementation(() => {});
+    const zone = screen.getByLabelText('Selecionar arquivo PDF do currículo');
+    fireEvent.keyDown(zone, { key: ' ' });
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('should_accept_only_pdf_files', () => {
+    const { container } = renderSection();
+    expect(container.querySelector('input[type=file]')?.getAttribute('accept')).toBe('.pdf');
+  });
 });

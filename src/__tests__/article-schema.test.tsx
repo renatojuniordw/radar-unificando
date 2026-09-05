@@ -71,6 +71,14 @@ describe('ArticleSchema', () => {
     expect(content.author.name).toBe('Renato Bezerra');
   });
 
+  it('should include author as an Organization with the site url', () => {
+    const { container } = render(<ArticleSchema {...defaultProps} />);
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const content = JSON.parse(script?.innerHTML || '{}');
+    expect(content.author['@type']).toBe('Organization');
+    expect(content.author.url).toBe(SITE.url);
+  });
+
   it('should default image to SITE.logo', () => {
     const { container } = render(<ArticleSchema {...defaultProps} />);
     const script = container.querySelector('script[type="application/ld+json"]');

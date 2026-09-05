@@ -87,4 +87,44 @@ describe('ProfileReviewSection', () => {
     renderSection({ education: [] });
     expect(screen.queryByText('Formação')).toBeNull();
   });
+
+  it('should_render_all_category_quick_add_buttons', () => {
+    renderSection();
+    ['Dados', 'BI', 'Growth', 'Engenharia', 'Produto', 'Outro'].forEach((cat) => {
+      expect(screen.getByText(`+ ${cat}`)).toBeTruthy();
+    });
+  });
+
+  it('should_change_area_field', () => {
+    renderSection();
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.mouseDown(selects[1]);
+    fireEvent.click(screen.getByText('BI'));
+    expect(onFieldChange).toHaveBeenCalledWith('area', 'BI');
+  });
+
+  it('should_change_experience_years_on_slider_keyboard', () => {
+    renderSection();
+    const slider = screen.getByRole('slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+    expect(onFieldChange).toHaveBeenCalledWith('experienceYears', 6);
+  });
+
+  it('should_render_skills_count_badge_when_non_empty', () => {
+    renderSection();
+    expect(screen.getByText('1')).toBeTruthy();
+  });
+
+  it('should_render_multiple_education_chips', () => {
+    renderSection({ education: ['Engenharia', 'MBA'] });
+    expect(screen.getAllByTestId('profile-education-chip')).toHaveLength(2);
+  });
+
+  it('should_handle_category_button_hover_events', () => {
+    renderSection();
+    const button = screen.getByText('+ Dados');
+    fireEvent.mouseEnter(button);
+    fireEvent.mouseLeave(button);
+    expect(button).toBeTruthy();
+  });
 });
