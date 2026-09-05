@@ -1,6 +1,6 @@
 {
   "name": "radar-unificando",
-  "version": "2.0.0",
+  "version": "5.0.0",
   "description": "Radar Unificando — plataforma de busca inteligente de vagas remotas",
   "private": true,
   "scripts": {
