@@ -22,7 +22,9 @@ const daysAgo = (days: number): string =>
 describe('isFreshJob', () => {
   it('considera_vaga_recente_como_fresca', () => {
     expect(isFreshJob(mockJob(new Date().toISOString()))).toBe(true);
-    expect(isFreshJob(mockJob(daysAgo(MAX_JOB_AGE_DAYS)))).toBe(true);
+    // Uma vaga com exatamente MAX_JOB_AGE_DAYS dias é instável (Date.now avança
+    // entre a criação da data e o cálculo da idade) — usa margem segura de 1 dia.
+    expect(isFreshJob(mockJob(daysAgo(MAX_JOB_AGE_DAYS - 1)))).toBe(true);
   });
 
   it('considera_vaga_antiga_como_nao_fresca', () => {
