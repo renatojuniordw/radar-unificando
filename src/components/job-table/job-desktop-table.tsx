@@ -105,7 +105,7 @@ export function JobDesktopTable({ jobs, canGenerateResume, onGenerateResume, gen
                     if (!dateInfo) return '';
                     return (
                       <Tooltip title={`${dateInfo.label} em ${dateInfo.full}`} arrow>
-                        <span>{dateInfo.label} {dateInfo.relative}</span>
+                        <span>{dateInfo.relativeShort}</span>
                       </Tooltip>
                     );
                   })()}

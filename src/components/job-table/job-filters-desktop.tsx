@@ -17,6 +17,9 @@ interface Props {
   roles: string[];
   roleFilter: string;
   onRoleChange: (value: string) => void;
+  locations: string[];
+  locationFilter: string;
+  onLocationChange: (value: string) => void;
   searchFilter: string;
   onSearchChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -48,6 +51,8 @@ export function JobFiltersDesktop({
   onTypeChange,
   roleFilter,
   onRoleChange,
+  locationFilter,
+  onLocationChange,
   searchFilter,
   onSearchChange,
   onSubmit,
@@ -331,6 +336,17 @@ export function JobFiltersDesktop({
               data-testid="job-filters-desktop-active-chip"
               label={`Cargo: ${roleFilter}`}
               onDelete={() => onRoleChange('')}
+              size="small"
+              color="warning"
+              sx={{ fontWeight: 800, fontSize: '0.7rem', borderRadius: 0 }}
+            />
+          )}
+
+          {locationFilter && (
+            <Chip
+              data-testid="job-filters-desktop-active-chip"
+              label={`Local: ${locationFilter}`}
+              onDelete={() => onLocationChange('')}
               size="small"
               color="warning"
               sx={{ fontWeight: 800, fontSize: '0.7rem', borderRadius: 0 }}

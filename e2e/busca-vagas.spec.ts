@@ -21,6 +21,15 @@ const jobFake: Job = {
   description: 'Vaga sintética usada apenas em teste E2E.',
 };
 
+const jobFakeSp: Job = {
+  ...jobFake,
+  id: 'e2e-job-2',
+  company: 'SP Tech Ltda',
+  title: 'Analista de Dados Pleno',
+  location: 'São Paulo',
+  link: 'https://exemplo.com/vaga-e2e-sp',
+};
+
 test.describe('Busca de vagas', () => {
   test('busca retorna e exibe uma vaga na tabela', async ({ page }) => {
     await page.route('**/api/vagas*', (route) => route.fulfill({ json: [jobFake] }));
@@ -50,5 +59,35 @@ test.describe('Busca de vagas', () => {
       .locator('input')
       .fill('termo inexistente');
     await expect(page.getByTestId('job-empty-state-clear-filters')).toBeVisible();
+  });
+
+  test('filtro de localização filtra as vagas pelo drawer', async ({ page }) => {
+    // Mock devolve 2 vagas: uma remota e uma em São Paulo.
+    await page.route('**/api/vagas*', (route) =>
+      route.fulfill({ json: [jobFake, jobFakeSp] }),
+    );
+
+    await page.goto('/busca');
+    await dismissCookieConsent(page);
+
+    await expect(page.getByTestId('job-table-row')).toHaveCount(2);
+
+    // Abre o drawer de filtros avançados e seleciona o local "São Paulo".
+    await page.getByRole('button', { name: /FILTROS AVANÇADOS/ }).click();
+    const locationInput = page
+      .getByTestId('job-filters-drawer-location-select')
+      .locator('input');
+    await locationInput.fill('São Paulo');
+    await page.getByRole('option', { name: 'São Paulo' }).click();
+    await page.getByRole('button', { name: /VER 1 VAGAS? →/ }).click();
+
+    // Apenas a vaga de São Paulo permanece visível.
+    await expect(page.getByTestId('job-table-row')).toHaveCount(1);
+    await expect(
+      page.getByTestId('job-table-row').getByText('Analista de Dados Pleno'),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId('job-table-row').getByText('Desenvolvedor Full Stack Sênior'),
+    ).toBeHidden();
   });
 });

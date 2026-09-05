@@ -7,6 +7,7 @@ export interface JobFilterChange {
   platform?: string;
   role?: string;
   search?: string;
+  location?: string;
 }
 
 interface UseJobFiltersParams {
@@ -20,12 +21,14 @@ export function useJobFilters({ onFilterChange }: UseJobFiltersParams) {
   const [debouncedSearch] = useDebounce(searchFilter, 300);
   const [companyFilter, setCompanyFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
 
   const countSecondaryFilters = [
     platformFilter,
     companyFilter,
     typeFilter,
     roleFilter,
+    locationFilter,
   ].filter(Boolean).length;
 
   const countTotalFilters = countSecondaryFilters + (searchFilter ? 1 : 0);
@@ -36,6 +39,7 @@ export function useJobFilters({ onFilterChange }: UseJobFiltersParams) {
     setTypeFilter('');
     setRoleFilter('');
     setSearchFilter('');
+    setLocationFilter('');
     onFilterChange({});
   }
 
@@ -46,6 +50,7 @@ export function useJobFilters({ onFilterChange }: UseJobFiltersParams) {
       platform: platform || undefined,
       role: role || undefined,
       search: searchFilter || undefined,
+      location: locationFilter || undefined,
     });
   }
 
@@ -65,6 +70,7 @@ export function useJobFilters({ onFilterChange }: UseJobFiltersParams) {
       platform: platformFilter || undefined,
       role: roleFilter || undefined,
       search: searchFilter || undefined,
+      location: locationFilter || undefined,
     });
   }
 
@@ -75,9 +81,10 @@ export function useJobFilters({ onFilterChange }: UseJobFiltersParams) {
         platform: platformFilter || undefined,
         role: roleFilter || undefined,
         search: debouncedSearch || undefined,
+        location: locationFilter || undefined,
       });
     }
-  }, [debouncedSearch, platformFilter, roleFilter, onFilterChange]);
+  }, [debouncedSearch, platformFilter, roleFilter, locationFilter, onFilterChange]);
 
   return {
     platformFilter,
@@ -88,6 +95,8 @@ export function useJobFilters({ onFilterChange }: UseJobFiltersParams) {
     setCompanyFilter,
     typeFilter,
     setTypeFilter,
+    locationFilter,
+    setLocationFilter,
     countSecondaryFilters,
     countTotalFilters,
     handleClearFilters,

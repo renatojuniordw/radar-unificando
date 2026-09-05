@@ -15,7 +15,15 @@ const { runDiscoveryStep: mockDiscovery } = vi.hoisted(() => ({ runDiscoveryStep
 vi.mock('@/lib/core/pipeline/steps/discovery-step', () => ({ runDiscoveryStep: mockDiscovery }));
 vi.mock('@/lib/core/pipeline/steps/save-step', () => ({ runSaveStep: vi.fn().mockResolvedValue(0) }));
 vi.mock('@/lib/core/pipeline/steps/public-save-step', () => ({ runPublicSaveStep: vi.fn().mockResolvedValue(0) }));
-vi.mock('@/lib/core/dedup', () => ({ dedupEngine: { mergeSources: vi.fn().mockReturnValue([]) } }));
+vi.mock('@/lib/core/dedup', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/core/dedup')>();
+  return {
+    dedupEngine: {
+      dedupByLink: actual.dedupEngine.dedupByLink.bind(actual.dedupEngine),
+      mergeSources: vi.fn().mockReturnValue([]),
+    },
+  };
+});
 const { expandQueries: mockExpandQueries } = vi.hoisted(() => ({ expandQueries: vi.fn() }));
 vi.mock('@/lib/core/pipeline/query-expansion/service', () => ({ expandQueries: mockExpandQueries }));
 
@@ -146,6 +154,36 @@ describe('runPipeline', () => {
     expect(progressEmitter.emit).toHaveBeenCalledWith(
       'run-1',
       expect.objectContaining({ type: 'pipeline_complete', jobs: [newJob, midJob, oldJob] }),
+    );
+  });
+
+  it('should_deduplicate_gupy_jobs_by_link_before_emitting', async () => {
+    const baseJob = {
+      platform: 'Gupy' as const,
+      onList: 'Não' as const,
+      roleCategory: '',
+      type: 'hybrid',
+      location: 'SP',
+      companyNameOnPlatform: 'CorpA',
+      alert: '',
+    };
+    // Mesma vaga (mesmo link) retornada por queries diferentes da expansão.
+    const dup1: Job = { ...baseJob, company: 'CorpA', title: 'Dev React', link: 'https://gupy.io/job/dup', postedAt: '2026-01-01T00:00:00.000Z' };
+    const dup2: Job = { ...baseJob, company: 'CorpA', title: 'Dev React', link: 'https://gupy.io/job/dup', postedAt: '2026-01-01T00:00:00.000Z' };
+    const unique: Job = { ...baseJob, company: 'CorpA', title: 'Dev Java', link: 'https://gupy.io/job/unique', postedAt: '2026-01-02T00:00:00.000Z' };
+
+    vi.mocked(runGupyStep).mockResolvedValue([dup1, dup2, unique]);
+    vi.mocked(dedupEngine.mergeSources).mockReturnValue([dup1, dup2, unique]);
+
+    await runPipeline('run-1', 'user-1', ['CorpA'], ['Dev'], true);
+
+    // pipeline_complete deve emitir apenas links únicos, ordenados por recência.
+    expect(progressEmitter.emit).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({
+        type: 'pipeline_complete',
+        jobs: [unique, dup1],
+      }),
     );
   });
 

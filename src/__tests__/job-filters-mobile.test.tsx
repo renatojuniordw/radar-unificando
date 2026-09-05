@@ -7,6 +7,7 @@ type Props = {
   searchFilter: string;
   platformFilter: string;
   typeFilter: string;
+  locationFilter: string;
   countSecondaryFilters: number;
   countTotalFilters: number;
 };
@@ -25,6 +26,7 @@ function renderMobile(overrides: Partial<Props> = {}) {
     searchFilter: '',
     platformFilter: '',
     typeFilter: '',
+    locationFilter: '',
     countSecondaryFilters: 0,
     countTotalFilters: 0,
     ...overrides,
@@ -38,6 +40,7 @@ function renderMobile(overrides: Partial<Props> = {}) {
       onPlatformChange={handlers.onPlatformChange}
       typeFilter={props.typeFilter}
       onTypeChange={handlers.onTypeChange}
+      locationFilter={props.locationFilter}
       onSubmit={handlers.onSubmit}
       countSecondaryFilters={props.countSecondaryFilters}
       countTotalFilters={props.countTotalFilters}
@@ -80,6 +83,17 @@ describe('JobFiltersMobile', () => {
     const { onOpenDrawer } = renderMobile();
     fireEvent.click(screen.getByText('MODALIDADE: TODAS'));
     expect(onOpenDrawer).toHaveBeenCalled();
+  });
+
+  it('should_open_drawer_when_location_chip_clicked', () => {
+    const { onOpenDrawer } = renderMobile();
+    fireEvent.click(screen.getByText('LOCAL: TODOS'));
+    expect(onOpenDrawer).toHaveBeenCalled();
+  });
+
+  it('should_show_selected_location_in_location_chip_label', () => {
+    renderMobile({ locationFilter: 'São Paulo' });
+    expect(screen.getByText('LOCAL: SÃO PAULO')).toBeTruthy();
   });
 
   it('should_show_selected_type_in_modality_chip_label', () => {

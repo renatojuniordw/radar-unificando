@@ -22,9 +22,6 @@ vi.mock('@/components/cursos/course-grid', () => ({
 vi.mock('@/components/cursos/course-fallback-cta', () => ({
   CourseFallbackCta: () => <div>FALLBACK CTA</div>,
 }));
-vi.mock('@/components/shared/chat-teaser', () => ({
-  ChatTeaser: () => <div>CHAT TEASER</div>,
-}));
 vi.mock('@/components/ui/section-eyebrow', () => ({
   SectionEyebrow: ({ children }: any) => <div>{children}</div>,
 }));
@@ -60,11 +57,6 @@ describe('CursosPage', () => {
     render(<CursosPage />);
     expect(screen.getByText('Cursos em destaque')).toBeTruthy();
     expect(screen.getByText('FALLBACK CTA')).toBeTruthy();
-  });
-
-  it('should_show_chat_teaser_for_anonymous_user', () => {
-    render(<CursosPage />);
-    expect(screen.getByText('CHAT TEASER')).toBeTruthy();
   });
 
   it('should_personalize_recommendation_by_last_search', async () => {

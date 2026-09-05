@@ -71,7 +71,11 @@ async function fetchFreshJobs(
     discoveryEnabled ? deps.runDiscoveryStep(runId, { companies, userId }) : Promise.resolve(0),
   ]);
 
-  const allJobs = deps.sortJobsByRecency(deps.dedupEngine.mergeSources(gupyJobs, inhireJobs));
+  const allJobs = deps.sortJobsByRecency(
+    // dedupByLink remove repetições internas do Gupy (mesma URL retornada por
+    // queries/empresas diferentes na expansão); mergeSources só cobre InHire×Gupy.
+    deps.dedupEngine.dedupByLink(deps.dedupEngine.mergeSources(gupyJobs, inhireJobs)),
+  );
   deps.pipelineCache.set(companies, queries, allJobs);
   return {
     allJobs,

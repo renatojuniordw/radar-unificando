@@ -9,11 +9,13 @@ type Props = {
   companyFilter: string;
   typeFilter: string;
   roleFilter: string;
+  locationFilter: string;
   filteredTotal: number;
   countSecondaryFilters: number;
   companies: string[];
   types: string[];
   roles: string[];
+  locations: string[];
 };
 
 function renderDrawer(overrides: Partial<Props> = {}) {
@@ -23,6 +25,7 @@ function renderDrawer(overrides: Partial<Props> = {}) {
     onCompanyChange: vi.fn(),
     onTypeChange: vi.fn(),
     onRoleChange: vi.fn(),
+    onLocationChange: vi.fn(),
     onClearFilters: vi.fn(),
   };
 
@@ -32,11 +35,13 @@ function renderDrawer(overrides: Partial<Props> = {}) {
     companyFilter: '',
     typeFilter: '',
     roleFilter: '',
+    locationFilter: '',
     filteredTotal: 12,
     countSecondaryFilters: 0,
     companies: ['Acme', 'Initech'],
     types: ['Remota', 'Híbrida', 'Presencial'],
     roles: ['Dev', 'QA'],
+    locations: ['São Paulo', 'Remoto'],
     ...overrides,
   };
 
@@ -55,6 +60,9 @@ function renderDrawer(overrides: Partial<Props> = {}) {
       roles={props.roles}
       roleFilter={props.roleFilter}
       onRoleChange={handlers.onRoleChange}
+      locations={props.locations}
+      locationFilter={props.locationFilter}
+      onLocationChange={handlers.onLocationChange}
       filteredTotal={props.filteredTotal}
       countSecondaryFilters={props.countSecondaryFilters}
       onClearFilters={handlers.onClearFilters}
@@ -113,6 +121,12 @@ describe('JobFiltersDrawer', () => {
     const { onRoleChange } = renderDrawer();
     await selectAutocomplete('SELECIONE O CARGO', 'Dev');
     expect(onRoleChange).toHaveBeenCalledWith('Dev');
+  });
+
+  it('should_call_on_location_change_when_location_option_clicked', async () => {
+    const { onLocationChange } = renderDrawer();
+    await selectAutocomplete('CIDADE, ESTADO OU PAÍS', 'São Paulo');
+    expect(onLocationChange).toHaveBeenCalledWith('São Paulo');
   });
 
   it('should_clear_company_filter_when_autocomplete_is_cleared', async () => {

@@ -17,6 +17,7 @@ interface ResultsSectionProps {
     platform?: string;
     role?: string;
     search?: string;
+    location?: string;
   }) => void;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;

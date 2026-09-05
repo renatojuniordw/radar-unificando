@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       platform: searchParams.get('platform') || undefined,
       role: searchParams.get('role') || undefined,
       search: searchParams.get('search') || undefined,
+      location: searchParams.get('location') || undefined,
     });
 
     const mapped = result.map(j => mapJobToApi(j));

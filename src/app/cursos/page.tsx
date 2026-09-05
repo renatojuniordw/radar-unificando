@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Box, Container, Typography, TextField, InputAdornment } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  InputAdornment,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -14,7 +20,6 @@ import type { Course } from "@/lib/core/courses/course-provider";
 import { CourseCard } from "@/components/cursos/course-card";
 import { CourseGrid } from "@/components/cursos/course-grid";
 import { CourseFallbackCta } from "@/components/cursos/course-fallback-cta";
-import { ChatTeaser } from "@/components/shared/chat-teaser";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 
 interface SearchResult {
@@ -62,7 +67,10 @@ export default function CursosPage() {
           body: JSON.stringify({ query: q }),
         });
         const data = res.ok
-          ? ((await res.json()) as { courses?: Course[]; source?: "impact" | "curated" })
+          ? ((await res.json()) as {
+              courses?: Course[];
+              source?: "impact" | "curated";
+            })
           : null;
         if (!active) return;
         if (data?.courses?.length) {
@@ -99,7 +107,10 @@ export default function CursosPage() {
 
   return (
     <Box sx={{ bgcolor: "#020617", color: "#ffffff", minHeight: "100vh" }}>
-      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 }, px: { xs: 2, sm: 3 } }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: { xs: 5, md: 8 }, px: { xs: 2, sm: 3 } }}
+      >
         <Box sx={{ maxWidth: 720, mb: 4 }}>
           <Box className="badge-neon" sx={{ mb: 2 }}>
             UDEMY · LINKS DE AFILIADO
@@ -118,7 +129,9 @@ export default function CursosPage() {
           >
             CURSOS PARA FECHAR SEUS GAPS
           </Typography>
-          <Typography sx={{ color: "#94a3b8", fontSize: "0.95rem", lineHeight: 1.6 }}>
+          <Typography
+            sx={{ color: "#94a3b8", fontSize: "0.95rem", lineHeight: 1.6 }}
+          >
             Identificamos as skills que as vagas mais pedem. Estude exatamente o
             que falta no seu perfil com cursos avulsos baratos na Udemy.
           </Typography>
@@ -158,7 +171,12 @@ export default function CursosPage() {
           </SectionEyebrow>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {POPULAR_SKILLS.map((skill) => (
-              <Link key={skill} data-testid="course-skill-link" href={`/cursos/${skillSlug(skill)}`} style={{ textDecoration: "none" }}>
+              <Link
+                key={skill}
+                data-testid="course-skill-link"
+                href={`/cursos/${skillSlug(skill)}`}
+                style={{ textDecoration: "none" }}
+              >
                 <Box
                   sx={{
                     bgcolor: "#0f172a",
@@ -184,12 +202,6 @@ export default function CursosPage() {
             ))}
           </Box>
         </Box>
-
-        {!session && (
-          <Box sx={{ mb: 5, maxWidth: 480 }}>
-            <ChatTeaser />
-          </Box>
-        )}
 
         {!searching && (
           <Box sx={{ mb: 5 }}>
@@ -237,8 +249,8 @@ export default function CursosPage() {
           }}
         >
           Alguns links desta página são de afiliados (Udemy) e podem gerar
-          comissão para a manutenção do projeto, sem custo adicional para
-          você. A recomendação é baseada nas skills das vagas que você busca.
+          comissão para a manutenção do projeto, sem custo adicional para você.
+          A recomendação é baseada nas skills das vagas que você busca.
         </Typography>
       </Container>
     </Box>

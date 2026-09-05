@@ -11,6 +11,7 @@ interface Props {
   onPlatformChange: (value: string) => void;
   typeFilter: string;
   onTypeChange: (value: string) => void;
+  locationFilter: string;
   onSubmit: (e: React.FormEvent) => void;
   countSecondaryFilters: number;
   countTotalFilters: number;
@@ -38,6 +39,7 @@ export function JobFiltersMobile({
   onPlatformChange,
   typeFilter,
   onTypeChange,
+  locationFilter,
   onSubmit,
   countSecondaryFilters,
   countTotalFilters,
@@ -152,6 +154,25 @@ export function JobFiltersMobile({
           sx={{
             bgcolor: typeFilter ? tokens.primary : "#f1f5f9",
             color: typeFilter ? tokens.accent : tokens.primary,
+            border: tokens.border,
+            fontWeight: 900,
+            fontSize: "0.68rem",
+            fontFamily: tokens.fontMono,
+            borderRadius: 0,
+            boxShadow: "2px 2px 0px #000",
+            flexShrink: 0,
+          }}
+        />
+
+        <Chip
+          data-testid="job-filters-mobile-location-chip"
+          label={`LOCAL: ${locationFilter ? locationFilter.toUpperCase() : "TODOS"}`}
+          onClick={onOpenDrawer}
+          size="small"
+          clickable
+          sx={{
+            bgcolor: locationFilter ? tokens.primary : "#f1f5f9",
+            color: locationFilter ? tokens.accent : tokens.primary,
             border: tokens.border,
             fontWeight: 900,
             fontSize: "0.68rem",

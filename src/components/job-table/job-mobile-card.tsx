@@ -76,7 +76,7 @@ export function JobMobileCard({ job, canGenerateResume, onGenerateResume, genera
         {dateInfo && (
           <Tooltip title={`${dateInfo.label} em ${dateInfo.full}`} arrow>
             <Box sx={{ border: '1px solid #020617', bgcolor: tokens.surfaceHover, px: 1, py: 0.25, fontSize: '0.65rem', fontWeight: 700, fontFamily: tokens.fontMono, color: '#334155' }}>
-              📅 {dateInfo.label} {dateInfo.relative}
+              📅 {dateInfo.relativeShort}
             </Box>
           </Tooltip>
         )}

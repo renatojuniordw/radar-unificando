@@ -28,6 +28,9 @@ interface Props {
   roles: string[];
   roleFilter: string;
   onRoleChange: (value: string) => void;
+  locations: string[];
+  locationFilter: string;
+  onLocationChange: (value: string) => void;
   filteredTotal: number;
   countSecondaryFilters: number;
   onClearFilters: () => void;
@@ -47,6 +50,9 @@ export function JobFiltersDrawer({
   roles,
   roleFilter,
   onRoleChange,
+  locations,
+  locationFilter,
+  onLocationChange,
   filteredTotal,
   countSecondaryFilters,
   onClearFilters,
@@ -199,6 +205,37 @@ export function JobFiltersDrawer({
             )}
             size="small"
             noOptionsText="Nenhuma opção"
+            disableClearable={false}
+          />
+        </Box>
+
+        <Box>
+          <Typography
+            sx={{
+              fontWeight: 800,
+              fontSize: "0.7rem",
+              color: "#475569",
+              textTransform: "uppercase",
+              mb: 0.75,
+              fontFamily: tokens.fontMono,
+            }}
+          >
+            Local
+          </Typography>
+          <Autocomplete
+            data-testid="job-filters-drawer-location-select"
+            options={locations}
+            value={locationFilter || null}
+            onChange={(_, v) => onLocationChange(v || "")}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="CIDADE, ESTADO OU PAÍS"
+                size="small"
+              />
+            )}
+            size="small"
+            noOptionsText="Nenhum local encontrado"
             disableClearable={false}
           />
         </Box>

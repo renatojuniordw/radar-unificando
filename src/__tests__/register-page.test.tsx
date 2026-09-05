@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 
 const { useRouterMock } = vi.hoisted(() => ({ useRouterMock: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: useRouterMock }));
+const searchParamsState = vi.hoisted(() => ({ value: '' as string }));
+vi.mock('next/navigation', () => ({
+  useRouter: useRouterMock,
+  useSearchParams: vi.fn(() => new URLSearchParams(searchParamsState.value)),
+}));
 vi.mock('next/link', () => ({
   default: ({ href, children }: any) => <a href={href}>{children}</a>,
 }));
@@ -19,6 +23,7 @@ describe('RegisterPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    searchParamsState.value = '';
     useRouterMock.mockReturnValue({ push });
     vi.stubGlobal('fetch', fetchMock);
   });
@@ -84,6 +89,39 @@ describe('RegisterPage', () => {
     await act(async () => {
       vi.advanceTimersByTime(1500);
     });
+    expect(push).toHaveBeenCalledWith('/login?registered=true');
+  });
+
+  it('should_forward_callbackUrl_to_login_after_register', async () => {
+    vi.useFakeTimers();
+    searchParamsState.value = 'callbackUrl=%2Fbusca';
+    fetchMock.mockResolvedValue({ ok: true });
+    render(<RegisterPage />);
+    fillValid();
+    submit();
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(push).toHaveBeenCalledWith('/login?registered=true&callbackUrl=%2Fbusca');
+  });
+
+  it('should_not_forward_unsafe_callbackUrl', async () => {
+    vi.useFakeTimers();
+    searchParamsState.value = 'callbackUrl=https%3A%2F%2Fevil.com';
+    fetchMock.mockResolvedValue({ ok: true });
+    render(<RegisterPage />);
+    fillValid();
+    submit();
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(push).not.toHaveBeenCalledWith(expect.stringContaining('evil'));
     expect(push).toHaveBeenCalledWith('/login?registered=true');
   });
 

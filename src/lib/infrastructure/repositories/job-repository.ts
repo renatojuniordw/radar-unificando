@@ -3,7 +3,7 @@ import type { Job as PrismaJob, Prisma } from '@prisma/client';
 import { buildProfileTokens, rankJobsByProfile } from '@/lib/core/matching/recommendation';
 
 export interface IJobRepository {
-  findByUserId(userId: string, opts?: { platform?: string; role?: string; search?: string; take?: number }): Promise<PrismaJob[]>;
+  findByUserId(userId: string, opts?: { platform?: string; role?: string; search?: string; location?: string; take?: number }): Promise<PrismaJob[]>;
   findRecommendedByUserId(
     userId: string,
     profile: { currentRole: string | null; area: string | null; skills: string[] },
@@ -22,6 +22,9 @@ export const jobRepository: IJobRepository = {
     const where: Prisma.JobWhereInput = { userId, status: 'active' };
     if (opts.platform) where.platform = opts.platform;
     if (opts.role) where.roleCategory = opts.role;
+    if (opts.location && opts.location.trim()) {
+      where.location = { contains: opts.location.trim(), mode: 'insensitive' };
+    }
 
     if (opts.search && opts.search.trim()) {
       const STOPWORDS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'no', 'na', 'nos', 'nas', 'a', 'o', 'para', 'com']);
@@ -37,6 +40,7 @@ export const jobRepository: IJobRepository = {
             { title: { contains: term, mode: 'insensitive' } },
             { companyNameOnPlatform: { contains: term, mode: 'insensitive' } },
             { roleCategory: { contains: term, mode: 'insensitive' } },
+            { location: { contains: term, mode: 'insensitive' } },
           ],
         }));
       }

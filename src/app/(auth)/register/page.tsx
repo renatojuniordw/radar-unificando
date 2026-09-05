@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { registerFormSchema } from '@/lib/core/auth/register-schema';
 import { FormField } from '@/components/ui/form-field';
@@ -11,8 +11,17 @@ import { Eye, EyeOff, UserPlus, ArrowRight } from 'lucide-react';
 
 const registerSchema = registerFormSchema;
 
-export default function RegisterPage() {
+/** Só permite repassar um caminho relativo interno (evita open redirect). */
+function isSafeCallbackUrl(url: string): boolean {
+  return url.startsWith('/') && !url.startsWith('//');
+}
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '';
+  const safeCallbackUrl =
+    callbackUrl && isSafeCallbackUrl(callbackUrl) ? callbackUrl : '/';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +62,9 @@ export default function RegisterPage() {
 
       setRegisteredSuccess(true);
       setTimeout(() => {
-        router.push('/login?registered=true');
+        const params = new URLSearchParams({ registered: 'true' });
+        if (safeCallbackUrl !== '/') params.set('callbackUrl', safeCallbackUrl);
+        router.push(`/login?${params.toString()}`);
       }, 1200);
     } catch {
       setApiError('Erro ao criar conta');
@@ -109,7 +120,7 @@ export default function RegisterPage() {
             lineHeight: 1.4,
           }}
         >
-          Cadastre-se para salvar vagas, empresas e acelerar sua busca por trabalho remoto.
+          Cadastre-se para salvar vagas, empresas e desbloquear Análise ATS, currículos adaptados por IA e comparativo de vagas.
         </p>
       </div>
 
@@ -324,5 +335,13 @@ export default function RegisterPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
   );
 }

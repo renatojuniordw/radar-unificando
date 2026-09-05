@@ -11,7 +11,15 @@ export const dynamic = "force-dynamic";
 // da página exista no HTML inicial (rastreável sem depender de hidratação JS).
 // O client component refina/substitui esses dados conforme sessão e filtros.
 export default async function BuscaPage() {
-  const jobs = await jobRepository.findByUserId(ANONYMOUS_USER_ID, { take: 50 });
+  let jobs: Awaited<ReturnType<typeof jobRepository.findByUserId>> = [];
+  try {
+    jobs = await jobRepository.findByUserId(ANONYMOUS_USER_ID, { take: 50 });
+  } catch (error) {
+    // Banco indisponível (ex.: ambiente local sem Docker/postgres no ar) —
+    // não derruba a página de busca: segue com lista vazia e o client
+    // recarrega via /api/vagas quando o banco voltar.
+    console.warn('[busca] Banco indisponível, inicializando sem vagas:', error);
+  }
   const initialJobs = jobs.map((j) => mapJobToApi(j));
 
   return (

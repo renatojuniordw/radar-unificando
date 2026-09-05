@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { browserStorage } from "@/lib/infrastructure/storage/browser-storage";
+import { uniqueBy } from "@/lib/utils/array";
 import type { Job } from "@/lib/types/job";
 
 const WATCHDOG_MS = 180_000; // 3 minutos
@@ -80,12 +81,18 @@ export function usePipelineStream(callbacks: PipelineStreamCallbacks) {
             onPipelineFinished();
 
             if (data.type === "pipeline_complete" && Array.isArray(data.jobs)) {
-              const completedJobs: Job[] = data.jobs.map((j) => ({
+              // Defesa em profundidade: o pipeline já deduplica por link, mas
+              // garante aqui que a lista exibida nunca tenha a mesma vaga 2x.
+              const dedupedJobs: Job[] = uniqueBy(
+                data.jobs,
+                (j) => j.link || `${j.company}-${j.title}`,
+              );
+              const completedJobs: Job[] = dedupedJobs.map((j) => ({
                 ...j,
                 detectedAt: j.detectedAt || "",
               }));
               onJobsReceived(completedJobs);
-              if (!session) await browserStorage.setJobs(data.jobs);
+              if (!session) await browserStorage.setJobs(dedupedJobs);
             } else {
               onReloadNeeded();
             }

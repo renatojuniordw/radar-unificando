@@ -107,7 +107,7 @@ export function CookieConsent() {
                 flex: "1 1 320px",
               }}
             >
-              <strong style={{ color: "#ccff00" }}>🍪 AVISO DE COOKIES</strong>{" "}
+              <strong style={{ color: "#ccff00" }}>AVISO DE COOKIES</strong>{" "}
               Usamos cookies essenciais para o funcionamento (ex.: sua sessão de
               login) e, com seu consentimento, o Google Analytics (para entender
               como o site é usado) e o tracking de afiliados da Impact (para

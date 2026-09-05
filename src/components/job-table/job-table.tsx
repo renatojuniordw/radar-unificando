@@ -21,7 +21,7 @@ interface Props {
   jobs: Job[];
   loading: boolean;
   roleCategories: string[];
-  onFilterChange: (filters: { platform?: string; role?: string; search?: string }) => void;
+  onFilterChange: (filters: { platform?: string; role?: string; search?: string; location?: string }) => void;
   canGenerateResume: boolean;
   onGenerateResume: (job: Job) => void;
   generatingJobKey: string | null;
@@ -79,6 +79,8 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
     setCompanyFilter,
     typeFilter,
     setTypeFilter,
+    locationFilter,
+    setLocationFilter,
     countSecondaryFilters,
     countTotalFilters,
     handleClearFilters: clearFilterState,
@@ -90,7 +92,7 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
   // Reset mobile page when filters or search change
   useEffect(() => {
     setMobilePage(1);
-  }, [platformFilter, roleFilter, searchFilter, companyFilter, typeFilter]);
+  }, [platformFilter, roleFilter, searchFilter, companyFilter, typeFilter, locationFilter]);
 
   function handleClearFilters() {
     setCompanyFilter('');
@@ -100,12 +102,14 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
 
   const companies = useMemo(() => uniqueValues(jobs.map(j => j.company)).sort(), [jobs]);
   const types = useMemo(() => uniqueValues(jobs.map(j => normalizeJobType(j.type))).sort(), [jobs]);
+  const locations = useMemo(() => uniqueValues(jobs.map(j => j.location).filter(Boolean)).sort(), [jobs]);
 
   const filteredJobs = useMemo(() => jobs.filter(j => {
     if (companyFilter && j.company !== companyFilter) return false;
     if (typeFilter && normalizeJobType(j.type) !== typeFilter) return false;
+    if (locationFilter && !(j.location || '').toLowerCase().includes(locationFilter.toLowerCase())) return false;
     return true;
-  }), [jobs, companyFilter, typeFilter]);
+  }), [jobs, companyFilter, typeFilter, locationFilter]);
 
   function handleExport() {
     if (exporting) return;
@@ -152,6 +156,7 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
           onPlatformChange={handlePlatformChange}
           typeFilter={typeFilter}
           onTypeChange={setTypeFilter}
+          locationFilter={locationFilter}
           onSubmit={handleSearch}
           countSecondaryFilters={countSecondaryFilters}
           countTotalFilters={countTotalFilters}
@@ -172,6 +177,9 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
           roles={roleCategories}
           roleFilter={roleFilter}
           onRoleChange={handleRoleChange}
+          locations={locations}
+          locationFilter={locationFilter}
+          onLocationChange={setLocationFilter}
           searchFilter={searchFilter}
           onSearchChange={setSearchFilter}
           onSubmit={handleSearch}
@@ -196,6 +204,9 @@ export const JobTable = memo(function JobTable({ jobs, loading, roleCategories, 
           roles={roleCategories}
           roleFilter={roleFilter}
           onRoleChange={handleRoleChange}
+          locations={locations}
+          locationFilter={locationFilter}
+          onLocationChange={setLocationFilter}
           filteredTotal={filteredJobs.length}
           countSecondaryFilters={countSecondaryFilters}
           onClearFilters={handleClearFilters}

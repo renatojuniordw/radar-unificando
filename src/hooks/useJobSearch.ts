@@ -22,7 +22,7 @@ import type { Job } from "@/lib/types/job";
  * - usePipelineStream: gerencia conexão SSE com o pipeline
  */
 export function useJobSearch(initialJobs: Job[] = []) {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const profile = useProfile();
   const [running, setRunning] = useState(false);
   const [autoSyncing, setAutoSyncing] = useState(false);
@@ -78,6 +78,7 @@ export function useJobSearch(initialJobs: Job[] = []) {
       platform?: string;
       role?: string;
       search?: string;
+      location?: string;
     }) => {
       setLoading(true);
       const params = new URLSearchParams();
@@ -88,6 +89,7 @@ export function useJobSearch(initialJobs: Job[] = []) {
         if (filters?.platform) params.set("platform", filters.platform);
         if (filters?.role) params.set("role", filters.role);
         if (filters?.search) params.set("search", filters.search);
+        if (filters?.location) params.set("location", filters.location);
       }
 
       try {
@@ -352,6 +354,7 @@ export function useJobSearch(initialJobs: Job[] = []) {
 
   return {
     session,
+    sessionStatus,
     profile,
     companies,
     setCompanies,

@@ -6,16 +6,20 @@ import { useJobSearch } from "@/hooks/useJobSearch";
 import { BuscaHeader } from "@/components/busca/busca-header";
 import { LoadingOverlay } from "@/components/home/loading-overlay";
 import { ResultsSection } from "@/components/home/results-section";
+import { JobToolsBanner } from "@/components/busca/job-tools-banner";
 import { CourseRecommendationSidebar } from "@/components/busca/course-recommendation-sidebar";
-import { ChatTeaser } from "@/components/shared/chat-teaser";
 import { AtsAnalysisDrawer } from "@/components/ats/ats-analysis-drawer";
 import { downloadAdaptedResume, jobKey } from "@/lib/client/resume-download";
-import { ResumeProgressToast, type ResumeProgressState } from "@/components/resume/resume-progress-toast";
+import {
+  ResumeProgressToast,
+  type ResumeProgressState,
+} from "@/components/resume/resume-progress-toast";
 import type { Job } from "@/lib/types/job";
 
 function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
   const {
     session,
+    sessionStatus,
     profile,
     companies,
     setCompanies,
@@ -37,8 +41,23 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
 
   const [atsJob, setAtsJob] = useState<Job | null>(null);
   const [generatingJobKey, setGeneratingJobKey] = useState<string | null>(null);
-  const [resumeToastState, setResumeToastState] = useState<ResumeProgressState | null>(null);
-  const canGenerateResume = !!(session && (profile.resumeMarkdown || profile.resumeText));
+  const [resumeToastState, setResumeToastState] =
+    useState<ResumeProgressState | null>(null);
+  const canGenerateResume = !!(
+    session &&
+    (profile.resumeMarkdown || profile.resumeText)
+  );
+
+  // Estado para o banner contextual. Não renderiza enquanto a sessão carrega
+  // (evita flash de "anônimo" para usuário logado) nem quando o usuário já tem
+  // currículo (as ferramentas já estão liberadas).
+  const isLoggedIn = !!session;
+  const hasResume = !!(profile.resumeMarkdown || profile.resumeText);
+  let toolsBannerVariant: "anonymous" | "no-resume" | null = null;
+  if (sessionStatus !== "loading") {
+    if (!isLoggedIn) toolsBannerVariant = "anonymous";
+    else if (!hasResume) toolsBannerVariant = "no-resume";
+  }
 
   const handleGenerateResume = async (job: Job) => {
     const key = jobKey(job);
@@ -69,7 +88,8 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
         jobCompany: job.company || "",
         step: 3,
         totalSteps: 3,
-        message: "Currículo confeccionado com sucesso! O download do PDF começou.",
+        message:
+          "Currículo confeccionado com sucesso! O download do PDF começou.",
         progressPercent: 100,
         status: "success",
       });
@@ -114,6 +134,7 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
         maxWidth="xl"
         sx={{ pt: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 } }}
       >
+        {toolsBannerVariant && <JobToolsBanner variant={toolsBannerVariant} />}
         <Box sx={{ width: "100%", minWidth: 0 }}>
           <ResultsSection
             recommendedMode={recommendedMode}
@@ -135,11 +156,6 @@ function BuscaPageContent({ initialJobs }: { initialJobs: Job[] }) {
             terms={roleQueries}
             area={profile.area || profile.currentRole}
           />
-          {!session && (
-            <Box sx={{ mt: 2 }}>
-              <ChatTeaser />
-            </Box>
-          )}
         </Box>
       </Container>
 

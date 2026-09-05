@@ -110,7 +110,11 @@ export default function RootLayout({
         />
         <StructuredData />
       </head>
+      {/* suppressHydrationWarning: extensões de navegador (ex.: Cốc Cốc/CocCoc)
+          injetam atributos como cz-shortcut-listen no <body> após o SSR — isso
+          gera falso positivo de hydration mismatch que não quebra a página. */}
       <body
+        suppressHydrationWarning
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
         <AuthProvider>

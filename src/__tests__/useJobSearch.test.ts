@@ -348,6 +348,32 @@ describe('useJobSearch', () => {
       expect(storageMock.setLastRunAt).toHaveBeenCalled();
     });
 
+    it('stream_complete_deduplica_vagas_pelo_link_antes_de_exibir', async () => {
+      setRoute('POST', '/api/pipeline', 200, { runId: 'r1', cooldownSeconds: 0 });
+      const { result } = renderHook(() => useJobSearch());
+
+      await act(async () => {
+        await result.current.handleStart();
+      });
+
+      const dupA = { ...JOB_DEV, link: 'https://gupy.io/job/dup' };
+      const dupB = { ...JOB_OPS, link: 'https://gupy.io/job/dup' };
+      const unica = { ...JOB_DEV, id: '3', title: 'Dev Java', link: 'https://gupy.io/job/unique' };
+
+      await act(async () => {
+        await (lastEventSource().onmessage as any)({
+          data: JSON.stringify({ type: 'pipeline_complete', jobs: [dupA, dupB, unica] }),
+        });
+      });
+
+      expect(result.current.jobs).toEqual([
+        { ...dupA, detectedAt: '' },
+        { ...unica, detectedAt: '' },
+      ]);
+      expect(result.current.roleCategories).toEqual(['dev']);
+      expect(storageMock.setJobs).toHaveBeenCalledWith([dupA, unica]);
+    });
+
     it('stream_pipeline_error_mostra_snackbar_de_erro_e_recarrega', async () => {
       const { result } = renderHook(() => useJobSearch());
 

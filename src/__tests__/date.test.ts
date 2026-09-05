@@ -29,6 +29,7 @@ describe('formatJobDate', () => {
     vi.setSystemTime(new Date('2026-08-18T12:00:00Z'));
     const info = formatJobDate('2026-08-18T11:59:00Z');
     expect(info?.relative).toContain('minuto');
+    expect(info?.relativeShort).toContain('min.');
   });
 
   it('should_format_relative_label_for_hours', () => {
@@ -36,6 +37,7 @@ describe('formatJobDate', () => {
     vi.setSystemTime(new Date('2026-08-18T12:00:00Z'));
     const info = formatJobDate('2026-08-18T10:00:00Z');
     expect(info?.relative).toContain('hora');
+    expect(info?.relativeShort).toContain('h');
   });
 
   it('should_format_relative_label_for_days', () => {
@@ -43,6 +45,14 @@ describe('formatJobDate', () => {
     vi.setSystemTime(new Date('2026-08-18T12:00:00Z'));
     const info = formatJobDate('2026-08-15T12:00:00Z');
     expect(info?.relative).toContain('dia');
+    expect(info?.relativeShort).toContain('dia');
+  });
+
+  it('should_format_short_relative_for_yesterday', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-18T12:00:00Z'));
+    const info = formatJobDate('2026-08-17T12:00:00Z');
+    expect(info?.relativeShort).toBe('ontem');
   });
 });
 

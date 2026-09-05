@@ -8,12 +8,14 @@ type Props = {
   companyFilter: string;
   typeFilter: string;
   roleFilter: string;
+  locationFilter: string;
   searchFilter: string;
   countSecondaryFilters: number;
   countTotalFilters: number;
   companies: string[];
   types: string[];
   roles: string[];
+  locations: string[];
 };
 
 function renderDesktop(overrides: Partial<Props> = {}) {
@@ -22,6 +24,7 @@ function renderDesktop(overrides: Partial<Props> = {}) {
     onCompanyChange: vi.fn(),
     onTypeChange: vi.fn(),
     onRoleChange: vi.fn(),
+    onLocationChange: vi.fn(),
     onSearchChange: vi.fn(),
     onSubmit: vi.fn((e: React.FormEvent) => e.preventDefault()),
     onOpenDrawer: vi.fn(),
@@ -33,12 +36,14 @@ function renderDesktop(overrides: Partial<Props> = {}) {
     companyFilter: '',
     typeFilter: '',
     roleFilter: '',
+    locationFilter: '',
     searchFilter: '',
     countSecondaryFilters: 0,
     countTotalFilters: 0,
     companies: ['Acme', 'Initech'],
     types: ['Remota', 'Híbrida', 'Presencial'],
     roles: ['Dev', 'QA'],
+    locations: ['São Paulo', 'Remoto'],
     ...overrides,
   };
 
@@ -55,6 +60,9 @@ function renderDesktop(overrides: Partial<Props> = {}) {
       roles={props.roles}
       roleFilter={props.roleFilter}
       onRoleChange={handlers.onRoleChange}
+      locations={props.locations}
+      locationFilter={props.locationFilter}
+      onLocationChange={handlers.onLocationChange}
       searchFilter={props.searchFilter}
       onSearchChange={handlers.onSearchChange}
       onSubmit={handlers.onSubmit}
@@ -144,13 +152,15 @@ describe('JobFiltersDesktop', () => {
       companyFilter: 'Acme',
       typeFilter: 'Remota',
       roleFilter: 'Dev',
-      countTotalFilters: 4,
+      locationFilter: 'São Paulo',
+      countTotalFilters: 5,
     });
     expect(screen.getByText('Filtros Ativos:')).toBeTruthy();
     expect(screen.getByText('Plataforma: Gupy')).toBeTruthy();
     expect(screen.getByText('Empresa: Acme')).toBeTruthy();
     expect(screen.getByText('Modalidade: Remota')).toBeTruthy();
     expect(screen.getByText('Cargo: Dev')).toBeTruthy();
+    expect(screen.getByText('Local: São Paulo')).toBeTruthy();
   });
 
   it('should_not_render_active_filter_bar_when_no_filters', () => {
@@ -180,6 +190,12 @@ describe('JobFiltersDesktop', () => {
     const { onRoleChange } = renderDesktop({ roleFilter: 'Dev', countTotalFilters: 1 });
     clickChipDelete('Cargo: Dev');
     expect(onRoleChange).toHaveBeenCalledWith('');
+  });
+
+  it('should_remove_location_filter_via_chip_delete', () => {
+    const { onLocationChange } = renderDesktop({ locationFilter: 'São Paulo', countTotalFilters: 1 });
+    clickChipDelete('Local: São Paulo');
+    expect(onLocationChange).toHaveBeenCalledWith('');
   });
 
   it('should_show_badge_with_secondary_filter_count', () => {
