@@ -37,246 +37,157 @@ const TECH_STACK = [
   'Tailwind CSS v4',
 ];
 
+const PILLARS = [
+  {
+    icon: UserCheck,
+    title: 'TODAS AS PROFISSÕES',
+    desc: 'Vagas para qualquer área do mercado: Marketing, Vendas, RH, Financeiro, Tecnologia, Design, Operações e muito mais.',
+  },
+  {
+    icon: Zap,
+    title: 'TEMPO REAL & MATCH IA',
+    desc: 'Consultas diretas nos portais de vagas no momento da busca, com cálculo de compatibilidade de perfil e resumo de requisitos.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'PRIVACIDADE TOTAL (LGPD)',
+    desc: 'Dados criptografados, anonimização automática de dados sensíveis e navegação livre sem rastreamento abusivo.',
+  },
+];
+
+const CTA_BASE =
+  'w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm no-underline whitespace-nowrap active:scale-[0.98] transition-transform';
+
 export default function SobrePage() {
   return (
-    <main style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', paddingBottom: '64px' }}>
+    <main className="min-h-dvh overflow-x-hidden bg-[#020617] pb-16 text-[#f8fafc]">
       {/* Header Section */}
-      <section className="section-hero" data-testid="sobre-hero-section" style={{ padding: '64px 16px', position: 'relative', overflow: 'hidden' }}>
+      <section
+        className="section-hero relative overflow-hidden px-4 py-16 sm:px-6 sm:py-24"
+        data-testid="sobre-hero-section"
+      >
         <div
-          className="hero-radar"
+          className="hero-radar pointer-events-none absolute"
           style={{
-            position: 'absolute',
             inset: -200,
-            background: 'conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)',
+            background:
+              'conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)',
             opacity: 0.05,
-            pointerEvents: 'none',
           }}
         />
 
-        <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-          <div className="badge-neon" style={{ marginBottom: '20px', display: 'inline-block' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+        <div className="relative z-[1] mx-auto max-w-[960px] text-center">
+          <div className="badge-neon mb-5 inline-block">
+            <span className="inline-flex items-center gap-1.5">
               <Sparkles size={14} /> SOBRE O RADAR UNIFICANDO
             </span>
           </div>
 
           <h1
-            style={{
-              fontWeight: 900,
-              fontSize: 'clamp(2.2rem, 5vw, 4.25rem)',
-              letterSpacing: '-0.02em',
-              lineHeight: 0.95,
-              textTransform: 'uppercase',
-              marginBottom: '24px',
-              color: '#ffffff',
-            }}
+            className="mb-6 font-black uppercase tracking-tight leading-[1.05] text-white sm:leading-[0.95]"
+            style={{ fontSize: 'clamp(2.2rem, 5vw, 4.25rem)' }}
           >
             CONECTANDO VOCÊ ÀS
             <br />
-            <span style={{ color: '#ccff00' }}>MELHORES VAGAS DO BRASIL</span>
+            <span className="text-[#ccff00]">MELHORES VAGAS DO BRASIL</span>
           </h1>
 
-          <p
-            style={{
-              color: '#f8fafc',
-              fontFamily: 'var(--font-family-inter)',
-              fontSize: '1.05rem',
-              maxWidth: '720px',
-              margin: '0 auto',
-              lineHeight: 1.65,
-              fontWeight: 500,
-            }}
-          >
-            O Radar Unificando é uma plataforma inteligente que consolida vagas de emprego de grandes portais (como Gupy e InHire) em tempo real, cobrindo todas as áreas profissionais com análise de aderência e assistente de IA.
+          <p className="mx-auto max-w-[720px] text-base font-medium leading-relaxed text-[#f8fafc]">
+            O Radar Unificando é uma plataforma inteligente que consolida vagas
+            de emprego de grandes portais (como Gupy e InHire) em tempo real,
+            cobrindo todas as áreas profissionais com análise de aderência e
+            assistente de IA.
           </p>
         </div>
       </section>
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px' }}>
+      <div className="mx-auto max-w-[1100px] px-4 sm:px-6">
         {/* Section 1: A Missão (Cartão Branco de Alto Contraste) */}
-        <section data-testid="sobre-missao-section" style={{ marginTop: '48px', marginBottom: '48px' }}>
-          <div
-            className="card-brutalist"
-            style={{
-              padding: '36px 28px',
-              position: 'relative',
-              backgroundColor: '#ffffff',
-              border: '4px solid #020617',
-              boxShadow: '8px 8px 0px #000',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div
-                style={{
-                  padding: '8px',
-                  backgroundColor: '#020617',
-                  border: '2px solid #020617',
-                  color: '#ccff00',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+        <section data-testid="sobre-missao-section" className="mt-12 sm:mt-16">
+          <div className="card-brutalist relative p-6 sm:p-9">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex items-center justify-center border-2 border-[#020617] bg-[#020617] p-2 text-[#ccff00]">
                 <Target size={22} />
               </div>
-              <h2
-                style={{
-                  fontWeight: 900,
-                  fontSize: '1.3rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '-0.01em',
-                  color: '#020617',
-                  margin: 0,
-                }}
-              >
+              <h2 className="m-0 text-xl font-black uppercase tracking-tight text-[#020617]">
                 NOSSA MISSÃO: BUSCA DE VAGAS SEM COMPLICAÇÃO
               </h2>
             </div>
-            <p
-              style={{
-                color: '#334155',
-                fontSize: '0.95rem',
-                lineHeight: 1.7,
-                marginBottom: '16px',
-                fontWeight: 500,
-              }}
-            >
-              Procurar emprego costuma ser uma tarefa exaustiva: dezenas de abas abertas, cadastros repetitivos e falta de clareza sobre quais vagas realmente combinam com seu perfil.
+            <p className="mb-4 text-[0.95rem] font-medium leading-relaxed text-[#334155]">
+              Procurar emprego costuma ser uma tarefa exaustiva: dezenas de abas
+              abertas, cadastros repetitivos e falta de clareza sobre quais vagas
+              realmente combinam com seu perfil.
             </p>
-            <p
-              style={{
-                color: '#334155',
-                fontSize: '0.95rem',
-                lineHeight: 1.7,
-                margin: 0,
-                fontWeight: 500,
-              }}
-            >
-              O Radar Unificando foi criado para resolver isso. Ele centraliza a pesquisa, analisa requisitos com Inteligência Artificial e ajuda profissionais de <strong style={{ color: '#020617', fontWeight: 900 }}>qualquer segmento</strong> — Marketing, RH, Vendas, Tecnologia, Finanças, Saúde, Design e Operações — a encontrarem oportunidades alinhadas às suas habilidades.
+            <p className="m-0 text-[0.95rem] font-medium leading-relaxed text-[#334155]">
+              O Radar Unificando foi criado para resolver isso. Ele centraliza a
+              pesquisa, analisa requisitos com Inteligência Artificial e ajuda
+              profissionais de{' '}
+              <strong className="font-black text-[#020617]">
+                qualquer segmento
+              </strong>{' '}
+              — Marketing, RH, Vendas, Tecnologia, Finanças, Saúde, Design e
+              Operações — a encontrarem oportunidades alinhadas às suas
+              habilidades.
             </p>
           </div>
         </section>
 
         {/* Section 2: O Criador (Renato Bezerra) */}
-        <section data-testid="sobre-criador-section" style={{ marginBottom: '48px' }}>
-          <div
-            className="card-dark"
-            style={{
-              padding: '40px 28px',
-              position: 'relative',
-              overflow: 'hidden',
-              backgroundColor: '#0f172a',
-              border: '3px solid #ccff00',
-              boxShadow: '8px 8px 0px #ccff00',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-              <div
-                style={{
-                  backgroundColor: '#ccff00',
-                  color: '#020617',
-                  padding: '12px',
-                  border: '2px solid #020617',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+        <section data-testid="sobre-criador-section" className="mt-12 sm:mt-16">
+          <div className="card-dark relative overflow-hidden p-6 sm:p-10">
+            <div className="mb-6 flex flex-wrap items-center gap-4">
+              <div className="flex items-center justify-center border-2 border-[#020617] bg-[#ccff00] p-3 text-[#020617]">
                 <Code2 size={28} strokeWidth={2.5} />
               </div>
               <div>
-                <h2
-                  style={{
-                    fontWeight: 900,
-                    fontSize: '1.5rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '-0.01em',
-                    color: '#ffffff',
-                    lineHeight: 1.1,
-                    margin: 0,
-                  }}
-                >
+                <h2 className="m-0 text-2xl font-black uppercase leading-tight tracking-tight text-white">
                   QUEM DESENVOLVEU
                 </h2>
-                <div
-                  style={{
-                    color: '#ccff00',
-                    fontFamily: 'ui-monospace, monospace',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    marginTop: '4px',
-                  }}
-                >
-                  RENATO BEZERRA · CRIADOR & ENGENHEIRO DE SOFTWARE
+                <div className="mt-1 font-mono text-[0.85rem] font-bold uppercase text-[#ccff00]">
+                  RENATO BEZERRA · CRIADOR &amp; ENGENHEIRO DE SOFTWARE
                 </div>
               </div>
             </div>
 
             {/* Stack Tags */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+            <div className="mb-6 flex flex-wrap gap-2">
               {TECH_STACK.map((tech) => (
                 <span
                   key={tech}
-                  style={{
-                    fontFamily: 'ui-monospace, monospace',
-                    fontSize: '0.725rem',
-                    fontWeight: 700,
-                    color: '#ccff00',
-                    backgroundColor: 'rgba(204, 255, 0, 0.12)',
-                    border: '1px solid #ccff00',
-                    padding: '3px 10px',
-                    textTransform: 'uppercase',
-                  }}
+                  className="border border-[#ccff00] bg-[#ccff00]/[0.12] px-2.5 py-[3px] font-mono text-[0.725rem] font-bold uppercase text-[#ccff00]"
                 >
                   {tech}
                 </span>
               ))}
             </div>
 
-            <p
-              style={{
-                color: '#f8fafc',
-                fontSize: '0.95rem',
-                lineHeight: 1.7,
-                marginBottom: '16px',
-                fontWeight: 500,
-              }}
-            >
-              Olá! Sou o <strong style={{ color: '#ccff00' }}>Renato Bezerra</strong>, Engenheiro de Software com ampla experiência em desenvolvimento web, arquitetura de sistemas e soluções em Inteligência Artificial Generativa.
+            <p className="mb-4 text-[0.95rem] font-medium leading-relaxed text-[#f8fafc]">
+              Olá! Sou o{' '}
+              <strong className="text-[#ccff00]">Renato Bezerra</strong>,
+              Engenheiro de Software com ampla experiência em desenvolvimento
+              web, arquitetura de sistemas e soluções em Inteligência Artificial
+              Generativa.
             </p>
 
-            <p
-              style={{
-                color: '#f8fafc',
-                fontSize: '0.95rem',
-                lineHeight: 1.7,
-                marginBottom: '32px',
-                fontWeight: 500,
-              }}
-            >
+            <p className="mb-8 text-[0.95rem] font-medium leading-relaxed text-[#f8fafc]">
               Desenvolvi o Radar Unificando — projeto autoral do{' '}
-              <strong style={{ color: '#ccff00' }}>laboratório Unificando</strong> — para colocar a
-              tecnologia a serviço do profissional brasileiro. A plataforma une automação em tempo real, segurança avançada de dados (LGPD) e inteligência artificial para que você passe menos tempo procurando vagas e mais tempo conquistando a oportunidade certa.
+              <strong className="text-[#ccff00]">laboratório Unificando</strong> —
+              para colocar a tecnologia a serviço do profissional brasileiro. A
+              plataforma une automação em tempo real, segurança avançada de dados
+              (LGPD) e inteligência artificial para que você passe menos tempo
+              procurando vagas e mais tempo conquistando a oportunidade certa.
             </p>
 
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <a
                 href={LINKS.portfolio}
                 data-testid="sobre-portfolio-link"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-neon"
-                style={{
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '14px 24px',
-                  fontSize: '0.875rem',
-                }}
+                className={`btn-neon ${CTA_BASE}`}
               >
-                CONHEÇA MEU PORTFÓLIO <ExternalLink size={16} />
+                <span>CONHEÇA MEU PORTFÓLIO</span>
+                <ExternalLink size={16} strokeWidth={3} className="shrink-0" />
               </a>
 
               <a
@@ -284,200 +195,72 @@ export default function SobrePage() {
                 data-testid="sobre-laboratorio-link"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-dark"
-                style={{
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '14px 24px',
-                  fontSize: '0.875rem',
-                  backgroundColor: '#0f172a',
-                  color: '#ccff00',
-                  border: '2px solid #ccff00',
-                }}
+                className={`btn-dark ${CTA_BASE}`}
               >
-                <Rocket size={16} /> CONHEÇA O LABORATÓRIO
+                <Rocket size={16} strokeWidth={3} className="shrink-0" />
+                <span>CONHEÇA O LABORATÓRIO</span>
               </a>
             </div>
           </div>
         </section>
 
         {/* Section 3: Apoie o projeto */}
-        <section data-testid="sobre-apoio-section" style={{ marginBottom: '48px' }}>
+        <section data-testid="sobre-apoio-section" className="mt-12 sm:mt-16">
           <SupportSection />
         </section>
 
         {/* Section 4: Pilares */}
-        <section data-testid="sobre-pilares-section" style={{ marginBottom: '48px' }}>
-          <div className="badge-dark" style={{ marginBottom: '16px', display: 'inline-block' }}>
+        <section data-testid="sobre-pilares-section" className="mt-12 sm:mt-16">
+          <div className="badge-dark mb-4 inline-block">
             DIFERENCIAIS DA PLATAFORMA
           </div>
           <h2
-            style={{
-              fontWeight: 900,
-              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-              textTransform: 'uppercase',
-              letterSpacing: '-0.02em',
-              marginBottom: '32px',
-              color: '#ffffff',
-            }}
+            className="mb-8 font-black uppercase tracking-tight leading-[1.05] text-white sm:leading-[0.95]"
+            style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)' }}
           >
-            POR QUE O RADAR É <span style={{ color: '#ccff00' }}>DIFERENTE?</span>
+            POR QUE O RADAR É <span className="text-[#ccff00]">DIFERENTE?</span>
           </h2>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px',
-            }}
-          >
-            <div
-              className="card-brutalist"
-              style={{
-                padding: '28px 24px',
-                backgroundColor: '#ffffff',
-                border: '4px solid #020617',
-                boxShadow: '6px 6px 0px #000',
-              }}
-            >
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundColor: '#020617',
-                  border: '2px solid #020617',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '16px',
-                  color: '#ccff00',
-                }}
-              >
-                <UserCheck size={22} />
-              </div>
-              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
-                TODAS AS PROFISSÕES
-              </h3>
-              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
-                Vagas para qualquer área do mercado: Marketing, Vendas, RH, Financeiro, Tecnologia, Design, Operações e muito mais.
-              </p>
-            </div>
-
-            <div
-              className="card-brutalist"
-              style={{
-                padding: '28px 24px',
-                backgroundColor: '#ffffff',
-                border: '4px solid #020617',
-                boxShadow: '6px 6px 0px #000',
-              }}
-            >
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundColor: '#020617',
-                  border: '2px solid #020617',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '16px',
-                  color: '#ccff00',
-                }}
-              >
-                <Zap size={22} />
-              </div>
-              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
-                TEMPO REAL & MATCH IA
-              </h3>
-              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
-                Consultas diretas nos portais de vagas no momento da busca, com cálculo de compatibilidade de perfil e resumo de requisitos.
-              </p>
-            </div>
-
-            <div
-              className="card-brutalist"
-              style={{
-                padding: '28px 24px',
-                backgroundColor: '#ffffff',
-                border: '4px solid #020617',
-                boxShadow: '6px 6px 0px #000',
-              }}
-            >
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundColor: '#020617',
-                  border: '2px solid #020617',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '16px',
-                  color: '#ccff00',
-                }}
-              >
-                <ShieldCheck size={22} />
-              </div>
-              <h3 style={{ fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '12px', color: '#020617' }}>
-                PRIVACIDADE TOTAL (LGPD)
-              </h3>
-              <p style={{ color: '#334155', fontSize: '0.875rem', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
-                Dados criptografados, anonimização automática de dados sensíveis e navegação livre sem rastreamento abusivo.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {PILLARS.map((pillar) => {
+              const Icon = pillar.icon;
+              return (
+                <div key={pillar.title} className="card-brutalist p-6 sm:p-7">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center border-2 border-[#020617] bg-[#020617] text-[#ccff00]">
+                    <Icon size={22} />
+                  </div>
+                  <h3 className="mb-3 text-lg font-black uppercase text-[#020617]">
+                    {pillar.title}
+                  </h3>
+                  <p className="m-0 text-sm font-medium leading-relaxed text-[#334155]">
+                    {pillar.desc}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </section>
 
         {/* Final Action Box */}
-        <section data-testid="sobre-cta-section" style={{ marginTop: '56px' }}>
-          <div
-            style={{
-              textAlign: 'center',
-              backgroundColor: '#0f172a',
-              padding: '44px 24px',
-              border: '3px solid #ccff00',
-              boxShadow: '8px 8px 0px #ccff00',
-            }}
-          >
+        <section data-testid="sobre-cta-section" className="mt-14 sm:mt-16">
+          <div className="border-[3px] border-[#ccff00] bg-[#0f172a] p-6 text-center shadow-[4px_4px_0px_#ccff00] sm:p-11 sm:shadow-[8px_8px_0px_#ccff00]">
             <h2
-              style={{
-                fontWeight: 900,
-                fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
-                textTransform: 'uppercase',
-                marginBottom: '12px',
-                color: '#ffffff',
-              }}
+              className="mb-3 font-black uppercase text-white"
+              style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}
             >
               PRONTO PARA ENCONTRAR SUA PRÓXIMA VAGA?
             </h2>
-            <p
-              style={{
-                color: '#cbd5e1',
-                fontFamily: 'ui-monospace, monospace',
-                fontSize: '0.95rem',
-                marginBottom: '28px',
-              }}
-            >
+            <p className="mb-7 font-mono text-[0.95rem] text-[#cbd5e1]">
               100% gratuito. Comece sua pesquisa em segundos.
             </p>
 
             <Link
               href="/"
-              className="btn-neon"
               data-testid="sobre-motor-busca-link"
-              style={{
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '16px 36px',
-                fontSize: '1rem',
-              }}
+              className={`btn-neon ${CTA_BASE} sm:py-4 sm:text-base`}
             >
-              IR PARA O MOTOR DE BUSCA <ArrowRight size={20} strokeWidth={3} />
+              <span>IR PARA O MOTOR DE BUSCA</span>
+              <ArrowRight size={20} strokeWidth={3} className="shrink-0" />
             </Link>
           </div>
         </section>
