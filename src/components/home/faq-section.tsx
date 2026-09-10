@@ -4,34 +4,18 @@ import { ChevronDown } from "lucide-react";
 export function FaqSection() {
   return (
     <section className="section-faq">
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "64px 16px" }}>
-        <div className="badge-dark" style={{ marginBottom: "20px", display: "inline-block" }}>
-          DÚVIDAS FREQUENTES
-        </div>
+      <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="badge-dark mb-5 inline-block">DÚVIDAS FREQUENTES</div>
         <h2
-          style={{
-            fontWeight: 900,
-            textTransform: "uppercase",
-            letterSpacing: "-0.02em",
-            color: "#f8fafc",
-            fontSize: "clamp(1.75rem, 4vw, 3rem)",
-            marginBottom: "36px",
-            lineHeight: 0.95,
-          }}
+          className="mb-9 font-black uppercase tracking-tight leading-[1.05] text-[#f8fafc] sm:leading-[0.95]"
+          style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
         >
           PERGUNTAS
           <br />
-          <span style={{ color: "#ccff00" }}>FREQUENTES</span>
+          <span className="text-[#ccff00]">FREQUENTES</span>
         </h2>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            maxWidth: "840px",
-          }}
-        >
+        <div className="flex max-w-[840px] flex-col gap-4">
           {FAQ_ITEMS.map((faq) => (
             <details key={faq.q} data-testid="faq-item" className="faq-item">
               <summary data-testid="faq-question-button">
@@ -48,4 +32,3 @@ export function FaqSection() {
     </section>
   );
 }
-

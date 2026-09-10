@@ -263,6 +263,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   cursor: pointer;
   padding: 18px 20px;
   color: #f8fafc;
@@ -278,6 +279,7 @@ body {
 }
 
 .faq-item .faq-arrow {
+  flex-shrink: 0;
   transition: transform 0.2s;
   color: #ccff00;
 }

@@ -284,14 +284,16 @@ export const JobSearchBar = memo(function JobSearchBar({
           variant="caption"
           sx={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: "flex-start",
+            justifyContent: { xs: "flex-start", sm: "center" },
+            textAlign: { xs: "left", sm: "center" },
             gap: 0.5,
             color: "#94a3b8",
             fontFamily: tokens.fontMono,
-            fontSize: "0.75rem",
+            fontSize: { xs: "0.7rem", sm: "0.75rem" },
             fontWeight: 700,
             letterSpacing: "0.02em",
+            lineHeight: 1.5,
             mt: -0.5,
             mb: 0.5,
           }}

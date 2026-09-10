@@ -88,7 +88,11 @@ export function MarketingHero() {
               mb: 2.5,
               px: 2,
               py: 0.75,
-              fontSize: "0.75rem",
+              maxWidth: "100%",
+              whiteSpace: "normal",
+              textAlign: "center",
+              fontSize: { xs: "0.7rem", sm: "0.75rem" },
+              letterSpacing: { xs: "0.12em", sm: "0.2em" },
             }}
           >
             <span>GUPY + INHIRE · BUSCA EM TEMPO REAL</span>
@@ -166,8 +170,8 @@ export function MarketingHero() {
               key={item.step}
               sx={{
                 textAlign: "left",
-                p: 2.5,
-                bgcolor: "#0f172a/50",
+                p: { xs: 2, sm: 2.5 },
+                bgcolor: "rgba(15, 23, 42, 0.5)",
                 borderLeft: "3px solid #ccff00",
               }}
             >

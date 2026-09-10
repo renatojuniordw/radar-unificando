@@ -13,9 +13,7 @@ export default function HomePage() {
       <ContentHubsSection />
       <ExtensionSection />
       <section className="section-dark-eco">
-        <div
-          style={{ maxWidth: "1280px", margin: "0 auto", padding: "48px 16px" }}
-        >
+        <div className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 sm:py-16">
           <SupportSection />
         </div>
       </section>

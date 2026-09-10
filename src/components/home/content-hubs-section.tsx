@@ -54,7 +54,7 @@ export function ContentHubsSection() {
                 <Link
                   data-testid={`content-hub-link-${hub.href.slice(1)}`}
                   href={hub.href}
-                  className="btn-neon mt-auto self-start inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-black font-mono uppercase tracking-wider no-underline shadow-[4px_4px_0px_#000] active:scale-95 transition-transform"
+                  className="btn-neon mt-auto w-full sm:w-auto sm:self-start inline-flex items-center justify-center gap-2 px-5 py-3.5 text-xs font-black font-mono uppercase tracking-wider no-underline shadow-[4px_4px_0px_#000] active:scale-95 transition-transform"
                 >
                   <span>{hub.cta}</span>
                   <ArrowRight size={16} strokeWidth={3} className="shrink-0" />
