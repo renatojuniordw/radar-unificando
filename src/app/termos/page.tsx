@@ -353,11 +353,14 @@ export default function TermosPage() {
               6. Política de Cookies
             </h2>
             <p>
-              O Radar Unificando utiliza cookies e tecnologias de armazenamento local para garantir o funcionamento do serviço e, com o seu consentimento, para medir a audiência. Você pode aceitar ou recusar os cookies de análise a qualquer momento pelo aviso exibido no rodapé do site.
+              O Radar Unificando utiliza cookies e tecnologias de armazenamento local para garantir o funcionamento e a segurança do serviço e, com o seu consentimento, para medir a audiência. Parte dos cookies essenciais é definida pela infraestrutura que entrega o site (CDN Cloudflare), e não apenas pela aplicação. Você pode aceitar ou recusar os cookies de análise a qualquer momento pelo aviso exibido no rodapé do site.
             </p>
             <ul style={{ paddingLeft: 20, marginTop: 12, color: '#94a3b8' }}>
               <li style={{ marginBottom: 8 }}>
-                <strong>Cookies essenciais:</strong> Necessários para o funcionamento do site, como o cookie de sessão do login (Auth.js). Não dependem do seu consentimento e não são usados para rastreamento.
+                <strong>Cookies essenciais (aplicação):</strong> Necessários para o funcionamento e a segurança do site. São eles o cookie de sessão do login e os cookies <code>authjs.csrf-token</code> e <code>authjs.callback-url</code> (Auth.js), que protegem contra CSRF e gerenciam o retorno do login — criados para todos os visitantes, inclusive quem não faz login. Não dependem do seu consentimento e não são usados para rastreamento ou publicidade.
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>Cookies essenciais (infraestrutura/CDN):</strong> O cookie <code>cf_clearance</code>, definido pela Cloudflare (rede que serve o site), verifica que o acesso não parte de um bot e protege a plataforma. É um cookie de segurança, não dependente de consentimento, e não é usado para rastrear você entre sites.
               </li>
               <li style={{ marginBottom: 8 }}>
                 <strong>Armazenamento local (IndexedDB/localStorage):</strong> Usado para guardar no seu navegador preferências de busca, histórico de conversas do chat e o seu consentimento de cookies. Esses dados não saem do seu dispositivo.

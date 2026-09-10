@@ -108,10 +108,11 @@ export function CookieConsent() {
               }}
             >
               <strong style={{ color: "#ccff00" }}>AVISO DE COOKIES</strong>{" "}
-              Usamos cookies essenciais para o funcionamento (ex.: sua sessão de
-              login) e, com seu consentimento, o Google Analytics (para entender
-              como o site é usado) e o tracking de afiliados da Impact (para
-              recomendar cursos). Você pode aceitar ou recusar.{" "}
+              Usamos cookies essenciais para o funcionamento e a segurança do
+              site (sua sessão, proteção contra CSRF e o cookie anti-bot da nossa
+              CDN, a Cloudflare) e, com seu consentimento, o Google Analytics
+              (para entender como o site é usado) e o tracking de afiliados da
+              Impact (para recomendar cursos). Você pode aceitar ou recusar.{" "}
               <Link
                 href="/termos#cookies"
                 style={{ color: "#ccff00", textDecoration: "underline" }}
