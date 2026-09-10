@@ -3,6 +3,7 @@ import Container from '@mui/material/Container';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { createExtensionToken } from '@/lib/core/extension/extension-token';
+import { LINKS } from '@/lib/core/constants';
 import { TokenBox } from './token-box';
 import {
   ArrowLeft,
@@ -214,19 +215,30 @@ export default async function ConectarExtensaoPage({
                 Ainda não instalou a extensão Chrome?
               </h4>
               <p className="text-xs text-[#cbd5e1] font-mono">
-                Conheça todos os recursos do painel lateral ATS antes de ativar.
+                Baixe grátis pela Chrome Web Store e volte aqui para colar seu token.
               </p>
             </div>
           </div>
 
-          <Link
-            href="/extensao"
-            data-testid="extensao-guide-link"
-            className="btn-dark shrink-0 no-underline px-5 py-2.5 text-xs font-mono font-black uppercase tracking-wider inline-flex items-center gap-2"
-          >
-            <span>Ver Guia da Extensão</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex shrink-0 flex-col sm:flex-row gap-3">
+            <a
+              href={LINKS.chromeStore}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="extensao-store-link"
+              className="btn-neon shrink-0 no-underline px-5 py-2.5 text-xs font-mono font-black uppercase tracking-wider inline-flex items-center justify-center gap-2"
+            >
+              <span>Instalar na Chrome Web Store</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+            <Link
+              href="/extensao"
+              data-testid="extensao-guide-link"
+              className="btn-dark shrink-0 no-underline px-5 py-2.5 text-xs font-mono font-black uppercase tracking-wider inline-flex items-center justify-center gap-2"
+            >
+              <span>Ver Guia</span>
+            </Link>
+          </div>
         </div>
       </Container>
     </div>

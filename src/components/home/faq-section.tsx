@@ -1,5 +1,5 @@
 import { FAQ_ITEMS } from "@/lib/constants/home";
-import { HelpCircle, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export function FaqSection() {
   return (
@@ -35,10 +35,7 @@ export function FaqSection() {
           {FAQ_ITEMS.map((faq) => (
             <details key={faq.q} data-testid="faq-item" className="faq-item">
               <summary data-testid="faq-question-button">
-                <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <HelpCircle size={18} style={{ color: "#ccff00", flexShrink: 0 }} />
-                  {faq.q}
-                </span>
+                <span>{faq.q}</span>
                 <ChevronDown className="faq-arrow" size={20} />
               </summary>
               <div data-testid="faq-answer" className="faq-content">

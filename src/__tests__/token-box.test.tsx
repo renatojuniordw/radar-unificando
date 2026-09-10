@@ -86,7 +86,9 @@ describe('TokenBox', () => {
   it('should_render_pending_banner_when_not_connected', () => {
     render(<TokenBox token={TOKEN} />);
     expect(screen.getByTestId('token-pending-banner')).toBeTruthy();
-    expect(screen.getByText(/EM BREVE:/)).toBeTruthy();
+    expect(screen.getByText(/Como conectar:/)).toBeTruthy();
+    const storeLink = screen.getByRole('link', { name: /Chrome Web Store/i });
+    expect(storeLink.getAttribute('href')).toContain('chromewebstore.google.com');
   });
 
   it('should_hide_pending_banner_when_connected', async () => {

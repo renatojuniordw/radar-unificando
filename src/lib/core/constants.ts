@@ -14,6 +14,8 @@ export const LINKS = {
   github: "https://github.com/renatojuniordw/radar-unificando",
   costs:
     "https://github.com/renatojuniordw/radar-unificando/blob/main/COSTS.md",
+  chromeStore:
+    "https://chromewebstore.google.com/detail/radar-unificando-%E2%80%94-an%C3%A1lis/kcbfealbhifapbhnlbajfgefafjiobdh",
 } as const;
 
 export const IMPACT = {

@@ -41,7 +41,6 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     label: "EXTENSÃO",
     mobileLabel: "EXTENSÃO CHROME",
     icon: Puzzle,
-    badge: "EM BREVE",
   },
   {
     href: "/sobre",

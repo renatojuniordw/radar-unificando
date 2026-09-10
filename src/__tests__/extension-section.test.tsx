@@ -8,9 +8,9 @@ vi.mock('next/link', () => ({
 
 vi.mock('lucide-react', () => ({
   ArrowRight: (props: any) => <svg data-testid="arrow-right" {...props} />,
-  Puzzle: (props: any) => <svg data-testid="puzzle-icon" {...props} />,
   Zap: (props: any) => <svg data-testid="zap-icon" {...props} />,
   ShieldCheck: (props: any) => <svg data-testid="shield-icon" {...props} />,
+  Download: (props: any) => <svg data-testid="download-icon" {...props} />,
 }));
 
 import { ExtensionSection } from '@/components/home/extension-section';
@@ -21,9 +21,10 @@ describe('ExtensionSection', () => {
     expect(screen.getByText('EXTENSÃO CHROME ATS')).toBeTruthy();
   });
 
-  it('should_render_coming_soon_badge', () => {
+  it('should_render_chrome_store_install_link', () => {
     render(<ExtensionSection />);
-    expect(screen.getByText('EM BREVE')).toBeTruthy();
+    const link = screen.getByRole('link', { name: /INSTALAR NO CHROME/i });
+    expect(link.getAttribute('href')).toContain('chromewebstore.google.com');
   });
 
   it('should_render_extension_heading', () => {
@@ -44,7 +45,7 @@ describe('ExtensionSection', () => {
 
   it('should_render_details_link', () => {
     render(<ExtensionSection />);
-    const link = screen.getByRole('link', { name: /VER DETALHES DA EXTENSÃO/i });
+    const link = screen.getByRole('link', { name: /VER DETALHES/i });
     expect(link).toBeTruthy();
     expect(link.getAttribute('href')).toBe('/extensao');
   });

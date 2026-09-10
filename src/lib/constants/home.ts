@@ -104,6 +104,6 @@ export const FAQ_ITEMS = [
   },
   {
     q: "TEM EXTENSÃO DO CHROME?",
-    a: "Em breve! A extensão Radar Unificando está em processo de aprovação na Chrome Web Store. Ela abrirá um painel lateral que analisa a vaga aberta na página e mostra o score ATS do seu currículo, com dicas para passar em triagens automatizadas, reanalisando automaticamente quando você troca de vaga.",
+    a: "Sim! A extensão Radar Unificando já está disponível gratuitamente na Chrome Web Store. Instale, conecte sua conta e ela abre um painel lateral que analisa a vaga aberta na página (Gupy, LinkedIn e InHire) e mostra o score ATS do seu currículo, com dicas para passar em triagens automatizadas, reanalisando automaticamente quando você troca de vaga.",
   },
 ];

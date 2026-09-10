@@ -25,7 +25,6 @@ export function SupportSection() {
           mb: 2,
         }}
       >
-        <Heart size={18} style={{ verticalAlign: "middle", marginRight: 8 }} />
         APOIE O PROJETO
       </Typography>
       <Typography sx={{ color: "#94a3b8", maxWidth: 520, mx: "auto", mb: 3, fontSize: { xs: "0.85rem", sm: "0.95rem" }, lineHeight: 1.6 }}>

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, GraduationCap, BookOpen, LucideIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface Hub {
   href: string;
-  icon: LucideIcon;
   badge: string;
   title: string;
   description: string;
@@ -13,7 +12,6 @@ interface Hub {
 const HUBS: Hub[] = [
   {
     href: "/cursos",
-    icon: GraduationCap,
     badge: "CURSOS RECOMENDADOS",
     title: "FECHE OS GAPS DO CURRÍCULO",
     description:
@@ -22,7 +20,6 @@ const HUBS: Hub[] = [
   },
   {
     href: "/dicas",
-    icon: BookOpen,
     badge: "DICAS & TUTORIAIS",
     title: "DESTAQUE-SE NAS TRIAGENS",
     description:
@@ -37,14 +34,12 @@ export function ContentHubsSection() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {HUBS.map((hub) => {
-            const Icon = hub.icon;
             return (
               <div
                 key={hub.href}
                 className="card-dark flex flex-col gap-3 p-6 sm:p-8 h-full"
               >
-                <div className="badge-neon inline-flex items-center gap-2 self-start">
-                  <Icon size={14} />
+                <div className="badge-neon self-start">
                   <span>{hub.badge}</span>
                 </div>
                 <h2

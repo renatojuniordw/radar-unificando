@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Container, Typography } from "@mui/material";
-import { Sparkles } from "lucide-react";
 import { RotatingText } from "@/components/home/rotating-text";
 import { JobSearchBar } from "@/components/shared/job-search-bar";
 import { tokens } from "@/lib/infrastructure/ui/tokens";
@@ -26,11 +25,13 @@ const HOW_IT_WORKS = [
     step: "02",
     title: "ANÁLISE DE SCORE ATS",
     desc: "A IA calcula a compatibilidade do seu perfil e destaca as skills necessárias.",
+    requiresAccount: true,
   },
   {
     step: "03",
     title: "ADAPTE E CANDIDATE-SE",
     desc: "Receba sugestões diretas para ajustar seu currículo e passar na triagem.",
+    requiresAccount: true,
   },
 ];
 
@@ -85,15 +86,11 @@ export function MarketingHero() {
             className="badge-neon"
             sx={{
               mb: 2.5,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1,
               px: 2,
               py: 0.75,
               fontSize: "0.75rem",
             }}
           >
-            <Sparkles size={14} />
             <span>GUPY + INHIRE · BUSCA EM TEMPO REAL</span>
           </Box>
 
@@ -174,18 +171,43 @@ export function MarketingHero() {
                 borderLeft: "3px solid #ccff00",
               }}
             >
-              <Typography
+              <Box
                 sx={{
-                  fontFamily: tokens.fontMono,
-                  fontSize: "0.75rem",
-                  color: tokens.accent,
-                  fontWeight: 900,
-                  letterSpacing: "0.1em",
+                  display: "flex",
+                  alignItems: "baseline",
+                  flexWrap: "wrap",
+                  gap: 1,
                   mb: 0.75,
                 }}
               >
-                PASSO {item.step}
-              </Typography>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontFamily: tokens.fontMono,
+                    fontSize: "0.75rem",
+                    color: tokens.accent,
+                    fontWeight: 900,
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  PASSO {item.step}
+                </Typography>
+                {item.requiresAccount && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontFamily: tokens.fontMono,
+                      fontSize: "0.65rem",
+                      color: "#94a3b8",
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    · requer conta grátis
+                  </Typography>
+                )}
+              </Box>
               <Typography
                 sx={{
                   fontWeight: 900,

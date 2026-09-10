@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Puzzle, Zap, ShieldCheck } from "lucide-react";
+import { ArrowRight, Zap, ShieldCheck, Download } from "lucide-react";
+import { LINKS } from "@/lib/core/constants";
 
 export function ExtensionSection() {
   return (
@@ -11,12 +12,8 @@ export function ExtensionSection() {
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
             <div className="max-w-[680px]">
-              <div className="badge-neon mb-4 inline-flex items-center gap-2">
-                <Puzzle size={14} />
+              <div className="badge-neon mb-4">
                 <span>EXTENSÃO CHROME ATS</span>
-                <span className="bg-[#020617] text-[#ccff00] px-1.5 py-0.5 text-[10px] font-mono border border-[#ccff00]">
-                  EM BREVE
-                </span>
               </div>
 
               <h2
@@ -43,16 +40,30 @@ export function ExtensionSection() {
                   <span>100% Seguro</span>
                 </div>
               </div>
+
+              <p className="text-[#94a3b8] text-xs font-mono mt-3 m-0">
+                Grátis · requer conta gratuita para a análise ATS.
+              </p>
             </div>
 
-            <div className="w-full md:w-auto shrink-0">
+            <div className="w-full md:w-auto shrink-0 flex flex-col gap-3">
+              <a
+                data-testid="extension-install-link"
+                href={LINKS.chromeStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-neon w-full md:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap shadow-[4px_4px_0px_#000] active:scale-95 transition-transform"
+              >
+                <Download size={18} strokeWidth={3} className="shrink-0" />
+                <span>INSTALAR NO CHROME</span>
+              </a>
               <Link
                 data-testid="extension-link"
                 href="/extensao"
-                className="btn-neon w-full md:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap shadow-[4px_4px_0px_#000] active:scale-95 transition-transform"
+                className="btn-dark w-full md:w-auto text-center inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 text-xs font-black font-mono uppercase tracking-wider no-underline whitespace-nowrap"
               >
-                <span>VER DETALHES DA EXTENSÃO</span>
-                <ArrowRight size={18} strokeWidth={3} className="shrink-0" />
+                <span>VER DETALHES</span>
+                <ArrowRight size={16} strokeWidth={3} className="shrink-0" />
               </Link>
             </div>
           </div>

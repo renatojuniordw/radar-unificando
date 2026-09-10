@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { EXTENSION_FEATURES } from "@/lib/constants/home";
 import { toScriptJson } from "@/lib/core/seo/jsonld";
-import { SITE } from "@/lib/core/constants";
+import { SITE, LINKS } from "@/lib/core/constants";
 import {
   Gauge,
   RefreshCw,
@@ -13,11 +13,6 @@ import {
   Download,
   KeyRound,
   Sparkles,
-  CheckCircle2,
-  Zap,
-  ArrowLeft,
-  AlertCircle,
-  Clock,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -58,6 +53,9 @@ const JSON_LD_SCHEMA = {
   },
   description:
     "Extensão Chrome oficial do Radar Unificando. Analisa a vaga aberta na página (Gupy, LinkedIn, InHire) e mostra o score ATS e dicas de currículo em um painel lateral.",
+  url: LINKS.chromeStore,
+  downloadUrl: LINKS.chromeStore,
+  installUrl: LINKS.chromeStore,
   author: {
     "@type": "Person",
     name: "Renato Bezerra",
@@ -69,7 +67,7 @@ const HOW_IT_WORKS = [
     step: "01",
     icon: Download,
     title: "INSTALE A EXTENSÃO",
-    desc: "Carregue a extensão no Chrome a partir do repositório ou da Chrome Web Store e fixe o ícone na barra do navegador.",
+    desc: "Instale direto da Chrome Web Store em um clique e fixe o ícone do Radar Unificando na barra do navegador.",
   },
   {
     step: "02",
@@ -130,45 +128,12 @@ export default function ExtensaoPage() {
             zIndex: 1,
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "32px",
-              alignItems: "center",
-            }}
-          >
-            {/* Left Content Column */}
+          <div style={{ maxWidth: "680px", margin: "0 auto", textAlign: "center" }}>
             <div>
-              <div
-                className="badge-neon"
-                style={{ marginBottom: "20px", display: "inline-flex", alignItems: "center", gap: "8px" }}
-              >
+              <div className="badge-neon" style={{ marginBottom: "20px" }}>
                 <span>⚡ EXTENSÃO CHROME ATS</span>
-                <span style={{ backgroundColor: "#020617", color: "#ccff00", padding: "2px 6px", fontSize: "0.7rem", border: "1px solid #ccff00" }}>
-                  EM BREVE
-                </span>
               </div>
 
-              {/* Banner de Status de Homologação */}
-              <div
-                data-testid="extensao-homologacao-banner"
-                style={{
-                  backgroundColor: "rgba(204, 255, 0, 0.08)",
-                  border: "2px solid #ccff00",
-                  padding: "12px 16px",
-                  marginBottom: "24px",
-                  maxWidth: "560px",
-                  boxShadow: "4px 4px 0px #000",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ fontSize: "1.2rem" }}>📌</span>
-                  <p style={{ color: "#f8fafc", fontSize: "0.85rem", fontWeight: 700, margin: 0, lineHeight: 1.4 }}>
-                    <strong style={{ color: "#ccff00", textTransform: "uppercase" }}>Em Homologação:</strong> A extensão está em processo de aprovação final pelo Google Chrome Web Store. Em breve estará pronta para download!
-                  </p>
-                </div>
-              </div>
               <h1
                 style={{
                   fontWeight: 900,
@@ -193,6 +158,8 @@ export default function ExtensaoPage() {
                   lineHeight: 1.65,
                   marginBottom: "32px",
                   maxWidth: "560px",
+                  marginLeft: "auto",
+                  marginRight: "auto",
                 }}
               >
                 A extensão Radar Unificando abre um painel lateral inteligente
@@ -206,12 +173,14 @@ export default function ExtensaoPage() {
                   gap: "16px",
                   flexWrap: "wrap",
                   alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <button
-                  disabled
+                <a
+                  href={LINKS.chromeStore}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   data-testid="extensao-conectar-button"
-                  title="Extensão em processo de homologação na Chrome Web Store"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -220,20 +189,19 @@ export default function ExtensaoPage() {
                     fontSize: "0.95rem",
                     fontWeight: 900,
                     textTransform: "uppercase",
-                    backgroundColor: "#1e293b",
-                    color: "#64748b",
-                    border: "2px solid #334155",
+                    textDecoration: "none",
+                    backgroundColor: "#ccff00",
+                    color: "#020617",
+                    border: "2px solid #020617",
                     boxShadow: "4px 4px 0px #000",
-                    cursor: "not-allowed",
-                    opacity: 0.8,
                   }}
                 >
-                  <Clock size={18} /> CONECTAR EXTENSÃO (EM BREVE)
-                </button>
+                  <Download size={18} /> INSTALAR NO CHROME
+                </a>
                 <Link
-                  href="/"
+                  href="/extensao/conectar"
                   className="btn-dark"
-                  data-testid="extensao-voltar-home-link"
+                  data-testid="extensao-conectar-conta-link"
                   style={{
                     textDecoration: "none",
                     display: "inline-flex",
@@ -247,201 +215,8 @@ export default function ExtensaoPage() {
                     boxShadow: "4px 4px 0px #000",
                   }}
                 >
-                  <ArrowLeft size={16} /> VOLTAR À HOME
+                  <KeyRound size={16} /> JÁ INSTALOU? CONECTAR CONTA
                 </Link>
-              </div>
-            </div>
-
-            {/* Right Column: Chrome SidePanel ATS Preview */}
-            <div
-              style={{
-                backgroundColor: "#0f172a",
-                border: "2px solid #ccff00",
-                boxShadow: "10px 10px 0px #000",
-                padding: "24px",
-                position: "relative",
-              }}
-            >
-              {/* Fake Chrome SidePanel Header */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  paddingBottom: "16px",
-                  marginBottom: "20px",
-                  borderBottom: "1px solid #1e293b",
-                }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <div
-                    style={{
-                      width: "10px",
-                      height: "10px",
-                      borderRadius: "50%",
-                      backgroundColor: "#ccff00",
-                      boxShadow: "0 0 8px #ccff00",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: "ui-monospace, monospace",
-                      fontSize: "0.75rem",
-                      fontWeight: 800,
-                      color: "#f8fafc",
-                      letterSpacing: "0.05em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    RADAR UNIFICANDO · PAINEL LATERAL
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    fontFamily: "ui-monospace, monospace",
-                    color: "#020617",
-                    backgroundColor: "#ccff00",
-                    padding: "2px 8px",
-                    fontWeight: 900,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  AO VIVO
-                </span>
-              </div>
-
-              {/* Score Display Card */}
-              <div
-                style={{
-                  backgroundColor: "#020617",
-                  border: "1px solid #334155",
-                  padding: "20px",
-                  marginBottom: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: "0.7rem",
-                      fontFamily: "ui-monospace, monospace",
-                      color: "#94a3b8",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Compatibilidade do Currículo
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "2rem",
-                      fontWeight: 900,
-                      color: "#ccff00",
-                      lineHeight: 1,
-                      fontFamily: "ui-monospace, monospace",
-                    }}
-                  >
-                    88%{" "}
-                    <span style={{ fontSize: "0.9rem", color: "#00ff66" }}>
-                      EXCELENTE
-                    </span>
-                  </div>
-                </div>
-                <Zap size={36} color="#ccff00" />
-              </div>
-
-              {/* Skills Tags */}
-              <div style={{ marginBottom: "20px" }}>
-                <div
-                  style={{
-                    fontSize: "0.7rem",
-                    fontFamily: "ui-monospace, monospace",
-                    color: "#94a3b8",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "10px",
-                  }}
-                >
-                  Skills Identificadas na Vaga:
-                </div>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  <span
-                    style={{
-                      backgroundColor: "rgba(0, 255, 102, 0.1)",
-                      color: "#00ff66",
-                      border: "1px solid #00ff66",
-                      padding: "4px 10px",
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      fontFamily: "ui-monospace, monospace",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <CheckCircle2 size={12} /> React / Next.js
-                  </span>
-                  <span
-                    style={{
-                      backgroundColor: "rgba(0, 255, 102, 0.1)",
-                      color: "#00ff66",
-                      border: "1px solid #00ff66",
-                      padding: "4px 10px",
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      fontFamily: "ui-monospace, monospace",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <CheckCircle2 size={12} /> TypeScript
-                  </span>
-                  <span
-                    style={{
-                      backgroundColor: "rgba(255, 204, 0, 0.1)",
-                      color: "#ccff00",
-                      border: "1px solid #ccff00",
-                      padding: "4px 10px",
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      fontFamily: "ui-monospace, monospace",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <AlertCircle size={12} /> GraphQL (Faltante)
-                  </span>
-                </div>
-              </div>
-
-              {/* Dica ATS Box */}
-              <div
-                style={{
-                  backgroundColor: "#020617",
-                  borderLeft: "4px solid #ccff00",
-                  padding: "12px 16px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "#cbd5e1",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  💡 <strong>Dica ATS:</strong> Adicione{" "}
-                  <em>&quot;GraphQL / REST APIs&quot;</em> no resumo
-                  profissional para subir seu score de 88% para{" "}
-                  <strong>95%</strong>.
-                </div>
               </div>
             </div>
           </div>
@@ -677,31 +452,53 @@ export default function ExtensaoPage() {
                 fontSize: "0.95rem",
               }}
             >
-              Conecte sua conta do Radar Unificando à extensão e comece a
-              analisar vagas agora mesmo.
+              Instale a extensão pela Chrome Web Store, conecte sua conta do
+              Radar Unificando e comece a analisar vagas agora mesmo.
             </p>
-            <button
-              disabled
-              data-testid="extensao-conectar-conta-button"
-              title="Extensão em processo de homologação na Chrome Web Store"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "16px 36px",
-                fontSize: "1rem",
-                fontWeight: 900,
-                textTransform: "uppercase",
-                backgroundColor: "#1e293b",
-                color: "#64748b",
-                border: "2px solid #334155",
-                boxShadow: "4px 4px 0px #000",
-                cursor: "not-allowed",
-                opacity: 0.8,
-              }}
-            >
-              <Clock size={20} /> CONECTAR MINHA CONTA (EM BREVE)
-            </button>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
+              <a
+                href={LINKS.chromeStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="extensao-conectar-conta-button"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "16px 36px",
+                  fontSize: "1rem",
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  backgroundColor: "#ccff00",
+                  color: "#020617",
+                  border: "2px solid #020617",
+                  boxShadow: "4px 4px 0px #000",
+                }}
+              >
+                <Download size={20} /> INSTALAR NO CHROME AGORA
+              </a>
+              <Link
+                href="/extensao/conectar"
+                data-testid="extensao-conectar-conta-token-link"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "16px 28px",
+                  fontSize: "0.95rem",
+                  fontWeight: 900,
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  backgroundColor: "#0f172a",
+                  color: "#94a3b8",
+                  border: "2px solid #334155",
+                  boxShadow: "4px 4px 0px #000",
+                }}
+              >
+                <KeyRound size={18} /> CONECTAR CONTA
+              </Link>
+            </div>
           </div>
         </div>
       </section>

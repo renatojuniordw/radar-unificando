@@ -139,10 +139,20 @@ body {
   color: #cbd5e1;
 }
 
+/* Neon badge/button keep their dark text even inside a .card-dark */
+.card-dark .badge-neon,
+.card-dark .badge-neon span,
+.card-dark .btn-neon,
+.card-dark .btn-neon span {
+  color: #020617;
+}
+
 /* ===== Badge Patterns ===== */
 
 .badge-neon {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background-color: #ccff00;
   color: #020617;
   font-weight: 900;
@@ -155,7 +165,9 @@ body {
 }
 
 .badge-dark {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background-color: #0f172a;
   color: #ccff00;
   font-weight: 900;
