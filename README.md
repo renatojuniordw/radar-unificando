@@ -12,6 +12,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 
 - **Busca em tempo real** em Gupy e InHire para todas as áreas profissionais — sem base pré-carregada
 - **Busca inteligente** — expansão de queries (sinônimos PT/EN via mapa curado + IA cacheada), dedupe de quase-duplicatas, filtro de relevância (descarta design físico em buscas de design) e de frescor (vagas com mais de 20 dias)
+- **Filtros na tabela de resultados** — plataforma, cargo, empresa, tipo de trabalho (remoto/híbrido/presencial) e **localização**
 - **Chat IA** para análise de perfil, recomendação de vagas, carta de apresentação e preparação de entrevistas (com redação de PII e proteção contra prompt injection)
 - **Importação de currículo** — upload PDF do LinkedIn ou texto colado, com extração automática de skills, experiência, cargo e senioridade
 - **Análise de match & ATS** — compara perfil × vaga com score 0-100, skills casadas/faltantes e fit geral
@@ -23,7 +24,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
 - **Conformidade LGPD** — exportação de dados pessoais (`/api/export`), exclusão de conta (`DELETE /api/auth/account`) e limpeza automática por retenção (cron)
 - **Painel Admin** — métricas de usuários, buscas e uso de IA com gráficos (Recharts), filtro por período, tabela de usuários e auto-refresh — acesso restrito a `role=admin`
-- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Status: EM BREVE** — em homologação na Chrome Web Store
+- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página (**Gupy, LinkedIn e InHire**) e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Disponível na Chrome Web Store** — [instalar](https://chromewebstore.google.com/detail/radar-unificando-%E2%80%94-an%C3%A1lis/kcbfealbhifapbhnlbajfgefafjiobdh)
 - **E-mail de boas-vindas** — ao criar conta, o usuário recebe um e-mail com 3 passos iniciais (via Resend)
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
@@ -146,7 +147,7 @@ src/
       track/       → Tracking de cliques em cursos
       upload/      → Upload de currículo (async)
       vagas/       → Listagem de vagas
-    busca/         → Busca com resultados e análise ATS (busca-client.tsx, client-side)
+    busca/         → Busca com resultados e análise ATS (server-rendered com vagas iniciais + busca-client.tsx)
     cursos/        → Hub de cursos + /cursos/[skill] (SSG, 71 skills)
     doar/          → Página de doação (PIX)
     export/        → Export CSV/JSON
@@ -160,7 +161,7 @@ src/
     busca/         → Busca header, recomendações de curso lateral
     chat/          → UI do assistente (sidebar, bolhas, sugestões, cards)
     cursos/        → Cards de cursos, grade de recomendação
-    home/          → Hero, WhyUse, FAQ, Results, Loading
+    home/          → MarketingHero (busca → /busca), ContentHubs, Extension, Support, FAQ, Loading
     job-table/     → Tabela de vagas (desktop/mobile/filtros)
     layout/        → Header, Footer, UserMenu
     dicas/         → dica-card, dica-card-grid

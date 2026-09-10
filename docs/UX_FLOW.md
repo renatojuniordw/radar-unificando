@@ -5,43 +5,36 @@
 ### Seções da Home
 
 ```
-/  (página única)
-├── 1. HERO SECTION (dark background, coluna única)
-│   ├── Badge: "GUPY + INHIRE · GRÁTIS"
-│   ├── Badge info: "Empresas e cargos opcionais — sem filtros, até 500 vagas"
-│   ├── Alerta: complete seu perfil (logados sem perfil completo)
-│   ├── Heading: "RADAR DE VAGAS REMOTAS"
-│   ├── Subtítulo: descrição com texto rotativo
-│   ├── Inputs: Empresas + Cargos (opcionais, Enter/vírgula adiciona)
-│   ├── Botão: "BUSCAR VAGAS EM TEMPO REAL"
-│   └── Sugestões de cargos clicáveis
-├── 2. LOADING OVERLAY (quando buscando)
-├── 3. RESULTS SECTION (white background)
-│   ├── Heading: "RECOMENDADAS PARA VOCÊ" (modo recomendado)
-│   ├── Chips: vagas encontradas · na sua lista · empresas
-│   ├── Filtros: plataforma · cargo · busca
-│   ├── Tabela: vaga · empresa · plataforma · link · match
-│   └── Botão: Exportar CSV
-├── 4. WHY USE SECTION (white background)
-│   ├── Heading: "TUDO QUE VOCÊ PRECISA PARA SE RECLOCAR"
-│   └── 6 cards: Gratuito · Sem Cadastro · Tempo Real · IA Perfil · Score · Assistente
-├── 5. FAQ SECTION (light gray background)
-│   ├── Heading: "PERGUNTAS FREQUENTES"
-│   └── 10 itens expandíveis (details/summary)
-└── 6. CHAT ASSISTENT (FAB + Drawer) — só para logados
-    ├── Botão flutuante canto inferior direito
-    ├── Drawer lateral (100% mobile, 400px desktop)
-    ├── Histórico de conversas
-    ├── Sugestões clicáveis
-    ├── Badge "🔒 LGPD Sanitizado"
-    └── Streaming de resposta IA
+/  (página única — busca redireciona para /busca)
+├── 1. MARKETING HERO (dark background, hero-radar animado)
+│   ├── Badge: "GUPY + INHIRE · BUSCA EM TEMPO REAL"
+│   ├── Heading: "RADAR DE VAGAS" (com texto rotativo)
+│   ├── JobSearchBar: tags de cargos (sugestões clicáveis: DevOps, Frontend React, ...)
+│   └── Passos "Como funciona":
+│       ├── 01 PESQUISE VAGAS — busca em tempo real no Gupy e InHire
+│       ├── 02 ANÁLISE DE SCORE ATS — IA calcula compatibilidade (requer conta)
+│       └── 03 ADAPTE E CANDIDATE-SE — sugestões para ajustar currículo (requer conta)
+├── 2. CONTENT HUBS (cards escuros, border neon)
+│   ├── Cursos: "FECHE OS GAPS DO CURRÍCULO" → /cursos
+│   └── Dicas: "DESTAQUE-SE NAS TRIAGENS" → /dicas
+├── 3. EXTENSION SECTION
+│   ├── Badge: "EXTENSÃO CHROME ATS"
+│   ├── Heading: "ANALISE A VAGA NA HORA, DIRETO NO NAVEGADOR"
+│   ├── Features: score automático, re-análise automática, instalação 1 clique
+│   └── Botões: "INSTALAR NO CHROME" (Chrome Web Store) + "VER DETALHES" (/extensao)
+├── 4. SUPPORT SECTION
+│   ├── "APOIE O PROJETO" — texto sobre manutenção independente
+│   └── Botão: "QUERO DOAR (PIX)" → /doar
+└── 5. FAQ SECTION
+    ├── Heading: "PERGUNTAS FREQUENTES"
+    └── Itens expandíveis (details/summary)
 ```
 
-### Estados da Tabela
+### Estados da Tabela (`/busca`)
 
 | Estado | Exibição |
 |--------|----------|
-| Nunca buscou | Seções: Why Use + FAQ visíveis |
+| Nunca buscou | Tabela com vagas iniciais (server-rendered, até 50) ou estado vazio |
 | Buscando | Loading overlay com progresso SSE |
 | Vazia (sem match) | "Nenhuma vaga encontrada para os critérios" |
 | Resultados | Tabela com dados, filtros, export |
@@ -103,7 +96,7 @@ Aba "CURRÍCURSOS GERADOS":
 ### Extensão Chrome (`/extensao/conectar`) — requer login
 ```
 Onboarding em 3 passos:
-  ├── 1. Instalar a extensão (link + instruções)
+  ├── 1. Instalar a extensão (link da Chrome Web Store + instruções)
   ├── 2. Copiar o token de conexão (TokenBox)
   └── 3. Colar o token na extensão → side panel mostra "Conectado"
 

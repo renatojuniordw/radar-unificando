@@ -23,7 +23,7 @@
 | PipelineRun | `pipeline_runs` | id, userId (nullable — `null` para anônimos), status, totalJobs, gupyJobs, inhireJobs, newCompaniesFound, discoveryEnabled, startedAt, finishedAt |
 | ChatToolCall | `chat_tool_calls` | id, userId, chatId?, toolName, createdAt — uso das ferramentas de IA do chat (métrica "ferramentas mais utilizadas") |
 | CompanyPresence | `company_presence` | id, userId, company, hasGupy, gupyPage, hasInhire, inhirePage, totalInhireJobs |
-| PublicJob | `public_jobs` | id, link (unique), source, company, platform, roleCategory, title, type, location, postedAt, description, status, detectedAt, lastCheckedAt, expiresAt (TTL 7 dias), createdAt — pool público de vagas que alimenta as páginas SEO `/vagas` |
+| PublicJob | `public_jobs` | id, link (unique), source, company, platform, roleCategory, title, type, location, postedAt, description, status, detectedAt, lastCheckedAt, expiresAt (TTL 7 dias), createdAt — pool público de vagas alimentado por toda execução do pipeline (`public-save-step`); mantido para SEO futuro (páginas `/vagas` removidas) |
 | CourseClick | `course_clicks` | id, userId?, courseId, skill?, platform?, origin, url?, ipHash, createdAt — tracking de cliques em cursos de afiliado |
 
 > ⚠️ `Application` e `ApplicationLog` existem **apenas no schema** — não há API nem UI

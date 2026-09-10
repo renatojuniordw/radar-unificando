@@ -4,7 +4,7 @@
 
 ```
 Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
-  ├── /            → home (hero, resultados, why-use, FAQ)
+  ├── /            → home (marketing hero com busca → /busca, hubs de conteúdo, extensão, apoio, FAQ)
   ├── (auth)/      → login/register
   ├── (dashboard)/ → logado (perfil, /extensao/conectar) — guarded no layout server-side
   ├── /admin       → painel admin (métricas) — guarded por role no layout; noindex
@@ -14,9 +14,10 @@ Presentation Layer (Next.js App Router + MUI 7 + Tailwind v4)
   ├── /sobre       → página institucional
   ├── /doar        → página de doação (PIX)
   ├── /termos      → termos LGPD
-  └── components/  → home/, busca/, profile/ (profile-tab, generated-resumes-tab com paginação, OutdatedProfileBanner),
+  └── components/  → home/ (marketing-hero, content-hubs-section, extension-section, faq-section, support-section),
+                     busca/, profile/ (profile-tab, generated-resumes-tab com paginação, OutdatedProfileBanner),
                      layout/ (header, footer, UserMenu), seo/ (inclui ArticleSchema), chat/, admin/, ats/, cursos/,
-                     dicas/ (dica-card, dica-card-grid), job-table/, shared/, ui/
+                     dicas/ (dica-card, dica-card-grid), job-table/, shared/ (support-section, job-search-bar), ui/
                      lib/docx/ (render-resume-docx — client-side DOCX generation)
         |
 API Layer (Route Handlers)
@@ -56,7 +57,7 @@ Application/Core Layer
   ├── core/jobs/            → map-job (mapeamento para API/UI)
   ├── core/profile/         → lógica de perfil (skills, senioridade)
   ├── core/seo/             → schemas JSON-LD (CourseListSchema, FAQ, JobPosting)
-  ├── core/vagas/           → páginas públicas de vagas (SEO)
+  ├── core/vagas/           → lógica de listagem de vagas (slug)
   ├── core/auth/            → auth-guard (requireAuth), helpers de autenticação
   └── core/admin/           → admin-stats (summary, séries diárias, top termos/empresas/ferramentas)
         |
@@ -93,8 +94,8 @@ Infrastructure Layer
 6. Eventos SSE emitidos via `ProgressEmitter` (`/api/pipeline/stream`) — `pipeline_complete` carrega `jobs` para **todos** os usuários
 7. Cliente recebe eventos e atualiza UI em tempo real (logados veem os resultados da busca)
 8. Resultados ordenados por recência, deduplicados (por link), cap 200, salvos no PostgreSQL
-9. **Pool público de vagas** (`PublicJob`, dedup por link, TTL 7 dias): alimentado por **toda** execução do pipeline (logada ou anônima) e lido pelas páginas estáticas de SEO `/vagas` e `/vagas/[cargo]`
-10. Usuário visualiza vagas na tabela com filtros e export CSV/JSON
+9. **Pool público de vagas** (`PublicJob`, dedup por link, TTL 7 dias): alimentado por **toda** execução do pipeline (logada ou anônima) via `public-save-step` — mantido para SEO futuro (as páginas públicas `/vagas` foram removidas)
+10. Usuário visualiza vagas na tabela com filtros (plataforma, cargo, empresa, tipo, localização) e export CSV/JSON
 11. Chat assistente analisa perfil vs vagas via ferramentas IA
 
 **Auto-sync (refresh silencioso ao entrar no site):** dispara no máximo 1×/15min, só quando há filtros salvos (companies/roles) e cooldown zero. Usa um limiter próprio (`pipelineAutoLimiter`, 2/5min) e **não** consome a cota nem aplica o cooldown da busca manual — o usuário pode buscar na hora. Ver `docs/SECURITY.md`.

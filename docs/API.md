@@ -37,7 +37,7 @@ Base URL local: `http://localhost:11010`.
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| GET | `/api/vagas` | ❌ | Listar vagas. `recomendado=1` → ranqueadas por perfil (máx. 30); senão filtros `plataforma`, `cargo`, `search` (máx. 200). Anônimo usa UUID zero |
+| GET | `/api/vagas` | ❌ | Listar vagas. `recomendado=1` → ranqueadas por perfil (máx. 30); senão filtros `plataforma`, `cargo`, `search`, `location` (máx. 200). Anônimo usa UUID zero |
 
 ### Perfil
 

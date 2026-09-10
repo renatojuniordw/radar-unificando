@@ -41,13 +41,19 @@ Sem border-radius (Neo-Brutalism: `rounded: none`).
 | Classe | Uso |
 |--------|-----|
 | `card-brutalist` | Cards brancos com border 4px + shadow 6px (8px no hover) |
+| `card-dark` | Card escuro `#0f172a` com border 3px `#ccff00` + shadow 6px neon (texto claro) |
+| `card-panel` | Painel escuro `#0f172a` com border 2px `#334155` + shadow 4px |
 | `btn-neon` | Botão amarelo com border 4px + shadow 8px |
+| `btn-dark` | Botão escuro `#020617` com texto `#ccff00`; hover com shadow neon 10px; `:disabled` com opacidade 0.5 |
 | `badge-neon` | Badge amarelo com border 2px + shadow 3px |
 | `badge-dark` | Badge escuro com border 2px |
 | `faq-item` | Itens FAQ com border 4px + shadow 4px |
 | `section-hero` | Background escuro `#020617` + border-bottom 4px `#1e293b` |
-| `section-white` | Background escuro `#020617` + border-top 1px `#1e293b` (texto claro) |
+| `section-dark-eco` | Background `#0b1120` + border-top/bottom 1px `#1e293b` |
+| `section-dark-alt` | Background escuro `#020617` + border-top 1px `#1e293b` (texto claro) |
 | `section-faq` | Background escuro `#020617` + border-top 1px `#1e293b` (texto claro) |
+| `hero-radar` | Fundo animado do hero (varredura de radar, `radar-sweep` 4s) |
+| `hero-word` | Animação de entrada de palavras (`fade-slide-up` 0.4s) |
 
 ## MUI Theme
 

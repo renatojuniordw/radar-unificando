@@ -5,7 +5,37 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ## [Não lançado]
 
-Nenhuma mudança desde `v4.0.0`.
+Nenhuma mudança desde `v5.0.0`.
+
+---
+
+## [5.0.0] — 2026-09-10
+
+### Adicionado
+- **Filtro de localização** na busca e nos filtros de vagas (`location` em `/api/vagas` e `useJobFilters`)
+- **Seções de conteúdo na home** (`ContentHubsSection`): cards de Cursos e Dicas com CTA
+- **Extensão publicada na Chrome Web Store** — link de instalação na seção da extensão (`LINKS.chromeStore`) e suporte a **LinkedIn** além de Gupy e InHire
+- **`data-testid` attributes** em componentes-chave para a suíte E2E (Playwright)
+- Aviso de cookies atualizado com informações de segurança e infraestrutura
+
+### Alterado
+- **Home reestruturada**: marketing hero com passos "como funciona" e busca que redireciona para `/busca`, seguido de hubs de conteúdo, seção da extensão, apoio e FAQ
+- **Página "Sobre" refatorada**: missão, criador (com stack), apoio, pilares e CTA final
+- Textos e links do rodapé atualizados (Cursos, Dicas, Extensão, Sobre, Termos)
+- Estilos de hover e desabilitado para botões escuros (`btn-dark`)
+- Espaçamento e centralização das seções da página inicial
+- **Barra flutuante móvel removida** (`mobile-floating-bar.tsx`)
+- Metadados e sitemap aprimorados
+- Mensagem do easter egg no console ajustada
+- Version bump para `5.0.0`
+
+### Corrigido
+- Teste de frescor do pipeline ajustado para considerar margem de segurança
+- Tipo de retorno da factory de testes (`ReactElement`)
+
+### Testes
+- Testes de extração de skills e input handling aprimorados
+- Suíte expandida: **245 arquivos · 2059 testes** (Vitest)
 
 ---
 
