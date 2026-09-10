@@ -85,127 +85,72 @@ const HOW_IT_WORKS = [
 
 const FEATURE_ICONS = [Gauge, RefreshCw, BarChart3, Copy, ShieldCheck, History];
 
+const CTA_BASE =
+  "w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 text-sm no-underline whitespace-nowrap active:scale-[0.98] transition-transform";
+
 export default function ExtensaoPage() {
   return (
-    <main
-      style={{
-        backgroundColor: "#020617",
-        minHeight: "100vh",
-        color: "#f8fafc",
-      }}
-    >
+    <main className="min-h-dvh overflow-x-hidden bg-[#020617] text-[#f8fafc]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: toScriptJson(JSON_LD_SCHEMA) }}
       />
+
       {/* Hero Section */}
       <section
-        className="section-hero"
+        className="section-hero relative overflow-hidden px-4 py-16 sm:px-6 sm:py-24"
         data-testid="extensao-hero-section"
-        style={{
-          padding: "64px 16px",
-          position: "relative",
-          overflow: "hidden",
-        }}
       >
         <div
-          className="hero-radar"
+          className="hero-radar pointer-events-none absolute"
           style={{
-            position: "absolute",
             inset: -200,
             background:
               "conic-gradient(from 0deg, transparent 0%, #ccff00 25%, transparent 50%)",
             opacity: 0.03,
-            pointerEvents: "none",
           }}
         />
 
-        <div
-          style={{
-            maxWidth: "1280px",
-            margin: "0 auto",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{ maxWidth: "680px", margin: "0 auto", textAlign: "center" }}
-          >
-            <div>
-              <div className="badge-neon" style={{ marginBottom: "20px" }}>
-                <span>EXTENSÃO CHROME ATS</span>
-              </div>
+        <div className="relative z-[1] mx-auto max-w-[1280px]">
+          <div className="mx-auto max-w-[680px] text-center">
+            <div className="badge-neon mb-5">
+              <span>EXTENSÃO CHROME ATS</span>
+            </div>
 
-              <h1
-                style={{
-                  fontWeight: 900,
-                  textTransform: "uppercase",
-                  letterSpacing: "-0.02em",
-                  color: "#ffffff",
-                  fontSize: "clamp(2.2rem, 5vw, 4rem)",
-                  lineHeight: 0.95,
-                  marginBottom: "24px",
-                }}
+            <h1
+              className="mb-6 font-black uppercase tracking-tight text-white leading-[1.05] sm:leading-[0.95]"
+              style={{ fontSize: "clamp(2.2rem, 5vw, 4rem)" }}
+            >
+              ANALISE A VAGA
+              <br />
+              <span className="text-[#ccff00]">NA HORA EM SEU NAVEGADOR</span>
+            </h1>
+
+            <p className="mx-auto mb-8 max-w-[560px] text-base leading-relaxed text-[#cbd5e1]">
+              Um painel lateral que lê a vaga no Gupy, LinkedIn e InHire e mostra
+              o score ATS do seu currículo em tempo real, com as skills que
+              faltam e o que ajustar.
+            </p>
+
+            <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+              <a
+                href={LINKS.chromeStore}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="extensao-conectar-button"
+                className={`btn-neon ${CTA_BASE}`}
               >
-                ANALISE A VAGA
-                <br />
-                <span style={{ color: "#ccff00" }}>
-                  NA HORA EM SEU NAVEGADOR
-                </span>
-              </h1>
-              <p
-                style={{
-                  color: "#cbd5e1",
-                  fontSize: "1rem",
-                  lineHeight: 1.65,
-                  marginBottom: "32px",
-                  maxWidth: "560px",
-                  marginLeft: "auto",
-                  marginRight: "auto",
-                }}
+                <Download size={18} strokeWidth={3} className="shrink-0" />
+                <span>INSTALAR NO CHROME</span>
+              </a>
+              <Link
+                href="/extensao/conectar"
+                data-testid="extensao-conectar-conta-link"
+                className={`btn-dark ${CTA_BASE}`}
               >
-                Um painel lateral que lê a vaga no Gupy, LinkedIn e InHire e
-                mostra o score ATS do seu currículo em tempo real, com as skills
-                que faltam e o que ajustar.
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "16px",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <a
-                  href={LINKS.chromeStore}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="extensao-conectar-button"
-                  className="btn-neon"
-                  style={{
-                    gap: "10px",
-                    padding: "16px 28px",
-                    fontSize: "0.95rem",
-                    textDecoration: "none",
-                  }}
-                >
-                  <Download size={18} /> INSTALAR NO CHROME
-                </a>
-                <Link
-                  href="/extensao/conectar"
-                  className="btn-dark"
-                  data-testid="extensao-conectar-conta-link"
-                  style={{
-                    gap: "8px",
-                    padding: "16px 24px",
-                    fontSize: "0.95rem",
-                    textDecoration: "none",
-                  }}
-                >
-                  <KeyRound size={16} /> JÁ INSTALOU? CONECTAR CONTA
-                </Link>
-              </div>
+                <KeyRound size={16} strokeWidth={3} className="shrink-0" />
+                <span>JÁ INSTALOU? CONECTAR CONTA</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -213,95 +158,44 @@ export default function ExtensaoPage() {
 
       {/* Recursos Section */}
       <section
-        className="section-dark-alt"
+        className="section-dark-alt px-4 py-16 sm:px-6 sm:py-24"
         data-testid="extensao-recursos-section"
-        style={{ padding: "64px 16px" }}
       >
-        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-          <div className="badge-dark" style={{ marginBottom: "20px" }}>
-            FUNCIONALIDADES DA EXTENSÃO
-          </div>
+        <div className="mx-auto max-w-[1280px]">
+          <div className="badge-dark mb-5">FUNCIONALIDADES DA EXTENSÃO</div>
           <h2
-            style={{
-              fontWeight: 900,
-              textTransform: "uppercase",
-              letterSpacing: "-0.02em",
-              color: "#f8fafc",
-              fontSize: "clamp(1.75rem, 4vw, 3rem)",
-              marginBottom: "40px",
-              lineHeight: 0.95,
-            }}
+            className="mb-10 font-black uppercase tracking-tight leading-[1.05] text-[#f8fafc] sm:leading-[0.95]"
+            style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
           >
-            TUDO QUE ELA FAZ <span style={{ color: "#ccff00" }}>POR VOCÊ</span>
+            TUDO QUE ELA FAZ <span className="text-[#ccff00]">POR VOCÊ</span>
           </h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "24px",
-            }}
-          >
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {EXTENSION_FEATURES.map((item, index) => {
               const IconComponent = FEATURE_ICONS[index % FEATURE_ICONS.length];
               return (
                 <div
                   key={item.title}
-                  className="card-brutalist"
+                  className="card-brutalist flex flex-col p-6 sm:p-7"
                   data-testid={`extensao-feature-${item.title
                     .toLowerCase()
                     .normalize("NFD")
                     .replace(/[\u0300-\u036f]/g, "")
                     .replace(/[^a-z0-9]+/g, "-")
                     .replace(/(^-|-$)/g, "")}`}
-                  style={{
-                    padding: "28px 24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
                 >
-                  <div>
-                    <div
-                      style={{
-                        width: "44px",
-                        height: "44px",
-                        backgroundColor: "#020617",
-                        border: "2px solid #ccff00",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: "20px",
-                        color: "#ccff00",
-                        boxShadow: "3px 3px 0px #ccff00",
-                      }}
-                    >
-                      <IconComponent size={22} strokeWidth={2.5} />
-                    </div>
-                    <h3
-                      style={{
-                        fontWeight: 900,
-                        textTransform: "uppercase",
-                        letterSpacing: "-0.01em",
-                        fontSize: "1.1rem",
-                        marginBottom: "12px",
-                        color: "#020617",
-                      }}
-                    >
-                      {item.title}
-                    </h3>
-                    <p
-                      style={{
-                        color: "#334155",
-                        fontSize: "0.875rem",
-                        lineHeight: 1.6,
-                        margin: 0,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {item.desc}
-                    </p>
+                  <div
+                    className="mb-5 flex h-11 w-11 items-center justify-center border-2 border-[#ccff00] bg-[#020617] text-[#ccff00]"
+                    style={{ boxShadow: "3px 3px 0px #ccff00" }}
+                  >
+                    <IconComponent size={22} strokeWidth={2.5} />
                   </div>
+                  <h3 className="mb-3 text-lg font-black uppercase tracking-tight text-[#020617]">
+                    {item.title}
+                  </h3>
+                  <p className="m-0 text-sm font-medium leading-relaxed text-[#334155]">
+                    {item.desc}
+                  </p>
                 </div>
               );
             })}
@@ -311,180 +205,81 @@ export default function ExtensaoPage() {
 
       {/* Como Funciona Section */}
       <section
-        className="section-dark-eco"
+        className="section-dark-eco px-4 py-16 sm:px-6 sm:py-24"
         data-testid="extensao-como-funciona-section"
-        style={{ padding: "64px 16px" }}
       >
-        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-          <div className="badge-neon" style={{ marginBottom: "20px" }}>
-            PASSO A PASSO
+        <div className="mx-auto max-w-[1280px]">
+          <div className="badge-neon mb-5">
+            <span>PASSO A PASSO</span>
           </div>
           <h2
-            style={{
-              fontWeight: 900,
-              textTransform: "uppercase",
-              letterSpacing: "-0.02em",
-              color: "#ffffff",
-              fontSize: "clamp(1.75rem, 4vw, 3rem)",
-              marginBottom: "40px",
-              lineHeight: 0.95,
-            }}
+            className="mb-10 font-black uppercase tracking-tight leading-[1.05] text-white sm:leading-[0.95]"
+            style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
           >
-            COMO FUNCIONA EM <span style={{ color: "#ccff00" }}>3 ETAPAS</span>
+            COMO FUNCIONA EM <span className="text-[#ccff00]">3 ETAPAS</span>
           </h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "24px",
-            }}
-          >
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {HOW_IT_WORKS.map((item) => {
               const StepIcon = item.icon;
               return (
                 <div
                   key={item.step}
-                  className="card-dark"
+                  className="card-dark flex flex-col p-6 sm:p-7"
                   data-testid={`extensao-etapa-${item.step}`}
-                  style={{
-                    padding: "32px 24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
                 >
-                  <div>
+                  <div className="mb-5 flex items-center justify-between">
                     <div
+                      className="px-3 py-1 font-mono text-base font-black text-[#020617]"
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "20px",
+                        backgroundColor: "#ccff00",
+                        boxShadow: "3px 3px 0px #fff",
                       }}
                     >
-                      <div
-                        style={{
-                          color: "#020617",
-                          backgroundColor: "#ccff00",
-                          fontWeight: 900,
-                          fontSize: "1rem",
-                          padding: "4px 12px",
-                          fontFamily: "ui-monospace, monospace",
-                          boxShadow: "3px 3px 0px #fff",
-                        }}
-                      >
-                        ETAPA {item.step}
-                      </div>
-                      <div
-                        style={{
-                          padding: "8px",
-                          border: "1px solid #ccff00",
-                          color: "#ccff00",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <StepIcon size={22} />
-                      </div>
+                      ETAPA {item.step}
                     </div>
-                    <h3
-                      style={{
-                        fontWeight: 900,
-                        textTransform: "uppercase",
-                        letterSpacing: "-0.01em",
-                        fontSize: "1.15rem",
-                        marginBottom: "12px",
-                        color: "#ccff00",
-                      }}
-                    >
-                      {item.title}
-                    </h3>
-                    <p
-                      style={{
-                        color: "#cbd5e1",
-                        fontSize: "0.875rem",
-                        lineHeight: 1.6,
-                        margin: 0,
-                      }}
-                    >
-                      {item.desc}
-                    </p>
+                    <div className="flex items-center justify-center border border-[#ccff00] p-2 text-[#ccff00]">
+                      <StepIcon size={22} />
+                    </div>
                   </div>
+                  <h3 className="mb-3 text-lg font-black uppercase tracking-tight text-[#ccff00]">
+                    {item.title}
+                  </h3>
+                  <p className="m-0 text-sm leading-relaxed text-[#cbd5e1]">
+                    {item.desc}
+                  </p>
                 </div>
               );
             })}
           </div>
 
           {/* Bottom CTA Card */}
-          <div
-            style={{
-              marginTop: "56px",
-              backgroundColor: "#0f172a",
-              border: "2px solid #ccff00",
-              boxShadow: "8px 8px 0px #000",
-              padding: "36px 24px",
-              textAlign: "center",
-            }}
-          >
-            <h3
-              style={{
-                fontWeight: 900,
-                fontSize: "1.5rem",
-                textTransform: "uppercase",
-                color: "#f8fafc",
-                marginBottom: "12px",
-              }}
-            >
+          <div className="mt-14 border-2 border-[#ccff00] bg-[#0f172a] p-6 text-center shadow-[4px_4px_0px_#000] sm:mt-16 sm:p-10 sm:shadow-[8px_8px_0px_#000]">
+            <h3 className="mb-3 text-xl font-black uppercase text-[#f8fafc] sm:text-2xl">
               PRONTO PARA AUMENTAR SUAS CHANCES NAS VAGAS?
             </h3>
-            <p
-              style={{
-                color: "#94a3b8",
-                maxWidth: "600px",
-                margin: "0 auto 24px",
-                fontSize: "0.95rem",
-              }}
-            >
+            <p className="mx-auto mb-6 max-w-[600px] text-sm text-[#94a3b8] sm:text-base">
               Instale a extensão pela Chrome Web Store, conecte sua conta do
               Radar Unificando e comece a analisar vagas agora mesmo.
             </p>
-            <div
-              style={{
-                display: "flex",
-                gap: "16px",
-                flexWrap: "wrap",
-                justifyContent: "center",
-              }}
-            >
+            <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <a
                 href={LINKS.chromeStore}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="extensao-conectar-conta-button"
-                className="btn-neon"
-                style={{
-                  gap: "10px",
-                  padding: "16px 36px",
-                  fontSize: "1rem",
-                  textDecoration: "none",
-                }}
+                className={`btn-neon ${CTA_BASE}`}
               >
-                <Download size={20} /> INSTALAR NO CHROME AGORA
+                <Download size={20} strokeWidth={3} className="shrink-0" />
+                <span>INSTALAR NO CHROME AGORA</span>
               </a>
               <Link
                 href="/extensao/conectar"
                 data-testid="extensao-conectar-conta-token-link"
-                className="btn-dark"
-                style={{
-                  gap: "8px",
-                  padding: "16px 28px",
-                  fontSize: "0.95rem",
-                  textDecoration: "none",
-                }}
+                className={`btn-dark ${CTA_BASE}`}
               >
-                <KeyRound size={18} /> CONECTAR CONTA
+                <KeyRound size={18} strokeWidth={3} className="shrink-0" />
+                <span>CONECTAR CONTA</span>
               </Link>
             </div>
           </div>

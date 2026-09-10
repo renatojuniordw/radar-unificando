@@ -225,6 +225,18 @@ body {
   cursor: pointer;
 }
 
+.btn-dark:hover {
+  transform: translateY(-2px);
+  box-shadow: 10px 10px 0px #ccff00;
+}
+
+.btn-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 4px 4px 0px #ccff00;
+}
+
 /* ===== FAQ ===== */
 
 .faq-item {
