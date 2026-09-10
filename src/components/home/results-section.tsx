@@ -39,7 +39,7 @@ export const ResultsSection = memo(function ResultsSection({
   onAnalyzeAts,
 }: ResultsSectionProps) {
   return (
-    <Box className="section-white">
+    <Box className="section-dark-alt">
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 }, px: { xs: 2, sm: 3 } }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 2, mb: { xs: 2.5, md: 4 } }}>
           {recommendedMode && jobs.length > 0 && (

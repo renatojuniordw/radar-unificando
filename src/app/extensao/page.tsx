@@ -128,10 +128,12 @@ export default function ExtensaoPage() {
             zIndex: 1,
           }}
         >
-          <div style={{ maxWidth: "680px", margin: "0 auto", textAlign: "center" }}>
+          <div
+            style={{ maxWidth: "680px", margin: "0 auto", textAlign: "center" }}
+          >
             <div>
               <div className="badge-neon" style={{ marginBottom: "20px" }}>
-                <span>⚡ EXTENSÃO CHROME ATS</span>
+                <span>EXTENSÃO CHROME ATS</span>
               </div>
 
               <h1
@@ -162,10 +164,9 @@ export default function ExtensaoPage() {
                   marginRight: "auto",
                 }}
               >
-                A extensão Radar Unificando abre um painel lateral inteligente
-                que lê a vaga aberta na página (Gupy, LinkedIn, InHire) e mostra
-                o score ATS do seu currículo em tempo real — com habilidades
-                alinhadas e recomendações de melhorias.
+                Um painel lateral que lê a vaga no Gupy, LinkedIn e InHire e
+                mostra o score ATS do seu currículo em tempo real, com as skills
+                que faltam e o que ajustar.
               </p>
               <div
                 style={{
@@ -181,19 +182,12 @@ export default function ExtensaoPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-testid="extensao-conectar-button"
+                  className="btn-neon"
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
                     gap: "10px",
                     padding: "16px 28px",
                     fontSize: "0.95rem",
-                    fontWeight: 900,
-                    textTransform: "uppercase",
                     textDecoration: "none",
-                    backgroundColor: "#ccff00",
-                    color: "#020617",
-                    border: "2px solid #020617",
-                    boxShadow: "4px 4px 0px #000",
                   }}
                 >
                   <Download size={18} /> INSTALAR NO CHROME
@@ -203,16 +197,10 @@ export default function ExtensaoPage() {
                   className="btn-dark"
                   data-testid="extensao-conectar-conta-link"
                   style={{
-                    textDecoration: "none",
-                    display: "inline-flex",
-                    alignItems: "center",
                     gap: "8px",
                     padding: "16px 24px",
                     fontSize: "0.95rem",
-                    backgroundColor: "#0f172a",
-                    color: "#94a3b8",
-                    border: "2px solid #334155",
-                    boxShadow: "4px 4px 0px #000",
+                    textDecoration: "none",
                   }}
                 >
                   <KeyRound size={16} /> JÁ INSTALOU? CONECTAR CONTA
@@ -224,12 +212,13 @@ export default function ExtensaoPage() {
       </section>
 
       {/* Recursos Section */}
-      <section className="section-white" data-testid="extensao-recursos-section" style={{ padding: "64px 16px" }}>
+      <section
+        className="section-dark-alt"
+        data-testid="extensao-recursos-section"
+        style={{ padding: "64px 16px" }}
+      >
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-          <div
-            className="badge-dark"
-            style={{ marginBottom: "20px", display: "inline-block" }}
-          >
+          <div className="badge-dark" style={{ marginBottom: "20px" }}>
             FUNCIONALIDADES DA EXTENSÃO
           </div>
           <h2
@@ -259,7 +248,12 @@ export default function ExtensaoPage() {
                 <div
                   key={item.title}
                   className="card-brutalist"
-                  data-testid={`extensao-feature-${item.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
+                  data-testid={`extensao-feature-${item.title
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/(^-|-$)/g, "")}`}
                   style={{
                     padding: "28px 24px",
                     display: "flex",
@@ -316,12 +310,13 @@ export default function ExtensaoPage() {
       </section>
 
       {/* Como Funciona Section */}
-      <section className="section-dark-eco" data-testid="extensao-como-funciona-section" style={{ padding: "64px 16px" }}>
+      <section
+        className="section-dark-eco"
+        data-testid="extensao-como-funciona-section"
+        style={{ padding: "64px 16px" }}
+      >
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-          <div
-            className="badge-neon"
-            style={{ marginBottom: "20px", display: "inline-block" }}
-          >
+          <div className="badge-neon" style={{ marginBottom: "20px" }}>
             PASSO A PASSO
           </div>
           <h2
@@ -455,25 +450,25 @@ export default function ExtensaoPage() {
               Instale a extensão pela Chrome Web Store, conecte sua conta do
               Radar Unificando e comece a analisar vagas agora mesmo.
             </p>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "16px",
+                flexWrap: "wrap",
+                justifyContent: "center",
+              }}
+            >
               <a
                 href={LINKS.chromeStore}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="extensao-conectar-conta-button"
+                className="btn-neon"
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
                   gap: "10px",
                   padding: "16px 36px",
                   fontSize: "1rem",
-                  fontWeight: 900,
-                  textTransform: "uppercase",
                   textDecoration: "none",
-                  backgroundColor: "#ccff00",
-                  color: "#020617",
-                  border: "2px solid #020617",
-                  boxShadow: "4px 4px 0px #000",
                 }}
               >
                 <Download size={20} /> INSTALAR NO CHROME AGORA
@@ -481,19 +476,12 @@ export default function ExtensaoPage() {
               <Link
                 href="/extensao/conectar"
                 data-testid="extensao-conectar-conta-token-link"
+                className="btn-dark"
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
                   gap: "8px",
                   padding: "16px 28px",
                   fontSize: "0.95rem",
-                  fontWeight: 900,
-                  textTransform: "uppercase",
                   textDecoration: "none",
-                  backgroundColor: "#0f172a",
-                  color: "#94a3b8",
-                  border: "2px solid #334155",
-                  boxShadow: "4px 4px 0px #000",
                 }}
               >
                 <KeyRound size={18} /> CONECTAR CONTA

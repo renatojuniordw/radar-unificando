@@ -15,6 +15,7 @@ import {
   ExternalLink,
   UserCheck,
   Zap,
+  ChevronDown,
 } from 'lucide-react';
 
 /** Só permite redirecionar para o redirect padrão do launchWebAuthFlow (evita open redirect). */
@@ -139,7 +140,7 @@ export default async function ConectarExtensaoPage({
                   Abra a Extensão
                 </h3>
                 <p className="text-xs text-[#334155] font-mono leading-relaxed font-semibold">
-                  Clique no ícone do Radar no seu Chrome ou abra o Painel Lateral (<code className="text-[#020617] bg-[#ccff00] px-1 font-bold">Ctrl+Shift+U</code>).
+                  Clique no ícone do Radar Unificando na barra do Chrome para abrir o painel lateral.
                 </p>
               </div>
             </div>
@@ -177,7 +178,7 @@ export default async function ConectarExtensaoPage({
             <details className="faq-item group" data-testid="extensao-faq-item-1">
               <summary className="font-mono text-xs sm:text-sm">
                 <span>Onde encontro o ícone da extensão no Chrome?</span>
-                <span className="faq-arrow">▼</span>
+                <ChevronDown className="faq-arrow" size={20} />
               </summary>
               <div className="faq-content">
                 Após instalar, clique no ícone de peça de quebra-cabeça (<span className="text-[#ccff00]">🧩 Extensões</span>) no canto superior direito do Chrome e fixe o Radar Unificando na sua barra de ferramentas para fácil acesso.
@@ -187,7 +188,7 @@ export default async function ConectarExtensaoPage({
             <details className="faq-item group" data-testid="extensao-faq-item-2">
               <summary className="font-mono text-xs sm:text-sm">
                 <span>Preciso gerar um novo token cada vez que abrir o navegador?</span>
-                <span className="faq-arrow">▼</span>
+                <ChevronDown className="faq-arrow" size={20} />
               </summary>
               <div className="faq-content">
                 Não! Uma vez conectado, o token fica salvo com segurança no armazenamento local criptografado da extensão. Você só precisará colar o token novamente caso desinstale ou limpe os dados da extensão.
@@ -197,7 +198,7 @@ export default async function ConectarExtensaoPage({
             <details className="faq-item group" data-testid="extensao-faq-item-3">
               <summary className="font-mono text-xs sm:text-sm">
                 <span>O que fazer se o token der erro ao colar?</span>
-                <span className="faq-arrow">▼</span>
+                <ChevronDown className="faq-arrow" size={20} />
               </summary>
               <div className="faq-content">
                 Certifique-se de que copiou o token completo sem espaços extras. Caso continue falhando, recarregue esta página para gerar uma nova chave de sessão limpa.

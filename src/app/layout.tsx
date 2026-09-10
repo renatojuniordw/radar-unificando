@@ -93,8 +93,6 @@ export const viewport: Viewport = {
 
 import { ConsoleEasterEgg } from "@/components/ui/console-easter-egg";
 
-import { MobileFloatingBar } from "@/components/layout/mobile-floating-bar";
-
 export default function RootLayout({
   children,
 }: {
@@ -121,43 +119,42 @@ export default function RootLayout({
           <ThemeProvider>
             <SnackbarProvider>
               <ChatAssistantProvider>
-                  {/* Skip link for keyboard navigation */}
-                  <Box
-                    component="a"
-                    data-testid="layout-skip-link"
-                    href="#main-content"
-                    sx={{
-                      position: "absolute",
-                      top: -40,
-                      left: 0,
-                      zIndex: 9999,
-                      p: 2,
-                      bgcolor: "primary.main",
-                      color: "common.white",
-                      textDecoration: "none",
-                      fontWeight: 700,
-                      "&:focus": {
-                        top: 0,
-                      },
-                    }}
-                  >
-                    Pular para conteúdo principal
-                  </Box>
+                {/* Skip link for keyboard navigation */}
+                <Box
+                  component="a"
+                  data-testid="layout-skip-link"
+                  href="#main-content"
+                  sx={{
+                    position: "absolute",
+                    top: -40,
+                    left: 0,
+                    zIndex: 9999,
+                    p: 2,
+                    bgcolor: "primary.main",
+                    color: "common.white",
+                    textDecoration: "none",
+                    fontWeight: 700,
+                    "&:focus": {
+                      top: 0,
+                    },
+                  }}
+                >
+                  Pular para conteúdo principal
+                </Box>
 
-                  <ConsoleEasterEgg />
-                  <Header />
-                  <main id="main-content" style={{ flex: 1 }}>
-                    {children}
-                  </main>
-                  <Footer />
-                  <ErrorBoundary>
-                    <ChatAssistantMount />
-                  </ErrorBoundary>
-                </ChatAssistantProvider>
+                <ConsoleEasterEgg />
+                <Header />
+                <main id="main-content" style={{ flex: 1 }}>
+                  {children}
+                </main>
+                <Footer />
+                <ErrorBoundary>
+                  <ChatAssistantMount />
+                </ErrorBoundary>
+              </ChatAssistantProvider>
             </SnackbarProvider>
           </ThemeProvider>
         </AuthProvider>
-        <MobileFloatingBar />
         <PwaRegister />
         <CookieConsent />
       </body>
