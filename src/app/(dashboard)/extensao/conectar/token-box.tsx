@@ -107,7 +107,7 @@ export function TokenBox({ token }: TokenBoxProps) {
           <span className="text-base shrink-0">🧩</span>
           <p className="font-mono text-xs font-bold text-[#020617] leading-relaxed m-0">
             <strong className="uppercase bg-[#020617] text-[#ccff00] px-1.5 py-0.5 mr-1">Como conectar:</strong>
-            copie o token abaixo e cole no campo de ativação da extensão.{' '}
+            clique no ícone da extensão — ela conecta automaticamente com esta conta logada. O token abaixo é só para referência/suporte.{' '}
             <a href={LINKS.chromeStore} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-2 hover:text-[#020617]/70">
               Ainda não instalou? Baixe pela Chrome Web Store
             </a>.

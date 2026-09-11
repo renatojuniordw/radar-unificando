@@ -113,9 +113,8 @@ Infrastructure Layer
 A extensão (MV3, side panel) reusa o motor ATS do backend e se autentica por **token**, não por cookie:
 
 1. Usuário logado acessa `/extensao/conectar` → o backend gera um token (64 hex) e guarda **apenas o hash SHA-256** em `ExtensionToken` (`extension-token.ts`).
-2. O token é entregue ao usuário de duas formas:
-   - **Fluxo automático** (`launchWebAuthFlow`): `redirect_uri=<chrome-extension-id>.chromiumapp.org` → o backend redireciona com `?token=...` (validado por `isSafeRedirectUri`).
-   - **Fluxo manual**: token exibido na página e copiado para a extensão.
+2. **Fluxo automático** (`launchWebAuthFlow`): a extensão abre `/extensao/conectar?redirect_uri=<chrome-extension-id>.chromiumapp.org` → o backend redireciona com `?token=...` (validado por `isSafeRedirectUri`), sem intervenção manual do usuário.
+   - Se a página for aberta sem `redirect_uri` (ex.: acesso direto pela URL), ela exibe o token para referência/suporte, mas a extensão hoje não possui campo de colar token — a conexão real só acontece pelo fluxo automático acima.
 3. A extensão envia `Authorization: Bearer <token>` em `POST /api/extension/analyze` e `POST /api/extension/feedback` (rate limit 20/min por usuário+IP).
 4. `findUserIdByExtensionToken` resolve o token (atualiza `lastUsedAt`) e o `proxy.ts` só aceita requisições com `Origin: chrome-extension://<id>` se o valor estiver em `EXTENSION_ORIGIN`.
 5. A página `/extensao/conectar` faz polling em `GET /api/extensao/status` (4s) para exibir "Extensão conectada" quando `lastUsedAt` é atualizado.

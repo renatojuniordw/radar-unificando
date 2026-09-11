@@ -92,7 +92,7 @@ export default async function ConectarExtensaoPage({
             Conectar <span className="text-[#ccff00]">Extensão Chrome</span>
           </h1>
           <p className="text-[#f8fafc] text-sm sm:text-base max-w-2xl leading-relaxed font-medium">
-            Sincronize sua conta do Radar Unificando com o navegador para analisar vagas no Gupy, LinkedIn e InHire em tempo real com seu score ATS.
+            Clique no ícone da extensão para conectar automaticamente sua conta do Radar Unificando e analisar vagas no Gupy, LinkedIn e InHire em tempo real com seu score ATS.
           </p>
         </div>
 
@@ -116,13 +116,13 @@ export default async function ConectarExtensaoPage({
                   <span className="font-mono text-xs font-black bg-[#ccff00] text-[#020617] px-2 py-0.5 border border-[#020617]">
                     PASSO 01
                   </span>
-                  <KeyRound className="w-5 h-5 text-[#020617]" />
+                  <Puzzle className="w-5 h-5 text-[#020617]" />
                 </div>
                 <h3 className="font-black text-sm uppercase tracking-wider text-[#020617] mb-2">
-                  Copie o Token
+                  Abra a Extensão
                 </h3>
                 <p className="text-xs text-[#334155] font-mono leading-relaxed font-semibold">
-                  Clique no botão &quot;Copiar Token&quot; acima para copiar seu código de acesso seguro para a área de transferência.
+                  Clique no ícone do Radar Unificando na barra do Chrome para abrir o painel lateral.
                 </p>
               </div>
             </div>
@@ -134,13 +134,13 @@ export default async function ConectarExtensaoPage({
                   <span className="font-mono text-xs font-black bg-[#ccff00] text-[#020617] px-2 py-0.5 border border-[#020617]">
                     PASSO 02
                   </span>
-                  <Puzzle className="w-5 h-5 text-[#020617]" />
+                  <KeyRound className="w-5 h-5 text-[#020617]" />
                 </div>
                 <h3 className="font-black text-sm uppercase tracking-wider text-[#020617] mb-2">
-                  Abra a Extensão
+                  Faça Login
                 </h3>
                 <p className="text-xs text-[#334155] font-mono leading-relaxed font-semibold">
-                  Clique no ícone do Radar Unificando na barra do Chrome para abrir o painel lateral.
+                  A extensão abre esta página automaticamente e conecta com sua conta já logada, sem precisar copiar nada.
                 </p>
               </div>
             </div>
@@ -155,10 +155,10 @@ export default async function ConectarExtensaoPage({
                   <Sparkles className="w-5 h-5 text-[#020617]" />
                 </div>
                 <h3 className="font-black text-sm uppercase tracking-wider text-[#020617] mb-2">
-                  Cole e Sincronize
+                  Pronto!
                 </h3>
                 <p className="text-xs text-[#334155] font-mono leading-relaxed font-semibold">
-                  Cole o token no campo de chave de ativação. Pronto! Seu score ATS e histórico serão sincronizados ao vivo.
+                  Seu score ATS e histórico já ficam sincronizados ao vivo no painel lateral.
                 </p>
               </div>
             </div>
@@ -197,11 +197,11 @@ export default async function ConectarExtensaoPage({
 
             <details className="faq-item group" data-testid="extensao-faq-item-3">
               <summary className="font-mono text-xs sm:text-sm">
-                <span>O que fazer se o token der erro ao colar?</span>
+                <span>A conexão automática falhou, o que fazer?</span>
                 <ChevronDown className="faq-arrow" size={20} />
               </summary>
               <div className="faq-content">
-                Certifique-se de que copiou o token completo sem espaços extras. Caso continue falhando, recarregue esta página para gerar uma nova chave de sessão limpa.
+                Confirme que você está logado no Radar Unificando e clique novamente no ícone da extensão. Caso continue falhando, recarregue esta página para gerar uma nova chave de sessão limpa.
               </div>
             </details>
           </div>

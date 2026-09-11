@@ -24,7 +24,7 @@ Apoie: [![Doar-PIX](https://img.shields.io/badge/Doar-PIX-ccff00)](https://radar
 - **Export CSV/JSON** — exporte a tabela de resultados filtrada
 - **Conformidade LGPD** — exportação de dados pessoais (`/api/export`), exclusão de conta (`DELETE /api/auth/account`) e limpeza automática por retenção (cron)
 - **Painel Admin** — métricas de usuários, buscas e uso de IA com gráficos (Recharts), filtro por período, tabela de usuários e auto-refresh — acesso restrito a `role=admin`
-- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página (**Gupy, LinkedIn e InHire**) e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Disponível na Chrome Web Store** — [instalar](https://chromewebstore.google.com/detail/radar-unificando-%E2%80%94-an%C3%A1lis/kcbfealbhifapbhnlbajfgefafjiobdh)
+- **Extensão Chrome (Side Panel)** — analisa a vaga aberta na página (principalmente **Gupy, LinkedIn e InHire**, com extrator genérico de fallback) e mostra score ATS e cursos recomendados (endpoints `POST /api/extension/analyze` e `POST /api/extension/feedback`). **Disponível na Chrome Web Store** — [instalar](https://chromewebstore.google.com/detail/radar-unificando-%E2%80%94-an%C3%A1lis/kcbfealbhifapbhnlbajfgefafjiobdh)
 - **E-mail de boas-vindas** — ao criar conta, o usuário recebe um e-mail com 3 passos iniciais (via Resend)
 - **100% gratuito para usuários** — mantido por doações. Limites justos de uso: janela de contexto por conversa, teto diário e mensal de tokens de IA (renovam à meia-noite e no dia 1º) — detalhes em `/termos` e `docs/AI.md`
 
